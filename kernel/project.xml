@@ -3,13 +3,13 @@
     <!-- the version of maven's project object model -->
     <pomVersion>3</pomVersion>
 
-    <id>gbean</id>
-    <name>kernel</name>
+    <name>GBean :: Kernel</name>
+    <id>gbean-kernel</id>
+    <groupId>gbean</groupId>
     <currentVersion>1.0-SNAPSHOT</currentVersion>
     <organization>
-        <name>The Codehaus</name>
-        <url>http://codehaus.org</url>
-        <logo>http://codehaus.org/codehaus-small.gif</logo>
+        <name>GBean.org</name>
+        <url>http://gbean.org</url>
     </organization>
 
     <package>org.gbean.kernel</package>
@@ -85,6 +85,15 @@
 
     <build>
         <sourceDirectory>src/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+
         <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
         <unitTest>
             <includes>
@@ -94,21 +103,21 @@
     </build>
 
     <reports>
-      <report>maven-license-plugin</report>
-<!--      <report>maven-checkstyle-plugin</report>-->
-      <report>maven-pmd-plugin</report>
-      <!-- <report>maven-simian-plugin</report> -->
-      <report>maven-jdepend-plugin</report>
-      <report>maven-changelog-plugin</report>
-      <report>maven-statcvs-plugin</report>
-      <report>maven-file-activity-plugin</report>
-      <report>maven-developer-activity-plugin</report>
-      <report>maven-jxr-plugin</report>
-      <report>maven-javadoc-plugin</report>
-      <report>maven-junit-report-plugin</report>
-      <report>maven-faq-plugin</report>
-<!--      <report>maven-clover-plugin</report>-->
-      <report>maven-changes-plugin</report>
+        <report>maven-license-plugin</report>
+        <!--      <report>maven-checkstyle-plugin</report>-->
+        <report>maven-pmd-plugin</report>
+        <!-- <report>maven-simian-plugin</report> -->
+        <report>maven-jdepend-plugin</report>
+        <report>maven-changelog-plugin</report>
+        <report>maven-statcvs-plugin</report>
+        <report>maven-file-activity-plugin</report>
+        <report>maven-developer-activity-plugin</report>
+        <report>maven-jxr-plugin</report>
+        <report>maven-javadoc-plugin</report>
+        <report>maven-junit-report-plugin</report>
+        <report>maven-faq-plugin</report>
+        <!--      <report>maven-clover-plugin</report>-->
+        <report>maven-changes-plugin</report>
     </reports>
 
 </project>
