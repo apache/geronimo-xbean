@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project>
+    <!-- the version of maven's project object model -->
+    <pomVersion>3</pomVersion>
+
+    <id>gbean</id>
+    <name>kernel</name>
+    <currentVersion>1.0-SNAPSHOT</currentVersion>
+    <organization>
+        <name>The Codehaus</name>
+        <url>http://codehaus.org</url>
+        <logo>http://codehaus.org/codehaus-small.gif</logo>
+    </organization>
+
+    <package>org.gbean.kernel</package>
+
+    <shortDescription>GBean: kernel for containers</shortDescription>
+
+    <description>
+        GBean is a kernel architecture and server for ioc containers such as spring.
+    </description>
+
+    <url>http://www.gbean.org/</url>
+
+    <siteAddress>www.gbean.org</siteAddress>
+    <siteDirectory>/www/www.gbean.org</siteDirectory>
+
+    <mailingLists>
+        <mailingList>
+            <name>gbean developers</name>
+            <subscribe>mailto:dev-subscribe@gbean.org</subscribe>
+            <unsubscribe>mailto:dev-unsubscribe@gbean.org</unsubscribe>
+        </mailingList>
+        <mailingList>
+            <name>gbean users</name>
+            <subscribe>mailto:user-subscribe@gbean.org</subscribe>
+            <unsubscribe>mailto:user-unsubscribe@gbean.org</unsubscribe>
+        </mailingList>
+        <mailingList>
+            <name>gbean source control messages</name>
+            <subscribe>mailto:scm-subscribe@gbean.org</subscribe>
+            <unsubscribe>mailto:scm-unsubscribe@gbean.org</unsubscribe>
+        </mailingList>
+    </mailingLists>
+
+
+    <developers>
+        <developer>
+            <name>Dain Sundstrom</name>
+            <id>dain</id>
+            <email>dain@iq80.com</email>
+            <roles>
+                <role>Despot</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>geronimo</groupId>
+            <artifactId>geronimo-kernel</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>mx4j</groupId>
+            <artifactId>mx4j</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>springframework</groupId>
+            <artifactId>spring</artifactId>
+            <version>DAIN-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/java</sourceDirectory>
+        <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+        <unitTest>
+            <includes>
+                <include>**/*Test.java</include>
+            </includes>
+        </unitTest>
+    </build>
+
+    <reports>
+      <report>maven-license-plugin</report>
+<!--      <report>maven-checkstyle-plugin</report>-->
+      <report>maven-pmd-plugin</report>
+      <!-- <report>maven-simian-plugin</report> -->
+      <report>maven-jdepend-plugin</report>
+      <report>maven-changelog-plugin</report>
+      <report>maven-statcvs-plugin</report>
+      <report>maven-file-activity-plugin</report>
+      <report>maven-developer-activity-plugin</report>
+      <report>maven-jxr-plugin</report>
+      <report>maven-javadoc-plugin</report>
+      <report>maven-junit-report-plugin</report>
+      <report>maven-faq-plugin</report>
+<!--      <report>maven-clover-plugin</report>-->
+      <report>maven-changes-plugin</report>
+    </reports>
+
+</project>
+
