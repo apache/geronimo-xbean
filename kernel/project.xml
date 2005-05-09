@@ -79,7 +79,7 @@
         <dependency>
             <groupId>springframework</groupId>
             <artifactId>spring</artifactId>
-            <version>DAIN-SNAPSHOT</version>
+            <version>GBEAN-PATCHED-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
