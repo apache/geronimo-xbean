@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.geronimo;
-
-import org.apache.geronimo.kernel.Kernel;
+package org.gbean.repository;
 
 /**
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date$
  */
-public final class GeronimoKernelThreadLocal {
-    private GeronimoKernelThreadLocal() {
+public class RepositoryLocatorError extends Error {
+    public RepositoryLocatorError() {
+        super();
     }
 
-    private static final ThreadLocal THREAD_LOCAL = new ThreadLocal();
-
-    public static Kernel get() {
-        return (Kernel) THREAD_LOCAL.get();
+    public RepositoryLocatorError(String message) {
+        super(message);
     }
 
-    public static void set(Kernel kernel) {
-        THREAD_LOCAL.set(kernel);
+    public RepositoryLocatorError(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RepositoryLocatorError(Throwable cause) {
+        super(cause);
     }
 }

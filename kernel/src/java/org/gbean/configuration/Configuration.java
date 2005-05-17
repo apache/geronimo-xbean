@@ -14,24 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.service;
+package org.gbean.configuration;
 
+import java.net.URI;
 import java.util.Set;
-import java.util.Map;
 
 /**
  * @version $Revision$ $Date$
  */
-public interface ServiceFactory {
-    Map getDependencies();
+public interface Configuration {
+    URI getConfigurationId();
 
-    void addDependency(String name, Set patterns);
+    URI getParentId();
 
-    Object createService(ServiceContext serviceContext) throws Exception;
+    ClassLoader getClassLoader();
 
-    void destroyService(ServiceContext serviceContext, Object service);
-
-    boolean isEnabled();
-
-    void setEnabled(boolean enabled);
+    Set getServiceNames();
 }

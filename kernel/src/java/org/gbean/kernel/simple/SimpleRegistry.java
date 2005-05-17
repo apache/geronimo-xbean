@@ -64,6 +64,10 @@ public class SimpleRegistry {
         // do as much work as possible outside of the synchronized block
         ObjectName name = serviceInstance.getObjectName();
         String domainName = name.getDomain();
+        if (domainName.length() == 0) {
+            domainName = defaultDomainName;
+        }
+
         // convert properties list to a HashMap as it is more efficient then the synchronized Hashtable
         Map properties = new HashMap(name.getKeyPropertyList());
 
@@ -188,7 +192,6 @@ public class SimpleRegistry {
                 if (properties.entrySet().containsAll(patternProperties.entrySet())) {
                     matchingNames.add(entry.getKey());
                 }
-
             } else {
                 if (properties.entrySet().equals(patternProperties.entrySet())) {
                     matchingNames.add(entry.getKey());

@@ -23,6 +23,9 @@ import org.apache.geronimo.kernel.Kernel;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.gbean.service.ServiceContext;
+import org.gbean.spring.ServiceContextThreadLocal;
+import org.gbean.kernel.ServiceNotFoundException;
 
 /**
  * @version $Rev: 71492 $ $Date: 2004-11-14 21:31:50 -0800 (Sun, 14 Nov 2004) $
@@ -38,11 +41,15 @@ public class GeronimoKernelReference implements FactoryBean, Serializable {
     }
 
     public synchronized final Object getObject() {
-        Kernel kernel = GeronimoKernelThreadLocal.get();
-        if (kernel == null) {
-            throw new IllegalStateException("Kernel has not been set");
+        ServiceContext serviceContext = ServiceContextThreadLocal.get();
+        if (serviceContext == null) {
+            throw new IllegalStateException("Service context has not been set");
         }
-        return kernel;
+        try {
+            return (Kernel) serviceContext.getKernel().getService(Kernel.KERNEL);
+        } catch (ServiceNotFoundException e) {
+            throw new IllegalStateException("A Geronimo kernel has not been loaded");
+        }
     }
 
     public boolean isSingleton() {

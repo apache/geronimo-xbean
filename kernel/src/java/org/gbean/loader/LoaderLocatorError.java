@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.service;
-
-import java.util.Set;
-import java.util.Map;
+package org.gbean.loader;
 
 /**
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date$
  */
-public interface ServiceFactory {
-    Map getDependencies();
+public class LoaderLocatorError extends Error {
+    public LoaderLocatorError() {
+        super();
+    }
 
-    void addDependency(String name, Set patterns);
+    public LoaderLocatorError(String message) {
+        super(message);
+    }
 
-    Object createService(ServiceContext serviceContext) throws Exception;
+    public LoaderLocatorError(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    void destroyService(ServiceContext serviceContext, Object service);
-
-    boolean isEnabled();
-
-    void setEnabled(boolean enabled);
+    public LoaderLocatorError(Throwable cause) {
+        super(cause);
+    }
 }

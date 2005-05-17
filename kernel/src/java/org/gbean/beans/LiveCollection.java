@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2003-2004 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,24 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.service;
 
-import java.util.Set;
-import java.util.Map;
+package org.gbean.beans;
+
+import java.util.Collection;
 
 /**
- * @version $Revision$ $Date$
+ * An extension of collection that allows a client to register for notifications when
+ * members are added to and removed from the collection.
+ * 
+ * @version $Rev: 46019 $ $Date: 2004-09-14 02:56:06 -0700 (Tue, 14 Sep 2004) $
  */
-public interface ServiceFactory {
-    Map getDependencies();
+public interface LiveCollection extends Collection {
+    void addReferenceCollectionListener(LiveCollectionListener listener);
 
-    void addDependency(String name, Set patterns);
-
-    Object createService(ServiceContext serviceContext) throws Exception;
-
-    void destroyService(ServiceContext serviceContext, Object service);
-
-    boolean isEnabled();
-
-    void setEnabled(boolean enabled);
+    void removeReferenceCollectionListener(LiveCollectionListener listener);
 }

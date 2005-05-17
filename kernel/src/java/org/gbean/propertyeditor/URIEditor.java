@@ -14,24 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.service;
+package org.gbean.propertyeditor;
 
-import java.util.Set;
-import java.util.Map;
+import java.beans.PropertyEditorSupport;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @version $Revision$ $Date$
  */
-public interface ServiceFactory {
-    Map getDependencies();
+public class URIEditor extends PropertyEditorSupport {
+    public void setAsText(String value) throws IllegalArgumentException {
+        try {
+            setValue(new URI(value));
+        } catch (URISyntaxException e) {
+            throw (IllegalArgumentException) new IllegalArgumentException().initCause(e);
+        }
+    }
 
-    void addDependency(String name, Set patterns);
-
-    Object createService(ServiceContext serviceContext) throws Exception;
-
-    void destroyService(ServiceContext serviceContext, Object service);
-
-    boolean isEnabled();
-
-    void setEnabled(boolean enabled);
+    public String getAsText() {
+        URI uri = ((URI) getValue());
+        String text = uri.toString();
+        return text;
+    }
 }

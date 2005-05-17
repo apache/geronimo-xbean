@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2005 GBean.org
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,26 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.gbean.loader;
 
-package org.gbean.beans;
+import javax.management.ObjectName;
+
+import org.gbean.kernel.Kernel;
 
 /**
- * @version $Rev: 46019 $ $Date: 2004-09-14 02:56:06 -0700 (Tue, 14 Sep 2004) $
+ * @version $Revision$ $Date$
  */
-public class ReferenceCollectionEvent {
-    private final String referenceName;
-    private final Object member;
-
-    public ReferenceCollectionEvent(String referenceName, Object member) {
-        this.referenceName = referenceName;
-        this.member = member;
-    }
-
-    public String getReferenceName() {
-        return referenceName;
-    }
-
-    public Object getMember() {
-        return member;
-    }
+public interface Loader {
+    ObjectName load(Kernel kernel, String location);
 }

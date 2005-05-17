@@ -17,16 +17,13 @@
 
 package org.gbean.beans;
 
-import java.util.Collection;
+import java.util.EventListener;
 
 /**
- * An extension of collection that allows a client to register for notifications when
- * members are added to and removed from the collection.
- * 
  * @version $Rev: 46019 $ $Date: 2004-09-14 02:56:06 -0700 (Tue, 14 Sep 2004) $
  */
-public interface ReferenceCollection extends Collection {
-    void addReferenceCollectionListener(ReferenceCollectionListener listener);
+public interface LiveCollectionListener extends EventListener {
+    void memberAdded(LiveCollectionEvent event);
 
-    void removeReferenceCollectionListener(ReferenceCollectionListener listener);
+    void memberRemoved(LiveCollectionEvent event);
 }

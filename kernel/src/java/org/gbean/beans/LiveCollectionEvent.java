@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2003-2004 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,24 +14,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.service;
 
-import java.util.Set;
-import java.util.Map;
+package org.gbean.beans;
 
 /**
- * @version $Revision$ $Date$
+ * @version $Rev: 46019 $ $Date: 2004-09-14 02:56:06 -0700 (Tue, 14 Sep 2004) $
  */
-public interface ServiceFactory {
-    Map getDependencies();
+public class LiveCollectionEvent {
+    private final String referenceName;
+    private final Object member;
 
-    void addDependency(String name, Set patterns);
+    public LiveCollectionEvent(String referenceName, Object member) {
+        this.referenceName = referenceName;
+        this.member = member;
+    }
 
-    Object createService(ServiceContext serviceContext) throws Exception;
+    public String getReferenceName() {
+        return referenceName;
+    }
 
-    void destroyService(ServiceContext serviceContext, Object service);
-
-    boolean isEnabled();
-
-    void setEnabled(boolean enabled);
+    public Object getMember() {
+        return member;
+    }
 }

@@ -95,11 +95,15 @@ public class ServiceInvoker {
         serviceRunning = false;
     }
 
-    public synchronized String getClassName() {
+    public synchronized ObjectName getServiceName() {
+        return name;
+    }
+    
+    public synchronized Class getServiceType() {
         if (serviceInstance != null) {
-            return serviceInstance.getClass().getName();
+            return serviceInstance.getClass();
         } else {
-            return Object.class.getName();
+            return Object.class;
         }
     }
 

@@ -16,17 +16,19 @@
  */
 package org.gbean.kernel.simple;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
+import java.util.Set;
 
-import org.gbean.service.ServiceFactory;
 import org.gbean.service.ServiceContext;
+import org.gbean.service.ServiceFactory;
 
 /**
  * @version $Revision$ $Date$
  */
 public class SimpleServiceFactory implements ServiceFactory {
     private final Object service;
+    private final Map dependencies = new HashMap();
     private boolean enabled = true;
 
     public SimpleServiceFactory(Object service) {
@@ -34,7 +36,11 @@ public class SimpleServiceFactory implements ServiceFactory {
     }
 
     public Map getDependencies() {
-        return Collections.EMPTY_MAP;
+        return dependencies;
+    }
+
+    public void addDependency(String name, Set patterns) {
+        dependencies.put(name, patterns);
     }
 
     public Object createService(ServiceContext serviceContext) throws Exception {

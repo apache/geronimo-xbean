@@ -19,15 +19,21 @@ package org.gbean.service;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * @version $Revision$ $Date$
  */
 public abstract class AbstractServiceFactory implements ServiceFactory {
     private boolean enabled = true;
+    private Map dependencies = new HashMap();
 
     public Map getDependencies() {
-        return Collections.EMPTY_MAP;
+        return dependencies;
+    }
+
+    public void addDependency(String name, Set patterns) {
+        dependencies.put(name, patterns);
     }
 
     public void destroyService(ServiceContext serviceContext, Object service) {

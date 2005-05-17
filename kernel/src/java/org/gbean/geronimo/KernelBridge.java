@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.List;
 import javax.management.ObjectName;
 
 import org.gbean.kernel.NoSuchAttributeException;
@@ -34,10 +35,12 @@ import org.gbean.kernel.NoSuchOperationException;
 import org.gbean.kernel.ServiceAlreadyExistsException;
 import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.ServiceNotFoundException;
+import org.gbean.kernel.Kernel;
 import org.gbean.kernel.simple.SimpleKernel;
 import org.gbean.proxy.ProxyManager;
 import org.gbean.reflect.ServiceInvoker;
 import org.gbean.reflect.ServiceInvokerManager;
+import org.gbean.reflect.PropertyInvoker;
 import org.gbean.service.AbstractServiceFactory;
 import org.gbean.service.ServiceContext;
 import org.gbean.service.ServiceFactory;
@@ -85,6 +88,10 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
         } catch (Exception e) {
             throw new org.apache.geronimo.kernel.InternalKernelException(e);
         }
+    }
+
+    public Kernel getKernel() {
+        return kernel;
     }
 
     public String getKernelName() {
@@ -163,7 +170,8 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
 
     public org.apache.geronimo.gbean.GBeanInfo getGBeanInfo(ObjectName name) throws org.apache.geronimo.kernel.GBeanNotFoundException {
         try {
-            ServiceFactory serviceFactory = kernel.getServiceFactory(name);
+            ServiceFactory serviceFactory;
+            serviceFactory = kernel.getServiceFactory(name);
             if (serviceFactory instanceof GeronimoServiceFactory) {
                 GeronimoServiceFactory geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
                 return GeronimoUtil.createGBeanInfo(geronimoServiceFactory.getGBeanDefinition());
@@ -172,34 +180,32 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
             throw new org.apache.geronimo.kernel.GBeanNotFoundException(e);
         }
 
-        try {
-            Object service = kernel.getService(name);
-            return createGBeanInfo(service.getClass());
-        } catch (ServiceNotFoundException e) {
-            throw new org.apache.geronimo.kernel.GBeanNotFoundException(e);
-        }
+        ServiceInvoker serviceInvoker = getServiceInvoker(name);
+        return createGBeanInfo(serviceInvoker);
     }
 
     public org.apache.geronimo.gbean.GBeanData getGBeanData(ObjectName name) throws org.apache.geronimo.kernel.GBeanNotFoundException{
-        GeronimoServiceFactory geronimoServiceFactory = null;
+        ServiceFactory serviceFactory = null;
         try {
-            ServiceFactory serviceFactory = kernel.getServiceFactory(name);
-            if (!(serviceFactory instanceof GeronimoServiceFactory)) {
-                throw new org.apache.geronimo.kernel.GBeanNotFoundException("This service does not use a GeronimoServiceFactory");
+            serviceFactory = kernel.getServiceFactory(name);
+            if (serviceFactory instanceof GeronimoServiceFactory) {
+                GeronimoServiceFactory geronimoServiceFactory = null;
+                geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
+                return GeronimoUtil.createGBeanData(geronimoServiceFactory.getGBeanDefinition());
             }
-            geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
         } catch (ServiceNotFoundException e) {
             throw new org.apache.geronimo.kernel.GBeanNotFoundException(e);
         }
 
-        return GeronimoUtil.createGBeanData(geronimoServiceFactory.getGBeanDefinition());
+        ServiceInvoker serviceInvoker = getServiceInvoker(name);
+        return createGBeanData(serviceInvoker);
     }
 
     public void loadGBean(org.apache.geronimo.gbean.GBeanData gbeanData, ClassLoader classLoader) throws org.apache.geronimo.kernel.GBeanAlreadyExistsException {
         ObjectName objectName = gbeanData.getName();
 
         GBeanDefinition geronimoBeanDefinition = GeronimoUtil.createGeronimoBeanDefinition(gbeanData, classLoader);
-        GeronimoServiceFactory geronimoServiceFactory = new GeronimoServiceFactory(this, proxyManager, geronimoBeanDefinition);
+        GeronimoServiceFactory geronimoServiceFactory = new GeronimoServiceFactory(proxyManager, geronimoBeanDefinition);
         try {
             kernel.loadService(objectName, geronimoServiceFactory, classLoader);
         } catch (ServiceAlreadyExistsException e) {
@@ -493,6 +499,52 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
                 Collections.EMPTY_SET);
     }
 
+    private org.apache.geronimo.gbean.GBeanInfo createGBeanInfo(ServiceInvoker serviceInvoker) {
+        Set attributeInfos = new HashSet();
+        List propertyIndex = serviceInvoker.getPropertyIndex();
+        for (Iterator iterator = propertyIndex.iterator(); iterator.hasNext();) {
+            PropertyInvoker propertyInvoker = (PropertyInvoker) iterator.next();
+            String getterName = null;
+            if (propertyInvoker.isReadable()) {
+                getterName = propertyInvoker.getGetterSignature().getName();
+            }
+            String setterName = null;
+            if (propertyInvoker.isWritable()) {
+                setterName = propertyInvoker.getSetterSignature().getName();
+            }
+            attributeInfos.add(new org.apache.geronimo.gbean.GAttributeInfo(propertyInvoker.getPropertyName(),
+                    propertyInvoker.getType().getName(),
+                    false,
+                    getterName,
+                    setterName));
+        }
+        return new org.apache.geronimo.gbean.GBeanInfo(serviceInvoker.getServiceType().getName(),
+                "GBean",
+                attributeInfos,
+                new org.apache.geronimo.gbean.GConstructorInfo(new String[] {}),
+                Collections.EMPTY_SET,
+                Collections.EMPTY_SET);
+    }
+
+    private org.apache.geronimo.gbean.GBeanData createGBeanData(ServiceInvoker serviceInvoker) {
+        org.apache.geronimo.gbean.GBeanInfo gbeanInfo = createGBeanInfo(serviceInvoker);
+        org.apache.geronimo.gbean.GBeanData gbeanData = new org.apache.geronimo.gbean.GBeanData(serviceInvoker.getServiceName(), gbeanInfo);
+        for (Iterator iterator = gbeanInfo.getAttributes().iterator(); iterator.hasNext();) {
+            org.apache.geronimo.gbean.GAttributeInfo attribute = (org.apache.geronimo.gbean.GAttributeInfo) iterator.next();
+            if (attribute.isReadable()) {
+                try {
+                    String attributeName = attribute.getName();
+                    Object attributeValue = serviceInvoker.getAttribute(attributeName);
+                    gbeanData.setAttribute(attributeName, attributeValue);
+                } catch (Exception e) {
+                    // ignore
+                    e.printStackTrace();
+                }
+            }
+        }
+        return gbeanData;
+    }
+
     private static String fixAttributeName(String attributeName) {
         if (Character.isUpperCase(attributeName.charAt(0))) {
             return Character.toLowerCase(attributeName.charAt(0)) + attributeName.substring(1);
@@ -509,6 +561,9 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
 
         public Map getDependencies() {
             return Collections.EMPTY_MAP;
+        }
+
+        public void addDependency(String name, Set patterns) {
         }
 
         public Object createService(ServiceContext serviceContext) throws Exception {

@@ -14,24 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.service;
-
-import java.util.Set;
-import java.util.Map;
+package org.gbean.configuration;
 
 /**
  * @version $Revision$ $Date$
  */
-public interface ServiceFactory {
-    Map getDependencies();
+public class InvalidConfigurationException extends Exception {
+    public InvalidConfigurationException() {
+    }
 
-    void addDependency(String name, Set patterns);
+    public InvalidConfigurationException(String s) {
+        super(s);
+    }
 
-    Object createService(ServiceContext serviceContext) throws Exception;
+    public InvalidConfigurationException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
 
-    void destroyService(ServiceContext serviceContext, Object service);
-
-    boolean isEnabled();
-
-    void setEnabled(boolean enabled);
+    public InvalidConfigurationException(Throwable throwable) {
+        super(throwable);
+    }
 }

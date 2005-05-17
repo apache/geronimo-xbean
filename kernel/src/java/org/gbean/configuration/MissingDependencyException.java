@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2005 GBean.org
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,16 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-package org.gbean.beans;
-
-import java.util.EventListener;
+package org.gbean.configuration;
 
 /**
- * @version $Rev: 46019 $ $Date: 2004-09-14 02:56:06 -0700 (Tue, 14 Sep 2004) $
+ * @version $Revision$ $Date$
  */
-public interface ReferenceCollectionListener extends EventListener {
-    void memberAdded(ReferenceCollectionEvent event);
+public class MissingDependencyException extends RuntimeException {
+    public MissingDependencyException() {
+    }
 
-    void memberRemoved(ReferenceCollectionEvent event);
+    public MissingDependencyException(String s) {
+        super(s);
+    }
+
+    public MissingDependencyException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
+
+    public MissingDependencyException(Throwable throwable) {
+        super(throwable);
+    }
 }

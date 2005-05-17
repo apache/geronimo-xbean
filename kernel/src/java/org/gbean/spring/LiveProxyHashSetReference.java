@@ -15,17 +15,16 @@
  *  limitations under the License.
  */
 
-package org.gbean.geronimo;
+package org.gbean.spring;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.management.ObjectName;
 
+import org.gbean.beans.LiveProxyHashSet;
 import org.gbean.kernel.ClassLoading;
 import org.gbean.service.ServiceContext;
-import org.gbean.spring.ServiceContextThreadLocal;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -34,14 +33,14 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 /**
  * @version $Rev: 71492 $ $Date: 2004-11-14 21:31:50 -0800 (Sun, 14 Nov 2004) $
  */
-public class CollectionReference implements FactoryBean, Serializable {
+public class LiveProxyHashSetReference implements FactoryBean, Serializable {
     public static BeanDefinitionHolder createBeanDefinition(String name, Set patterns, String type) {
-        RootBeanDefinition beanDefinition = new RootBeanDefinition(CollectionReference.class, 0);
+        RootBeanDefinition beanDefinition = new RootBeanDefinition(LiveHashSetReference.class, 0);
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
         propertyValues.addPropertyValue("name", name);
         propertyValues.addPropertyValue("patterns", patterns);
         propertyValues.addPropertyValue("type", type);
-        return new BeanDefinitionHolder(beanDefinition, CollectionReference.class.getName());
+        return new BeanDefinitionHolder(beanDefinition, LiveHashSetReference.class.getName());
     }
 
     /**
@@ -88,7 +87,7 @@ public class CollectionReference implements FactoryBean, Serializable {
     }
 
     public final Class getObjectType() {
-        return Collection.class;
+        return Set.class;
     }
 
     public synchronized final Object getObject() throws ClassNotFoundException {
@@ -97,7 +96,9 @@ public class CollectionReference implements FactoryBean, Serializable {
             throw new IllegalStateException("Service context has not been set");
         }
         Class proxyType = ClassLoading.loadClass(type, serviceContext.getClassLoader());
-        return new ProxyReferenceCollection(this, name, proxyType, serviceContext.getKernel(), patterns);
+        LiveProxyHashSet liveProxyHashSet = new LiveProxyHashSet(serviceContext.getKernel(), name, patterns, proxyType);
+        liveProxyHashSet.start();
+        return liveProxyHashSet;
     }
 
     public boolean isSingleton() {

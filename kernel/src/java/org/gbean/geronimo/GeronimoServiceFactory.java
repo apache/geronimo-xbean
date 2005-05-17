@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geronimo.gbean.DynamicGBean;
-import org.apache.geronimo.kernel.Kernel;
 import org.gbean.proxy.ProxyManager;
 import org.gbean.service.ConfigurableServiceFactory;
 import org.gbean.service.ServiceContext;
@@ -47,21 +46,21 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
     private GBeanDefinition gbeanDefinition;
     private GenericApplicationContext applicationContext;
     private Object service;
-    private final Kernel geronimoKernel;
 
-    public GeronimoServiceFactory(Kernel geronimoKernel, ProxyManager proxyManager, GBeanDefinition gbeanDefinition) {
-        this.geronimoKernel = geronimoKernel;
+    public GeronimoServiceFactory(ProxyManager proxyManager, GBeanDefinition gbeanDefinition) {
         this.proxyManager = proxyManager;
         this.gbeanDefinition = gbeanDefinition;
         // add the dependencies
         String[] dependsOn = gbeanDefinition.getDependsOn();
-        for (int i = 0; i < dependsOn.length; i++) {
-            String dependencyString = dependsOn[i];
-            Map map = GeronimoUtil.stringToDependency(dependencyString);
-            Map.Entry entry = ((Map.Entry) map.entrySet().iterator().next());
-            String dependencyName = (String) entry.getKey();
-            Set patterns = (Set) entry.getValue();
-            dependencies.put(dependencyName, patterns);
+        if (dependsOn != null) {
+            for (int i = 0; i < dependsOn.length; i++) {
+                String dependencyString = dependsOn[i];
+                Map map = GeronimoUtil.stringToDependency(dependencyString);
+                Map.Entry entry = ((Map.Entry) map.entrySet().iterator().next());
+                String dependencyName = (String) entry.getKey();
+                Set patterns = (Set) entry.getValue();
+                dependencies.put(dependencyName, patterns);
+            }
         }
     }
 
@@ -81,14 +80,16 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
         return dependencies;
     }
 
+    public void addDependency(String name, Set patterns) {
+        dependencies.put(name, patterns);
+    }
+
     public Object createService(ServiceContext serviceContext) throws Exception {
         try {
             Object service = null;
             ServiceContext oldServiceContext = ServiceContextThreadLocal.get();
-            Kernel oldKernel = GeronimoKernelThreadLocal.get();
             try {
                 ServiceContextThreadLocal.set(serviceContext);
-                GeronimoKernelThreadLocal.set(geronimoKernel);
 
                 applicationContext = new GenericApplicationContext();
                 GBeanDefinition gbeanDefinition = new GBeanDefinition(this.gbeanDefinition);
@@ -108,7 +109,6 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
                     ((DynamicGBean) service).setAttribute(propertyName, propertyValue);
                 }
             } finally {
-                GeronimoKernelThreadLocal.set(oldKernel);
                 ServiceContextThreadLocal.set(oldServiceContext);
             }
             this.service = service;

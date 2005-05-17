@@ -178,10 +178,12 @@ public class ServiceDependency {
         // todo fix me
         if (serviceInstance.getState() == ServiceState.RUNNING_INDEX && services.size() != 1) {
             serviceInstance.stop();
-        } else if (waiting && services.size() == 1) {
-            // the service was waiting for me and not there is now just one target
-            waiting = false;
-            serviceInstance.start();
+        } else if (waiting) {
+            if (services.size() == 1) {
+                // the service was waiting for me and not there is now just one target
+                waiting = false;
+                serviceInstance.start();
+            }
         }
     }
 

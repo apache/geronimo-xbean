@@ -147,7 +147,11 @@ public class SimpleKernel implements Kernel {
 
     public Object getService(ObjectName name) throws ServiceNotFoundException, IllegalStateException {
         ServiceInstance serviceInstance = registry.getServiceInstance(name);
-        return serviceInstance.getInstance();
+        Object instance = serviceInstance.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Service is not running: " + name);
+        }
+        return instance;
     }
 
     public ServiceFactory getServiceFactory(ObjectName name) throws ServiceNotFoundException {

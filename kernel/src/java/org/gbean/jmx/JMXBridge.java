@@ -47,6 +47,11 @@ public class JMXBridge implements SimpleLifecycle {
     private final Kernel kernel;
     private final MBeanServer mbeanServer;
 
+    public JMXBridge(Kernel kernel) {
+        this.kernel = kernel;
+        mbeanServer = MBeanServerFactory.createMBeanServer(kernel.getKernelName());
+    }
+
     public JMXBridge(Kernel kernel, String mbeanServerId) {
         this.kernel = kernel;
         ArrayList servers = MBeanServerFactory.findMBeanServer(mbeanServerId);

@@ -14,24 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.service;
+package org.gbean.repository;
 
-import java.util.Set;
-import java.util.Map;
+import java.net.URI;
+import java.net.URL;
 
 /**
  * @version $Revision$ $Date$
  */
-public interface ServiceFactory {
-    Map getDependencies();
+public interface Repository {
+    boolean containsResource(URI uri);
 
-    void addDependency(String name, Set patterns);
-
-    Object createService(ServiceContext serviceContext) throws Exception;
-
-    void destroyService(ServiceContext serviceContext, Object service);
-
-    boolean isEnabled();
-
-    void setEnabled(boolean enabled);
+    URL getResource(URI uri);
 }

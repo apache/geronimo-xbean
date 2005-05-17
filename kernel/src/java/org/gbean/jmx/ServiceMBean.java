@@ -126,7 +126,7 @@ public final class ServiceMBean implements DynamicMBean, NotificationEmitter {
     }
 
     public MBeanInfo getMBeanInfo() {
-        String className = serviceInvoker.getClassName();
+        String className = serviceInvoker.getServiceType().getName();
         String description = "No description available";
 
         // attributes
