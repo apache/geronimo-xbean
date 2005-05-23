@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.gbean.configuration.ConfigurationInfo;
 import org.gbean.configuration.ConfigurationUtil;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.simple.SimpleServiceFactory;
+import org.gbean.kernel.simple.SimpleLifecycle;
 import org.gbean.loader.Loader;
 import org.gbean.service.ServiceFactory;
 import org.springframework.beans.BeansException;
@@ -68,7 +69,7 @@ public class SpringLoader implements Loader {
 
     public ObjectName load(Kernel kernel, String location) {
         try {
-            LiveHashSet repositories = new LiveHashSet(kernel, "repositories", Collections.singleton(new ObjectName("*:name=Repository,*")));
+            LiveHashSet repositories = new LiveHashSet(kernel, "repositories", Collections.singleton(new ObjectName("*:j2eeType=Repository,*")));
             repositories.start();
             ConfigurationInfo configurationInfo = loadConfigurationInfo(location);
             final ClassLoader classLoader = ConfigurationUtil.createClassLoader(configurationInfo.getConfigurationId(),
@@ -87,27 +88,28 @@ public class SpringLoader implements Loader {
                 reader.loadBeanDefinitions(resource);
             } catch (BeansException e) {
                 // not a spring file
-                e.printStackTrace();
                 return null;
             }
+
+            // create object names for all of the beans
+            ObjectNameBuilder objectNameBuilder =  new ObjectNameBuilder();
+            objectNameBuilder.postProcessBeanFactory(factory);
+
+            // auto detect the livecycle methods (todo this needs work)
+            LifecycleDetector lifecycleDetector = new LifecycleDetector();
+            lifecycleDetector.addLifecycleInterface(SimpleLifecycle.class, "start", "stop");
+            lifecycleDetector.addLifecycleInterface(org.apache.geronimo.gbean.GBeanLifecycle.class, "doStart", "doStop");
+            lifecycleDetector.postProcessBeanFactory(factory);
 
             Map serviceFactories = new LinkedHashMap();
             String[] beanDefinitionNames = factory.getBeanDefinitionNames();
             if (beanDefinitionNames != null) {
                 for (int i = 0; i < beanDefinitionNames.length; i++) {
-                    String name = beanDefinitionNames[i];
-                    BeanDefinition beanDefinition = factory.getBeanDefinition(name);
-                    ServiceFactory serviceFactory = new SpringServiceFactory((RootBeanDefinition) beanDefinition);
+                    String beanName = beanDefinitionNames[i];
+                    BeanDefinition beanDefinition = factory.getBeanDefinition(beanName);
+                    ServiceFactory serviceFactory = new SpringServiceFactory((RootBeanDefinition) beanDefinition, objectNameBuilder.getObjectNameMap());
 
-                    if (name.indexOf(":") >= 0) {
-                        String[] aliases = factory.getAliases(name);
-                        for (int j = 0; j < aliases.length; j++) {
-                            name += "," + aliases[j];
-                        }
-                    } else {
-                        name = ":name=" + name;
-                    }
-                    ObjectName objectName = new ObjectName(name);
+                    ObjectName objectName = objectNameBuilder.getObjectName(beanName);
                     serviceFactories.put(objectName, serviceFactory);
                 }
             }

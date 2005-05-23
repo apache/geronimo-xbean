@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@
 package org.gbean.reflect;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.management.ObjectName;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.LifecycleAdapter;
 import org.gbean.kernel.ServiceName;
@@ -33,23 +34,37 @@ import org.gbean.kernel.simple.SimpleLifecycle;
  * @version $Revision$ $Date$
  */
 public class ServiceInvokerManager implements SimpleLifecycle {
+    private static final Log log = LogFactory.getLog(ServiceInvokerManager.class);
     private static final ObjectName ALL = ServiceName.createName("*:*");
     private final Kernel kernel;
     private final Map registry = new HashMap();
+    private final ServiceRegistrationListener lifecycleListener;
 
     public ServiceInvokerManager(Kernel kernel) {
         this.kernel = kernel;
+        lifecycleListener = new ServiceRegistrationListener();
     }
 
-    public synchronized ServiceInvoker getServiceInvoker(ObjectName objectName) throws ServiceNotFoundException {
+    public synchronized void start() {
+        kernel.addLifecycleListener(lifecycleListener, ALL);
+        Set allNames = kernel.listServices(ALL);
+        for (Iterator iterator = allNames.iterator(); iterator.hasNext();) {
+            ObjectName objectName = (ObjectName) iterator.next();
+            try {
+                register(objectName);
+            } catch (Exception e) {
+                log.info("Unable to create service invoker for " + objectName, e);
+            }
+        }
+    }
+
+    public synchronized ServiceInvoker getServiceInvoker(ObjectName objectName) throws ServiceNotFoundException, IllegalStateException {
         ServiceInvoker serviceInvoker = (ServiceInvoker) registry.get(objectName);
         if (serviceInvoker != null) {
-            serviceInvoker.updateState();
+            serviceInvoker.assureRunning();
         } else {
-            if (kernel.isLoaded(objectName)) {
-                register(objectName);
-                serviceInvoker = (ServiceInvoker) registry.get(objectName);
-            }
+            register(objectName);
+            serviceInvoker = (ServiceInvoker) registry.get(objectName);
         }
 
         if (serviceInvoker == null) {
@@ -58,69 +73,43 @@ public class ServiceInvokerManager implements SimpleLifecycle {
         return serviceInvoker;
     }
 
-    public void start() {
-        kernel.addLifecycleListener(new ServiceRegistrationListener(), ALL);
-
-        HashSet invokers = new HashSet();
-        synchronized (this) {
-            Set allNames = kernel.listServices(ALL);
-            for (Iterator iterator = allNames.iterator(); iterator.hasNext();) {
-                ObjectName objectName = (ObjectName) iterator.next();
-                if (registry.containsKey(objectName)) {
-                    // instance already registered
-                    continue;
-                }
-                ServiceInvoker serviceInvoker = new ServiceInvoker(kernel, objectName);
-                registry.put(objectName, serviceInvoker);
-                invokers.add(serviceInvoker);
-            }
-        }
-        for (Iterator iterator = invokers.iterator(); iterator.hasNext();) {
-            ServiceInvoker serviceInvoker = (ServiceInvoker) iterator.next();
-            serviceInvoker.start();
-        }
+    public synchronized void stop() {
+        kernel.removeLifecycleListener(lifecycleListener);
+        registry.clear();
     }
 
-    public void stop() {
-        // unregister all of our GBeans from the MBeanServer
-        HashSet invokers;
-        synchronized (this) {
-            invokers = new HashSet(registry.values());
-            registry.clear();
-        }
-        for (Iterator iterator = invokers.iterator(); iterator.hasNext();) {
-            ServiceInvoker serviceInvoker = (ServiceInvoker) iterator.next();
-            serviceInvoker.stop();
-        }
-    }
-
-    private void register(ObjectName objectName) {
-        ServiceInvoker serviceInvoker = null;
+    private void register(ObjectName objectName) throws ServiceNotFoundException, IllegalStateException {
         synchronized (this) {
             if (registry.containsKey(objectName)) {
                 return;
             }
-            serviceInvoker = new ServiceInvoker(kernel, objectName);
+
+            ServiceInvoker serviceInvoker = new ServiceInvoker(kernel, objectName);
+            serviceInvoker.start();
             registry.put(objectName, serviceInvoker);
         }
-        serviceInvoker.start();
     }
 
     private void unregister(ObjectName objectName) {
-        ServiceInvoker serviceInvoker = null;
         synchronized (this) {
-            serviceInvoker = (ServiceInvoker) registry.remove(objectName);
-            if (serviceInvoker == null) {
-                return;
+            ServiceInvoker serviceInvoker = (ServiceInvoker) registry.remove(objectName);
+            if (serviceInvoker != null) {
+                serviceInvoker.stop();
             }
         }
-
-        serviceInvoker.stop();
     }
 
     private class ServiceRegistrationListener extends LifecycleAdapter {
-        public void loaded(ObjectName objectName) {
-            register(objectName);
+        public void running(ObjectName objectName) {
+            try {
+                register(objectName);
+            } catch (Exception e) {
+                log.info("Unable to create service invoker for " + objectName, e);
+            }
+        }
+
+        public void stopped(ObjectName objectName) {
+            unregister(objectName);
         }
 
         public void unloaded(ObjectName objectName) {

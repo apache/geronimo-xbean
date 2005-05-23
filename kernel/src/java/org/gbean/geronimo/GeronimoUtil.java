@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ public class GeronimoUtil {
     }
 
     /**
-     * Gets the gbean data for the gbean held by this gbean mbean.
+     * Converts the GBeanDefinition into a geronimo GBeanData
      *
      * @return the gbean data
      */
@@ -177,7 +177,7 @@ public class GeronimoUtil {
     }
 
     /**
-     * Gets the GBeanInfo used to build this gbean.
+     * Converts the GBeanDefinition into a geronimo GBeanInfo
      *
      * @return the GBeanInfo used to build this gbean
      */
@@ -406,6 +406,9 @@ public class GeronimoUtil {
         for (Iterator iterator = gbeanData.getGBeanInfo().getAttributes().iterator(); iterator.hasNext();) {
             GAttributeInfo attributeInfo = (GAttributeInfo) iterator.next();
             String propertyName = attributeInfo.getName();
+            if (propertyName.equals("gbeanEnabled")) {
+                continue;
+            }
             if (!dynamicPropertyNames.contains(propertyName)) {
                 propertyName = fixPropertyName(propertyName);
                 if (lowerCasePropertyNameMap.containsKey(propertyName.toLowerCase())) {

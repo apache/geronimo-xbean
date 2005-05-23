@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2004 The Apache Software Foundation
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -114,9 +114,6 @@ public class ProxyManager {
             assert target != null: "target is null";
 
             ServiceInvoker serviceInvoker = serviceInvokerManager.getServiceInvoker(target);
-            if (serviceInvoker == null) {
-                throw new IllegalStateException("Service is not running: " + target);
-            }
             ProxyMethodInterceptor interceptor = new ProxyMethodInterceptor(type, serviceInvoker, target, data);
 
             // @todo trap CodeGenerationException indicating missing no-arg ctr

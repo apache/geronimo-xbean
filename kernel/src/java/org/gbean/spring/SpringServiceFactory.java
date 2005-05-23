@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.gbean.spring;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -28,13 +27,12 @@ import javax.management.ObjectName;
 import org.gbean.service.ConfigurableServiceFactory;
 import org.gbean.service.ServiceContext;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.MessageSourceResolvable;
@@ -46,55 +44,51 @@ import org.springframework.core.io.Resource;
  * @version $Revision$ $Date$
  */
 public class SpringServiceFactory implements ConfigurableServiceFactory {
+    private static final String ROOT_BEAN_DEFINITION = "RootBeanDefinition";
     private final Map dependencies = new LinkedHashMap();
+    private final Map objectNameMap;
     private RootBeanDefinition beanDefinition;
     private GenericApplicationContext applicationContext;
     private boolean enabled = true;
-    private static final String ROOT_BEAN_DEFINITION = "RootBeanDefinition";
 
-    public SpringServiceFactory(RootBeanDefinition beanDefinition) throws MalformedObjectNameException {
+    public SpringServiceFactory(RootBeanDefinition beanDefinition, Map objectNameMap) throws Exception {
         this.beanDefinition = beanDefinition;
+        this.objectNameMap = objectNameMap;
 
-        extractDependencies(dependencies, beanDefinition);
-        dependencies.toString();
+        extractDependencies(beanDefinition);
     }
 
-    private static void extractDependencies(Map dependencies, Object value) throws MalformedObjectNameException {
-        if (value instanceof RootBeanDefinition) {
-            RootBeanDefinition rootBeanDefinition = (RootBeanDefinition) value;
-            String[] dependsOn = rootBeanDefinition.getDependsOn();
-            if (dependsOn != null) {
-                for (int i = 0; i < dependsOn.length; i++) {
-                    String dependency = dependsOn[i];
-                    dependencies.put(dependency, Collections.singleton(createObjectName(dependency)));
+    private void extractDependencies(RootBeanDefinition beanDefinition) throws Exception {
+        SpringVisitor springVisitor = new AbstractSpringVisitor() {
+            public void visitBeanDefinition(BeanDefinition beanDefinition) throws BeansException {
+                super.visitBeanDefinition(beanDefinition);
+                if (beanDefinition instanceof RootBeanDefinition) {
+                    RootBeanDefinition rootBeanDefinition = (RootBeanDefinition) beanDefinition;
+                    String[] dependsOn = rootBeanDefinition.getDependsOn();
+                    if (dependsOn != null) {
+                        for (int i = 0; i < dependsOn.length; i++) {
+                            String dependency = dependsOn[i];
+                            try {
+                                dependencies.put(dependency, Collections.singleton(getObjectName(dependency)));
+                            } catch (MalformedObjectNameException e) {
+                                throw new BeanDefinitionValidationException("Depends on name could not be converted to an objectName: dependency=" + dependency, e);
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        if (value instanceof BeanDefinition) {
-            BeanDefinition beanDefinition = (BeanDefinition) value;
-            PropertyValue[] propertyValues = beanDefinition.getPropertyValues().getPropertyValues();
-            for (int i = 0; i < propertyValues.length; i++) {
-                PropertyValue propertyValue = propertyValues[i];
-                extractDependencies(dependencies, propertyValue.getValue());
+            public void visitRuntimeBeanReference(RuntimeBeanReference beanReference) throws BeansException {
+                super.visitRuntimeBeanReference(beanReference);
+                String dependency = beanReference.getBeanName();
+                try {
+                    dependencies.put(dependency, Collections.singleton(getObjectName(dependency)));
+                } catch (MalformedObjectNameException e) {
+                    throw new BeanDefinitionValidationException("Bean ref name could not be converted to an objectName: refName=" + dependency, e);
+                }
             }
-            Map indexedArgumentValues = beanDefinition.getConstructorArgumentValues().getIndexedArgumentValues();
-            for (Iterator iterator = indexedArgumentValues.values().iterator(); iterator.hasNext();) {
-                ConstructorArgumentValues.ValueHolder valueHolder = (ConstructorArgumentValues.ValueHolder) iterator.next();
-                extractDependencies(dependencies, valueHolder.getValue());
-            }
-            Set genericArgumentValues = beanDefinition.getConstructorArgumentValues().getGenericArgumentValues();
-            for (Iterator iterator = genericArgumentValues.iterator(); iterator.hasNext();) {
-                ConstructorArgumentValues.ValueHolder valueHolder = (ConstructorArgumentValues.ValueHolder) iterator.next();
-                extractDependencies(dependencies, valueHolder.getValue());
-            }
-        }
-
-        if (value instanceof RuntimeBeanReference) {
-            RuntimeBeanReference beanReference = (RuntimeBeanReference) value;
-            String dependency = beanReference.getBeanName();
-            dependencies.put(dependency, Collections.singleton(createObjectName(dependency)));
-        }
+        };
+        springVisitor.visitBeanDefinition(beanDefinition);
     }
 
     public RootBeanDefinition getBeanDefinition() {
@@ -116,8 +110,10 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
     public Object createService(final ServiceContext serviceContext) throws Exception {
         Object service = null;
         try {
+            ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
             ServiceContext oldServiceContext = ServiceContextThreadLocal.get();
             try {
+                Thread.currentThread().setContextClassLoader(serviceContext.getClassLoader());
                 ServiceContextThreadLocal.set(serviceContext);
 
                 ApplicationContext parent = new ApplicationContext() {
@@ -174,12 +170,17 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
                     }
 
                     public Object getBean(String name, Class requiredType) throws BeansException {
+                        ObjectName objectName = null;
                         try {
-                            ObjectName objectName = createObjectName(name);
+                            objectName = getObjectName(name);
+                        } catch (MalformedObjectNameException e) {
+                            throw (NoSuchBeanDefinitionException) new NoSuchBeanDefinitionException(name, "Could not create an objectname for the specified name").initCause(e);
+                        }
+
+                        try {
                             Object service = serviceContext.getKernel().getService(objectName);
                             return service;
                         } catch (Exception e) {
-                            e.printStackTrace();
                             throw (NoSuchBeanDefinitionException) new NoSuchBeanDefinitionException(name, "Kernel threw an exception").initCause(e);
                         }
                     }
@@ -230,12 +231,11 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
                 service = applicationContext.getBean(serviceContext.getObjectName());
 
             } finally {
+                Thread.currentThread().setContextClassLoader(oldClassLoader);
                 ServiceContextThreadLocal.set(oldServiceContext);
             }
 
         } catch (Throwable t) {
-            t.printStackTrace();
-
             applicationContext = null;
 
             if (t instanceof Exception) {
@@ -250,12 +250,17 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
         return service;
     }
 
-    private static ObjectName createObjectName(String name) throws MalformedObjectNameException {
+    private ObjectName getObjectName(String name) throws MalformedObjectNameException {
         if (name.indexOf(":") < 0) {
-            name = ":name=" + name;
+            ObjectName objectName = (ObjectName) objectNameMap.get(name);
+            if (objectName == null) {
+                throw new NoSuchBeanDefinitionException(name, "No object name definded for service");
+            }
+
+            return objectName;
+        } else {
+            return new ObjectName(name);
         }
-        ObjectName objectName = new ObjectName(name);
-        return objectName;
     }
 
     public void destroyService(ServiceContext serviceContext, Object service) {

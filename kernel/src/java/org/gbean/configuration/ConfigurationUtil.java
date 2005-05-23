@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
  */
 package org.gbean.configuration;
 
-import java.util.List;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Iterator;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.gbean.repository.Repository;
 import org.apache.geronimo.kernel.config.ConfigurationClassLoader;
+import org.gbean.repository.Repository;
 
 /**
  * @version $Revision$ $Date$

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ import org.apache.commons.logging.LogFactory;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.LifecycleAdapter;
 import org.gbean.kernel.ServiceName;
+import org.gbean.kernel.ServiceNotFoundException;
 import org.gbean.kernel.simple.SimpleLifecycle;
+import org.gbean.reflect.ServiceInvokerManager;
 
 /**
  * @version $Revision$ $Date$
@@ -45,15 +47,18 @@ public class JMXBridge implements SimpleLifecycle {
 
     private final HashMap registry = new HashMap();
     private final Kernel kernel;
+    private final ServiceInvokerManager serviceInvokerManager;
     private final MBeanServer mbeanServer;
 
-    public JMXBridge(Kernel kernel) {
+    public JMXBridge(Kernel kernel, ServiceInvokerManager serviceInvokerManager) {
         this.kernel = kernel;
+        this.serviceInvokerManager = serviceInvokerManager;
         mbeanServer = MBeanServerFactory.createMBeanServer(kernel.getKernelName());
     }
 
-    public JMXBridge(Kernel kernel, String mbeanServerId) {
+    public JMXBridge(Kernel kernel, ServiceInvokerManager serviceInvokerManager, String mbeanServerId) {
         this.kernel = kernel;
+        this.serviceInvokerManager = serviceInvokerManager;
         ArrayList servers = MBeanServerFactory.findMBeanServer(mbeanServerId);
         if (servers.size() == 0) {
             throw new IllegalStateException("No MBeanServers were found with the agent id " + mbeanServerId);
@@ -63,13 +68,14 @@ public class JMXBridge implements SimpleLifecycle {
         mbeanServer = (MBeanServer) servers.get(0);
     }
 
-    public JMXBridge(Kernel kernel, MBeanServer mbeanServer) {
+    public JMXBridge(Kernel kernel, ServiceInvokerManager serviceInvokerManager, MBeanServer mbeanServer) {
         this.kernel = kernel;
+        this.serviceInvokerManager = serviceInvokerManager;
         this.mbeanServer = mbeanServer;
     }
 
     public void start() {
-        kernel.addLifecycleListener(new GBeanRegistrationListener(), ALL);
+        kernel.addLifecycleListener(new ServiceRegistrationListener(), ALL);
 
         HashMap beans = new HashMap();
         synchronized (this) {
@@ -80,27 +86,31 @@ public class JMXBridge implements SimpleLifecycle {
                     // instance already registered
                     continue;
                 }
-                ServiceMBean gbeanMBean = new ServiceMBean(kernel, objectName);
-                registry.put(objectName, gbeanMBean);
-                beans.put(objectName, gbeanMBean);
+                try {
+                    ServiceMBean serviceMBean = new ServiceMBean(kernel, serviceInvokerManager, objectName);
+                    registry.put(objectName, serviceMBean);
+                    beans.put(objectName, serviceMBean);
+                } catch (ServiceNotFoundException e) {
+                    // ignore - service died on us
+                }
             }
         }
         for (Iterator iterator = beans.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
             ObjectName objectName = (ObjectName) entry.getKey();
-            ServiceMBean gbeanMBean = (ServiceMBean) entry.getValue();
+            ServiceMBean serviceMBean = (ServiceMBean) entry.getValue();
             try {
-                mbeanServer.registerMBean(gbeanMBean, objectName);
+                mbeanServer.registerMBean(serviceMBean, objectName);
             } catch (InstanceAlreadyExistsException e) {
-                // ignore - gbean already has an mbean shadow object
+                // ignore - service already has an mbean shadow object
             } catch (Exception e) {
-                log.info("Unable to register MBean shadow object for GBean", unwrapJMException(e));
+                log.info("Unable to register MBean shadow object for service: " + objectName, unwrapJMException(e));
             }
         }
     }
 
     public void stop() {
-        // unregister all of our GBeans from the MBeanServer
+        // unregister all of our mbeans from the MBeanServer
         Map beans;
         synchronized (this) {
             beans = new HashMap(registry);
@@ -118,19 +128,19 @@ public class JMXBridge implements SimpleLifecycle {
 
     private void register(ObjectName objectName) {
         try {
-            ServiceMBean gbeanMBean = null;
+            ServiceMBean serviceMBean = null;
             synchronized (this) {
                 if (registry.containsKey(objectName)) {
                     return;
                 }
-                gbeanMBean = new ServiceMBean(kernel, objectName);
-                registry.put(objectName, gbeanMBean);
+                serviceMBean = new ServiceMBean(kernel, serviceInvokerManager, objectName);
+                registry.put(objectName, serviceMBean);
             }
-            mbeanServer.registerMBean(gbeanMBean, objectName);
+            mbeanServer.registerMBean(serviceMBean, objectName);
         } catch (InstanceAlreadyExistsException e) {
-            // ignore - gbean already has an mbean shadow object
+            // ignore - service already has a mbean shadow object
         } catch (Exception e) {
-            log.info("Unable to register MBean shadow object for GBean", unwrapJMException(e));
+            log.info("Unable to register MBean shadow object for service", unwrapJMException(e));
         }
     }
 
@@ -145,9 +155,9 @@ public class JMXBridge implements SimpleLifecycle {
             mbeanServer.unregisterMBean(objectName);
         } catch (InstanceNotFoundException e) {
             // ignore - something else may have unregistered us
-            // if there truely is no GBean then we will catch it below whwn we call the superclass
+            // if there truely is no service then we will catch it below whwn we call the superclass
         } catch (Exception e) {
-            log.info("Unable to unregister MBean shadow object for GBean", unwrapJMException(e));
+            log.info("Unable to unregister MBean shadow object for service", unwrapJMException(e));
         }
     }
 
@@ -158,7 +168,7 @@ public class JMXBridge implements SimpleLifecycle {
         return cause;
     }
 
-    private class GBeanRegistrationListener extends LifecycleAdapter {
+    private class ServiceRegistrationListener extends LifecycleAdapter {
         public void loaded(ObjectName objectName) {
             register(objectName);
         }

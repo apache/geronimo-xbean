@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -294,7 +294,6 @@ public final class ServiceInstanceState {
                 return;
             }
         } catch (Throwable t) {
-            t.printStackTrace();
             // oops there was a problem, stop the service
             setStateInstance(ServiceState.STOPPING);
             lifecycleBroadcaster.fireStoppingEvent();
@@ -358,7 +357,6 @@ public final class ServiceInstanceState {
                 return;
             }
         } catch (Throwable t) {
-            t.printStackTrace();
             log.error("Error while stopping; Service is now in the STOPPED state: objectName=\"" + objectName + "\"", t);
         } finally {
             // we are always stopped at this point

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class BootstrapReadOnlyRepository extends BootstrapRepository {
             rootDir = new File(baseDir, "repository");
         }
 
-        ObjectName objectName = new ObjectName(":name=Repository,dir=" + ObjectName.quote(rootDir.getAbsolutePath()));
+        ObjectName objectName = new ObjectName(":j2eeType=Repository,dir=" + ObjectName.quote(rootDir.getAbsolutePath()));
         ReadOnlyRepository readOnlyRepository = new ReadOnlyRepository(rootDir);
         ServiceFactory serviceFactory = new SimpleServiceFactory(readOnlyRepository);
         kernel.loadService(objectName, serviceFactory, classLoader);

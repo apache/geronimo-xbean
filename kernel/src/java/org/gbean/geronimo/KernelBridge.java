@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2004 The Apache Software Foundation
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,31 +17,29 @@
 
 package org.gbean.geronimo;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.List;
 import javax.management.ObjectName;
 
+import org.gbean.kernel.Kernel;
 import org.gbean.kernel.NoSuchAttributeException;
 import org.gbean.kernel.NoSuchOperationException;
 import org.gbean.kernel.ServiceAlreadyExistsException;
 import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.ServiceNotFoundException;
-import org.gbean.kernel.Kernel;
+import org.gbean.kernel.runtime.ServiceState;
 import org.gbean.kernel.simple.SimpleKernel;
 import org.gbean.proxy.ProxyManager;
+import org.gbean.reflect.PropertyInvoker;
 import org.gbean.reflect.ServiceInvoker;
 import org.gbean.reflect.ServiceInvokerManager;
-import org.gbean.reflect.PropertyInvoker;
 import org.gbean.service.AbstractServiceFactory;
+import org.gbean.service.ConfigurableServiceFactory;
 import org.gbean.service.ServiceContext;
 import org.gbean.service.ServiceFactory;
 
@@ -115,12 +113,22 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
             org.apache.geronimo.kernel.NoSuchAttributeException,
             Exception {
 
-        ServiceInvoker serviceInvoker = getServiceInvoker(objectName);
-        try {
-            Object value = serviceInvoker.getAttribute(attributeName);
-            return value;
-        } catch (NoSuchAttributeException e) {
-            throw new org.apache.geronimo.kernel.NoSuchAttributeException(e);
+        boolean running = isRunning(objectName);
+        if (running) {
+            ServiceInvoker serviceInvoker = getServiceInvoker(objectName);
+            try {
+                Object value = serviceInvoker.getAttribute(attributeName);
+                return value;
+            } catch (NoSuchAttributeException e) {
+                throw new org.apache.geronimo.kernel.NoSuchAttributeException(e);
+            }
+        } else {
+            ServiceFactory serviceFactory = getServiceFactory(objectName);
+            if (!(serviceFactory instanceof ConfigurableServiceFactory)) {
+                throw new NoSuchAttributeException("Service is stopped and the service factory not configurable: objectName=" + objectName + ", propertyName=" + attributeName);
+            }
+            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
+            return configurableServiceFactory.getProperty(attributeName);
         }
     }
 
@@ -129,11 +137,21 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
             org.apache.geronimo.kernel.NoSuchAttributeException,
             Exception {
 
-        ServiceInvoker serviceInvoker = getServiceInvoker(objectName);
-        try {
-            serviceInvoker.setAttribute(attributeName, attributeValue);
-        } catch (NoSuchAttributeException e) {
-            throw new org.apache.geronimo.kernel.NoSuchAttributeException(e);
+        boolean running = isRunning(objectName);
+        if (running) {
+            ServiceInvoker serviceInvoker = getServiceInvoker(objectName);
+            try {
+                serviceInvoker.setAttribute(attributeName, attributeValue);
+            } catch (NoSuchAttributeException e) {
+                throw new org.apache.geronimo.kernel.NoSuchAttributeException(e);
+            }
+        } else {
+            ServiceFactory serviceFactory = getServiceFactory(objectName);
+            if (!(serviceFactory instanceof ConfigurableServiceFactory)) {
+                throw new NoSuchAttributeException("Service is stopped and the service factory not configurable: objectName=" + objectName + ", propertyName=" + attributeName);
+            }
+            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
+            configurableServiceFactory.setProperty(attributeName, attributeValue);
         }
     }
 
@@ -141,6 +159,11 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
             throws org.apache.geronimo.kernel.GBeanNotFoundException,
             org.apache.geronimo.kernel.NoSuchOperationException,
             Exception {
+
+        boolean running = isRunning(objectName);
+        if (running) {
+            throw new IllegalStateException("Service is not running: name=" + objectName);
+        }
 
         ServiceInvoker serviceInvoker = getServiceInvoker(objectName);
         try {
@@ -169,36 +192,24 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
     }
 
     public org.apache.geronimo.gbean.GBeanInfo getGBeanInfo(ObjectName name) throws org.apache.geronimo.kernel.GBeanNotFoundException {
-        try {
-            ServiceFactory serviceFactory;
-            serviceFactory = kernel.getServiceFactory(name);
-            if (serviceFactory instanceof GeronimoServiceFactory) {
-                GeronimoServiceFactory geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
-                return GeronimoUtil.createGBeanInfo(geronimoServiceFactory.getGBeanDefinition());
-            }
-        } catch (ServiceNotFoundException e) {
-            throw new org.apache.geronimo.kernel.GBeanNotFoundException(e);
+        ServiceFactory serviceFactory = getServiceFactory(name);
+        if (serviceFactory instanceof GeronimoServiceFactory) {
+            GeronimoServiceFactory geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
+            return GeronimoUtil.createGBeanInfo(geronimoServiceFactory.getGBeanDefinition());
         }
 
-        ServiceInvoker serviceInvoker = getServiceInvoker(name);
-        return createGBeanInfo(serviceInvoker);
+        return createGBeanInfo(name);
     }
 
     public org.apache.geronimo.gbean.GBeanData getGBeanData(ObjectName name) throws org.apache.geronimo.kernel.GBeanNotFoundException{
-        ServiceFactory serviceFactory = null;
-        try {
-            serviceFactory = kernel.getServiceFactory(name);
-            if (serviceFactory instanceof GeronimoServiceFactory) {
-                GeronimoServiceFactory geronimoServiceFactory = null;
-                geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
-                return GeronimoUtil.createGBeanData(geronimoServiceFactory.getGBeanDefinition());
-            }
-        } catch (ServiceNotFoundException e) {
-            throw new org.apache.geronimo.kernel.GBeanNotFoundException(e);
+        ServiceFactory serviceFactory = getServiceFactory(name);
+        if (serviceFactory instanceof GeronimoServiceFactory) {
+            GeronimoServiceFactory geronimoServiceFactory = null;
+            geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
+            return GeronimoUtil.createGBeanData(geronimoServiceFactory.getGBeanDefinition());
         }
 
-        ServiceInvoker serviceInvoker = getServiceInvoker(name);
-        return createGBeanData(serviceInvoker);
+        return createGBeanData(name);
     }
 
     public void loadGBean(org.apache.geronimo.gbean.GBeanData gbeanData, ClassLoader classLoader) throws org.apache.geronimo.kernel.GBeanAlreadyExistsException {
@@ -349,154 +360,40 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
     }
 
     private ServiceInvoker getServiceInvoker(ObjectName objectName) throws org.apache.geronimo.kernel.GBeanNotFoundException {
-        ServiceInvoker serviceInvoker = null;
         try {
-            serviceInvoker = serviceInvokerManager.getServiceInvoker(objectName);
+            return serviceInvokerManager.getServiceInvoker(objectName);
         } catch (ServiceNotFoundException e) {
             throw new org.apache.geronimo.kernel.GBeanNotFoundException(e);
         }
-        return serviceInvoker;
     }
 
-    private org.apache.geronimo.gbean.GBeanInfo createGBeanInfo(Class type) {
-        // attributes
-        Method[] methods = type.getMethods();
+    private ServiceFactory getServiceFactory(ObjectName objectName) throws org.apache.geronimo.kernel.GBeanNotFoundException {
+        try {
+            return kernel.getServiceFactory(objectName);
+        } catch (ServiceNotFoundException e) {
+            throw new org.apache.geronimo.kernel.GBeanNotFoundException(e);
+        }
+    }
+    private boolean isRunning(ObjectName objectName) {
+        try {
+            int serviceState = kernel.getServiceState(objectName);
+            boolean running = serviceState == ServiceState.RUNNING_INDEX || serviceState == ServiceState.STOPPING_INDEX;
+            return running;
+        } catch (ServiceNotFoundException e) {
+            return false;
+        }
+    }
 
-        // map the getters
-        Map getterMap = new HashMap(methods.length);
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
-            String methodName = method.getName();
-            if (Modifier.isPublic(method.getModifiers()) &&
-                    !Modifier.isStatic(method.getModifiers()) &&
-                    method.getParameterTypes().length == 0 &&
-                    method.getReturnType() != Void.TYPE) {
-                if (methodName.length() > 3 && methodName.startsWith("get") && !methodName.equals("getClass")) {
-                    String attributeName = fixAttributeName(methodName.substring(3));
-
-                    // if this attribute also has an "is" accessor make sure the return type is boolean
-                    Method isAccessor = (Method) getterMap.get(attributeName);
-                    if (isAccessor != null && method.getReturnType() != Boolean.TYPE) {
-                        throw new IllegalArgumentException("Getter has both a get<name> and is<name> accessor but the getter return type is not boolean:" +
-                                " class=" + type.getName() +
-                                ", attribute=" + attributeName +
-                                ", getAccessorType=" + method.getReturnType().getName());
-                    }
-
-                    // add it
-                    getterMap.put(attributeName, method);
-                } else if (methodName.length() > 2 && methodName.startsWith("is")) {
-                    String attributeName = fixAttributeName(methodName.substring(2));
-
-                    // an is accessor must return boolean
-                    if (method.getReturnType() != Boolean.TYPE) {
-                        throw new IllegalArgumentException("An is<name> accessor must return boolean:" +
-                                " class=" + type.getName() +
-                                ", attribute=" + attributeName +
-                                ", attributeType=" + method.getReturnType().getName());
-                    }
-
-                    // if this attribute also has a "get" accessor make sure the getter return type is boolean
-                    Method getAccessor = (Method) getterMap.get(attributeName);
-                    if (getAccessor != null && method.getReturnType() != Boolean.TYPE) {
-                        throw new IllegalArgumentException("Getter has both a get<name> and is<name> accessor but the getter return type is not boolean:" +
-                                " class=" + type.getName() +
-                                ", attribute=" + attributeName +
-                                ", getAccessorType=" + getAccessor.getReturnType().getName());
-                    }
-
-                    // add it
-                    getterMap.put(attributeName, method);
-                }
-            }
+    private org.apache.geronimo.gbean.GBeanInfo createGBeanInfo(ObjectName objectName) throws org.apache.geronimo.kernel.GBeanNotFoundException {
+        boolean running = isRunning(objectName);
+        if (running) {
+            ServiceInvoker serviceInvoker = getServiceInvoker(objectName);
+            return createGBeanInfo(serviceInvoker);
+        } else {
+            ServiceFactory serviceFactory = getServiceFactory(objectName);
+            return createGBeanInfo(serviceFactory);
         }
 
-        // map the setters
-        Map setterMap = new HashMap(methods.length);
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
-            String methodName = method.getName();
-            if (Modifier.isPublic(method.getModifiers()) &&
-                    !Modifier.isStatic(method.getModifiers()) &&
-                    method.getParameterTypes().length == 1 &&
-                    method.getReturnType() == Void.TYPE &&
-                    methodName.length() > 3 &&
-                    methodName.startsWith("set")) {
-
-                String attributeName = fixAttributeName(methodName.substring(3));
-                if (setterMap.containsKey(attributeName)) {
-                    // this bean attributte has multiple setters with different types, so treat only as operations
-                    setterMap.put(attributeName, null);
-                } else {
-                    setterMap.put(attributeName, method);
-                }
-
-                // the getter and setter types must match
-                Method getterMethod = (Method) getterMap.get(attributeName);
-                if (getterMethod != null && !getterMethod.getReturnType().equals(method.getParameterTypes()[0])) {
-                    throw new IllegalArgumentException("Getter and setter types do not match:" +
-                            " class=" + type.getName() +
-                            ", attribute=" + attributeName +
-                            ", getAccessorType=" + getterMethod.getReturnType().getName() +
-                            ", setAccessorType=" + method.getParameterTypes()[0].getName());
-                }
-            }
-        }
-        // remove any setter with a null method (these setters have multiple methods with different types)
-        for (Iterator iterator = setterMap.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            Method setter = (Method) entry.getValue();
-            if (setter == null) {
-                iterator.remove();
-            }
-        }
-
-        TreeSet propertyNames = new TreeSet();
-        propertyNames.addAll(getterMap.keySet());
-        propertyNames.addAll(setterMap.keySet());
-
-        Set attributeInfos = new HashSet();
-        for (Iterator iterator = propertyNames.iterator(); iterator.hasNext();) {
-            String propertyName = (String) iterator.next();
-            Class propertyType = null;
-
-            Method getter = (Method) getterMap.get(propertyName);
-            String getterName = null;
-            if (getter != null) {
-                propertyType = getter.getReturnType();
-                getterName = getter.getName();
-            }
-
-            Method setter = (Method) setterMap.get(propertyName);
-            String setterName = null;
-            if (setter != null) {
-                propertyType = setter.getParameterTypes()[0];
-                setterName = setter.getName();
-            }
-
-            attributeInfos.add(new org.apache.geronimo.gbean.GAttributeInfo(propertyName,
-                    propertyType.getName(),
-                    false,
-                    getterName,
-                    setterName));
-        }
-
-//        // operations
-//        Set operations = new HashSet(methods.length);
-//        for (int i = 0; i < methods.length; i++) {
-//            Method method = methods[i];
-//            if (Modifier.isPublic(method.getModifiers()) && !Modifier.isStatic(method.getModifiers())) {
-//                operationIndex.put(new GOperationSignature(method), new Integer(operationList.size()));
-//                operationList.add(new ServiceInvoker.OperationInvokerImpl(method));
-//            }
-//        }
-//        operations = (ServiceInvoker.OperationInvokerImpl[]) operationList.toArray(new ServiceInvoker.OperationInvokerImpl[operationList.size()]);
-        return new org.apache.geronimo.gbean.GBeanInfo(type.getName(),
-                "GBean",
-                attributeInfos,
-                new org.apache.geronimo.gbean.GConstructorInfo(new String[] {}),
-                Collections.EMPTY_SET,
-                Collections.EMPTY_SET);
     }
 
     private org.apache.geronimo.gbean.GBeanInfo createGBeanInfo(ServiceInvoker serviceInvoker) {
@@ -526,6 +423,45 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
                 Collections.EMPTY_SET);
     }
 
+    private org.apache.geronimo.gbean.GBeanInfo createGBeanInfo(ServiceFactory serviceFactory) {
+        String serviceType;
+        Set attributeInfos = new HashSet();
+        serviceType = Object.class.getName();
+        if (serviceFactory instanceof ConfigurableServiceFactory) {
+            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
+            Set propertyNames = configurableServiceFactory.getPropertyNames();
+            for (Iterator iterator = propertyNames.iterator(); iterator.hasNext();) {
+                String propertyName = (String) iterator.next();
+                String ucase = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+                String getterName = "get" + ucase;
+                String setterName = "set" + ucase;
+                attributeInfos.add(new org.apache.geronimo.gbean.GAttributeInfo(propertyName,
+                        Object.class.getName(),
+                        false,
+                        getterName,
+                        setterName));
+            }
+        }
+        return new org.apache.geronimo.gbean.GBeanInfo(serviceType,
+                "GBean",
+                attributeInfos,
+                new org.apache.geronimo.gbean.GConstructorInfo(new String[] {}),
+                Collections.EMPTY_SET,
+                Collections.EMPTY_SET);
+    }
+
+    private org.apache.geronimo.gbean.GBeanData createGBeanData(ObjectName objectName) throws org.apache.geronimo.kernel.GBeanNotFoundException {
+        boolean running = isRunning(objectName);
+        if (running) {
+            ServiceInvoker serviceInvoker = getServiceInvoker(objectName);
+            return createGBeanData(serviceInvoker);
+        } else {
+            ServiceFactory serviceFactory = getServiceFactory(objectName);
+            return createGBeanData(objectName, serviceFactory);
+        }
+
+    }
+
     private org.apache.geronimo.gbean.GBeanData createGBeanData(ServiceInvoker serviceInvoker) {
         org.apache.geronimo.gbean.GBeanInfo gbeanInfo = createGBeanInfo(serviceInvoker);
         org.apache.geronimo.gbean.GBeanData gbeanData = new org.apache.geronimo.gbean.GBeanData(serviceInvoker.getServiceName(), gbeanInfo);
@@ -538,18 +474,31 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
                     gbeanData.setAttribute(attributeName, attributeValue);
                 } catch (Exception e) {
                     // ignore
-                    e.printStackTrace();
                 }
             }
         }
         return gbeanData;
     }
 
-    private static String fixAttributeName(String attributeName) {
-        if (Character.isUpperCase(attributeName.charAt(0))) {
-            return Character.toLowerCase(attributeName.charAt(0)) + attributeName.substring(1);
+    private org.apache.geronimo.gbean.GBeanData createGBeanData(ObjectName objectName, ServiceFactory serviceFactory) {
+        org.apache.geronimo.gbean.GBeanInfo gbeanInfo = createGBeanInfo(serviceFactory);
+        org.apache.geronimo.gbean.GBeanData gbeanData = new org.apache.geronimo.gbean.GBeanData(objectName, gbeanInfo);
+        if (serviceFactory instanceof ConfigurableServiceFactory) {
+            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
+            for (Iterator iterator = gbeanInfo.getAttributes().iterator(); iterator.hasNext();) {
+                org.apache.geronimo.gbean.GAttributeInfo attribute = (org.apache.geronimo.gbean.GAttributeInfo) iterator.next();
+                if (attribute.isReadable()) {
+                    try {
+                        String attributeName = attribute.getName();
+                        Object attributeValue = configurableServiceFactory.getProperty(attributeName);
+                        gbeanData.setAttribute(attributeName, attributeValue);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+            }
         }
-        return attributeName;
+        return gbeanData;
     }
 
     private static class StaticServiceFactory implements ServiceFactory {

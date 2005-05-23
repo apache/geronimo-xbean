@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.ServiceName;
-import org.gbean.kernel.ServiceNotFoundException;
 import org.gbean.kernel.runtime.ServiceState;
 import org.gbean.loader.Loader;
 import org.gbean.repository.BootstrapRepository;
@@ -206,16 +205,12 @@ public class Daemon {
 //                kernel.setAttribute(configListName, "kernelFullyStarted", Boolean.TRUE);
 //            }
 //
-            Set allGBeans = kernel.listServices(ServiceName.createName("*:*"));
-            for (Iterator iterator = allGBeans.iterator(); iterator.hasNext();) {
+            Set allServices = kernel.listServices(ServiceName.createName("*:*"));
+            for (Iterator iterator = allServices.iterator(); iterator.hasNext();) {
                 ObjectName objectName = (ObjectName) iterator.next();
-                try {
-                    int state = kernel.getServiceState(objectName);
-                    if (state != ServiceState.RUNNING_INDEX) {
-                        log.info("GBean " + objectName + " is not running. Current state: " + ServiceState.fromIndex(state).getName());
-                    }
-                } catch (ServiceNotFoundException e) {
-                    log.info("Alleged GBean " + objectName + " is not a GBean");
+                int state = kernel.getServiceState(objectName);
+                if (state != ServiceState.RUNNING_INDEX) {
+                    log.info("Service " + objectName + " is not running. Current state: " + ServiceState.fromIndex(state).getName());
                 }
             }
             log.info("Server startup completed");

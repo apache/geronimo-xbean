@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.geronimo.kernel.management.State;
 import org.apache.geronimo.kernel.config.ConfigurationClassLoader;
 import org.gbean.configuration.Configuration;
 import org.gbean.configuration.ConfigurationInfo;
 import org.gbean.kernel.Kernel;
+import org.gbean.kernel.runtime.ServiceState;
 import org.gbean.kernel.simple.SimpleLifecycle;
 import org.gbean.service.ServiceFactory;
 
@@ -42,6 +42,7 @@ public class SpringConfiguration implements Configuration, SimpleLifecycle {
     private static final Log log = LogFactory.getLog(SpringConfiguration.class);
 
     public static ObjectName getConfigurationObjectName(URI configId) throws MalformedObjectNameException {
+        // todo geronimo insists on have the configurations in a domain named geronimo.config
         return new ObjectName("geronimo.config:name=" + ObjectName.quote(configId.toString()));
     }
 
@@ -114,12 +115,12 @@ public class SpringConfiguration implements Configuration, SimpleLifecycle {
             Map.Entry entry = (Map.Entry) iterator.next();
             ObjectName serviceName = (ObjectName) entry.getKey();
             ServiceFactory serviceFactory = (ServiceFactory) entry.getValue();
-            serviceFactory.addDependency("GBeanConfiguration", Collections.singleton(objectName));
+            serviceFactory.addDependency("SpringConfiguration", Collections.singleton(objectName));
 
             kernel.loadService(serviceName, serviceFactory, classLoader);
             kernel.startService(serviceName);
             int serviceState = kernel.getServiceState(serviceName);
-            String msg = serviceName.getCanonicalName() + " - " + State.fromInt(serviceState);
+            String msg = serviceName.getCanonicalName() + " - " + ServiceState.fromIndex(serviceState);
             log.info(msg);
         }
 
@@ -133,7 +134,7 @@ public class SpringConfiguration implements Configuration, SimpleLifecycle {
         for (Iterator i = serviceFactories.keySet().iterator(); i.hasNext();) {
             ObjectName serviceName = (ObjectName) i.next();
             try {
-                log.trace("Unload GBean " + serviceName);
+                log.trace("Unload service " + serviceName);
                 kernel.unloadService(serviceName);
             } catch (Exception e) {
                 // ignore

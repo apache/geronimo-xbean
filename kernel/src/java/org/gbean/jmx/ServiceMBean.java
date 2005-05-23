@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.gbean.jmx;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -48,9 +49,14 @@ import org.gbean.kernel.LifecycleListener;
 import org.gbean.kernel.NoSuchAttributeException;
 import org.gbean.kernel.NoSuchOperationException;
 import org.gbean.kernel.OperationSignature;
+import org.gbean.kernel.ServiceNotFoundException;
+import org.gbean.kernel.runtime.ServiceState;
 import org.gbean.reflect.OperationInvoker;
 import org.gbean.reflect.PropertyInvoker;
 import org.gbean.reflect.ServiceInvoker;
+import org.gbean.reflect.ServiceInvokerManager;
+import org.gbean.service.ConfigurableServiceFactory;
+import org.gbean.service.ServiceFactory;
 
 /**
  * @version $Rev: 109772 $ $Date: 2004-12-03 21:06:02 -0800 (Fri, 03 Dec 2004) $
@@ -87,16 +93,31 @@ public final class ServiceMBean implements DynamicMBean, NotificationEmitter {
     private final NotificationBroadcasterSupport notificationBroadcaster = new NotificationBroadcasterSupport();
 
     /**
-     * Listenes for kernel lifecycle events for this gbean and broadcasts them via JMX.
+     * Listenes for kernel lifecycle events for this service and broadcasts them via JMX.
      */
     private final LifecycleBridge lifecycleBridge;
-    private final ServiceInvoker serviceInvoker;
 
-    public ServiceMBean(Kernel kernel, ObjectName objectName) {
+    /**
+     * The service invocation manager from which we get the service invoker
+     */
+    private final ServiceInvokerManager serviceInvokerManager;
+
+    /**
+     * The factory for this service
+     */
+    private final ServiceFactory serviceFactory;
+
+    /**
+     * The service invoker
+     */
+    private ServiceInvoker serviceInvoker;
+
+    public ServiceMBean(Kernel kernel, ServiceInvokerManager serviceInvokerManager, ObjectName objectName) throws ServiceNotFoundException {
         this.kernel = kernel;
+        serviceFactory = kernel.getServiceFactory(objectName);
+        this.serviceInvokerManager = serviceInvokerManager;
         this.objectName = objectName;
-        lifecycleBridge = new LifecycleBridge(objectName, notificationBroadcaster);
-        serviceInvoker = new ServiceInvoker(kernel, objectName);
+        lifecycleBridge = new LifecycleBridge(notificationBroadcaster);
     }
 
     public ObjectName getObjectName() {
@@ -107,75 +128,118 @@ public final class ServiceMBean implements DynamicMBean, NotificationEmitter {
         return objectName;
     }
 
-    public void postRegister(Boolean registrationDone) {
+    public synchronized void postRegister(Boolean registrationDone) {
         if (Boolean.TRUE.equals(registrationDone)) {
-            // fire the loaded event from the gbeanMBean.. it was already fired from the GBeanInstance when it was created
+            // fire the loaded event from the mbean.. it was already fired from the GBeanInstance when it was created
             kernel.addLifecycleListener(lifecycleBridge, objectName);
-            serviceInvoker.start();
             lifecycleBridge.loaded(objectName);
+            updateState();
         }
     }
 
-    public void preDeregister() {
-        serviceInvoker.stop();
+    public synchronized void preDeregister() {
         kernel.removeLifecycleListener(lifecycleBridge);
         lifecycleBridge.unloaded(objectName);
+        serviceInvoker = null;
     }
 
     public void postDeregister() {
     }
 
-    public MBeanInfo getMBeanInfo() {
-        String className = serviceInvoker.getServiceType().getName();
-        String description = "No description available";
+    private synchronized void updateState() {
+        try {
+            int serviceState = kernel.getServiceState(objectName);
+            boolean running = serviceState == ServiceState.RUNNING_INDEX || serviceState == ServiceState.STOPPING_INDEX;
+            if (running) {
+                serviceInvoker = serviceInvokerManager.getServiceInvoker(objectName);
+                return;
+            }
+        } catch (Exception e) {
+            // ignore cleaned up below
+        }
+        serviceInvoker = null;
+    }
 
-        // attributes
-        List propertyIndex = serviceInvoker.getPropertyIndex();
-        MBeanAttributeInfo[] attributes = new MBeanAttributeInfo[propertyIndex.size()];
-        for (ListIterator iterator = propertyIndex.listIterator(); iterator.hasNext();) {
-            PropertyInvoker propertyInvoker = (PropertyInvoker) iterator.next();
+    public synchronized MBeanInfo getMBeanInfo() {
+        try {
+            String className;
+            String description = "No description available";
+            MBeanAttributeInfo[] attributes;
+            MBeanOperationInfo[] operations;
 
-            boolean isIs = false;
-            if (propertyInvoker.isReadable()) {
-                isIs = propertyInvoker.getGetterSignature().getName().startsWith("is");
+            if (serviceInvoker != null) {
+                className = serviceInvoker.getServiceType().getName();
+
+                // attributes
+                List propertyIndex = serviceInvoker.getPropertyIndex();
+                attributes = new MBeanAttributeInfo[propertyIndex.size()];
+                for (ListIterator iterator = propertyIndex.listIterator(); iterator.hasNext();) {
+                    PropertyInvoker propertyInvoker = (PropertyInvoker) iterator.next();
+
+                    boolean isIs = false;
+                    if (propertyInvoker.isReadable()) {
+                        isIs = propertyInvoker.getGetterSignature().getName().startsWith("is");
+                    }
+
+                    attributes[iterator.previousIndex()] = new MBeanAttributeInfo(propertyInvoker.getPropertyName(),
+                            propertyInvoker.getType().getName(),
+                            "no description available",
+                            propertyInvoker.isReadable(),
+                            propertyInvoker.isWritable(),
+                            isIs);
+                }
+
+
+                // operations
+                List operationIndex = serviceInvoker.getOperationIndex();
+                operations = new MBeanOperationInfo[operationIndex.size()];
+                for (ListIterator iterator = operationIndex.listIterator(); iterator.hasNext();) {
+                    OperationInvoker operationInvoker = (OperationInvoker) iterator.next();
+
+                    OperationSignature signature = operationInvoker.getSignature();
+
+                    List argumentTypes = signature.getParameterTypes();
+                    MBeanParameterInfo[] parameters = new MBeanParameterInfo[argumentTypes.size()];
+                    for (ListIterator argIterator = argumentTypes.listIterator(); argIterator.hasNext();) {
+                        String type = (String) argIterator.next();
+                        parameters[argIterator.previousIndex()] = new MBeanParameterInfo("parameter" + argIterator.previousIndex(),
+                                type,
+                                "no description available");
+                    }
+
+                    operations[iterator.previousIndex()] = new MBeanOperationInfo(signature.getName(), "no description available", parameters, "java.lang.Object", MBeanOperationInfo.UNKNOWN);
+                }
+            } else {
+                className = Object.class.getName();
+                operations = new MBeanOperationInfo[0];
+                if (serviceFactory instanceof ConfigurableServiceFactory) {
+                    ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
+                    List propertyNames = new ArrayList(configurableServiceFactory.getPropertyNames());
+                    attributes = new MBeanAttributeInfo[propertyNames.size()];
+                    for (ListIterator iterator = propertyNames.listIterator(); iterator.hasNext();) {
+                        String propertyName = (String) iterator.next();
+                        attributes[iterator.previousIndex()] = new MBeanAttributeInfo(propertyName,
+                                Object.class.getName(),
+                                "no description available",
+                                true,
+                                true,
+                                false);
+                    }
+                } else {
+                    attributes = new MBeanAttributeInfo[0];
+                }
+
             }
 
-            attributes[iterator.previousIndex()] = new MBeanAttributeInfo(propertyInvoker.getPropertyName(),
-                    propertyInvoker.getType().getName(),
-                    "no description available",
-                    propertyInvoker.isReadable(),
-                    propertyInvoker.isWritable(),
-                    isIs);
+            MBeanNotificationInfo[] notifications = new MBeanNotificationInfo[1];
+            notifications[0] = new MBeanNotificationInfo(NotificationType.TYPES, "javax.management.Notification", "J2EE Notifications");
+
+            MBeanInfo mbeanInfo = new MBeanInfo(className, description, attributes, new MBeanConstructorInfo[0], operations, notifications);
+            return mbeanInfo;
+        } catch (RuntimeException e) {
+            log.info("Unable to create MBeanInfo", e);
+            throw e;
         }
-
-        //we don't expose managed constructors
-        MBeanConstructorInfo[] constructors = new MBeanConstructorInfo[0];
-
-        // operations
-        List operationIndex = serviceInvoker.getOperationIndex();
-        MBeanOperationInfo[] operations = new MBeanOperationInfo[operationIndex.size()];
-        for (ListIterator iterator = operationIndex.listIterator(); iterator.hasNext();) {
-            OperationInvoker operationInvoker = (OperationInvoker) iterator.next();
-
-            OperationSignature signature = operationInvoker.getSignature();
-
-            List argumentTypes = signature.getArgumentTypes();
-            MBeanParameterInfo[] parameters = new MBeanParameterInfo[argumentTypes.size()];
-            for (ListIterator argIterator = operationIndex.listIterator(); argIterator.hasNext();) {
-                String type = (String) argIterator.next();
-                parameters[argIterator.previousIndex()] = new MBeanParameterInfo("parameter" + argIterator.previousIndex(),
-                        type,
-                        "no description available");
-            }
-
-            operations[iterator.previousIndex()] = new MBeanOperationInfo(signature.getName(), "no description available", parameters, "java.lang.Object", MBeanOperationInfo.UNKNOWN);
-        }
-
-        MBeanNotificationInfo[] notifications = new MBeanNotificationInfo[1];
-        notifications[0] = new MBeanNotificationInfo(NotificationType.TYPES, "javax.management.Notification", "J2EE Notifications");
-
-        MBeanInfo mbeanInfo = new MBeanInfo(className, description, attributes, constructors, operations, notifications);
-        return mbeanInfo;
     }
 
     public Object getAttribute(String attributeName) throws ReflectionException, AttributeNotFoundException {
@@ -197,7 +261,24 @@ public final class ServiceMBean implements DynamicMBean, NotificationEmitter {
             } else if (ATTRIBUTE_GBEAN_ENABLED.equals(attributeName)) {
                 return Boolean.valueOf(kernel.isServiceEnabled(objectName));
             }
-            return serviceInvoker.getAttribute(attributeName);
+
+            ServiceInvoker serviceInvoker;
+            synchronized (this) {
+                serviceInvoker = this.serviceInvoker;
+            }
+
+            if (serviceInvoker != null) {
+                Object value = serviceInvoker.getAttribute(attributeName);
+                return value;
+            } else {
+                if (!(serviceFactory instanceof ConfigurableServiceFactory)) {
+                    throw new AttributeNotFoundException("Service is stopped and the service factory not configurable: objectName=" + objectName + ", propertyName=" + attributeName);
+                }
+                ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
+                return configurableServiceFactory.getProperty(attributeName);
+            }
+        } catch (AttributeNotFoundException e) {
+            throw e;
         } catch (NoSuchAttributeException e) {
             throw new AttributeNotFoundException(attributeName);
         } catch (Exception e) {
@@ -212,8 +293,23 @@ public final class ServiceMBean implements DynamicMBean, NotificationEmitter {
             if (ATTRIBUTE_GBEAN_ENABLED.equals(attributeName)) {
                 kernel.setServiceEnabled(objectName, ((Boolean) attributeValue).booleanValue());
             } else {
-                serviceInvoker.setAttribute(attributeName, attributeValue);
+                ServiceInvoker serviceInvoker;
+                synchronized (this) {
+                    serviceInvoker = this.serviceInvoker;
+                }
+
+                if (serviceInvoker != null) {
+                    serviceInvoker.setAttribute(attributeName, attributeValue);
+                } else {
+                    if (!(serviceFactory instanceof ConfigurableServiceFactory)) {
+                        throw new AttributeNotFoundException("Service is stopped and the service factory not configurable: objectName=" + objectName + ", propertyName=" + attributeName);
+                    }
+                    ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
+                    configurableServiceFactory.setProperty(attributeName, attributeValue);
+                }
             }
+        } catch (AttributeNotFoundException e) {
+            throw e;
         } catch (NoSuchAttributeException e) {
             throw new AttributeNotFoundException(attributeName);
         } catch (Exception e) {
@@ -261,6 +357,13 @@ public final class ServiceMBean implements DynamicMBean, NotificationEmitter {
                 kernel.startService(objectName);
                 return null;
             } else {
+                ServiceInvoker serviceInvoker;
+                synchronized (this) {
+                    serviceInvoker = this.serviceInvoker;
+                }
+                if (serviceInvoker == null) {
+                    throw new IllegalStateException("Service is not running: name=" + objectName);
+                }
                 return serviceInvoker.invoke(operationName, arguments, types);
             }
         } catch (NoSuchOperationException e) {
@@ -292,59 +395,56 @@ public final class ServiceMBean implements DynamicMBean, NotificationEmitter {
         return objectName.toString();
     }
 
-    private static class LifecycleBridge implements LifecycleListener {
+    private class LifecycleBridge implements LifecycleListener {
         /**
          * Sequence number used for notifications
          */
         private long sequence;
 
         /**
-         * Name of the MBeanGBean
-         */
-        private final ObjectName mbeanGBeanName;
-
-        /**
          * The notification broadcaster to use
          */
         private final NotificationBroadcasterSupport notificationBroadcaster;
 
-        public LifecycleBridge(ObjectName mbeanGBeanName, NotificationBroadcasterSupport notificationBroadcaster) {
-            this.mbeanGBeanName = mbeanGBeanName;
+        public LifecycleBridge(NotificationBroadcasterSupport notificationBroadcaster) {
             this.notificationBroadcaster = notificationBroadcaster;
         }
 
         public void loaded(ObjectName objectName) {
-            if (mbeanGBeanName.equals(objectName)) {
+            if (objectName.equals(objectName)) {
                 notificationBroadcaster.sendNotification(new Notification(NotificationType.OBJECT_CREATED, objectName, nextSequence()));
             }
         }
 
         public void starting(ObjectName objectName) {
-            if (mbeanGBeanName.equals(objectName)) {
+            if (objectName.equals(objectName)) {
                 notificationBroadcaster.sendNotification(new Notification(NotificationType.STATE_STARTING, objectName, nextSequence()));
             }
         }
 
         public void running(ObjectName objectName) {
-            if (mbeanGBeanName.equals(objectName)) {
+            if (objectName.equals(objectName)) {
+                updateState();
                 notificationBroadcaster.sendNotification(new Notification(NotificationType.STATE_RUNNING, objectName, nextSequence()));
             }
         }
 
         public void stopping(ObjectName objectName) {
-            if (mbeanGBeanName.equals(objectName)) {
+            if (objectName.equals(objectName)) {
                 notificationBroadcaster.sendNotification(new Notification(NotificationType.STATE_STOPPING, objectName, nextSequence()));
             }
         }
 
         public void stopped(ObjectName objectName) {
-            if (mbeanGBeanName.equals(objectName)) {
+            if (objectName.equals(objectName)) {
+                updateState();
                 notificationBroadcaster.sendNotification(new Notification(NotificationType.STATE_STOPPED, objectName, nextSequence()));
             }
         }
 
         public void unloaded(ObjectName objectName) {
-            if (mbeanGBeanName.equals(objectName)) {
+            if (objectName.equals(objectName)) {
+                updateState();
                 notificationBroadcaster.sendNotification(new Notification(NotificationType.OBJECT_DELETED, objectName, nextSequence()));
             }
         }

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -114,8 +114,6 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
             this.service = service;
             return service;
         } catch (Throwable t) {
-            t.printStackTrace();
-
             applicationContext = null;
 
             if (t instanceof Exception) {
@@ -209,7 +207,7 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
 
         throw new IllegalArgumentException("Property is not persistent:" +
                 " propertyName=" + propertyName +
-                ", gbeanName: " + gbeanDefinition.getObjectName().getCanonicalName());
+                ", serviceName: " + gbeanDefinition.getObjectName().getCanonicalName());
     }
 
     public void setProperty(String propertyName, Object persistentValue) {
@@ -238,7 +236,7 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
 
         throw new IllegalArgumentException("Property is not persistent:" +
                 " propertyName=" + propertyName +
-                ", gbeanName: " + gbeanDefinition.getObjectName().getCanonicalName());
+                ", serviceName: " + gbeanDefinition.getObjectName().getCanonicalName());
     }
 
     private void updatePersistentValues(Object service, GBeanDefinition gbeanDefinition) {
@@ -308,7 +306,7 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
 
             throw new RuntimeException("Problem while obtaining the currennt persistent value of property: " +
                     "propertyName=" + propertyName +
-                    ", gbeanInstance: " + gbeanDefinition.getObjectName().getCanonicalName(),
+                    ", serviceName: " + gbeanDefinition.getObjectName().getCanonicalName(),
                     throwable);
         }
 

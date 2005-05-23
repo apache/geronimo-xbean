@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 GBean.org
+ * Copyright 2005 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,29 +29,52 @@ import java.util.Map;
 import java.util.TreeSet;
 import javax.management.ObjectName;
 
+import net.sf.cglib.reflect.FastClass;
+import net.sf.cglib.reflect.FastMethod;
 import org.apache.geronimo.gbean.DynamicGBean;
-import org.apache.geronimo.gbean.GOperationSignature;
-import org.apache.geronimo.kernel.NoSuchAttributeException;
-import org.apache.geronimo.kernel.NoSuchOperationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.LifecycleAdapter;
-import org.gbean.kernel.ServiceNotFoundException;
 import org.gbean.kernel.OperationSignature;
+import org.gbean.kernel.ServiceNotFoundException;
+import org.gbean.kernel.NoSuchAttributeException;
+import org.gbean.kernel.NoSuchOperationException;
 import org.gbean.kernel.runtime.ServiceState;
-import org.gbean.service.ServiceFactory;
-import org.gbean.service.ConfigurableServiceFactory;
-import net.sf.cglib.reflect.FastMethod;
-import net.sf.cglib.reflect.FastClass;
 
 /**
  * @version $Revision$ $Date$
  */
 public class ServiceInvoker {
+    /**
+     * Our log stream
+     */
+    private static final Log log = LogFactory.getLog(ServiceInvoker.class);
+
+    /**
+     * The kernel in which the service is loaded
+     */
     private final Kernel kernel;
+
+    /**
+     * The name of the service in the kernel
+     */
     private final ObjectName name;
+
+    /**
+     * The listener that is notified when the service goes offline.
+     */
+    private final ServiceInvokerLifecycleListener lifecycleListener;
+
+    /**
+     * The actual target service
+     */
     private Object serviceInstance;
+
+    /**
+     * Is the service currently running?
+     */
     private boolean serviceRunning;
-    private ServiceFactory serviceFactory;
 
     /**
      * Property invokers
@@ -69,30 +92,40 @@ public class ServiceInvoker {
     private OperationInvokerImpl[] operations;
 
     /**
-     * Operations supported by this GBeanMBean by (GOperationSignature) name.
+     * Operations supported by the service by OperationSignature
      */
     private final Map operationIndex = new HashMap();
 
-//    private String stateMessage;
-    private final ServiceInvokerLifecycleListener lifecycleListener;
+    /**
+     * Has the ServiceInvoker itself been started?
+     */
+    private boolean serviceInvokerStarted = false;
 
     public ServiceInvoker(Kernel kernel, ObjectName name) {
         this.kernel = kernel;
         this.name = name;
-//        stateMessage = "ServiceInvoker is stopped";
         lifecycleListener = new ServiceInvokerLifecycleListener();
     }
 
-    public synchronized void start() {
+    public synchronized void start() throws ServiceNotFoundException {
+        if (serviceRunning) {
+            return;
+        }
+
         kernel.addLifecycleListener(lifecycleListener, name);
-        updateState();
+        serviceInvokerStarted = true;
+        assureRunning();
     }
 
     public synchronized void stop() {
         kernel.removeLifecycleListener(lifecycleListener);
-        serviceFactory = null;
+        properties = null;
+        propertyIndex.clear();
+        operations = null;
+        operationIndex.clear();
         serviceInstance = null;
         serviceRunning = false;
+        serviceInvokerStarted = false;
     }
 
     public synchronized ObjectName getServiceName() {
@@ -100,11 +133,8 @@ public class ServiceInvoker {
     }
     
     public synchronized Class getServiceType() {
-        if (serviceInstance != null) {
-            return serviceInstance.getClass();
-        } else {
-            return Object.class;
-        }
+        assureRunning();
+        return serviceInstance.getClass();
     }
 
     public synchronized List getPropertyIndex() {
@@ -128,29 +158,22 @@ public class ServiceInvoker {
      */
     public Object getAttribute(int index) throws Exception {
         // copy target into local variables from within a synchronized block to gaurentee a consistent read
-        boolean running;
         Object instance;
+        PropertyInvokerImpl property;
         synchronized (this) {
-            assureLoaded();
-            running = serviceRunning;
+            assureRunning();
             instance = serviceInstance;
+            property = properties[index];
         }
 
-        PropertyInvokerImpl getter = properties[index];
-        if (!running) {
-            if (!(serviceFactory instanceof ConfigurableServiceFactory)) {
-                throw new NoSuchAttributeException("Service is stopped and the service factory not configurable");
-            }
-            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
-            Object value = configurableServiceFactory.getProperty(getter.getPropertyName());
+        if (!property.isReadable()) {
+            throw new IllegalArgumentException("Property " + property.getPropertyName() + " is not readable");
+        }
+        try {
+            Object value = property.getterFastMethod.invoke(instance, null);
             return value;
-        } else {
-            try {
-                Object value = getter.getterFastMethod.invoke(instance, null);
-                return value;
-            } catch (InvocationTargetException e) {
-                throw unwrap(e);
-            }
+        } catch (InvocationTargetException e) {
+            throw unwrap(e);
         }
     }
 
@@ -165,36 +188,32 @@ public class ServiceInvoker {
      */
     public Object getAttribute(String name) throws NoSuchAttributeException, Exception {
         // copy target into local variables from within a synchronized block to gaurentee a consistent read
-        boolean running;
         Object instance;
+        PropertyInvokerImpl property = null;
         synchronized (this) {
-            assureLoaded();
-            running = serviceRunning;
+            assureRunning();
             instance = serviceInstance;
-        }
-
-        if (!running) {
-            if (!(serviceFactory instanceof ConfigurableServiceFactory)) {
-                throw new NoSuchAttributeException("Service is stopped and the service factory not configurable");
-            }
-            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
-            Object value = configurableServiceFactory.getProperty(name);
-            return value;
-        } else {
             Integer index = (Integer) propertyIndex.get(name);
             if (index != null) {
-                try {
-                    Object value = properties[index.intValue()].getterFastMethod.invoke(instance, null);
-                    return value;
-                } catch (InvocationTargetException e) {
-                    throw unwrap(e);
-                }
-            } else if (instance instanceof DynamicGBean) {
-                Object value = ((DynamicGBean) instance).getAttribute(name);
-                return value;
+                property = properties[index.intValue()];
             }
-            throw new NoSuchAttributeException("Unknown property '" + name + "' in service " + name);
         }
+
+        if (property != null) {
+            if (!property.isReadable()) {
+                throw new IllegalArgumentException("Property " + property.getPropertyName() + " is not readable");
+            }
+            try {
+                Object value = property.getterFastMethod.invoke(instance, null);
+                return value;
+            } catch (InvocationTargetException e) {
+                throw unwrap(e);
+            }
+        } else if (instance instanceof DynamicGBean) {
+            Object value = ((DynamicGBean) instance).getAttribute(name);
+            return value;
+        }
+        throw new NoSuchAttributeException("Unknown property '" + name + "' in service " + name);
     }
 
     /**
@@ -208,26 +227,21 @@ public class ServiceInvoker {
      */
     public void setAttribute(int index, Object value) throws Exception, IndexOutOfBoundsException {
         // copy target into local variables from within a synchronized block to gaurentee a consistent read
-        boolean running;
         Object instance;
+        PropertyInvokerImpl property;
         synchronized (this) {
-            assureLoaded();
-            running = serviceRunning;
+            assureRunning();
             instance = serviceInstance;
+            property = properties[index];
         }
 
-        if (!running) {
-            if (!(serviceFactory instanceof ConfigurableServiceFactory)) {
-                throw new NoSuchAttributeException("Service is stopped and the service factory not configurable");
-            }
-            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) serviceFactory;
-            configurableServiceFactory.setProperty(properties[index].getPropertyName(), value);
-        } else {
-            try {
-                properties[index].setterFastMethod.invoke(instance, new Object[] {value});
-            } catch (InvocationTargetException e) {
-                throw unwrap(e);
-            }
+        if (!property.isWritable()) {
+            throw new IllegalArgumentException("Property " + property.getPropertyName() + " is not writable");
+        }
+        try {
+            property.setterFastMethod.invoke(instance, new Object[] {value});
+        } catch (InvocationTargetException e) {
+            throw unwrap(e);
         }
     }
 
@@ -242,35 +256,30 @@ public class ServiceInvoker {
      */
     public void setAttribute(String attributeName, Object attributeValue) throws Exception, NoSuchAttributeException {
         // copy target into local variables from within a synchronized block to gaurentee a consistent read
-        boolean running;
         Object instance;
-        ServiceFactory factory;
+        PropertyInvokerImpl property = null;
         synchronized (this) {
-            assureLoaded();
-            running = serviceRunning;
+            assureRunning();
             instance = serviceInstance;
-            factory = serviceFactory;
-        }
-
-        if (!running) {
-            if (!(factory instanceof ConfigurableServiceFactory)) {
-                throw new NoSuchAttributeException("Service is stopped and the service factory not configurable");
-            }
-            ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) factory;
-            configurableServiceFactory.setProperty(attributeName, attributeValue);
-        } else {
             Integer index = (Integer) propertyIndex.get(attributeName);
             if (index != null) {
-                try {
-                    properties[index.intValue()].setterFastMethod.invoke(instance, new Object[] {attributeValue});
-                } catch (InvocationTargetException e) {
-                    throw unwrap(e);
-                }
-            } else if (instance instanceof DynamicGBean) {
-                ((DynamicGBean) instance).setAttribute(attributeName, attributeValue);
-            } else {
-                throw new NoSuchAttributeException("Unknown attribute '" + attributeName + "' in service " + name);
+                property = properties[index.intValue()];
             }
+        }
+
+        if (property != null) {
+            if (!property.isWritable()) {
+                throw new IllegalArgumentException("Property " + property.getPropertyName() + " is not writable");
+            }
+            try {
+                property.setterFastMethod.invoke(instance, new Object[] {attributeValue});
+            } catch (InvocationTargetException e) {
+                throw unwrap(e);
+            }
+        } else if (instance instanceof DynamicGBean) {
+            ((DynamicGBean) instance).setAttribute(attributeName, attributeValue);
+        } else {
+            throw new NoSuchAttributeException("Unknown attribute '" + attributeName + "' in service " + name);
         }
     }
 
@@ -283,23 +292,18 @@ public class ServiceInvoker {
      * @return the result of the operation
      * @throws Exception if a target instance throws and exception
      * @throws IndexOutOfBoundsException if the index is invalid
-     * @throws IllegalStateException if the gbean instance has been destroyed
+     * @throws IllegalStateException if the service has been destroyed
      */
     public Object invoke(int index, Object[] arguments) throws Exception {
         // copy target into local variables from within a synchronized block to gaurentee a consistent read
-        boolean running;
         Object instance;
+        OperationInvokerImpl operation;
         synchronized (this) {
             assureRunning();
-            running = serviceRunning;
             instance = serviceInstance;
+            operation = operations[index];
         }
 
-        if (!running) {
-            throw new IllegalStateException("Operations can only be invoke while the service instance is running: " + name);
-        }
-
-        OperationInvokerImpl operation = operations[index];
         try {
             Object value = operation.fastMethod.invoke(instance, arguments);
             return value;
@@ -309,9 +313,9 @@ public class ServiceInvoker {
     }
 
     /**
-     * Invokes an operation on the target gbean by method signature.  This style if invocation is
+     * Invokes an operation on the service by method signature.  This style if invocation is
      * inefficient, because the target method must be looked up in a hashmap using a freshly constructed
-     * GOperationSignature object.
+     * OperationSignature object.
      *
      * @param operationName the name of the operation to invoke
      * @param arguments arguments to the operation
@@ -319,28 +323,24 @@ public class ServiceInvoker {
      * @return the result of the operation
      * @throws Exception if a target instance throws and exception
      * @throws NoSuchOperationException if the operation signature is not found in the map
-     * @throws IllegalStateException if the gbean instance has been destroyed
+     * @throws IllegalStateException if the service has been destroyed
      */
     public Object invoke(String operationName, Object[] arguments, String[] types) throws Exception, NoSuchOperationException {
         // copy target into local variables from within a synchronized block to gaurentee a consistent read
-        boolean running;
         Object instance;
+        OperationInvokerImpl operation;
         synchronized (this) {
             assureRunning();
-            running = serviceRunning;
             instance = serviceInstance;
+
+            OperationSignature signature = new OperationSignature(operationName, types);
+            Integer index = (Integer) operationIndex.get(signature);
+            if (index == null) {
+                throw new NoSuchOperationException("Unknown operation " + signature);
+            }
+            operation = operations[index.intValue()];
         }
 
-        if (!running) {
-            throw new IllegalStateException("Operations can only be invoke while the service is running: " + name);
-        }
-
-        GOperationSignature signature = new GOperationSignature(operationName, types);
-        Integer index = (Integer) operationIndex.get(signature);
-        if (index == null) {
-            throw new NoSuchOperationException("Unknown operation " + signature);
-        }
-        OperationInvokerImpl operation = operations[index.intValue()];
         try {
             Object value = operation.fastMethod.invoke(instance, arguments);
             return value;
@@ -349,84 +349,73 @@ public class ServiceInvoker {
         }
     }
 
-    public synchronized void updateState() {
-        try {
-            if (kernel.isLoaded(name)) {
-                if (serviceFactory == null) {
-                    serviceFactory = kernel.getServiceFactory(name);
-                }
-
-                // we have the service factory so we can clear the stateMessage
-//                stateMessage = null;
-
-                // now try to get the instance
-                int serviceState = kernel.getServiceState(name);
-                boolean running = serviceState == ServiceState.RUNNING_INDEX || serviceState == ServiceState.STOPPING_INDEX;
-                if (running) {
-                    // try to get the service instance if we don't have it already
-                    if (serviceInstance == null) {
-                        serviceInstance = kernel.getService(name);
-
-                        // if we have the service instance, index it
-                        if (serviceInstance != null) {
-                            createIndex(serviceInstance.getClass());
-                            serviceRunning = true;
-                        }
-                    }
-                } else {
-                    serviceInstance = null;
-                    serviceRunning = false;
-                }
-                return;
-            }
-        } catch (IllegalStateException e) {
-            // service died...
-            serviceInstance = null;
-            serviceRunning = false;
-            return;
-        } catch (ServiceNotFoundException e) {
-            // unregistered fields cleared below
-        }
-        serviceFactory = null;
-        serviceInstance = null;
-        serviceRunning = false;
-    }
-
-    private synchronized void assureLoaded() {
-        if (serviceFactory == null) {
-            throw new IllegalStateException("Service is not loaded: " + name);
-        }
-    }
-
-    private synchronized void assureRunning() {
+    public synchronized void assureRunning() {
         if (!serviceRunning) {
-            updateState();
+            try {
+                updateState();
+                if (!serviceRunning) {
+                    throw new IllegalStateException("Service must be in the running or stopping state: name=" + name + ", state=" + ServiceState.fromIndex(kernel.getServiceState(name)));
+                }
+            } catch (ServiceNotFoundException e) {
+                throw new IllegalStateException("Service is not loaded: " + name);
+            }
+        }
+    }
+
+    private synchronized void updateState() throws ServiceNotFoundException {
+        if (!serviceInvokerStarted) {
+            throw new IllegalStateException("Service invoker has not been started: name=" + name);
+        }
+        try {
+            serviceRunning = false;
+
+            // get the current state
+            int serviceState = kernel.getServiceState(name);
+
+            // we must be in a running state
+            boolean running = serviceState == ServiceState.RUNNING_INDEX || serviceState == ServiceState.STOPPING_INDEX;
+            if (running) {
+                if (serviceInstance == null) {
+                    serviceInstance = kernel.getService(name);
+
+                    // if we don't have a service instance something is wrong
+                    if (serviceInstance == null) {
+                        throw new IllegalStateException("Could not get service instance: name=" + name);
+                    }
+                    createIndex(serviceInstance.getClass());
+                }
+                serviceRunning = true;
+            }
+        } finally {
             if (!serviceRunning) {
-                throw new IllegalStateException("Service is not running: " + name);
+                kernel.removeLifecycleListener(lifecycleListener);
+                serviceInvokerStarted = false;
+                properties = null;
+                propertyIndex.clear();
+                operations = null;
+                operationIndex.clear();
+                serviceInstance = null;
             }
         }
     }
 
     private class ServiceInvokerLifecycleListener extends LifecycleAdapter {
-        public void loaded(ObjectName objectName) {
-            updateState();
-        }
-
-        public void running(ObjectName objectName) {
-            updateState();
-        }
-
         public void stopped(ObjectName objectName) {
-            updateState();
+            try {
+                updateState();
+            } catch (Exception e) {
+                log.info("Unable to update service invoker for service " + name, e);
+            }
         }
 
         public void unloaded(ObjectName objectName) {
-            updateState();
+            try {
+                updateState();
+            } catch (Exception e) {
+                log.info("Unable to update service invoker for service " + name, e);
+            }
         }
     }
-
-    // todo add createIndex for servicefactory
-    // todo deal with the exceptions below
 
     private void createIndex(Class type) {
         // attributes
@@ -540,7 +529,7 @@ public class ServiceInvoker {
         for (int i = 0; i < methods.length; i++) {
             Method method = methods[i];
             if (Modifier.isPublic(method.getModifiers()) && !Modifier.isStatic(method.getModifiers())) {
-                operationIndex.put(new GOperationSignature(method), new Integer(operationList.size()));
+                operationIndex.put(new OperationSignature(method), new Integer(operationList.size()));
                 operationList.add(new OperationInvokerImpl(method));
             }
         }
@@ -580,7 +569,7 @@ public class ServiceInvoker {
 
         public Object invoke(Object[] arguments) throws Exception {
             Object instance;
-            synchronized (this) {
+            synchronized (ServiceInvoker.this) {
                 assureRunning();
                 instance = serviceInstance;
             }
@@ -589,13 +578,7 @@ public class ServiceInvoker {
                 Object value = fastMethod.invoke(instance, arguments);
                 return value;
             } catch (InvocationTargetException e) {
-                Throwable cause = e.getTargetException();
-                if (cause instanceof Exception) {
-                    throw (Exception) cause;
-                } else if (cause instanceof Error) {
-                    throw (Error) cause;
-                }
-                throw e;
+                throw unwrap(e);
             }
         }
 
@@ -671,36 +654,20 @@ public class ServiceInvoker {
 
         public Object invokeGetter() throws Exception {
             // copy target into local variables from within a synchronized block to gaurentee a consistent read
-            boolean running;
             Object instance;
-            ServiceFactory factory;
-            synchronized (this) {
-                assureLoaded();
-                running = serviceRunning;
+            synchronized (ServiceInvoker.this) {
+                assureRunning();
                 instance = serviceInstance;
-                factory = serviceFactory;
             }
 
-            if (!running) {
-                if (!(factory instanceof ConfigurableServiceFactory)) {
-                    throw new NoSuchAttributeException("Service is stopped and the service factory not configurable");
-                }
-                ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) factory;
-                Object value = configurableServiceFactory.getProperty(propertyName);
+            if (!isReadable()) {
+                throw new IllegalArgumentException("Property " + propertyName + " is not readable");
+            }
+            try {
+                Object value = getterFastMethod.invoke(instance, null);
                 return value;
-            } else {
-                try {
-                    Object value = getterFastMethod.invoke(instance, null);
-                    return value;
-                } catch (InvocationTargetException e) {
-                    Throwable cause = e.getTargetException();
-                    if (cause instanceof Exception) {
-                        throw (Exception) cause;
-                    } else if (cause instanceof Error) {
-                        throw (Error) cause;
-                    }
-                    throw e;
-                }
+            } catch (InvocationTargetException e) {
+                throw unwrap(e);
             }
         }
 
@@ -714,34 +681,19 @@ public class ServiceInvoker {
 
         public void invokeSetter(Object value) throws Exception {
             // copy target into local variables from within a synchronized block to gaurentee a consistent read
-            boolean running;
             Object instance;
-            ServiceFactory factory;
-            synchronized (this) {
-                assureLoaded();
-                running = serviceRunning;
+            synchronized (ServiceInvoker.this) {
+                assureRunning();
                 instance = serviceInstance;
-                factory = serviceFactory;
             }
 
-            if (!running) {
-                if (!(factory instanceof ConfigurableServiceFactory)) {
-                    throw new NoSuchAttributeException("Service is stopped and the service factory not configurable");
-                }
-                ConfigurableServiceFactory configurableServiceFactory = (ConfigurableServiceFactory) factory;
-                configurableServiceFactory.setProperty(propertyName, value);
-            } else {
-                try {
-                    setterFastMethod.invoke(instance, new Object[] {value});
-                } catch (InvocationTargetException e) {
-                    Throwable cause = e.getTargetException();
-                    if (cause instanceof Exception) {
-                        throw (Exception) cause;
-                    } else if (cause instanceof Error) {
-                        throw (Error) cause;
-                    }
-                    throw e;
-                }
+            if (!isWritable()) {
+                throw new IllegalArgumentException("Property " + propertyName + " is not writable");
+            }
+            try {
+                setterFastMethod.invoke(instance, new Object[] {value});
+            } catch (InvocationTargetException e) {
+                throw unwrap(e);
             }
         }
 
@@ -753,8 +705,8 @@ public class ServiceInvoker {
             if (!(obj instanceof PropertyInvokerImpl)) {
                 return false;
             }
-            PropertyInvokerImpl propertyInvoker = (PropertyInvokerImpl)obj;
-            return propertyName.equals(propertyInvoker.propertyName);
+            PropertyInvokerImpl fastPropertyInvoker = (PropertyInvokerImpl)obj;
+            return propertyName.equals(fastPropertyInvoker.propertyName);
         }
 
         public String toString() {
