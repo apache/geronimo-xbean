@@ -25,6 +25,8 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import javax.management.ObjectName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,6 +43,10 @@ import org.gbean.kernel.simple.SimpleServiceFactory;
 import org.gbean.kernel.simple.SimpleLifecycle;
 import org.gbean.loader.Loader;
 import org.gbean.service.ServiceFactory;
+import org.gbean.metadata.MetadataManager;
+import org.gbean.metadata.simple.SimpleMetadataManager;
+import org.gbean.metadata.simple.PropertiesMetadataProvider;
+import org.gbean.geronimo.GeronimoMetadataProvider;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -91,8 +97,19 @@ public class SpringLoader implements Loader {
                 return null;
             }
 
+            // convert properties into named constructor args
+            List metadataProviders = new ArrayList(2);
+            metadataProviders.add(new GeronimoMetadataProvider());
+            metadataProviders.add(new PropertiesMetadataProvider());
+            MetadataManager metadataManager = new SimpleMetadataManager(metadataProviders);
+            NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
+            namedConstructorArgs.postProcessBeanFactory(factory);
+
             // create object names for all of the beans
-            ObjectNameBuilder objectNameBuilder =  new ObjectNameBuilder();
+            ObjectNameBuilder objectNameBuilder =  new ObjectNameBuilder(metadataManager,
+                    configurationInfo.getDomain(),
+                    configurationInfo.getServer(),
+                    configurationInfo.getConfigurationId().toString());
             objectNameBuilder.postProcessBeanFactory(factory);
 
             // auto detect the livecycle methods (todo this needs work)

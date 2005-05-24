@@ -18,6 +18,7 @@ package org.gbean.geronimo;
 
 import java.beans.PropertyEditorManager;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -53,7 +54,7 @@ import org.gbean.spring.SpringLoader;
 public class Daemon {
     private static final Log log = LogFactory.getLog(Daemon.class);
     private static final String DEFAULT_LOCATION = "Default-Location";
-//    private static final ObjectName PERSISTENT_CONFIGURATION_LIST_NAME_QUERY = ServiceName.createName("*:j2eeType=PersistentConfigurationList,*");
+    private static final ObjectName PERSISTENT_CONFIGURATION_LIST_NAME_QUERY = ServiceName.createName("*:j2eeType=PersistentConfigurationList,*");
 
     public static void main(String[] args) throws Exception {
         // lame hard coded log initialization
@@ -144,23 +145,6 @@ public class Daemon {
                 }
             });
 
-//            if (configs.isEmpty()) {
-//                // nothing explicit, see what was running before
-//                Set configLists = kernelBridge.listGBeans(PERSISTENT_CONFIGURATION_LIST_NAME_QUERY);
-//                for (Iterator i = configLists.iterator(); i.hasNext();) {
-//                    ObjectName configListName = (ObjectName) i.next();
-//                    try {
-//                        configs.addAll((List) kernelBridge.invoke(configListName, "restore"));
-//                    } catch (IOException e) {
-//                        System.err.println("Unable to restore last known configurations");
-//                        e.printStackTrace();
-//                        kernel.shutdown();
-//                        System.exit(3);
-//                        throw new AssertionError();
-//                    }
-//                }
-//            }
-
             // get a list of the configuration uris from the command line
             List configs = new ArrayList();
             for (int i = configStart; i < args.length; i++) {
@@ -171,6 +155,23 @@ public class Daemon {
                     e.printStackTrace();
                     System.exit(1);
                     throw new AssertionError();
+                }
+            }
+
+            if (configs.isEmpty()) {
+                // nothing explicit, see what was running before
+                Set configLists = kernelBridge.listGBeans(PERSISTENT_CONFIGURATION_LIST_NAME_QUERY);
+                for (Iterator i = configLists.iterator(); i.hasNext();) {
+                    ObjectName configListName = (ObjectName) i.next();
+                    try {
+                        configs.addAll((List) kernelBridge.invoke(configListName, "restore"));
+                    } catch (IOException e) {
+                        System.err.println("Unable to restore last known configurations");
+                        e.printStackTrace();
+                        kernel.shutdown();
+                        System.exit(3);
+                        throw new AssertionError();
+                    }
                 }
             }
 
@@ -198,13 +199,13 @@ public class Daemon {
                 throw new AssertionError();
             }
 
-//            // Tell every persistent configuration list that the kernel is now fully started
-//            Set configLists = kernel.listServices(PERSISTENT_CONFIGURATION_LIST_NAME_QUERY);
-//            for (Iterator i = configLists.iterator(); i.hasNext();) {
-//                ObjectName configListName = (ObjectName) i.next();
-//                kernel.setAttribute(configListName, "kernelFullyStarted", Boolean.TRUE);
-//            }
-//
+            // Tell every persistent configuration list that the kernel is now fully started
+            Set configLists = kernel.listServices(PERSISTENT_CONFIGURATION_LIST_NAME_QUERY);
+            for (Iterator i = configLists.iterator(); i.hasNext();) {
+                ObjectName configListName = (ObjectName) i.next();
+                kernelBridge.setAttribute(configListName, "kernelFullyStarted", Boolean.TRUE);
+            }
+
             Set allServices = kernel.listServices(ServiceName.createName("*:*"));
             for (Iterator iterator = allServices.iterator(); iterator.hasNext();) {
                 ObjectName objectName = (ObjectName) iterator.next();

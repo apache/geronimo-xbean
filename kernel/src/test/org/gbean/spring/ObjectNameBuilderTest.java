@@ -17,10 +17,15 @@
 package org.gbean.spring;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 import org.gbean.kernel.ServiceName;
+import org.gbean.metadata.MetadataManager;
+import org.gbean.metadata.simple.PropertiesMetadataProvider;
+import org.gbean.metadata.simple.SimpleMetadataManager;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -42,7 +47,12 @@ public class ObjectNameBuilderTest extends TestCase {
 
         ObjectName objectName = ServiceName.createName((String) beanDefinition.getPropertyValues().getPropertyValue("gbean-objectName").getValue());
 
-        ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder();
+        // convert properties into named constructor args
+        List metadataProviders = new ArrayList(2);
+        metadataProviders.add(new PropertiesMetadataProvider());
+        MetadataManager metadataManager = new SimpleMetadataManager(metadataProviders);
+
+        ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(metadataManager, "domain", "server", "application");
         objectNameBuilder.postProcessBeanFactory(factory);
 
         assertFalse(beanDefinition.getPropertyValues().contains("gbean-objectName"));
@@ -56,9 +66,16 @@ public class ObjectNameBuilderTest extends TestCase {
         assertNotNull(beanDefinition);
         assertFalse(beanDefinition.getPropertyValues().contains("gbean-objectName"));
 
-        ObjectName objectName = ServiceName.createName(":name=" + beanName);
+        // convert properties into named constructor args
+        List metadataProviders = new ArrayList(2);
+        metadataProviders.add(new PropertiesMetadataProvider());
+        MetadataManager metadataManager = new SimpleMetadataManager(metadataProviders);
 
-        ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder();
+        ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(metadataManager, "domain", "server", "application");
+        objectNameBuilder.postProcessBeanFactory(factory);
+
+        ObjectName objectName = ServiceName.createName("domain:J2EEServer=server,J2EEApplication=application,name=" + beanName);
+
         objectNameBuilder.postProcessBeanFactory(factory);
 
         assertFalse(beanDefinition.getPropertyValues().contains("gbean-objectName"));

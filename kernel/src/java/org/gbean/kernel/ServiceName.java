@@ -16,6 +16,7 @@
  */
 package org.gbean.kernel;
 
+import java.util.Properties;
 import javax.management.ObjectName;
 import javax.management.MalformedObjectNameException;
 
@@ -31,6 +32,15 @@ public final class ServiceName {
             return new ObjectName(name);
         } catch (MalformedObjectNameException e) {
             throw new MalformedServiceNameException(name);
+        }
+    }
+
+    public static ObjectName createName(String domainName, Properties properties) {
+        try {
+            return new ObjectName(domainName, properties);
+        } catch (MalformedObjectNameException e) {
+            // todo more descriptive message here
+            throw new MalformedServiceNameException("");
         }
     }
 }

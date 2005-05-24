@@ -18,6 +18,7 @@ package org.gbean.spring;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.Collections;
 
 import junit.framework.TestCase;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -28,8 +29,10 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.gbean.metadata.simple.PropertiesMetadataProvider;
+import org.gbean.metadata.simple.SimpleMetadataManager;
 import org.gbean.metadata.ClassMetadata;
 import org.gbean.metadata.ConstructorMetadata;
+import org.gbean.metadata.MetadataManager;
 import org.gbean.kernel.ConstructorSignature;
 
 /**
@@ -54,7 +57,8 @@ public class NamedConstructorArgsTest extends TestCase {
 
         // process factory
         PropertiesMetadataProvider metadataProvider = new PropertiesMetadataProvider();
-        NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataProvider);
+        MetadataManager metadataManager = new SimpleMetadataManager(Collections.singleton(metadataProvider));
+        NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
         namedConstructorArgs.postProcessBeanFactory(factory);
 
         // post conditions
@@ -92,18 +96,18 @@ public class NamedConstructorArgsTest extends TestCase {
 
         // process factory
         PropertiesMetadataProvider metadataProvider = new PropertiesMetadataProvider() {
-            public ClassMetadata getClassMetadata(Class type) {
-                ClassMetadata classMetadata = super.getClassMetadata(type);
-                if (type.equals(HelloMessage.class)) {
+            public void addClassMetadata(ClassMetadata classMetadata) {
+                super.addClassMetadata(classMetadata);
+                if (classMetadata.getType().equals(HelloMessage.class)) {
                     ConstructorMetadata constructor = classMetadata.getConstructor(
                             new ConstructorSignature(new String[] {"java.lang.String", "java.lang.String", "java.util.Properties"}));
                     constructor.put("always-use", null);
                 }
-                return classMetadata;
             }
         };
 
-        NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataProvider);
+        MetadataManager metadataManager = new SimpleMetadataManager(Collections.singleton(metadataProvider));
+        NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
         namedConstructorArgs.postProcessBeanFactory(factory);
 
         // post conditions

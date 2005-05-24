@@ -16,19 +16,18 @@
  */
 package org.gbean.metadata.simple;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
-import org.gbean.kernel.OperationSignature;
 import org.gbean.kernel.ConstructorSignature;
-import org.gbean.metadata.ClassMetadata;
+import org.gbean.kernel.OperationSignature;
+import org.gbean.metadata.ConstructorMetadata;
 import org.gbean.metadata.MethodMetadata;
 import org.gbean.metadata.ParameterMetadata;
-import org.gbean.metadata.ConstructorMetadata;
 
 /**
  * @version $Revision$ $Date$
@@ -60,7 +59,8 @@ public class PropertiesMetadataProviderTest extends TestCase {
     public void testLoad() {
         PropertiesMetadataProvider propertiesMetadataProvider = new PropertiesMetadataProvider();
         Class type = LotsOfTypes.class;
-        ClassMetadata classMetadata = propertiesMetadataProvider.getClassMetadata(type);
+        SimpleClassMetadata classMetadata = new SimpleClassMetadata(type);
+        propertiesMetadataProvider.addClassMetadata(classMetadata);
         assertNotNull(classMetadata);
 
         Constructor[] constructors = type.getDeclaredConstructors();

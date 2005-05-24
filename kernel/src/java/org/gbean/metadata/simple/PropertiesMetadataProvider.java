@@ -44,22 +44,18 @@ import org.gbean.metadata.ConstructorMetadata;
 public class PropertiesMetadataProvider implements MetadataProvider {
     private static final Log log = LogFactory.getLog(PropertiesMetadataProvider.class);
 
-    public ClassMetadata getClassMetadata(Class type) {
+    public void addClassMetadata(ClassMetadata classMetadata) {
         try {
-            Properties properties = loadProperties(type);
-            ClassMetadata classMetadata = new SimpleClassMetadata(type);
+            Properties properties = loadProperties(classMetadata.getType());
             for (Iterator iterator = properties.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 String propertyName = (String) entry.getKey();
                 String propertyValue = (String) entry.getValue();
                 processProperty(classMetadata, propertyName, propertyValue);
             }
-            return classMetadata;
         } catch (Exception e) {
-            log.error("Error while loading properties based metadata for class " + type.getName());
+            log.error("Error while loading properties based metadata for class " + classMetadata.getType().getName());
         }
-
-        return null;
     }
 
     private Properties loadProperties(Class type) throws IOException {

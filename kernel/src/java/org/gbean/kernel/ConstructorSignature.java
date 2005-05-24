@@ -45,11 +45,29 @@ public final class ConstructorSignature {
         }
     }
 
+    public ConstructorSignature(Class[] argumentTypes) {
+        if (argumentTypes != null) {
+            this.parameterTypes = new String[argumentTypes.length];
+            for (int i = 0; i < argumentTypes.length; i++) {
+                this.parameterTypes[i] = argumentTypes[i].getName();
+            }
+        } else {
+            this.parameterTypes = NO_TYPES;
+        }
+    }
+
     public ConstructorSignature(List argumentTypes) {
         if (argumentTypes != null) {
             this.parameterTypes = new String[argumentTypes.size()];
             for (int i = 0; i < argumentTypes.size(); i++) {
-                this.parameterTypes[i] = (String) argumentTypes.get(i);
+                Object argumentType = argumentTypes.get(i);
+                if (argumentType instanceof Class) {
+                    this.parameterTypes[i] = ((Class) argumentType).getName();
+                } else if (argumentType instanceof String) {
+                    this.parameterTypes[i] = (String) argumentType;
+                } else {
+                    throw new IllegalArgumentException("Argument type must be a String or a Class: index=" + i + ", type=" + argumentType.getClass());
+                }
             }
         } else {
             this.parameterTypes = NO_TYPES;

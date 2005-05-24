@@ -19,6 +19,6 @@ package org.gbean.metadata;
 /**
  * @version $Revision$ $Date$
  */
-public interface MetadataProvider {
-    void addClassMetadata(ClassMetadata classMetadata);
+public interface MetadataManager {
+    ClassMetadata getClassMetadata(Class type);
 }

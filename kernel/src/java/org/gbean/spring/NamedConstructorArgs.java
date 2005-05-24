@@ -19,18 +19,18 @@ package org.gbean.spring;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Set;
 
 import org.gbean.metadata.ClassMetadata;
 import org.gbean.metadata.ConstructorMetadata;
-import org.gbean.metadata.MetadataProvider;
+import org.gbean.metadata.MetadataManager;
 import org.gbean.metadata.ParameterMetadata;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
@@ -45,10 +45,10 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * @version $Revision$ $Date$
  */
 public class NamedConstructorArgs implements BeanFactoryPostProcessor {
-    private final MetadataProvider metadataProvider;
+    private final MetadataManager metadataManager;
 
-    public NamedConstructorArgs(MetadataProvider metadataProvider) {
-        this.metadataProvider = metadataProvider;
+    public NamedConstructorArgs(MetadataManager metadataManager) {
+        this.metadataManager = metadataManager;
     }
 
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -105,12 +105,7 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
         Class beanType = rootBeanDefinition.getBeanClass();
 
         // try to get the class metadata
-        ClassMetadata classMetadata = metadataProvider.getClassMetadata(beanType);
-
-        // if we don't have metadata we can't do anything
-        if (classMetadata == null) {
-            return null;
-        }
+        ClassMetadata classMetadata = metadataManager.getClassMetadata(beanType);
 
         // get a set containing the names of the defined properties
         Set propertyNames = new HashSet();
@@ -163,14 +158,14 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
     private static final Map DEFAULT_VALUE;
     static {
         Map temp = new HashMap();
-        temp.put("boolean", Boolean.FALSE);
-        temp.put("byte", new Byte((byte) 0));
-        temp.put("char", new Character((char) 0));
-        temp.put("short", new Short((short) 0));
-        temp.put("int", new Integer(0));
-        temp.put("long", new Long(0));
-        temp.put("float", new Float(0));
-        temp.put("double", new Double(0));
+        temp.put(Boolean.TYPE, Boolean.FALSE);
+        temp.put(Byte.TYPE, new Byte((byte) 0));
+        temp.put(Character.TYPE, new Character((char) 0));
+        temp.put(Short.TYPE, new Short((short) 0));
+        temp.put(Integer.TYPE, new Integer(0));
+        temp.put(Long.TYPE, new Long(0));
+        temp.put(Float.TYPE, new Float(0));
+        temp.put(Double.TYPE, new Double(0));
 
         DEFAULT_VALUE = Collections.unmodifiableMap(temp);
     }
