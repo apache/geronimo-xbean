@@ -17,7 +17,6 @@
 package org.gbean.spring;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -29,10 +28,7 @@ import org.gbean.service.ServiceContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.MessageSourceResolvable;
@@ -45,7 +41,7 @@ import org.springframework.core.io.Resource;
  */
 public class SpringServiceFactory implements ConfigurableServiceFactory {
     private static final String ROOT_BEAN_DEFINITION = "RootBeanDefinition";
-    private final Map dependencies = new LinkedHashMap();
+    private final Map dependencies;
     private final Map objectNameMap;
     private RootBeanDefinition beanDefinition;
     private GenericApplicationContext applicationContext;
@@ -55,40 +51,7 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
         this.beanDefinition = beanDefinition;
         this.objectNameMap = objectNameMap;
 
-        extractDependencies(beanDefinition);
-    }
-
-    private void extractDependencies(RootBeanDefinition beanDefinition) throws Exception {
-        SpringVisitor springVisitor = new AbstractSpringVisitor() {
-            public void visitBeanDefinition(BeanDefinition beanDefinition) throws BeansException {
-                super.visitBeanDefinition(beanDefinition);
-                if (beanDefinition instanceof RootBeanDefinition) {
-                    RootBeanDefinition rootBeanDefinition = (RootBeanDefinition) beanDefinition;
-                    String[] dependsOn = rootBeanDefinition.getDependsOn();
-                    if (dependsOn != null) {
-                        for (int i = 0; i < dependsOn.length; i++) {
-                            String dependency = dependsOn[i];
-                            try {
-                                dependencies.put(dependency, Collections.singleton(getObjectName(dependency)));
-                            } catch (MalformedObjectNameException e) {
-                                throw new BeanDefinitionValidationException("Depends on name could not be converted to an objectName: dependency=" + dependency, e);
-                            }
-                        }
-                    }
-                }
-            }
-
-            public void visitRuntimeBeanReference(RuntimeBeanReference beanReference) throws BeansException {
-                super.visitRuntimeBeanReference(beanReference);
-                String dependency = beanReference.getBeanName();
-                try {
-                    dependencies.put(dependency, Collections.singleton(getObjectName(dependency)));
-                } catch (MalformedObjectNameException e) {
-                    throw new BeanDefinitionValidationException("Bean ref name could not be converted to an objectName: refName=" + dependency, e);
-                }
-            }
-        };
-        springVisitor.visitBeanDefinition(beanDefinition);
+        dependencies = SpringUtil.extractDependencies(beanDefinition, objectNameMap);
     }
 
     public RootBeanDefinition getBeanDefinition() {
@@ -172,7 +135,7 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
                     public Object getBean(String name, Class requiredType) throws BeansException {
                         ObjectName objectName = null;
                         try {
-                            objectName = getObjectName(name);
+                            objectName = SpringUtil.getObjectName(objectNameMap, name);
                         } catch (MalformedObjectNameException e) {
                             throw (NoSuchBeanDefinitionException) new NoSuchBeanDefinitionException(name, "Could not create an objectname for the specified name").initCause(e);
                         }
@@ -248,19 +211,6 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
         }
 
         return service;
-    }
-
-    private ObjectName getObjectName(String name) throws MalformedObjectNameException {
-        if (name.indexOf(":") < 0) {
-            ObjectName objectName = (ObjectName) objectNameMap.get(name);
-            if (objectName == null) {
-                throw new NoSuchBeanDefinitionException(name, "No object name definded for service");
-            }
-
-            return objectName;
-        } else {
-            return new ObjectName(name);
-        }
     }
 
     public void destroyService(ServiceContext serviceContext, Object service) {

@@ -59,6 +59,15 @@ public class CollectionReference implements FactoryBean, Serializable {
      */
     private Set patterns;
 
+    public CollectionReference() {
+    }
+
+    public CollectionReference(String name, Set patterns, String type) {
+        this.name = name;
+        this.patterns = patterns;
+        this.type = type;
+    }
+
     public String getName() {
         return name;
     }

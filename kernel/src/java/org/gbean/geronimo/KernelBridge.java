@@ -17,6 +17,7 @@
 
 package org.gbean.geronimo;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -34,6 +35,9 @@ import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.ServiceNotFoundException;
 import org.gbean.kernel.runtime.ServiceState;
 import org.gbean.kernel.simple.SimpleKernel;
+import org.gbean.metadata.MetadataManager;
+import org.gbean.metadata.simple.PropertiesMetadataProvider;
+import org.gbean.metadata.simple.SimpleMetadataManager;
 import org.gbean.proxy.ProxyManager;
 import org.gbean.reflect.PropertyInvoker;
 import org.gbean.reflect.ServiceInvoker;
@@ -56,8 +60,10 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
 
     private final SimpleKernel kernel;
     private final DependencyManagerBridge dependencyManagerBridge;
+    private final ObjectName metadataManagerName;
     private final ObjectName serviceInvokerManagerName;
     private final ObjectName proxyManagerName;
+    private final MetadataManager metadataManager;
     private final ServiceInvokerManager serviceInvokerManager;
     private final ProxyManager proxyManager;
     private final ProxyManagerBridge proxyManagerBridge;
@@ -69,6 +75,14 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
             // normally we would use the KernelFactory, but geronimo will only work with the simple kernel
             kernel = new SimpleKernel(kernelName);
             dependencyManagerBridge = new DependencyManagerBridge(kernel.getDependencyManager());
+
+            metadataManagerName = ServiceName.createName(":j2eeType=MetadataManager");
+            List metadataProviders = new ArrayList(2);
+            metadataProviders.add(new GeronimoMetadataProvider());
+            metadataProviders.add(new PropertiesMetadataProvider());
+            metadataManager = new SimpleMetadataManager(metadataProviders);
+            kernel.loadService(metadataManagerName, new StaticServiceFactory(metadataManager), classLoader);
+            kernel.startService(metadataManagerName);
 
             serviceInvokerManagerName = ServiceName.createName(":j2eeType=ServiceInvokerManager,name=default");
             serviceInvokerManager = new ServiceInvokerManager(kernel);
@@ -195,28 +209,32 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
         ServiceFactory serviceFactory = getServiceFactory(name);
         if (serviceFactory instanceof GeronimoServiceFactory) {
             GeronimoServiceFactory geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
-            return GeronimoUtil.createGBeanInfo(geronimoServiceFactory.getGBeanDefinition());
+            return GeronimoUtil.createGBeanInfo(geronimoServiceFactory);
         }
 
         return createGBeanInfo(name);
     }
 
-    public org.apache.geronimo.gbean.GBeanData getGBeanData(ObjectName name) throws org.apache.geronimo.kernel.GBeanNotFoundException{
-        ServiceFactory serviceFactory = getServiceFactory(name);
+    public org.apache.geronimo.gbean.GBeanData getGBeanData(ObjectName objectName) throws org.apache.geronimo.kernel.GBeanNotFoundException{
+        ServiceFactory serviceFactory = getServiceFactory(objectName);
         if (serviceFactory instanceof GeronimoServiceFactory) {
             GeronimoServiceFactory geronimoServiceFactory = null;
             geronimoServiceFactory = (GeronimoServiceFactory) serviceFactory;
-            return GeronimoUtil.createGBeanData(geronimoServiceFactory.getGBeanDefinition());
+            return GeronimoUtil.createGBeanData(objectName, geronimoServiceFactory);
         }
 
-        return createGBeanData(name);
+        return createGBeanData(objectName);
     }
 
     public void loadGBean(org.apache.geronimo.gbean.GBeanData gbeanData, ClassLoader classLoader) throws org.apache.geronimo.kernel.GBeanAlreadyExistsException {
         ObjectName objectName = gbeanData.getName();
 
-        GBeanDefinition geronimoBeanDefinition = GeronimoUtil.createGeronimoBeanDefinition(gbeanData, classLoader);
-        GeronimoServiceFactory geronimoServiceFactory = new GeronimoServiceFactory(proxyManager, geronimoBeanDefinition);
+        GeronimoServiceFactory geronimoServiceFactory = null;
+        try {
+            geronimoServiceFactory =GeronimoUtil.createGeronimoServiceFactory(gbeanData, classLoader, metadataManager, proxyManager);
+        } catch (Exception e) {
+            throw new org.apache.geronimo.kernel.InternalKernelException(e);
+        }
         try {
             kernel.loadService(objectName, geronimoServiceFactory, classLoader);
         } catch (ServiceAlreadyExistsException e) {
@@ -335,6 +353,12 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
             kernel.stopService(serviceInvokerManagerName);
             kernel.unloadService(serviceInvokerManagerName);
             serviceInvokerManager.stop();
+        } catch (ServiceNotFoundException e) {
+            // igore service has already been removed
+        }
+        try {
+            kernel.stopService(metadataManagerName);
+            kernel.unloadService(metadataManagerName);
         } catch (ServiceNotFoundException e) {
             // igore service has already been removed
         }

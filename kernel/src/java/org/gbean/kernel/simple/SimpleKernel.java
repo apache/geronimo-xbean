@@ -103,7 +103,7 @@ public class SimpleKernel implements Kernel {
     }
 
     /**
-     * @deprecated Do not use.  This is only hear for the geronimo bridge and will go away as soon as possible.
+     * @deprecated Do not use.  This is only here for the geronimo bridge and will go away as soon as possible.
      */
     public DependencyManager getDependencyManager() {
         return dependencyManager;

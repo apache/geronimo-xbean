@@ -71,10 +71,10 @@ public class ObjectNameBuilderTest extends TestCase {
         metadataProviders.add(new PropertiesMetadataProvider());
         MetadataManager metadataManager = new SimpleMetadataManager(metadataProviders);
 
-        ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(metadataManager, "domain", "server", "application");
+        ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(metadataManager, "domain", "server", "module");
         objectNameBuilder.postProcessBeanFactory(factory);
 
-        ObjectName objectName = ServiceName.createName("domain:J2EEServer=server,J2EEApplication=application,name=" + beanName);
+        ObjectName objectName = ServiceName.createName("domain:J2EEServer=server,J2EEApplication=null,J2EEModule=module,name=" + beanName);
 
         objectNameBuilder.postProcessBeanFactory(factory);
 

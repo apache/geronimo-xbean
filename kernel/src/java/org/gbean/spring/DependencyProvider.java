@@ -14,13 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.geronimo;
+package org.gbean.spring;
+
+import java.util.Map;
 
 /**
- * @version $Rev$ $Date$
+ * @version $Revision$ $Date$
  */
-public class GBeanKernelFactory extends org.apache.geronimo.kernel.KernelFactory {
-    public org.apache.geronimo.kernel.Kernel createKernel(String kernelName) {
-        return new KernelBridge(kernelName);
-    }
+public interface DependencyProvider {
+    Map getDependencies();
 }

@@ -39,14 +39,14 @@ public class ObjectNameBuilder implements BeanFactoryPostProcessor {
     private final MetadataManager metadataManager;
     private final String domainName;
     private final String serverName;
-    private final String applicationName;
+    private final String moduleName;
     private final Map objectNameMap = new HashMap();
 
-    public ObjectNameBuilder(MetadataManager metadataManager, String domainName, String serverName, String applicationName) {
+    public ObjectNameBuilder(MetadataManager metadataManager, String domainName, String serverName, String moduleName) {
         this.metadataManager = metadataManager;
         this.domainName = domainName;
         this.serverName = serverName;
-        this.applicationName = applicationName;
+        this.moduleName = moduleName;
     }
 
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -92,7 +92,8 @@ public class ObjectNameBuilder implements BeanFactoryPostProcessor {
             props.put("j2eeType", type);
         }
         props.put("name", name);
-        props.put("J2EEApplication", applicationName);
+        props.put("J2EEApplication", "null");
+        props.put("J2EEModule", moduleName);
         props.put("J2EEServer", serverName);
 
         return ServiceName.createName(domainName, props);

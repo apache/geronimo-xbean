@@ -22,7 +22,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -46,29 +46,33 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  */
 public class NamedConstructorArgs implements BeanFactoryPostProcessor {
     private final MetadataManager metadataManager;
+    private final Map defaultValues = new HashMap();
 
     public NamedConstructorArgs(MetadataManager metadataManager) {
         this.metadataManager = metadataManager;
     }
 
+    public void addDefaultValue(String name, Class type, Object value) {
+        defaultValues.put(new DefaultProperty(name, type), value);
+    }
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         SpringVisitor visitor = new AbstractSpringVisitor() {
-            public void visitBeanDefinition(BeanDefinition beanDefinition) throws BeansException {
-                super.visitBeanDefinition(beanDefinition);
+            public void visitBeanDefinition(BeanDefinition beanDefinition, Object data) throws BeansException {
+                super.visitBeanDefinition(beanDefinition, data);
 
                 if (!(beanDefinition instanceof RootBeanDefinition)) {
                     return;
                 }
 
                 RootBeanDefinition rootBeanDefinition = ((RootBeanDefinition) beanDefinition);
-                parametersToConstructorArgs(rootBeanDefinition);
+                processParameters(rootBeanDefinition);
 
             }
         };
-        visitor.visitBeanFactory(beanFactory);
+        visitor.visitBeanFactory(beanFactory, null);
     }
 
-    private void parametersToConstructorArgs(RootBeanDefinition rootBeanDefinition) {
+    private void processParameters(RootBeanDefinition rootBeanDefinition) {
         ConstructorArgumentValues constructorArgumentValues = rootBeanDefinition.getConstructorArgumentValues();
 
         // if this bean already has constructor arguments defined, don't mess with them
@@ -95,10 +99,15 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
                 propertyValues.removePropertyValue(name);
                 constructorArgumentValues.addIndexedArgumentValue(iterator.previousIndex(), propertyValue.getValue(), parameterType.getName());
             } else {
-                Object defaultValue = DEFAULT_VALUE.get(parameterType);
+                Object defaultValue = defaultValues.get(new DefaultProperty(name, parameterType));
+                if (defaultValue == null) {
+                    defaultValue = DEFAULT_VALUE.get(parameterType);
+                }
                 constructorArgumentValues.addIndexedArgumentValue(iterator.previousIndex(), defaultValue, parameterType.getName());
             }
         }
+
+        // todo set any usable default values on the bean definition
     }
 
     private ConstructorMetadata getConstructor(RootBeanDefinition rootBeanDefinition) {
@@ -121,19 +130,38 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
         // try to find a constructor for which we have all of the properties defined
         for (Iterator iterator = constructors.iterator(); iterator.hasNext();) {
             ConstructorMetadata constructorMetadata = (ConstructorMetadata) iterator.next();
-            if (constructorMetadata.getProperties().containsKey("always-use")) {
-                return constructorMetadata;
-            }
-            List constructorArgNames = getConstructorArgNames(constructorMetadata);
-            if (constructorArgNames != null && propertyNames.containsAll(constructorArgNames)) {
+            if (isUsableConstructor(constructorMetadata, propertyNames)) {
                 return constructorMetadata;
             }
         }
         return null;
     }
 
-    private List getConstructorArgNames(ConstructorMetadata constructor) {
-        List constructorArgNames = new LinkedList();
+    private boolean isUsableConstructor(ConstructorMetadata constructorMetadata, Set propertyNames) {
+        if (constructorMetadata.getProperties().containsKey("always-use")) {
+            return true;
+        }
+
+        LinkedHashMap constructorArgs = getConstructorArgs(constructorMetadata);
+        if (constructorArgs == null) {
+            return false;
+        }
+
+        for (Iterator argIterator = constructorArgs.entrySet().iterator(); argIterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) argIterator.next();
+            String parameterName = (String) entry.getKey();
+            Class parameterType = (Class) entry.getValue();
+            // can we satify this property using a definde proeprty or default property
+            if (!propertyNames.contains(parameterName) && !defaultValues.containsKey(new DefaultProperty(parameterName, parameterType))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private LinkedHashMap getConstructorArgs(ConstructorMetadata constructor) {
+        LinkedHashMap constructorArgs = new LinkedHashMap();
 
         List parameterMetadata = constructor.getParameters();
         for (Iterator iterator = parameterMetadata.iterator(); iterator.hasNext();) {
@@ -142,9 +170,9 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
             if (name == null) {
                 return null;
             }
-            constructorArgNames.add(name);
+            constructorArgs.put(name, parameter.getType());
         }
-        return constructorArgNames;
+        return constructorArgs;
     }
 
     private static class ArgLengthComparator implements Comparator {
@@ -152,6 +180,35 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
             ConstructorMetadata constructor1 = (ConstructorMetadata) o1;
             ConstructorMetadata constructor2 = (ConstructorMetadata) o2;
             return constructor2.getParameters().size() - constructor1.getParameters().size();
+        }
+    }
+
+    private static class DefaultProperty {
+        private final String propertyName;
+        private final Class propertyType;
+
+        public DefaultProperty(String propertyName, Class propertyType) {
+            this.propertyName = propertyName;
+            this.propertyType = propertyType;
+        }
+        public boolean equals(Object object) {
+            if (!(object instanceof DefaultProperty)) {
+                return false;
+            }
+
+            DefaultProperty defaultProperty = (DefaultProperty) object;
+            return propertyName.equals(defaultProperty.propertyName) && propertyType.equals(propertyType);
+        }
+
+        public int hashCode() {
+            int result = 17;
+            result = 37 * result + propertyName.hashCode();
+            result = 37 * result + propertyType.hashCode();
+            return result;
+        }
+
+        public String toString() {
+            return "[" + propertyName + " " + propertyType + "]";
         }
     }
 

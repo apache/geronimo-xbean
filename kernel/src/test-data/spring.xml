@@ -21,7 +21,10 @@
         <constructor-arg index="1"><ref bean=":j2eeType=ServiceInvokerManager,name=default"/></constructor-arg>
     </bean>
 
-    <bean name="ServerInfo" class="org.apache.geronimo.system.serverinfo.ServerInfo"/>
+    <bean name="ServerInfo" class="org.apache.geronimo.system.serverinfo.ServerInfo">
+        <property name="gbean-objectName"><value>geronimo.server:J2EEServer=geronimo,J2EEApplication=null,J2EEModule=org/apache/geronimo/System,j2eeType=GBean,name=ServerInfo</value></property>
+
+ </bean>
 
     <bean name="URLFactory" class="org.apache.geronimo.system.url.GeronimoURLFactory"/>
 
@@ -30,12 +33,12 @@
         <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
         <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
         <property name="root"><value>config-store</value></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
     </bean>
 
     <bean name="ConfigurationManager" class="org.apache.geronimo.kernel.config.ConfigurationManagerImpl">
         <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
-        <property name="Stores">
+        <property name="stores">
             <bean class="org.gbean.spring.LiveProxyHashSetReference">
                 <property name="name"><value>Stores</value></property>
                 <property name="pattern"><value>*:j2eeType=ConfigurationStore,*</value></property>
@@ -46,14 +49,14 @@
 
     <bean name="FileConfigurationList" class="org.apache.geronimo.system.configuration.FileConfigurationList">
         <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
-        <property name="ConfigurationManager"><ref bean="ConfigurationManager"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
+        <property name="configurationManager"><ref bean="ConfigurationManager"/></property>
         <property name="configFile"><value>var/config/config.list</value></property>
     </bean>
 
     <bean name="Repository" class="org.apache.geronimo.system.repository.ReadOnlyRepository">
         <property name="root"><value>repository/</value></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
     </bean>
 
     <bean name="RMIRegistry" class="org.apache.geronimo.system.rmi.RMIRegistryService">
@@ -81,14 +84,14 @@
 
     <bean name="geronimo-properties-realm" class="org.apache.geronimo.security.realm.GenericSecurityRealm">
         <property name="realmName"><value>geronimo-properties-realm</value></property>
-        <property name="LoginModuleConfiguration"><ref bean="properties-login-options"/></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="loginModuleConfiguration"><ref bean="properties-login-options"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
         <property name="classLoader"><bean class="org.gbean.spring.ClassLoaderReference"/></property>
         <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
     </bean>
 
     <bean name="properties-login-options" class="org.apache.geronimo.security.jaas.JaasLoginModuleUse">
-        <property name="LoginModule"><ref bean="properties-login"/></property>
+        <property name="loginModule"><ref bean="properties-login"/></property>
         <property name="controlFlag"><value>REQUIRED</value></property>
      </bean>
 
@@ -115,7 +118,7 @@
 
     <bean name="SecurityService" class="org.apache.geronimo.security.SecurityServiceImpl">
         <property name="classLoader"><bean class="org.gbean.spring.ClassLoaderReference"/></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
         <property name="policyConfigurationFactory"><value>org.apache.geronimo.security.jacc.GeronimoPolicyConfigurationFactory</value></property>
         <property name="policyProvider"><value>org.apache.geronimo.security.jacc.GeronimoPolicy</value></property>
     </bean>
@@ -147,7 +150,7 @@
         <property name="syncMaximumPoolSize"><value>10</value></property>
         <property name="startMaximumPoolSize"><value>10</value></property>
         <property name="scheduledMaximumPoolSize"><value>10</value></property>
-        <property name="TransactionContextManager"><ref bean="TransactionContextManager"/></property>
+        <property name="transactionContextManager"><ref bean="TransactionContextManager"/></property>
     </bean>
 
     <bean name="HOWLTransactionLog" class="org.apache.geronimo.transaction.log.HOWLLog">
@@ -163,13 +166,13 @@
         <property name="maxLogFiles"><value>2</value></property>
         <property name="minBuffers"><value>4</value></property>
         <property name="threadsWaitingForceThreshold"><value>-1</value></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
     </bean>
 
     <bean name="TransactionManager" class="org.apache.geronimo.transaction.manager.TransactionManagerImpl">
         <property name="defaultTransactionTimeoutSeconds"><value>600</value></property>
-        <property name="TransactionLog"><ref bean="HOWLTransactionLog"/></property>
-        <property name="ResourceManagers">
+        <property name="transactionLog"><ref bean="HOWLTransactionLog"/></property>
+        <property name="resourceManagers">
             <bean class="org.gbean.geronimo.CollectionReference">
                 <property name="name"><value>ResourceManagers</value></property>
                 <property name="patterns">
@@ -184,28 +187,28 @@
     </bean>
 
     <bean name="TransactionContextManager" class="org.apache.geronimo.transaction.context.TransactionContextManager">
-        <property name="TransactionManager"><ref bean="TransactionManager"/></property>
-        <property name="XidImporter"><ref bean="TransactionManager"/></property>
+        <property name="transactionManager"><ref bean="TransactionManager"/></property>
+        <property name="xidImporter"><ref bean="TransactionManager"/></property>
     </bean>
 
     <bean name="JettyWebContainer" class="org.apache.geronimo.jetty.JettyContainerImpl"/>
 
     <bean name="JettyRequestLog" class="org.apache.geronimo.jetty.requestlog.NCSARequestLog">
-        <property name="JettyContainer"><ref bean="JettyWebContainer"/></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="jettyContainer"><ref bean="JettyWebContainer"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
         <property name="filename"><value>var/log/jetty_yyyy_mm_dd.log</value></property>
         <property name="logDateFormat"><value>dd/MMM/yyyy:HH:mm:ss ZZZ</value></property>
         <property name="logTimeZone"><value>GMT</value></property>
     </bean>
 
     <bean name="JettyWebConnector" class="org.apache.geronimo.jetty.connector.HTTPConnector">
-        <property name="JettyContainer"><ref bean="JettyWebContainer"/></property>
+        <property name="jettyContainer"><ref bean="JettyWebContainer"/></property>
         <property name="port"><value>8080</value></property>
     </bean>
 
     <bean name="JettySSLConnector" class="org.apache.geronimo.jetty.connector.HTTPSConnector">
-        <property name="JettyContainer"><ref bean="JettyWebContainer"/></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="jettyContainer"><ref bean="JettyWebContainer"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
         <property name="port"><value>8443</value></property>
         <property name="keystore"><value>var/security/keystore</value></property>
         <property name="keystoreType"><value>JKS</value></property>
@@ -222,16 +225,16 @@
         <property name="allowHosts"><value>127.0.0.1</value></property>
         <property name="logOnSuccess"><value>HOST,NAME,THREADID,USERID</value></property>
         <property name="logOnFailure"><value>HOST,NAME</value></property>
-        <property name="Executor"><ref bean="DefaultThreadPool"/></property>
-        <property name="Server"><ref bean="EjbServer"/></property>
+        <property name="executor"><ref bean="DefaultThreadPool"/></property>
+        <property name="server"><ref bean="EjbServer"/></property>
     </bean>
     
     <bean name="EjbServer" class="org.openejb.server.ejbd.EjbServer">
-        <property name="ContainerIndex"><ref bean="ContainerIndex"/></property>
+        <property name="containerIndex"><ref bean="ContainerIndex"/></property>
     </bean>
     
     <bean name="ContainerIndex" class="org.openejb.ContainerIndex">
-        <property name="EJBContainers">
+        <property name="eJBContainers">
             <bean class="org.gbean.geronimo.CollectionReference">
                 <property name="name"><value>ResourceManagers</value></property>
                 <property name="patterns">
@@ -265,7 +268,7 @@
         <property name="gbean-objectName"><value>geronimo.server:j2eeType=J2EEServer,name=geronimo</value></property>
         <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
         <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
-        <property name="ServerInfo"><ref bean="ServerInfo"/></property>
+        <property name="serverInfo"><ref bean="ServerInfo"/></property>
     </bean>
 
     <bean name="JVM" class="org.apache.geronimo.j2ee.management.impl.JVMImpl">

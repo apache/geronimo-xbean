@@ -17,24 +17,23 @@
 package org.gbean.geronimo;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.geronimo.gbean.GAttributeInfo;
 import org.apache.geronimo.gbean.GBeanInfo;
 import org.apache.geronimo.gbean.GReferenceInfo;
-import org.gbean.kernel.OperationSignature;
-import org.gbean.kernel.ConstructorSignature;
 import org.gbean.kernel.ClassLoading;
+import org.gbean.kernel.ConstructorSignature;
 import org.gbean.metadata.ClassMetadata;
-import org.gbean.metadata.MetadataProvider;
-import org.gbean.metadata.MethodMetadata;
 import org.gbean.metadata.ConstructorMetadata;
+import org.gbean.metadata.MetadataProvider;
 import org.gbean.metadata.ParameterMetadata;
 
 /**
@@ -53,24 +52,9 @@ public class GeronimoMetadataProvider implements MetadataProvider {
         Set attributes = gbeanInfo.getAttributes();
         Set references = gbeanInfo.getReferences();
         Map attributeTypes = new HashMap(attributes.size() + references.size());
+        Set persistentProperties = new HashSet();
         for (Iterator iterator = attributes.iterator(); iterator.hasNext();) {
             GAttributeInfo attributeInfo = (GAttributeInfo) iterator.next();
-            if (attributeInfo.isReadable()) {
-                String getterName = attributeInfo.getGetterName();
-                MethodMetadata getter = classMetadata.getMethod(new OperationSignature(getterName, new String[] {}));
-                if (getter != null) {
-                    getter.put("persistent", "true");
-                }
-            }
-
-            if (attributeInfo.isWritable()) {
-                String setterName = attributeInfo.getSetterName();
-                MethodMetadata setter = classMetadata.getMethod(new OperationSignature(setterName, new String[] {attributeInfo.getType()}));
-                if (setter != null) {
-                    setter.put("persistent", "true");
-                }
-            }
-
             Class attributeType = null;
             try {
                 attributeType = ClassLoading.loadClass(attributeInfo.getType(), type.getClassLoader());
@@ -78,18 +62,14 @@ public class GeronimoMetadataProvider implements MetadataProvider {
                 // couldn't load the type.. just proceed and we'll skip the constructor declaration
             }
             attributeTypes.put(attributeInfo.getName(), attributeType);
+
+            if (attributeInfo.isPersistent()) {
+                persistentProperties.add(fixPropertyName(attributeInfo.getName()));
+            }
         }
 
         for (Iterator iterator = references.iterator(); iterator.hasNext();) {
             GReferenceInfo referenceInfo = (GReferenceInfo) iterator.next();
-            String setterName = referenceInfo.getSetterName();
-            if (setterName != null) {
-                MethodMetadata setter = classMetadata.getMethod(new OperationSignature(setterName, new String[] {referenceInfo.getProxyType()}));
-                if (setter != null) {
-                    setter.put("persistent", "true");
-                }
-            }
-
             Class attributeType = null;
             try {
                 attributeType = ClassLoading.loadClass(referenceInfo.getProxyType(), type.getClassLoader());
@@ -97,6 +77,7 @@ public class GeronimoMetadataProvider implements MetadataProvider {
                 // couldn't load the type.. just proceed and we'll skip the constructor declaration
             }
             attributeTypes.put(referenceInfo.getName(), attributeType);
+            persistentProperties.add(fixPropertyName(referenceInfo.getName()));
         }
 
 
@@ -114,9 +95,13 @@ public class GeronimoMetadataProvider implements MetadataProvider {
                 for (ListIterator iterator = constructor.getParameters().listIterator(); iterator.hasNext();) {
                     ParameterMetadata parameter = (ParameterMetadata) iterator.next();
                     String name = (String) constructorArgNames.get(iterator.previousIndex());
-                    parameter.put("name", name);
+                    parameter.put("name", fixPropertyName(name));
                 }
             }
+        }
+
+        if (!persistentProperties.isEmpty()) {
+            classMetadata.put("persistentProperties", persistentProperties);
         }
     }
 
@@ -137,4 +122,10 @@ public class GeronimoMetadataProvider implements MetadataProvider {
         return null;
     }
 
+    private static String fixPropertyName(String propertyName) {
+        if (Character.isUpperCase(propertyName.charAt(0))) {
+            return Character.toLowerCase(propertyName.charAt(0)) + propertyName.substring(1);
+        }
+        return propertyName;
+    }
 }

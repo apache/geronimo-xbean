@@ -26,30 +26,33 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 
 /**
  * @version $Revision$ $Date$
  */
 public interface SpringVisitor {
-    void visitBeanFactory(ConfigurableListableBeanFactory beanRegistry) throws BeansException;
+    void visitBeanFactory(ConfigurableListableBeanFactory beanRegistry, Object data) throws BeansException;
 
-    void visitBeanDefinition(String beanName, BeanDefinition beanDefinition) throws BeansException;
+    void visitBeanDefinition(String beanName, BeanDefinition beanDefinition, Object data) throws BeansException;
 
-    void visitBeanDefinition(BeanDefinition beanDefinition) throws BeansException;
+    void visitBeanDefinition(BeanDefinition beanDefinition, Object data) throws BeansException;
 
-    void visitMutablePropertyValues(MutablePropertyValues propertyValues) throws BeansException;
+    void visitMutablePropertyValues(MutablePropertyValues propertyValues, Object data) throws BeansException;
 
-    void visitConstructorArgumentValues(ConstructorArgumentValues constructorArgumentValues) throws BeansException;
+    void visitConstructorArgumentValues(ConstructorArgumentValues constructorArgumentValues, Object data) throws BeansException;
 
-    void visitConstructorArgumentValues(ConstructorArgumentValues.ValueHolder valueHolder) throws BeansException;
+    void visitConstructorArgumentValue(ConstructorArgumentValues.ValueHolder valueHolder, Object data) throws BeansException;
 
-    void visitPropertyValue(PropertyValue propertyValue) throws BeansException;
+    void visitPropertyValue(PropertyValue propertyValue, Object data) throws BeansException;
 
-    void visitRuntimeBeanReference(RuntimeBeanReference beanReference) throws BeansException;
+    void visitRuntimeBeanReference(RuntimeBeanReference beanReference, Object data) throws BeansException;
 
-    void visitCollection(Collection collection)  throws BeansException;
+    void visitCollection(Collection collection, Object data)  throws BeansException;
 
-    void visitMap(Map map)  throws BeansException;
+    void visitMap(Map map, Object data)  throws BeansException;
 
-    void visitObject(Object value) throws BeansException;
+    void visitObject(Object value, Object data) throws BeansException;
+
+    void visitBeanDefinitionHolder(BeanDefinitionHolder beanDefinitionHolder, Object data) throws BeansException;
 }

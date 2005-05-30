@@ -38,6 +38,12 @@ public final class ConstructorSignature {
     }
 
     public ConstructorSignature(String[] argumentTypes) {
+        for (int i = 0; i < argumentTypes.length; i++) {
+            if (argumentTypes[i] == null) {
+                throw new IllegalArgumentException("Argument " + i + " is null");
+            }
+        }
+
         if (argumentTypes != null) {
             this.parameterTypes = argumentTypes;
         } else {

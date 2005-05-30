@@ -25,8 +25,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 import javax.management.ObjectName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,19 +33,17 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.geronimo.gbean.InvalidConfigurationException;
 import org.gbean.beans.LiveHashSet;
 import org.gbean.configuration.ConfigurationInfo;
 import org.gbean.configuration.ConfigurationUtil;
+import org.gbean.configuration.InvalidConfigurationException;
 import org.gbean.kernel.Kernel;
-import org.gbean.kernel.simple.SimpleServiceFactory;
+import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.simple.SimpleLifecycle;
+import org.gbean.kernel.simple.SimpleServiceFactory;
 import org.gbean.loader.Loader;
-import org.gbean.service.ServiceFactory;
 import org.gbean.metadata.MetadataManager;
-import org.gbean.metadata.simple.SimpleMetadataManager;
-import org.gbean.metadata.simple.PropertiesMetadataProvider;
-import org.gbean.geronimo.GeronimoMetadataProvider;
+import org.gbean.service.ServiceFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -71,10 +68,22 @@ public class SpringLoader implements Loader {
     private static final String PARENT_ID_NAME = "parentId";
     private static final String DOMAIN_NAME = "domain";
     private static final String SERVER_NAME = "server";
+    private static final ObjectName METADATA_MANAGER_QUERY = ServiceName.createName("*:j2eeType=MetadataManager");
+
 
 
     public ObjectName load(Kernel kernel, String location) {
         try {
+            Set names = kernel.listServices(METADATA_MANAGER_QUERY);
+            if (names.isEmpty()) {
+                throw new IllegalStateException("Metadata mananger could not be found in kernel: " + METADATA_MANAGER_QUERY);
+            }
+            if (names.size() > 1) {
+                throw new IllegalStateException("More then one proxy manangers were found in kernel: " + METADATA_MANAGER_QUERY);
+            }
+            ObjectName metdataManagerName = (ObjectName) names.iterator().next();
+            MetadataManager metadataManager = (MetadataManager) kernel.getService(metdataManagerName);
+
             LiveHashSet repositories = new LiveHashSet(kernel, "repositories", Collections.singleton(new ObjectName("*:j2eeType=Repository,*")));
             repositories.start();
             ConfigurationInfo configurationInfo = loadConfigurationInfo(location);
@@ -98,10 +107,6 @@ public class SpringLoader implements Loader {
             }
 
             // convert properties into named constructor args
-            List metadataProviders = new ArrayList(2);
-            metadataProviders.add(new GeronimoMetadataProvider());
-            metadataProviders.add(new PropertiesMetadataProvider());
-            MetadataManager metadataManager = new SimpleMetadataManager(metadataProviders);
             NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
             namedConstructorArgs.postProcessBeanFactory(factory);
 
@@ -135,6 +140,8 @@ public class SpringLoader implements Loader {
             ObjectName configurationObjectName = springConfiguration.getObjectName();
             kernel.loadService(configurationObjectName, springServiceFactory, classLoader);
             return configurationObjectName;
+        } catch (InvalidConfigurationException e) {
+            throw e;
         } catch (Exception e) {
             throw new InvalidConfigurationException("Unable to load configuration: " + location, e);
         }

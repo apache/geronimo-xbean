@@ -14,26 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.spring;
-
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
+package org.gbean.geronimo;
 
 /**
  * @version $Rev$ $Date$
  */
-public class NamedValueHolder extends ConstructorArgumentValues.ValueHolder {
-    private String name;
-
-    public NamedValueHolder(String name, Object value, String type) {
-        super(value, type);
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+public class KernelBridgeFactory extends org.apache.geronimo.kernel.KernelFactory {
+    public org.apache.geronimo.kernel.Kernel createKernel(String kernelName) {
+        return new KernelBridge(kernelName);
     }
 }

@@ -63,8 +63,8 @@ public class LifecycleDetector implements BeanFactoryPostProcessor {
 
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         SpringVisitor visitor = new AbstractSpringVisitor() {
-            public void visitBeanDefinition(BeanDefinition beanDefinition) throws BeansException {
-                super.visitBeanDefinition(beanDefinition);
+            public void visitBeanDefinition(BeanDefinition beanDefinition, Object data) throws BeansException {
+                super.visitBeanDefinition(beanDefinition, data);
 
                 if (!(beanDefinition instanceof RootBeanDefinition)) {
                     return;
@@ -89,7 +89,7 @@ public class LifecycleDetector implements BeanFactoryPostProcessor {
                 }
             }
         };
-        visitor.visitBeanFactory(beanFactory);
+        visitor.visitBeanFactory(beanFactory, null);
     }
 
     private static class LifecycleMethods {

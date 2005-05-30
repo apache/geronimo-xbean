@@ -19,7 +19,7 @@ package org.gbean.configuration;
 /**
  * @version $Revision$ $Date$
  */
-public class InvalidConfigurationException extends Exception {
+public class InvalidConfigurationException extends RuntimeException {
     public InvalidConfigurationException() {
     }
 

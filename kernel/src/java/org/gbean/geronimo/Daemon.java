@@ -19,18 +19,18 @@ package org.gbean.geronimo;
 import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.JarURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.Manifest;
 import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
@@ -111,6 +111,7 @@ public class Daemon {
             // create the kernel
 
             // create a geronimo kernel bridge so services needing a geronio kernel can get one
+            // this must be "geronimo.server" since a ton of geronimo code has this hard coded
             final KernelBridge kernelBridge = new KernelBridge("geronimo.server");
 
             // boot the kernel

@@ -20,64 +20,108 @@ package org.gbean.geronimo;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Map;
+import java.util.Collections;
 import javax.management.ObjectName;
 
-import org.gbean.service.ServiceContext;
-import org.gbean.kernel.runtime.ServiceInstanceUtil;
-import org.gbean.kernel.ServiceNotFoundException;
 import org.gbean.kernel.ClassLoading;
+import org.gbean.kernel.ServiceNotFoundException;
+import org.gbean.kernel.runtime.ServiceInstanceUtil;
 import org.gbean.proxy.ProxyManager;
+import org.gbean.service.ServiceContext;
 import org.gbean.spring.ServiceContextThreadLocal;
+import org.gbean.spring.DependencyProvider;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 
 /**
  * @version $Rev: 71492 $ $Date: 2004-11-14 21:31:50 -0800 (Sun, 14 Nov 2004) $
  */
-public class SingletonReference implements FactoryBean, Serializable {
-    public static BeanDefinitionHolder createBeanDefinition(String propertyName, Set patterns, String referenceType) {
+public class SingletonReference implements FactoryBean, DependencyProvider, Serializable {
+    public static BeanDefinitionHolder createBeanDefinition(String name, Set patterns, String referenceType) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition(SingletonReference.class, 0);
-        ConstructorArgumentValues args = beanDefinition.getConstructorArgumentValues();
-        args.addIndexedArgumentValue(0, propertyName, String.class.getName());
-        args.addIndexedArgumentValue(1, patterns, Set.class.getName());
-        args.addIndexedArgumentValue(2, referenceType, String.class.getName());
+        MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
+        propertyValues.addPropertyValue("name", name);
+        propertyValues.addPropertyValue("patterns", patterns);
+        propertyValues.addPropertyValue("referenceType", referenceType);
         return new BeanDefinitionHolder(beanDefinition, SingletonReference.class.getName());
+    }
+
+    public static Map getDependencies(RootBeanDefinition beanDefinition) {
+        if (!beanDefinition.getBeanClass().equals(SingletonReference.class)) {
+            throw new IllegalArgumentException("Bean definition is for another bean type:" +
+                    " expected=" + SingletonReference.class.getName() +
+                    " actual=" + beanDefinition.getBeanClass().getName());
+        }
+        MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
+        if (!propertyValues.contains("name")) {
+            throw new IllegalArgumentException("Bean definition does not contain a name property");
+        }
+        String name = (String) propertyValues.getPropertyValue("name").getValue();
+        if (!propertyValues.contains("patterns")) {
+            throw new IllegalArgumentException("Bean definition does not contain a patterns property: name=" + name);
+        }
+        Set patterns = (Set) propertyValues.getPropertyValue("patterns").getValue();
+        return Collections.singletonMap(name, patterns);
     }
 
     /**
      * Name of this reference.
      */
-    private final String name;
+    private String name;
 
     /**
      * Proxy type which is injected into the service.
      */
-    private final String objectTypeName;
+    private String referenceType;
 
     /**
      * The target objectName patterns to watch for a connection.
      */
-    private final Set patterns;
+    private Set patterns;
 
     /**
      * Proxy type which is injected into the service.
      */
     private transient Class objectType;
 
-    public SingletonReference(String name, Set patterns, String objectTypeName) {
-        this.name = name;
-        this.patterns = patterns;
-        this.objectTypeName = objectTypeName;
+    public SingletonReference() {
     }
 
-    public final String getName() {
+    public SingletonReference(String name, Set patterns, String referenceType) {
+        this.name = name;
+        this.patterns = patterns;
+        this.referenceType = referenceType;
+    }
+
+    public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getReferenceType() {
+        return referenceType;
+    }
+
+    public void setReferenceType(String referenceType) {
+        this.referenceType = referenceType;
     }
 
     public Set getPatterns() {
         return patterns;
+    }
+
+    public void setPatterns(Set patterns) {
+        this.patterns = patterns;
+    }
+
+    public Map getDependencies() {
+        return Collections.singletonMap(name, patterns);
     }
 
     public final Class getObjectType() {
@@ -88,7 +132,7 @@ public class SingletonReference implements FactoryBean, Serializable {
         synchronized (this) {
             if (objectType == null) {
                 try {
-                    objectType = ClassLoading.loadClass(objectTypeName, serviceContext.getClassLoader());
+                    objectType = ClassLoading.loadClass(referenceType, serviceContext.getClassLoader());
                 } catch (ClassNotFoundException e) {
                     throw new IllegalStateException("Could not load singleton reference object type");
                 }
@@ -104,7 +148,7 @@ public class SingletonReference implements FactoryBean, Serializable {
         }
         synchronized (this) {
             if (objectType == null) {
-                objectType = ClassLoading.loadClass(objectTypeName, serviceContext.getClassLoader());
+                objectType = ClassLoading.loadClass(referenceType, serviceContext.getClassLoader());
             }
         }
 

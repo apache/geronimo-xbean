@@ -19,61 +19,112 @@ package org.gbean.geronimo;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.management.ObjectName;
 
-import org.apache.geronimo.gbean.DynamicGBean;
+import org.apache.geronimo.gbean.GBeanLifecycleController;
+import org.apache.geronimo.kernel.Kernel;
+import org.gbean.metadata.ClassMetadata;
+import org.gbean.metadata.ConstructorMetadata;
+import org.gbean.metadata.MetadataManager;
+import org.gbean.metadata.ParameterMetadata;
 import org.gbean.proxy.ProxyManager;
 import org.gbean.service.ConfigurableServiceFactory;
 import org.gbean.service.ServiceContext;
-import org.gbean.spring.NamedValueHolder;
+import org.gbean.spring.LifecycleDetector;
+import org.gbean.spring.NamedConstructorArgs;
 import org.gbean.spring.ServiceContextThreadLocal;
+import org.gbean.spring.SpringUtil;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
  * @version $Revision$ $Date$
  */
 public class GeronimoServiceFactory implements ConfigurableServiceFactory {
-    private final Map dependencies = new HashMap();
+    private final MetadataManager metadataManager;
+    private final Set persistentProperties;
+    private final ConstructorMetadata constructor;
+    private final Map dependencies;
+    private final Map dynamicProperties;
     private final ProxyManager proxyManager;
-    private GBeanDefinition gbeanDefinition;
+    private RootBeanDefinition beanDefinition;
     private GenericApplicationContext applicationContext;
     private Object service;
+    private boolean enabled;
+    private final List constructorArgNames;
 
-    public GeronimoServiceFactory(ProxyManager proxyManager, GBeanDefinition gbeanDefinition) {
+    public GeronimoServiceFactory(RootBeanDefinition beanDefinition, Map dynamicProperties, MetadataManager metadataManager, ProxyManager proxyManager) throws Exception {
+        this.metadataManager = metadataManager;
         this.proxyManager = proxyManager;
-        this.gbeanDefinition = gbeanDefinition;
-        // add the dependencies
-        String[] dependsOn = gbeanDefinition.getDependsOn();
-        if (dependsOn != null) {
-            for (int i = 0; i < dependsOn.length; i++) {
-                String dependencyString = dependsOn[i];
-                Map map = GeronimoUtil.stringToDependency(dependencyString);
-                Map.Entry entry = ((Map.Entry) map.entrySet().iterator().next());
-                String dependencyName = (String) entry.getKey();
-                Set patterns = (Set) entry.getValue();
-                dependencies.put(dependencyName, patterns);
+        this.beanDefinition = beanDefinition;
+        this.dynamicProperties = dynamicProperties;
+        dependencies = SpringUtil.extractDependencies(beanDefinition, Collections.EMPTY_MAP);
+
+        // find the constructor... geronimo always uses the same constructor
+        ClassMetadata classMetadata = metadataManager.getClassMetadata(beanDefinition.getBeanClass());
+        ConstructorMetadata constructorMetadata = null;
+        for (Iterator iterator = classMetadata.getConstructors().iterator(); iterator.hasNext();) {
+            ConstructorMetadata c = (ConstructorMetadata) iterator.next();
+            if (c.getProperties().containsKey("always-use")) {
+                constructorMetadata = c;
+                break;
             }
         }
-    }
+        constructor = constructorMetadata;
 
-    public GBeanDefinition getGBeanDefinition() {
-        GBeanDefinition gbeanDefinition = new GBeanDefinition(this.gbeanDefinition);
-        if (service != null) {
-            updatePersistentValues(service, gbeanDefinition);
+        // determine the constructor arg names... these are alwasys defined in the gbean info
+        List constructorArgNames = new LinkedList();
+        for (Iterator iterator = constructor.getParameters().iterator(); iterator.hasNext();) {
+            ParameterMetadata parameter = (ParameterMetadata) iterator.next();
+            Object parameterName = parameter.get("name");
+            if (parameterName == null) {
+                throw new IllegalArgumentException("Parameter name is not defined");
+            }
+            constructorArgNames.add(parameterName);
         }
-        return this.gbeanDefinition;
+        this.constructorArgNames = Collections.unmodifiableList(constructorArgNames);
+
+        // determine the persistent properties
+        Set persistentProperties = (Set) classMetadata.get("persistentProperties");
+        if (persistentProperties == null) {
+            persistentProperties = Collections.EMPTY_SET;
+        }
+        this.persistentProperties = Collections.unmodifiableSet(persistentProperties);
     }
 
-    public void setGBeanDefinition(GBeanDefinition gbeanDefinition) {
-        this.gbeanDefinition = gbeanDefinition;
+    public Set getPersistentProperties() {
+        return persistentProperties;
+    }
+
+    public List getConstructorArgNames() {
+        return constructorArgNames;
+    }
+
+    public Map getDynamicProperties() {
+        return dynamicProperties;
+    }
+
+    public RootBeanDefinition getBeanDefinition() {
+        RootBeanDefinition beanDefinition = new RootBeanDefinition(this.beanDefinition);
+        if (service != null) {
+            updatePersistentValues(service, beanDefinition);
+        }
+        return this.beanDefinition;
+    }
+
+    public void setBeanDefinition(RootBeanDefinition beanDefinition) {
+        this.beanDefinition = beanDefinition;
     }
 
     public Map getDependencies() {
@@ -88,28 +139,50 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
         try {
             Object service = null;
             ServiceContext oldServiceContext = ServiceContextThreadLocal.get();
+            ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
             try {
                 ServiceContextThreadLocal.set(serviceContext);
+                Thread.currentThread().setContextClassLoader(serviceContext.getClassLoader());
+
+                // dereference all factories
+                MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
+                PropertyValue[] values = propertyValues.getPropertyValues();
+                for (int i = 0; i < values.length; i++) {
+                    PropertyValue propertyValue = values[i];
+                    if (propertyValue.getValue() instanceof FactoryBean) {
+                        FactoryBean factoryBean = (FactoryBean) propertyValue.getValue();
+                        Object object = factoryBean.getObject();
+                        propertyValues.removePropertyValue(propertyValue.getName());
+                        propertyValues.addPropertyValue(propertyValue.getName(), object);
+                    }
+                }
 
                 applicationContext = new GenericApplicationContext();
-                GBeanDefinition gbeanDefinition = new GBeanDefinition(this.gbeanDefinition);
-                // todo remove the depends on usage stuff
-                // clear the depends on flag since it is used to signal geronimo dependencies and not spring dependencies
-                gbeanDefinition.setDependsOn(new String[0]);
-                applicationContext.registerBeanDefinition(serviceContext.getObjectName(), gbeanDefinition);
+
+                // register the post processors
+                NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
+                namedConstructorArgs.addDefaultValue("objectName", String.class, serviceContext.getObjectName());
+                namedConstructorArgs.addDefaultValue("objectName", ObjectName.class, new ObjectName(serviceContext.getObjectName()));
+                namedConstructorArgs.addDefaultValue("classLoader", ClassLoader.class, serviceContext.getClassLoader());
+                namedConstructorArgs.addDefaultValue("gbeanLifecycleController", GBeanLifecycleController.class, new GeronimoLifecycleControllerReference().getObject());
+                namedConstructorArgs.addDefaultValue("kernel", Kernel.class, serviceContext.getKernel().getService(Kernel.KERNEL));
+
+                applicationContext.addBeanFactoryPostProcessor(namedConstructorArgs);
+                LifecycleDetector lifecycleDetector = new LifecycleDetector();
+                lifecycleDetector.addLifecycleInterface(org.apache.geronimo.gbean.GBeanLifecycle.class, "doStart", "doStop");
+                applicationContext.addBeanFactoryPostProcessor(lifecycleDetector);
+                applicationContext.getBeanFactory().addBeanPostProcessor(new DynamicGBeanProcessor(serviceContext.getObjectName(), dynamicProperties));
+
+                // copy the bean definition, so we don't modify the original value
+                RootBeanDefinition beanDefinition = new RootBeanDefinition(this.beanDefinition);
+
+                // build the bean
+                applicationContext.registerBeanDefinition(serviceContext.getObjectName(), beanDefinition);
                 applicationContext.refresh();
                 service = applicationContext.getBean(serviceContext.getObjectName());
-
-                // add the properties
-                MutablePropertyValues dynamicPropertyValues = gbeanDefinition.getDynamicPropertyValues();
-                for (int i = 0; i < dynamicPropertyValues.getPropertyValues().length; i++) {
-                    PropertyValue property = dynamicPropertyValues.getPropertyValues()[i];
-                    String propertyName = property.getName();
-                    Object propertyValue = property.getValue();
-                    ((DynamicGBean) service).setAttribute(propertyName, propertyValue);
-                }
             } finally {
                 ServiceContextThreadLocal.set(oldServiceContext);
+                Thread.currentThread().setContextClassLoader(oldClassLoader);
             }
             this.service = service;
             return service;
@@ -131,9 +204,9 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
         try {
             if (service != null) {
                 // update the persistent values
-                GBeanDefinition gbeanDefinition = new GBeanDefinition(this.gbeanDefinition);
-                updatePersistentValues(service, gbeanDefinition);
-                this.gbeanDefinition = gbeanDefinition;
+                RootBeanDefinition beanDefinition = new RootBeanDefinition(this.beanDefinition);
+                updatePersistentValues(service, beanDefinition);
+                this.beanDefinition = beanDefinition;
             }
         } finally {
             this.service = null;
@@ -145,101 +218,57 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
     }
 
     public boolean isEnabled() {
-        return gbeanDefinition.isEnabled();
+        return enabled;
     }
 
     public void setEnabled(boolean enabled) {
-        gbeanDefinition.setEnabled(enabled);
+        this.enabled = enabled;
     }
 
     public Set getPropertyNames() {
-        Set propertyNames = new HashSet();
-
-        PropertyValue[] propertyValues = gbeanDefinition.getPropertyValues().getPropertyValues();
-        for (int i = 0; i < propertyValues.length; i++) {
-            PropertyValue propertyValue = propertyValues[i];
-            propertyNames.add(propertyValue.getName());
+        if (persistentProperties != null) {
+            return persistentProperties;
+        } else {
+            return Collections.EMPTY_SET;
         }
-
-        PropertyValue[] dynamicPropertyValues = gbeanDefinition.getDynamicPropertyValues().getPropertyValues();
-        for (int i = 0; i < dynamicPropertyValues.length; i++) {
-            PropertyValue dynamicPropertyValue = dynamicPropertyValues[i];
-            propertyNames.add(dynamicPropertyValue.getName());
-        }
-
-        Map indexedArgumentValues = gbeanDefinition.getConstructorArgumentValues().getIndexedArgumentValues();
-        for (Iterator iterator = indexedArgumentValues.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            Integer index = (Integer) entry.getKey();
-            ConstructorArgumentValues.ValueHolder valueHolder = (ConstructorArgumentValues.ValueHolder) entry.getValue();
-            String propertyName = null;
-            if (valueHolder instanceof NamedValueHolder) {
-                propertyName = ((NamedValueHolder) valueHolder).getName();
-            } else {
-                propertyName = "constructor-argument-" + index;
-            }
-            propertyNames.add(propertyName);
-        }
-        return propertyNames;
     }
 
     public Object getProperty(String propertyName) {
-        PropertyValue propertyValue = gbeanDefinition.getPropertyValues().getPropertyValue(propertyName);
+        if (persistentProperties == null || !persistentProperties.contains(propertyName)) {
+            throw new IllegalArgumentException("Property is not persistent:" +
+                    " propertyName=" + propertyName +
+                    ", serviceType: " + beanDefinition.getBeanClassName());
+        }
+
+        PropertyValue propertyValue = beanDefinition.getPropertyValues().getPropertyValue(propertyName);
         if (propertyValue != null) {
             return propertyValue.getValue();
         }
 
-        propertyValue = gbeanDefinition.getDynamicPropertyValues().getPropertyValue(propertyName);
-        if (propertyValue != null) {
-            return propertyValue.getValue();
+        if (dynamicProperties.containsKey(propertyName)) {
+            return dynamicProperties.get(propertyValue);
         }
 
-        Map indexedArgumentValues = gbeanDefinition.getConstructorArgumentValues().getIndexedArgumentValues();
-        for (Iterator iterator = indexedArgumentValues.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            ConstructorArgumentValues.ValueHolder valueHolder = (ConstructorArgumentValues.ValueHolder) entry.getValue();
-            if (valueHolder instanceof NamedValueHolder) {
-                if (propertyName.equals(((NamedValueHolder) valueHolder).getName())) {
-                    return valueHolder.getValue();
-                }
-            }
-        }
-
-        throw new IllegalArgumentException("Property is not persistent:" +
-                " propertyName=" + propertyName +
-                ", serviceName: " + gbeanDefinition.getObjectName().getCanonicalName());
+        return null;
     }
 
     public void setProperty(String propertyName, Object persistentValue) {
-        if (gbeanDefinition.getPropertyValues().contains(propertyName)) {
-            gbeanDefinition.getPropertyValues().removePropertyValue(propertyName);
-            gbeanDefinition.getPropertyValues().addPropertyValue(propertyName, persistentValue);
+        if (persistentProperties == null || !persistentProperties.contains(propertyName)) {
+            throw new IllegalArgumentException("Property is not persistent:" +
+                    " propertyName=" + propertyName +
+                    ", serviceType: " + beanDefinition.getBeanClassName());
+        }
+
+        if (dynamicProperties.containsKey(propertyName)) {
+            dynamicProperties.put(propertyName, persistentValue);
             return;
         }
 
-        if (gbeanDefinition.getDynamicPropertyValues().contains(propertyName)) {
-            gbeanDefinition.getDynamicPropertyValues().removePropertyValue(propertyName);
-            gbeanDefinition.getDynamicPropertyValues().addPropertyValue(propertyName, persistentValue);
-            return;
-        }
-
-        for (Iterator iterator = gbeanDefinition.getConstructorArgumentValues().getIndexedArgumentValues().values().iterator(); iterator.hasNext();) {
-            ConstructorArgumentValues.ValueHolder valueHolder = (ConstructorArgumentValues.ValueHolder) iterator.next();
-            if (valueHolder instanceof NamedValueHolder) {
-                NamedValueHolder namedValueHolder = (NamedValueHolder) valueHolder;
-                if (propertyName.equals(namedValueHolder.getName())) {
-                    namedValueHolder.setValue(persistentValue);
-                    return;
-                }
-            }
-        }
-
-        throw new IllegalArgumentException("Property is not persistent:" +
-                " propertyName=" + propertyName +
-                ", serviceName: " + gbeanDefinition.getObjectName().getCanonicalName());
+        beanDefinition.getPropertyValues().removePropertyValue(propertyName);
+        beanDefinition.getPropertyValues().addPropertyValue(propertyName, persistentValue);
     }
 
-    private void updatePersistentValues(Object service, GBeanDefinition gbeanDefinition) {
+    private void updatePersistentValues(Object service, RootBeanDefinition beanDefinition) {
         Map getters = new HashMap();
         Method[] methods = service.getClass().getMethods();
         for (int i = 0; i < methods.length; i++) {
@@ -258,35 +287,25 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
             }
         }
 
-        PropertyValue[] propertyValues = gbeanDefinition.getPropertyValues().getPropertyValues();
-        for (int i = 0; i < propertyValues.length; i++) {
-            String propertyName = propertyValues[i].getName();
-            Object value = getCurrentValue(getters, service, propertyName, propertyValues[i].getValue());
-            if (value != null) {
-                gbeanDefinition.getPropertyValues().removePropertyValue(propertyName);
-                gbeanDefinition.getPropertyValues().addPropertyValue(propertyName, value);
-            }
-        }
+        for (Iterator iterator = persistentProperties.iterator(); iterator.hasNext();) {
+            String propertyName = (String) iterator.next();
 
-        PropertyValue[] dynamicPropertyValues = gbeanDefinition.getDynamicPropertyValues().getPropertyValues();
-        for (int i = 0; i < dynamicPropertyValues.length; i++) {
-            String propertyName = dynamicPropertyValues[i].getName();
-            Object value = getCurrentValue(getters, service, propertyName, dynamicPropertyValues[i].getValue());
-            if (value != null) {
-                gbeanDefinition.getDynamicPropertyValues().removePropertyValue(propertyName);
-                gbeanDefinition.getDynamicPropertyValues().addPropertyValue(propertyName, value);
-            }
-        }
+            if (dynamicProperties.containsKey(propertyName)) {
+                Object value = getCurrentValue(getters, service, propertyName, dynamicProperties.get(propertyName));
+                dynamicProperties.put(propertyName, value);
+            } else {
+                // get the new property value
+                Object value = null;
+                PropertyValue propertyValue = beanDefinition.getPropertyValues().getPropertyValue(propertyName);
+                if (propertyValue != null) {
+                    value = propertyValue.getValue();
+                }
+                value = getCurrentValue(getters, service, propertyName, value);
 
-        Map indexedArgumentValues = gbeanDefinition.getConstructorArgumentValues().getIndexedArgumentValues();
-        for (Iterator iterator = indexedArgumentValues.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            ConstructorArgumentValues.ValueHolder valueHolder = (ConstructorArgumentValues.ValueHolder) entry.getValue();
-            if (valueHolder instanceof NamedValueHolder) {
-                String argName = ((NamedValueHolder) valueHolder).getName();
-                Object value = getCurrentValue(getters, service, argName, valueHolder.getValue());
+                // update the property value
+                beanDefinition.getPropertyValues().removePropertyValue(propertyName);
                 if (value != null) {
-                    valueHolder.setValue(value);
+                    beanDefinition.getPropertyValues().addPropertyValue(propertyName, value);
                 }
             }
         }
@@ -306,10 +325,18 @@ public class GeronimoServiceFactory implements ConfigurableServiceFactory {
 
             throw new RuntimeException("Problem while obtaining the currennt persistent value of property: " +
                     "propertyName=" + propertyName +
-                    ", serviceName: " + gbeanDefinition.getObjectName().getCanonicalName(),
+                    ", serviceType: " + beanDefinition.getBeanClassName(),
                     throwable);
         }
 
+        // we should never get a bean definition holder
+        // we don't support them sice it is not serizlizable
+        if (value instanceof BeanDefinitionHolder) {
+            throw new IllegalArgumentException("Got a bean definition holder");
+        }
+
+        // turn proxies back into the factory bean
+        // the factory bean is serizlizable
         if (value instanceof FactoryBeanProvider) {
             value = ((FactoryBeanProvider) value).getFactoryBean();
         } else {
