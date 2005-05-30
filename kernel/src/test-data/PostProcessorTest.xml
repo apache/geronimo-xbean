@@ -17,7 +17,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
     <bean name="hal" class="org.gbean.spring.HelloMessage">
-        <property name="gbean-objectName"><value>foo:name=hello,j2eeType=HelloMessage</value></property>
+        <property name="gbean-object-name"><value>foo:name=hello,j2eeType=HelloMessage</value></property>
         <property name="prefix"><value>I'm sorry </value></property>
         <property name="suffix"><value>; I'm afraid I can't do that.</value></property>
     </bean>

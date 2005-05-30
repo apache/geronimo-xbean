@@ -43,9 +43,9 @@ public class ObjectNameBuilderTest extends TestCase {
         assertTrue(factory.containsBeanDefinition(beanName));
         BeanDefinition beanDefinition = factory.getBeanDefinition(beanName);
         assertNotNull(beanDefinition);
-        assertTrue(beanDefinition.getPropertyValues().contains("gbean-objectName"));
+        assertTrue(beanDefinition.getPropertyValues().contains("gbean-object-name"));
 
-        ObjectName objectName = ServiceName.createName((String) beanDefinition.getPropertyValues().getPropertyValue("gbean-objectName").getValue());
+        ObjectName objectName = ServiceName.createName((String) beanDefinition.getPropertyValues().getPropertyValue("gbean-object-name").getValue());
 
         // convert properties into named constructor args
         List metadataProviders = new ArrayList(2);
@@ -55,7 +55,7 @@ public class ObjectNameBuilderTest extends TestCase {
         ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(metadataManager, "domain", "server", "application");
         objectNameBuilder.postProcessBeanFactory(factory);
 
-        assertFalse(beanDefinition.getPropertyValues().contains("gbean-objectName"));
+        assertFalse(beanDefinition.getPropertyValues().contains("gbean-object-name"));
         assertEquals(objectName, objectNameBuilder.getObjectName(beanName));
     }
 
@@ -64,7 +64,7 @@ public class ObjectNameBuilderTest extends TestCase {
         assertTrue(factory.containsBeanDefinition(beanName));
         BeanDefinition beanDefinition = factory.getBeanDefinition(beanName);
         assertNotNull(beanDefinition);
-        assertFalse(beanDefinition.getPropertyValues().contains("gbean-objectName"));
+        assertFalse(beanDefinition.getPropertyValues().contains("gbean-object-name"));
 
         // convert properties into named constructor args
         List metadataProviders = new ArrayList(2);
@@ -78,7 +78,7 @@ public class ObjectNameBuilderTest extends TestCase {
 
         objectNameBuilder.postProcessBeanFactory(factory);
 
-        assertFalse(beanDefinition.getPropertyValues().contains("gbean-objectName"));
+        assertFalse(beanDefinition.getPropertyValues().contains("gbean-object-name"));
         assertEquals(objectName, objectNameBuilder.getObjectName(beanName));
     }
 

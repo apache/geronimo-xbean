@@ -22,22 +22,19 @@
     </bean>
 
     <bean name="ServerInfo" class="org.apache.geronimo.system.serverinfo.ServerInfo">
-        <property name="gbean-objectName"><value>geronimo.server:J2EEServer=geronimo,J2EEApplication=null,J2EEModule=org/apache/geronimo/System,j2eeType=GBean,name=ServerInfo</value></property>
+        <property name="gbean-object-name"><value>geronimo.server:J2EEServer=geronimo,J2EEApplication=null,J2EEModule=org/apache/geronimo/System,j2eeType=GBean,name=ServerInfo</value></property>
 
- </bean>
+    </bean>
 
     <bean name="URLFactory" class="org.apache.geronimo.system.url.GeronimoURLFactory"/>
 
     <bean name="LocalConfigurationStore" class="org.apache.geronimo.system.configuration.LocalConfigStore">
-        <property name="gbean-objectName"><value>geronimo.server:J2EEApplication=null,J2EEModule=org/apache/geronimo/System,J2EEServer=geronimo,j2eeType=ConfigurationStore,name=Local</value></property>
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
-        <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
+        <property name="gbean-object-name"><value>geronimo.server:J2EEApplication=null,J2EEModule=org/apache/geronimo/System,J2EEServer=geronimo,j2eeType=ConfigurationStore,name=Local</value></property>
         <property name="root"><value>config-store</value></property>
         <property name="serverInfo"><ref bean="ServerInfo"/></property>
     </bean>
 
     <bean name="ConfigurationManager" class="org.apache.geronimo.kernel.config.ConfigurationManagerImpl">
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
         <property name="stores">
             <bean class="org.gbean.spring.LiveProxyHashSetReference">
                 <property name="name"><value>Stores</value></property>
@@ -48,7 +45,6 @@
     </bean>
 
     <bean name="FileConfigurationList" class="org.apache.geronimo.system.configuration.FileConfigurationList">
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
         <property name="serverInfo"><ref bean="ServerInfo"/></property>
         <property name="configurationManager"><ref bean="ConfigurationManager"/></property>
         <property name="configFile"><value>var/config/config.list</value></property>
@@ -71,7 +67,6 @@
 
     <bean name="properties-login" class="org.apache.geronimo.security.jaas.LoginModuleGBean">
         <property name="loginModuleClass"><value>org.apache.geronimo.security.realm.providers.PropertiesFileLoginModule</value></property>
-        <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
         <property name="serverSide"><value>true</value></property>
         <property name="options">
             <props>
@@ -86,8 +81,6 @@
         <property name="realmName"><value>geronimo-properties-realm</value></property>
         <property name="loginModuleConfiguration"><ref bean="properties-login-options"/></property>
         <property name="serverInfo"><ref bean="ServerInfo"/></property>
-        <property name="classLoader"><bean class="org.gbean.spring.ClassLoaderReference"/></property>
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
     </bean>
 
     <bean name="properties-login-options" class="org.apache.geronimo.security.jaas.JaasLoginModuleUse">
@@ -98,7 +91,6 @@
     <bean name="JMX" class="org.apache.geronimo.security.jaas.ServerRealmConfigurationEntry">
         <property name="applicationConfigName"><value>JMX</value></property>
         <property name="realmName"><value>geronimo-properties-realm</value></property>
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
     </bean>
 
     <bean name="LoginConfiguration" class="org.apache.geronimo.security.jaas.GeronimoLoginConfiguration">
@@ -117,17 +109,15 @@
     </bean>
 
     <bean name="SecurityService" class="org.apache.geronimo.security.SecurityServiceImpl">
-        <property name="classLoader"><bean class="org.gbean.spring.ClassLoaderReference"/></property>
         <property name="serverInfo"><ref bean="ServerInfo"/></property>
         <property name="policyConfigurationFactory"><value>org.apache.geronimo.security.jacc.GeronimoPolicyConfigurationFactory</value></property>
         <property name="policyProvider"><value>org.apache.geronimo.security.jacc.GeronimoPolicy</value></property>
     </bean>
 
     <bean name="JaasLoginService" class="org.apache.geronimo.security.jaas.JaasLoginService">
-        <property name="gbean-objectName"><value>geronimo.server:J2EEApplication=null,J2EEModule=org/apache/geronimo/Server,J2EEServer=geronimo,j2eeType=GBean,name=JaasLoginService</value></property>
+        <property name="gbean-object-name"><value>geronimo.server:J2EEApplication=null,J2EEModule=org/apache/geronimo/Server,J2EEServer=geronimo,j2eeType=GBean,name=JaasLoginService</value></property>
         <property name="algorithm"><value>HmacSHA1</value></property>
         <property name="password"><value>secret</value></property>
-        <property name="classLoader"><bean class="org.gbean.spring.ClassLoaderReference"/></property>
         <property name="realms">
             <bean class="org.gbean.geronimo.CollectionReference">
                 <property name="name"><value>realms</value></property>
@@ -141,7 +131,6 @@
         <property name="poolSize"><value>10</value></property>
         <property name="poolName"><value>DefaultThreadPool</value></property>
         <property name="keepAliveTime"><value>5000</value></property>
-        <property name="classLoader"><bean class="org.gbean.spring.ClassLoaderReference"/></property>
     </bean>
 
     <bean name="ConnectionTracker" class="org.apache.geronimo.connector.outbound.connectiontracking.ConnectionTrackingCoordinator"/>
@@ -250,9 +239,6 @@
     </bean>
 
     <bean name="JMXService" class="org.apache.geronimo.jmxremoting.JMXConnector" depends-on="NamingProperties, RMIRegistry">
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
-        <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
-        <property name="classLoader"><bean class="org.gbean.spring.ClassLoaderReference"/></property>
         <property name="url"><value>service:jmx:rmi://localhost/jndi/rmi:/JMXConnector</value></property>
         <property name="applicationConfigName"><value>JMX</value></property>
     </bean>
@@ -260,26 +246,20 @@
     <bean name="eis/JAXR" class="org.apache.geronimo.webservices.jaxr.JAXRGBean"/>
 
     <bean name="J2EEDomain" class="org.apache.geronimo.j2ee.management.impl.J2EEDomainImpl">
-        <property name="gbean-objectName"><value>geronimo.server:j2eeType=J2EEDomain,name=geronimo.server</value></property>
-        <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
+        <property name="gbean-object-name"><value>geronimo.server:j2eeType=J2EEDomain,name=geronimo.server</value></property>
     </bean>
 
     <bean name="J2EEServer" class="org.apache.geronimo.j2ee.management.impl.J2EEServerImpl">
-        <property name="gbean-objectName"><value>geronimo.server:j2eeType=J2EEServer,name=geronimo</value></property>
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
-        <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
+        <property name="gbean-object-name"><value>geronimo.server:j2eeType=J2EEServer,name=geronimo</value></property>
         <property name="serverInfo"><ref bean="ServerInfo"/></property>
     </bean>
 
     <bean name="JVM" class="org.apache.geronimo.j2ee.management.impl.JVMImpl">
-        <property name="gbean-objectName"><value>geronimo.server:j2eeType=JVM,J2EEServer=geronimo,name=JVM</value></property>
-        <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
+        <property name="gbean-object-name"><value>geronimo.server:j2eeType=JVM,J2EEServer=geronimo,name=JVM</value></property>
     </bean>
 
     <bean name="MEJB" class="org.openejb.mejb.MEJB">
-        <property name="gbean-objectName"><value>geronimo.server:J2EEApplication=null,EJBModule=org/apache/geronimo/Server,J2EEServer=geronimo,j2eeType=StatelessSessionBean,name=ejb/mgmt/MEJB</value></property>
-        <property name="objectName"><bean class="org.gbean.spring.ObjectNameStringReference"/></property>
-        <property name="kernel"><bean class="org.gbean.geronimo.GeronimoKernelReference"/></property>
+        <property name="gbean-object-name"><value>geronimo.server:J2EEApplication=null,EJBModule=org/apache/geronimo/Server,J2EEServer=geronimo,j2eeType=StatelessSessionBean,name=ejb/mgmt/MEJB</value></property>
     </bean>
 
 </beans>

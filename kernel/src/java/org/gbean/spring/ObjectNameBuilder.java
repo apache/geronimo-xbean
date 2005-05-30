@@ -35,7 +35,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * @version $Revision$ $Date$
  */
 public class ObjectNameBuilder implements BeanFactoryPostProcessor {
-    private static final String OBJECT_NAME_PROPERTY = "gbean-objectName";
+    private static final String OBJECT_NAME_PROPERTY = "gbean-object-name";
     private final MetadataManager metadataManager;
     private final String domainName;
     private final String serverName;

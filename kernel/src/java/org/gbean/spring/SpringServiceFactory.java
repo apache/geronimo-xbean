@@ -23,8 +23,11 @@ import java.util.Set;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.gbean.kernel.simple.SimpleLifecycle;
+import org.gbean.kernel.Kernel;
 import org.gbean.service.ConfigurableServiceFactory;
 import org.gbean.service.ServiceContext;
+import org.gbean.metadata.MetadataManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -43,14 +46,15 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
     private static final String ROOT_BEAN_DEFINITION = "RootBeanDefinition";
     private final Map dependencies;
     private final Map objectNameMap;
+    private final MetadataManager metadataManager;
     private RootBeanDefinition beanDefinition;
     private GenericApplicationContext applicationContext;
     private boolean enabled = true;
 
-    public SpringServiceFactory(RootBeanDefinition beanDefinition, Map objectNameMap) throws Exception {
+    public SpringServiceFactory(RootBeanDefinition beanDefinition, Map objectNameMap, MetadataManager metadataManager) throws Exception {
         this.beanDefinition = beanDefinition;
         this.objectNameMap = objectNameMap;
-
+        this.metadataManager = metadataManager;
         dependencies = SpringUtil.extractDependencies(beanDefinition, objectNameMap);
     }
 
@@ -188,11 +192,30 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
                         throw new UnsupportedOperationException();
                     }
                 };
+
+
                 applicationContext = new GenericApplicationContext(parent);
+
+                // register the post processors
+                NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
+                namedConstructorArgs.addDefaultValue("objectName", String.class, serviceContext.getObjectName());
+                namedConstructorArgs.addDefaultValue("objectName", ObjectName.class, new ObjectName(serviceContext.getObjectName()));
+                namedConstructorArgs.addDefaultValue("classLoader", ClassLoader.class, serviceContext.getClassLoader());
+                namedConstructorArgs.addDefaultValue("kernel", org.apache.geronimo.kernel.Kernel.class, serviceContext.getKernel().getService(org.apache.geronimo.kernel.Kernel.KERNEL));
+                namedConstructorArgs.addDefaultValue("kernel", Kernel.class, serviceContext.getKernel());
+
+                applicationContext.addBeanFactoryPostProcessor(namedConstructorArgs);
+                LifecycleDetector lifecycleDetector = new LifecycleDetector();
+                lifecycleDetector.addLifecycleInterface(org.apache.geronimo.gbean.GBeanLifecycle.class, "doStart", "doStop");
+                lifecycleDetector.addLifecycleInterface(SimpleLifecycle.class, "start", "stop");
+                applicationContext.addBeanFactoryPostProcessor(lifecycleDetector);
+
+                // copy the bean definition, so we don't modify the original value
+                RootBeanDefinition beanDefinition = new RootBeanDefinition(this.beanDefinition);
+
                 applicationContext.registerBeanDefinition(serviceContext.getObjectName(), beanDefinition);
                 applicationContext.refresh();
                 service = applicationContext.getBean(serviceContext.getObjectName());
-
             } finally {
                 Thread.currentThread().setContextClassLoader(oldClassLoader);
                 ServiceContextThreadLocal.set(oldServiceContext);
@@ -216,7 +239,6 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
     public void destroyService(ServiceContext serviceContext, Object service) {
         if (applicationContext != null) {
             applicationContext.close();
-            applicationContext.destroy();
             applicationContext = null;
         }
     }

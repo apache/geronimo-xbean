@@ -39,7 +39,6 @@ import org.gbean.configuration.ConfigurationUtil;
 import org.gbean.configuration.InvalidConfigurationException;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.ServiceName;
-import org.gbean.kernel.simple.SimpleLifecycle;
 import org.gbean.kernel.simple.SimpleServiceFactory;
 import org.gbean.loader.Loader;
 import org.gbean.metadata.MetadataManager;
@@ -106,10 +105,6 @@ public class SpringLoader implements Loader {
                 return null;
             }
 
-            // convert properties into named constructor args
-            NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
-            namedConstructorArgs.postProcessBeanFactory(factory);
-
             // create object names for all of the beans
             ObjectNameBuilder objectNameBuilder =  new ObjectNameBuilder(metadataManager,
                     configurationInfo.getDomain(),
@@ -117,19 +112,13 @@ public class SpringLoader implements Loader {
                     configurationInfo.getConfigurationId().toString());
             objectNameBuilder.postProcessBeanFactory(factory);
 
-            // auto detect the livecycle methods (todo this needs work)
-            LifecycleDetector lifecycleDetector = new LifecycleDetector();
-            lifecycleDetector.addLifecycleInterface(SimpleLifecycle.class, "start", "stop");
-            lifecycleDetector.addLifecycleInterface(org.apache.geronimo.gbean.GBeanLifecycle.class, "doStart", "doStop");
-            lifecycleDetector.postProcessBeanFactory(factory);
-
             Map serviceFactories = new LinkedHashMap();
             String[] beanDefinitionNames = factory.getBeanDefinitionNames();
             if (beanDefinitionNames != null) {
                 for (int i = 0; i < beanDefinitionNames.length; i++) {
                     String beanName = beanDefinitionNames[i];
                     BeanDefinition beanDefinition = factory.getBeanDefinition(beanName);
-                    ServiceFactory serviceFactory = new SpringServiceFactory((RootBeanDefinition) beanDefinition, objectNameBuilder.getObjectNameMap());
+                    ServiceFactory serviceFactory = new SpringServiceFactory((RootBeanDefinition) beanDefinition, objectNameBuilder.getObjectNameMap(), metadataManager);
 
                     ObjectName objectName = objectNameBuilder.getObjectName(beanName);
                     serviceFactories.put(objectName, serviceFactory);
