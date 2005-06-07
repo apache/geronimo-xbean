@@ -175,7 +175,7 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
             Exception {
 
         boolean running = isRunning(objectName);
-        if (running) {
+        if (!running) {
             throw new IllegalStateException("Service is not running: name=" + objectName);
         }
 

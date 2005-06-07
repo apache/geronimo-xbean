@@ -290,7 +290,7 @@ public class SimpleKernel implements Kernel {
         while (!shutdownHooks.isEmpty()) {
             Runnable hook;
             synchronized (shutdownHooks) {
-                hook = (Runnable) shutdownHooks.removeFirst();
+                hook = (Runnable) shutdownHooks.removeLast();
             }
             try {
                 hook.run();
