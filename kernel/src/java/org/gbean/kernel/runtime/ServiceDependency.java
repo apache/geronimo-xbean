@@ -27,6 +27,7 @@ import org.gbean.kernel.Kernel;
 import org.gbean.kernel.DependencyManager;
 import org.gbean.kernel.LifecycleListener;
 import org.gbean.kernel.LifecycleAdapter;
+import org.gbean.kernel.KernelUtil;
 
 /**
  * @version $Rev: 71492 $ $Date: 2004-11-14 21:31:50 -0800 (Sun, 14 Nov 2004) $
@@ -122,7 +123,7 @@ public class ServiceDependency {
             // We must have exactally one running target
             //
             ObjectName objectName = serviceInstance.getObjectName();
-            Set services = ServiceInstanceUtil.getRunningTargets(kernel, patterns);
+            Set services = KernelUtil.getRunningServiceNames(kernel, patterns);
             if (services.size() == 0) {
                 waiting = true;
                 statusDescription = "WAITING: no targest " + getDescription() + ", patterns=" + getPatternsText();
@@ -172,7 +173,7 @@ public class ServiceDependency {
     }
 
     private synchronized void checkStatus() {
-        Set services = ServiceInstanceUtil.getRunningTargets(kernel, patterns);
+        Set services = KernelUtil.getRunningServiceNames(kernel, patterns);
 
         // if we are running, and we now have two valid targets, which is an illegal state so we need to fail
         // todo fix me

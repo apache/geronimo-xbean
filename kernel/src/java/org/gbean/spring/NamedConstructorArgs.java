@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.LinkedList;
 
 import org.gbean.metadata.ClassMetadata;
 import org.gbean.metadata.ConstructorMetadata;
@@ -35,26 +36,62 @@ import org.gbean.metadata.ParameterMetadata;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.FactoryBean;
 
 /**
  * @version $Revision$ $Date$
  */
 public class NamedConstructorArgs implements BeanFactoryPostProcessor {
-    private final MetadataManager metadataManager;
-    private final Map defaultValues = new HashMap();
+    private MetadataManager metadataManager;
+    private Map defaultValues = new HashMap();
+
+    public NamedConstructorArgs() {
+    }
 
     public NamedConstructorArgs(MetadataManager metadataManager) {
         this.metadataManager = metadataManager;
     }
 
-    public void addDefaultValue(String name, Class type, Object value) {
-        defaultValues.put(new DefaultProperty(name, type), value);
+    public MetadataManager getMetadataManager() {
+        return metadataManager;
     }
+
+    public void setMetadataManager(MetadataManager metadataManager) {
+        this.metadataManager = metadataManager;
+    }
+
+    public List getDefaultValues() {
+        List values = new LinkedList();
+        for (Iterator iterator = defaultValues.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            PropertyKey key = (PropertyKey) entry.getKey();
+            Object value = entry.getValue();
+            values.add(new DefaultProperty(key.name, key.type, value));
+        }
+        return values;
+    }
+
+    public void setDefaultValues(List defaultValues) {
+        this.defaultValues.clear();
+        for (Iterator iterator = defaultValues.iterator(); iterator.hasNext();) {
+            addDefaultValue((DefaultProperty) iterator.next());
+        }
+    }
+
+    public void addDefaultValue(String name, Class type, Object value) {
+        defaultValues.put(new PropertyKey(name, type), value);
+    }
+
+    private void addDefaultValue(DefaultProperty defaultProperty) {
+        defaultValues.put(new PropertyKey(defaultProperty.getName(), defaultProperty.getType()), defaultProperty.getValue());
+    }
+
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         SpringVisitor visitor = new AbstractSpringVisitor() {
             public void visitBeanDefinition(BeanDefinition beanDefinition, Object data) throws BeansException {
@@ -72,7 +109,7 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
         visitor.visitBeanFactory(beanFactory, null);
     }
 
-    private void processParameters(RootBeanDefinition rootBeanDefinition) {
+    private void processParameters(RootBeanDefinition rootBeanDefinition) throws BeansException {
         ConstructorArgumentValues constructorArgumentValues = rootBeanDefinition.getConstructorArgumentValues();
 
         // if this bean already has constructor arguments defined, don't mess with them
@@ -99,9 +136,16 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
                 propertyValues.removePropertyValue(name);
                 constructorArgumentValues.addIndexedArgumentValue(iterator.previousIndex(), propertyValue.getValue(), parameterType.getName());
             } else {
-                Object defaultValue = defaultValues.get(new DefaultProperty(name, parameterType));
+                Object defaultValue = defaultValues.get(new PropertyKey(name, parameterType));
                 if (defaultValue == null) {
                     defaultValue = DEFAULT_VALUE.get(parameterType);
+                }
+                if (defaultValue instanceof FactoryBean) {
+                    try {
+                        defaultValue = ((FactoryBean)defaultValue).getObject();
+                    } catch (Exception e) {
+                        throw new FatalBeanException("Unable to get object value from bean factory", e);
+                    }
                 }
                 constructorArgumentValues.addIndexedArgumentValue(iterator.previousIndex(), defaultValue, parameterType.getName());
             }
@@ -152,7 +196,7 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
             String parameterName = (String) entry.getKey();
             Class parameterType = (Class) entry.getValue();
             // can we satify this property using a definde proeprty or default property
-            if (!propertyNames.contains(parameterName) && !defaultValues.containsKey(new DefaultProperty(parameterName, parameterType))) {
+            if (!propertyNames.contains(parameterName) && !defaultValues.containsKey(new PropertyKey(parameterName, parameterType))) {
                 return false;
             }
         }
@@ -183,32 +227,49 @@ public class NamedConstructorArgs implements BeanFactoryPostProcessor {
         }
     }
 
-    private static class DefaultProperty {
-        private final String propertyName;
-        private final Class propertyType;
+    private static class PropertyKey {
+        private String name;
+        private Class type;
 
-        public DefaultProperty(String propertyName, Class propertyType) {
-            this.propertyName = propertyName;
-            this.propertyType = propertyType;
+        public PropertyKey(String name, Class type) {
+            this.name = name;
+            this.type = type;
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Class getType() {
+            return type;
+        }
+
+        public void setType(Class type) {
+            this.type = type;
+        }
+
         public boolean equals(Object object) {
-            if (!(object instanceof DefaultProperty)) {
+            if (!(object instanceof PropertyKey)) {
                 return false;
             }
 
-            DefaultProperty defaultProperty = (DefaultProperty) object;
-            return propertyName.equals(defaultProperty.propertyName) && propertyType.equals(propertyType);
+            PropertyKey defaultProperty = (PropertyKey) object;
+            return name.equals(defaultProperty.name) && type.equals(type);
         }
 
         public int hashCode() {
             int result = 17;
-            result = 37 * result + propertyName.hashCode();
-            result = 37 * result + propertyType.hashCode();
+            result = 37 * result + name.hashCode();
+            result = 37 * result + type.hashCode();
             return result;
         }
 
         public String toString() {
-            return "[" + propertyName + " " + propertyType + "]";
+            return "[" + name + " " + type + "]";
         }
     }
 

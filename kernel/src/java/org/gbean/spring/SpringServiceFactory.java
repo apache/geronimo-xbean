@@ -17,20 +17,20 @@
 package org.gbean.spring;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.gbean.kernel.simple.SimpleLifecycle;
-import org.gbean.kernel.Kernel;
 import org.gbean.service.ConfigurableServiceFactory;
 import org.gbean.service.ServiceContext;
-import org.gbean.metadata.MetadataManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -46,15 +46,15 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
     private static final String ROOT_BEAN_DEFINITION = "RootBeanDefinition";
     private final Map dependencies;
     private final Map objectNameMap;
-    private final MetadataManager metadataManager;
+    private final List beanFactoryPostProcessors;
     private RootBeanDefinition beanDefinition;
     private GenericApplicationContext applicationContext;
     private boolean enabled = true;
 
-    public SpringServiceFactory(RootBeanDefinition beanDefinition, Map objectNameMap, MetadataManager metadataManager) throws Exception {
+    public SpringServiceFactory(RootBeanDefinition beanDefinition, Map objectNameMap, List beanFactoryPostProcessors) throws Exception {
         this.beanDefinition = beanDefinition;
         this.objectNameMap = objectNameMap;
-        this.metadataManager = metadataManager;
+        this.beanFactoryPostProcessors = beanFactoryPostProcessors;
         dependencies = SpringUtil.extractDependencies(beanDefinition, objectNameMap);
     }
 
@@ -193,22 +193,12 @@ public class SpringServiceFactory implements ConfigurableServiceFactory {
                     }
                 };
 
-
+                // initializae the application context
                 applicationContext = new GenericApplicationContext(parent);
-
-                // register the post processors
-                NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs(metadataManager);
-                namedConstructorArgs.addDefaultValue("objectName", String.class, serviceContext.getObjectName());
-                namedConstructorArgs.addDefaultValue("objectName", ObjectName.class, new ObjectName(serviceContext.getObjectName()));
-                namedConstructorArgs.addDefaultValue("classLoader", ClassLoader.class, serviceContext.getClassLoader());
-                namedConstructorArgs.addDefaultValue("kernel", org.apache.geronimo.kernel.Kernel.class, serviceContext.getKernel().getService(org.apache.geronimo.kernel.Kernel.KERNEL));
-                namedConstructorArgs.addDefaultValue("kernel", Kernel.class, serviceContext.getKernel());
-
-                applicationContext.addBeanFactoryPostProcessor(namedConstructorArgs);
-                LifecycleDetector lifecycleDetector = new LifecycleDetector();
-                lifecycleDetector.addLifecycleInterface(org.apache.geronimo.gbean.GBeanLifecycle.class, "doStart", "doStop");
-                lifecycleDetector.addLifecycleInterface(SimpleLifecycle.class, "start", "stop");
-                applicationContext.addBeanFactoryPostProcessor(lifecycleDetector);
+                for (Iterator iterator = beanFactoryPostProcessors.iterator(); iterator.hasNext();) {
+                    BeanFactoryPostProcessor beanFactoryPostProcessor = (BeanFactoryPostProcessor) iterator.next();
+                    applicationContext.addBeanFactoryPostProcessor(beanFactoryPostProcessor);
+                }
 
                 // copy the bean definition, so we don't modify the original value
                 RootBeanDefinition beanDefinition = new RootBeanDefinition(this.beanDefinition);

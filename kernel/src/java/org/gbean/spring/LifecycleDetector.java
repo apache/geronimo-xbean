@@ -32,7 +32,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * @version $Revision$ $Date$
  */
 public class LifecycleDetector implements BeanFactoryPostProcessor {
-    private static final Map lifecycleMap = new LinkedHashMap();
+    private final Map lifecycleMap = new LinkedHashMap();
 
     public List getLifecycleInterfaces() {
         List lifecycleInterfaces = new LinkedList();

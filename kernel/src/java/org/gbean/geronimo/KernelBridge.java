@@ -17,13 +17,11 @@
 
 package org.gbean.geronimo;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.management.ObjectName;
 
@@ -31,20 +29,15 @@ import org.gbean.kernel.Kernel;
 import org.gbean.kernel.NoSuchAttributeException;
 import org.gbean.kernel.NoSuchOperationException;
 import org.gbean.kernel.ServiceAlreadyExistsException;
-import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.ServiceNotFoundException;
 import org.gbean.kernel.runtime.ServiceState;
 import org.gbean.kernel.simple.SimpleKernel;
 import org.gbean.metadata.MetadataManager;
-import org.gbean.metadata.simple.PropertiesMetadataProvider;
-import org.gbean.metadata.simple.SimpleMetadataManager;
 import org.gbean.proxy.ProxyManager;
 import org.gbean.reflect.PropertyInvoker;
 import org.gbean.reflect.ServiceInvoker;
 import org.gbean.reflect.ServiceInvokerManager;
-import org.gbean.service.AbstractServiceFactory;
 import org.gbean.service.ConfigurableServiceFactory;
-import org.gbean.service.ServiceContext;
 import org.gbean.service.ServiceFactory;
 
 
@@ -60,46 +53,21 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
 
     private final SimpleKernel kernel;
     private final DependencyManagerBridge dependencyManagerBridge;
-    private final ObjectName metadataManagerName;
-    private final ObjectName serviceInvokerManagerName;
-    private final ObjectName proxyManagerName;
     private final MetadataManager metadataManager;
     private final ServiceInvokerManager serviceInvokerManager;
     private final ProxyManager proxyManager;
     private final ProxyManagerBridge proxyManagerBridge;
     private final LifecycleMonitorBridge lifecycleMonitorBridge;
 
-    public KernelBridge(String kernelName) {
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            // normally we would use the KernelFactory, but geronimo will only work with the simple kernel
-            kernel = new SimpleKernel(kernelName);
-            dependencyManagerBridge = new DependencyManagerBridge(kernel.getDependencyManager());
-
-            metadataManagerName = ServiceName.createName(":j2eeType=MetadataManager");
-            List metadataProviders = new ArrayList(2);
-            metadataProviders.add(new GeronimoMetadataProvider());
-            metadataProviders.add(new PropertiesMetadataProvider());
-            metadataManager = new SimpleMetadataManager(metadataProviders);
-            kernel.loadService(metadataManagerName, new StaticServiceFactory(metadataManager), classLoader);
-            kernel.startService(metadataManagerName);
-
-            serviceInvokerManagerName = ServiceName.createName(":j2eeType=ServiceInvokerManager,name=default");
-            serviceInvokerManager = new ServiceInvokerManager(kernel);
-            serviceInvokerManager.start();
-            kernel.loadService(serviceInvokerManagerName, new StaticServiceFactory(serviceInvokerManager), classLoader);
-            kernel.startService(serviceInvokerManagerName);
-
-            proxyManagerName = ServiceName.createName(":j2eeType=ProxyManager,name=default");
-            proxyManager = new ProxyManager(serviceInvokerManager);
-            kernel.loadService(proxyManagerName, new StaticServiceFactory(proxyManager), classLoader);
-            kernel.startService(proxyManagerName);
-
-            lifecycleMonitorBridge = new LifecycleMonitorBridge(kernel);
-            this.proxyManagerBridge = new ProxyManagerBridge(proxyManager);
-        } catch (Exception e) {
-            throw new org.apache.geronimo.kernel.InternalKernelException(e);
-        }
+    public KernelBridge(SimpleKernel kernel, MetadataManager metadataManager, ServiceInvokerManager serviceInvokerManager, ProxyManager proxyManager) {
+        this.kernel = kernel;
+        this.dependencyManagerBridge = new DependencyManagerBridge(kernel.getDependencyManager());
+        this.metadataManager = metadataManager;
+        this.serviceInvokerManager = serviceInvokerManager;
+        this.proxyManager = proxyManager;
+        this.lifecycleMonitorBridge = new LifecycleMonitorBridge(kernel);
+        this.proxyManagerBridge = new ProxyManagerBridge(proxyManager);
+        System.setProperty("geronimo.base.dir", System.getProperty("gbean.base.dir"));
     }
 
     public Kernel getKernel() {
@@ -188,7 +156,7 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
         }
     }
 
-    public Object invoke(ObjectName objectName, String methodName, Object[] args, String[] types)             throws org.apache.geronimo.kernel.GBeanNotFoundException,
+    public Object invoke(ObjectName objectName, String methodName, Object[] args, String[] types) throws org.apache.geronimo.kernel.GBeanNotFoundException,
             org.apache.geronimo.kernel.NoSuchOperationException,
             Exception {
 
@@ -307,27 +275,23 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
     }
 
     public Set listGBeans(ObjectName pattern) {
-        return kernel.listServices(pattern);
+        return kernel.listServiceNames(pattern);
     }
 
     public Set listGBeans(Set patterns) {
-        return kernel.listServices(patterns);
+        return kernel.listServiceNames(patterns);
     }
 
     public void boot() throws Exception {
-        kernel.boot();
-
-        // mount the kernel into the kernel itself so it can be accessed just like
-        // any other service in the system
-        ServiceFactory kernelServiceFactory = new AbstractServiceFactory() {
-            public Object createService(ServiceContext serviceContext) throws Exception {
-                return KernelBridge.this;
-            }
-        };
-        kernel.loadService(KERNEL, kernelServiceFactory, getClass().getClassLoader());
-        kernel.startService(KERNEL);
-
         org.apache.geronimo.kernel.KernelRegistry.registerKernel(this);
+        kernel.registerShutdownHook(new Runnable() {
+            public void run() {
+                synchronized (KernelBridge.this) {
+                    KernelBridge.this.notify();
+                }
+                org.apache.geronimo.kernel.KernelRegistry.unregisterKernel(KernelBridge.this);
+            }
+        });
     }
 
     public Date getBootTime() {
@@ -343,32 +307,7 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
     }
 
     public void shutdown() {
-        try {
-            kernel.stopService(proxyManagerName);
-            kernel.unloadService(proxyManagerName);
-        } catch (ServiceNotFoundException e) {
-            // igore service has already been removed
-        }
-        try {
-            kernel.stopService(serviceInvokerManagerName);
-            kernel.unloadService(serviceInvokerManagerName);
-            serviceInvokerManager.stop();
-        } catch (ServiceNotFoundException e) {
-            // igore service has already been removed
-        }
-        try {
-            kernel.stopService(metadataManagerName);
-            kernel.unloadService(metadataManagerName);
-        } catch (ServiceNotFoundException e) {
-            // igore service has already been removed
-        }
         kernel.shutdown();
-
-        synchronized (this) {
-            notify();
-        }
-
-        org.apache.geronimo.kernel.KernelRegistry.unregisterKernel(this);
     }
 
     public boolean isRunning() {
@@ -524,38 +463,5 @@ public class KernelBridge implements org.apache.geronimo.kernel.Kernel {
         }
         return gbeanData;
     }
-
-    private static class StaticServiceFactory implements ServiceFactory {
-        private final Object service;
-
-        public StaticServiceFactory(Object service) {
-            this.service = service;
-        }
-
-        public Map getDependencies() {
-            return Collections.EMPTY_MAP;
-        }
-
-        public void addDependency(String name, Set patterns) {
-        }
-
-        public Object createService(ServiceContext serviceContext) throws Exception {
-            return service;
-        }
-
-        public void destroyService(ServiceContext serviceContext, Object service) {
-            if (service != this.service) {
-                throw new IllegalArgumentException("Wrong service instance");
-            }
-        }
-
-        public boolean isEnabled() {
-            return true;
-        }
-
-        public void setEnabled(boolean enabled) {
-        }
-    }
-
 }
 

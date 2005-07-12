@@ -28,12 +28,11 @@ import org.gbean.kernel.Kernel;
 import org.gbean.kernel.LifecycleAdapter;
 import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.ServiceNotFoundException;
-import org.gbean.kernel.simple.SimpleLifecycle;
 
 /**
  * @version $Revision$ $Date$
  */
-public class ServiceInvokerManager implements SimpleLifecycle {
+public class ServiceInvokerManager {
     private static final Log log = LogFactory.getLog(ServiceInvokerManager.class);
     private static final ObjectName ALL = ServiceName.createName("*:*");
     private final Kernel kernel;
@@ -47,7 +46,7 @@ public class ServiceInvokerManager implements SimpleLifecycle {
 
     public synchronized void start() {
         kernel.addLifecycleListener(lifecycleListener, ALL);
-        Set allNames = kernel.listServices(ALL);
+        Set allNames = kernel.listServiceNames(ALL);
         for (Iterator iterator = allNames.iterator(); iterator.hasNext();) {
             ObjectName objectName = (ObjectName) iterator.next();
             try {

@@ -14,23 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel.runtime;
+package org.gbean.kernel;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Collections;
 import javax.management.ObjectName;
 
-import org.gbean.kernel.Kernel;
-import org.gbean.kernel.ServiceNotFoundException;
+import org.gbean.kernel.runtime.ServiceState;
 
 /**
  * @version $Rev$ $Date$
  */
-public class ServiceInstanceUtil {
-    public static Set getRunningTargets(Kernel kernel, Set patterns) {
+public class KernelUtil {
+    public static Set getRunningServiceNames(Kernel kernel, Set patterns) {
         Set runningTargets = new HashSet();
-        Set services = kernel.listServices(patterns);
+        Set services = kernel.listServiceNames(patterns);
         for (Iterator iterator = services.iterator(); iterator.hasNext();) {
             ObjectName objectName = (ObjectName) iterator.next();
             if (isRunning(kernel, objectName)) {
@@ -38,6 +38,10 @@ public class ServiceInstanceUtil {
             }
         }
         return runningTargets;
+    }
+
+    public static Set getRunningServiceNames(Kernel kernel, ObjectName pattern) {
+        return getRunningServiceNames(kernel, Collections.singleton(pattern));
     }
 
     /**

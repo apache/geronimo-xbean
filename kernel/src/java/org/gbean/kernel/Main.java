@@ -14,13 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.loader;
-
-import javax.management.ObjectName;
+package org.gbean.kernel;
 
 /**
  * @version $Revision$ $Date$
  */
-public interface Loader {
-    ObjectName load(String location);
+public interface Main {
+    void main(String[]  args);
 }

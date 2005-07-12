@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.management.ObjectName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -33,12 +33,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.gbean.beans.LiveHashSet;
 import org.gbean.configuration.ConfigurationInfo;
 import org.gbean.configuration.ConfigurationUtil;
 import org.gbean.configuration.InvalidConfigurationException;
 import org.gbean.kernel.Kernel;
-import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.simple.SimpleServiceFactory;
 import org.gbean.loader.Loader;
 import org.gbean.metadata.MetadataManager;
@@ -67,33 +65,68 @@ public class SpringLoader implements Loader {
     private static final String PARENT_ID_NAME = "parentId";
     private static final String DOMAIN_NAME = "domain";
     private static final String SERVER_NAME = "server";
-    private static final ObjectName METADATA_MANAGER_QUERY = ServiceName.createName("*:j2eeType=MetadataManager");
 
+    private Kernel kernel;
+    private Collection repositories;
+    private MetadataManager metadataManager;
+    private List beanFactoryPostProcessors;
+    private File baseDir;
 
+    public SpringLoader() {
+    }
 
-    public ObjectName load(Kernel kernel, String location) {
+    public Kernel getKernel() {
+        return kernel;
+    }
+
+    public void setKernel(Kernel kernel) {
+        this.kernel = kernel;
+    }
+
+    public Collection getRepositories() {
+        return repositories;
+    }
+
+    public void setRepositories(Collection repositories) {
+        this.repositories = repositories;
+    }
+
+    public MetadataManager getMetadataManager() {
+        return metadataManager;
+    }
+
+    public void setMetadataManager(MetadataManager metadataManager) {
+        this.metadataManager = metadataManager;
+    }
+
+    public List getBeanFactoryPostProcessors() {
+        return beanFactoryPostProcessors;
+    }
+
+    public void setBeanFactoryPostProcessors(List beanFactoryPostProcessors) {
+        this.beanFactoryPostProcessors = beanFactoryPostProcessors;
+    }
+
+    public File getBaseDir() {
+        return baseDir;
+    }
+
+    public void setBaseDir(File baseDir) {
+        this.baseDir = baseDir;
+    }
+
+    public ObjectName load(String location) {
+        String resolvedLocation = resolveLocation(location);
         try {
-            Set names = kernel.listServices(METADATA_MANAGER_QUERY);
-            if (names.isEmpty()) {
-                throw new IllegalStateException("Metadata mananger could not be found in kernel: " + METADATA_MANAGER_QUERY);
-            }
-            if (names.size() > 1) {
-                throw new IllegalStateException("More then one proxy manangers were found in kernel: " + METADATA_MANAGER_QUERY);
-            }
-            ObjectName metdataManagerName = (ObjectName) names.iterator().next();
-            MetadataManager metadataManager = (MetadataManager) kernel.getService(metdataManagerName);
-
-            LiveHashSet repositories = new LiveHashSet(kernel, "repositories", Collections.singleton(new ObjectName("*:j2eeType=Repository,*")));
-            repositories.start();
-            ConfigurationInfo configurationInfo = loadConfigurationInfo(location);
-            final ClassLoader classLoader = ConfigurationUtil.createClassLoader(configurationInfo.getConfigurationId(),
+            ConfigurationInfo configurationInfo = loadConfigurationInfo(resolvedLocation);
+            final ClassLoader classLoader = ConfigurationUtil.createClassLoader(configurationInfo.getConfigurationId().toString(),
                     configurationInfo.getDependencies(),
                     getClass().getClassLoader(),
                     repositories);
 
             DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
             try {
-                Resource resource = new FileSystemResource(new File(location));
+                Resource resource = new FileSystemResource(new File(resolvedLocation + ".xml"));
                 XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory) {
                     public ClassLoader getBeanClassLoader() {
                         return classLoader;
@@ -118,7 +151,7 @@ public class SpringLoader implements Loader {
                 for (int i = 0; i < beanDefinitionNames.length; i++) {
                     String beanName = beanDefinitionNames[i];
                     BeanDefinition beanDefinition = factory.getBeanDefinition(beanName);
-                    ServiceFactory serviceFactory = new SpringServiceFactory((RootBeanDefinition) beanDefinition, objectNameBuilder.getObjectNameMap(), metadataManager);
+                    ServiceFactory serviceFactory = new SpringServiceFactory((RootBeanDefinition) beanDefinition, objectNameBuilder.getObjectNameMap(), beanFactoryPostProcessors);
 
                     ObjectName objectName = objectNameBuilder.getObjectName(beanName);
                     serviceFactories.put(objectName, serviceFactory);
@@ -136,14 +169,15 @@ public class SpringLoader implements Loader {
         }
     }
 
+    private String resolveLocation(String location) {
+        location = location.replace('/', '.');
+        return baseDir.toURI().resolve(location).getPath();
+    }
+
     private ConfigurationInfo loadConfigurationInfo(String location) {
         ConfigurationInfo configurationInfo = new ConfigurationInfo();
 
-        String gbeanLocation = location;
-        if (gbeanLocation.endsWith(".xml")) {
-            gbeanLocation = gbeanLocation.substring(0, gbeanLocation.length() - 4);
-        }
-        gbeanLocation += "-gbean.xml";
+        String gbeanLocation = location + "-gbean.xml";
 
         File file = new File(gbeanLocation);
         if (!file.canRead()) {

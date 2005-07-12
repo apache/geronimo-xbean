@@ -17,6 +17,8 @@
 
 package org.gbean.kernel.simple;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -179,15 +181,17 @@ public class SimpleKernel implements Kernel {
         serviceInstance.setEnabled(enabled);
     }
 
-    public Set listServices(ObjectName pattern) {
-        return registry.listServices(pattern);
-//        Set services = registry.listServices(pattern);
-//        Set result = new HashSet(services.size());
-//        for (Iterator i = services.iterator(); i.hasNext();) {
-//            ServiceInstance instance = (ServiceInstance) i.next();
-//            result.add(instance.getObjectName());
-//        }
-//        return result;
+    public Collection listServices(ObjectName pattern) {
+        Set serviceInstances = registry.listServiceInstances(pattern);
+        ArrayList services = new ArrayList(serviceInstances.size());
+        for (Iterator iterator = serviceInstances.iterator(); iterator.hasNext();) {
+            ServiceInstance serviceInstance = (ServiceInstance) iterator.next();
+            Object service = serviceInstance.getInstance();
+            if (service != null) {
+                services.add(service);
+            }
+        }
+        return services;
     }
 
     public Set listServices(Set patterns) {
@@ -195,6 +199,19 @@ public class SimpleKernel implements Kernel {
         for (Iterator iterator = patterns.iterator(); iterator.hasNext();) {
             ObjectName pattern = (ObjectName) iterator.next();
             services.addAll(listServices(pattern));
+        }
+        return services;
+    }
+
+    public Set listServiceNames(ObjectName pattern) {
+        return registry.listServiceNames(pattern);
+    }
+
+    public Set listServiceNames(Set patterns) {
+        Set services = new HashSet();
+        for (Iterator iterator = patterns.iterator(); iterator.hasNext();) {
+            ObjectName pattern = (ObjectName) iterator.next();
+            services.addAll(listServiceNames(pattern));
         }
         return services;
     }

@@ -79,7 +79,7 @@ public class JMXBridge implements SimpleLifecycle {
 
         HashMap beans = new HashMap();
         synchronized (this) {
-            Set allNames = kernel.listServices(ALL);
+            Set allNames = kernel.listServiceNames(ALL);
             for (Iterator iterator = allNames.iterator(); iterator.hasNext();) {
                 ObjectName objectName = (ObjectName) iterator.next();
                 if (registry.containsKey(objectName)) {

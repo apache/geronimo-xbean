@@ -27,13 +27,13 @@ import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.geronimo.kernel.config.ConfigurationClassLoader;
 import org.gbean.configuration.Configuration;
 import org.gbean.configuration.ConfigurationInfo;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.runtime.ServiceState;
 import org.gbean.kernel.simple.SimpleLifecycle;
 import org.gbean.service.ServiceFactory;
+import org.gbean.classloader.DestroyableClassLoader;
 
 /**
  * @version $Revision$ $Date$
@@ -102,8 +102,8 @@ public class SpringConfiguration implements Configuration, SimpleLifecycle {
     }
 
     // here for compatability with geronimo
-    public ConfigurationClassLoader getConfigurationClassLoader() {
-        return (ConfigurationClassLoader) classLoader;
+    public ClassLoader getConfigurationClassLoader() {
+        return classLoader;
     }
 
     public Set getServiceNames() {
@@ -141,5 +141,10 @@ public class SpringConfiguration implements Configuration, SimpleLifecycle {
                 log.warn("Could not unload service " + serviceName, e);
             }
         }
-    }
+
+        if (classLoader instanceof DestroyableClassLoader) {
+            DestroyableClassLoader destroyableClassLoader = (DestroyableClassLoader) classLoader;
+            destroyableClassLoader.destroy();
+        }
+    }                                        
 }

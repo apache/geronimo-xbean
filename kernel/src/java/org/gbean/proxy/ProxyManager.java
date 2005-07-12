@@ -39,7 +39,7 @@ import org.gbean.reflect.ServiceInvokerManager;
 public class ProxyManager {
     private static ObjectName PROXY_MANAGER_QUERY = ServiceName.createName("*:j2eeType=ProxyManager,*");
     public static ProxyManager findProxyManager(Kernel kernel) throws ServiceNotFoundException {
-        Set names = kernel.listServices(PROXY_MANAGER_QUERY);
+        Set names = kernel.listServiceNames(PROXY_MANAGER_QUERY);
         if (names.isEmpty()) {
             throw new IllegalStateException("Proxy mananger could not be found in kernel: " + PROXY_MANAGER_QUERY);
         }

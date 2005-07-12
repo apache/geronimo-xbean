@@ -23,7 +23,6 @@
 
     <bean name="ServerInfo" class="org.apache.geronimo.system.serverinfo.ServerInfo">
         <property name="gbean-object-name"><value>geronimo.server:J2EEServer=geronimo,J2EEApplication=null,J2EEModule=org/apache/geronimo/System,j2eeType=GBean,name=ServerInfo</value></property>
-
     </bean>
 
     <bean name="URLFactory" class="org.apache.geronimo.system.url.GeronimoURLFactory"/>
@@ -32,6 +31,11 @@
         <property name="gbean-object-name"><value>geronimo.server:J2EEApplication=null,J2EEModule=org/apache/geronimo/System,J2EEServer=geronimo,j2eeType=ConfigurationStore,name=Local</value></property>
         <property name="root"><value>config-store</value></property>
         <property name="serverInfo"><ref bean="ServerInfo"/></property>
+    </bean>
+
+    <bean name="GeronimoLoaderBridge" class="org.gbean.geronimo.LoaderBridge">
+        <property name="gbean-object-name"><value>geronimo.server:j2eeType=Loader,name=GeronimoLoaderBridge</value></property>
+        <constructor-arg index="0"><ref bean="LocalConfigurationStore"/></constructor-arg>
     </bean>
 
     <bean name="ConfigurationManager" class="org.apache.geronimo.kernel.config.ConfigurationManagerImpl">

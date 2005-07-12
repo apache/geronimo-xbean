@@ -107,7 +107,22 @@ public class SimpleRegistry {
         return serviceInstance;
     }
 
-    public Set listServices(ObjectName pattern) {
+    public Set listServiceInstances(ObjectName pattern) {
+        Set serviceNames = listServiceNames(pattern);
+        HashSet serviceInstances = new HashSet(serviceNames.size());
+        synchronized (this) {
+            for (Iterator iterator = serviceNames.iterator(); iterator.hasNext();) {
+                ObjectName objectName = (ObjectName) iterator.next();
+                ServiceInstance serviceInstance = (ServiceInstance) registry.get(objectName);
+                if (serviceInstance != null) {
+                    serviceInstances.add(serviceInstance);
+                }
+            }
+        }
+        return serviceInstances;
+    }
+
+    public Set listServiceNames(ObjectName pattern) {
         if (pattern == null) {
             synchronized (this) {
                 return new HashSet(registry.keySet());

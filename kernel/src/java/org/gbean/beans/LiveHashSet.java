@@ -29,10 +29,10 @@ import javax.management.ObjectName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.gbean.kernel.Kernel;
+import org.gbean.kernel.KernelUtil;
 import org.gbean.kernel.LifecycleAdapter;
 import org.gbean.kernel.LifecycleListener;
 import org.gbean.kernel.ServiceNotFoundException;
-import org.gbean.kernel.runtime.ServiceInstanceUtil;
 
 /**
  * @version $Rev$ $Date$
@@ -60,7 +60,7 @@ public class LiveHashSet implements LiveCollection, Set {
             }
         }
 
-        Set targets = ServiceInstanceUtil.getRunningTargets(kernel, patterns);
+        Set targets = KernelUtil.getRunningServiceNames(kernel, patterns);
         for (Iterator iterator = targets.iterator(); iterator.hasNext();) {
             addTarget((ObjectName) iterator.next());
         }

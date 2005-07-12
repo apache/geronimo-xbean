@@ -18,19 +18,19 @@
 package org.gbean.geronimo;
 
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Map;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import javax.management.ObjectName;
 
 import org.gbean.kernel.ClassLoading;
+import org.gbean.kernel.KernelUtil;
 import org.gbean.kernel.ServiceNotFoundException;
-import org.gbean.kernel.runtime.ServiceInstanceUtil;
 import org.gbean.proxy.ProxyManager;
 import org.gbean.service.ServiceContext;
-import org.gbean.spring.ServiceContextThreadLocal;
 import org.gbean.spring.DependencyProvider;
+import org.gbean.spring.ServiceContextThreadLocal;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -152,7 +152,7 @@ public class SingletonReference implements FactoryBean, DependencyProvider, Seri
             }
         }
 
-        Set targets = ServiceInstanceUtil.getRunningTargets(serviceContext.getKernel(), patterns);
+        Set targets = KernelUtil.getRunningServiceNames(serviceContext.getKernel(), patterns);
         if (targets.size() != 1) {
             throw new IllegalStateException("Invalid reference: name=" + name + ", targetCount=" + targets.size() + ", patterns=" + getPatternsText());
         }

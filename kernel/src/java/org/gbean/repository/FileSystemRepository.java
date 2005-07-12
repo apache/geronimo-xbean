@@ -17,7 +17,6 @@
 package org.gbean.repository;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -25,41 +24,37 @@ import java.net.URL;
 /**
  * @version $Revision$ $Date$
  */
-public class ReadOnlyRepository implements Repository {
-    private URI rootUri;
+public class FileSystemRepository implements Repository {
+    private File root;
 
-    public ReadOnlyRepository(File root) {
-        rootUri = root.toURI();
+    public FileSystemRepository() {
     }
 
-    public ReadOnlyRepository(URI rootURI) {
-        this.rootUri = rootURI;
+    public FileSystemRepository(File root) {
+        this.root = root;
     }
 
-    public URI getRootUri() {
-        return rootUri;
+    public File getRoot() {
+        return root;
+    }
+
+    public void setRoot(File root) {
+        this.root = root;
     }
 
     public boolean containsResource(URI uri) {
-        uri = rootUri.resolve(uri);
-        if ("file".equals(uri.getScheme())) {
-            File file = new File(uri);
-            return file.canRead();
-        } else {
-            try {
-                uri.toURL().openStream().close();
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
+        uri = root.toURI().resolve(uri);
+        File file = new File(uri);
+        return file.canRead();
     }
 
     public URL getResource(URI uri) {
+        uri = root.toURI().resolve(uri);
+        File file = new File(uri);
         try {
-            return rootUri.resolve(uri).toURL();
+            return file.toURL();
         } catch (MalformedURLException e) {
-            throw (IllegalArgumentException) new IllegalArgumentException("Unable to convert URI to a URL").initCause(e);
+            throw new IllegalArgumentException("Malformed resource " + uri);
         }
     }
 }

@@ -18,6 +18,7 @@ package org.gbean.metadata.simple;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.HashSet;
 
 import org.gbean.metadata.ClassMetadata;
 import org.gbean.metadata.MetadataManager;
@@ -27,10 +28,26 @@ import org.gbean.metadata.MetadataProvider;
  * @version $Revision$ $Date$
  */
 public class SimpleMetadataManager implements MetadataManager {
-    private final Collection metadataProviders;
+    private Collection metadataProviders;
+
+    public SimpleMetadataManager() {
+        metadataProviders = new HashSet();
+    }
 
     public SimpleMetadataManager(Collection metadataProviders) {
         this.metadataProviders = metadataProviders;
+    }
+
+    public Collection getMetadataProviders() {
+        return metadataProviders;
+    }
+
+    public void setMetadataProviders(Collection metadataProviders) {
+        this.metadataProviders = metadataProviders;
+    }
+
+    public void addMetadataProvider(MetadataProvider metadataProvider) {
+        metadataProviders.add(metadataProvider);
     }
 
     public ClassMetadata getClassMetadata(Class type) {

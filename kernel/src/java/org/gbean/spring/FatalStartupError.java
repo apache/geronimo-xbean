@@ -14,25 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.repository;
+package org.gbean.spring;
 
 /**
- * @version $Rev$ $Date$
+ * @version $Revision$ $Date$
  */
-public class RepositoryLocatorError extends Error {
-    public RepositoryLocatorError() {
-        super();
+public class FatalStartupError extends Error {
+    private final int exitCode;
+    private static final int DEFAULT_EXIT_CODE = 3;
+
+    public FatalStartupError(String message) {
+        this(message, DEFAULT_EXIT_CODE);
     }
 
-    public RepositoryLocatorError(String message) {
+    public FatalStartupError(String message, int exitCode) {
         super(message);
+        this.exitCode = exitCode;
     }
 
-    public RepositoryLocatorError(String message, Throwable cause) {
+    public FatalStartupError(String message, Throwable cause) {
+        this(message, DEFAULT_EXIT_CODE, cause);
+    }
+
+    public FatalStartupError(String message, int exitCode, Throwable cause) {
         super(message, cause);
+        this.exitCode = exitCode;
     }
 
-    public RepositoryLocatorError(Throwable cause) {
-        super(cause);
+    public int getExitCode() {
+        return exitCode;
     }
 }

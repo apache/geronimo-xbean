@@ -14,25 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.loader;
+package org.gbean.classloader;
 
 /**
- * @version $Rev$ $Date$
+ * @version $Revision$ $Date$
  */
-public class LoaderLocatorError extends Error {
-    public LoaderLocatorError() {
-        super();
-    }
-
-    public LoaderLocatorError(String message) {
-        super(message);
-    }
-
-    public LoaderLocatorError(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public LoaderLocatorError(Throwable cause) {
-        super(cause);
-    }
+public interface DestroyableClassLoader {
+    void destroy();
 }

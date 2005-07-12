@@ -16,6 +16,7 @@
  */
 package org.gbean.configuration;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
@@ -23,7 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.geronimo.kernel.config.ConfigurationClassLoader;
+import org.gbean.classloader.JarFileClassLoader;
 import org.gbean.repository.Repository;
 
 /**
@@ -33,8 +34,8 @@ public final class ConfigurationUtil {
     private ConfigurationUtil() {
     }
 
-    public static ClassLoader createClassLoader(URI configurationId, List dependencies, ClassLoader parentClassLoader, Collection repositories) {
-        List urlList = new LinkedList();
+    public static ClassLoader createClassLoader(String name, List dependencies, ClassLoader parentClassLoader, Collection repositories) throws IOException {
+        List urls = new LinkedList();
         for (Iterator i = dependencies.iterator(); i.hasNext();) {
             URI uri = (URI) i.next();
             URL url = null;
@@ -48,9 +49,11 @@ public final class ConfigurationUtil {
             if (url == null) {
                 throw new MissingDependencyException("Unable to resolve dependency " + uri);
             }
-            urlList.add(url);
+            if (!"file".equals(url.getProtocol())) {
+                throw new MissingDependencyException("Only local file jars are supported " + url);
+            }
+            urls.add(url);
         }
-        URL[] urls = (URL[]) urlList.toArray(new URL[urlList.size()]);
-        return new ConfigurationClassLoader(configurationId, urls, parentClassLoader);
+        return new JarFileClassLoader(name, urls, parentClassLoader);
     }
 }

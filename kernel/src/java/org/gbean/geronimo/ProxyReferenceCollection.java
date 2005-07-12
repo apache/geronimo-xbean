@@ -32,7 +32,7 @@ import org.gbean.kernel.Kernel;
 import org.gbean.kernel.LifecycleAdapter;
 import org.gbean.kernel.LifecycleListener;
 import org.gbean.kernel.ServiceNotFoundException;
-import org.gbean.kernel.runtime.ServiceInstanceUtil;
+import org.gbean.kernel.KernelUtil;
 import org.gbean.proxy.ProxyFactory;
 import org.gbean.proxy.ProxyManager;
 import org.springframework.beans.factory.FactoryBean;
@@ -61,7 +61,7 @@ public class ProxyReferenceCollection implements org.apache.geronimo.gbean.Refer
             throw new IllegalStateException("No ProxyManager available in kernel");
         }
 
-        Set targets = ServiceInstanceUtil.getRunningTargets(kernel, patterns);
+        Set targets = KernelUtil.getRunningServiceNames(kernel, patterns);
         for (Iterator iterator = targets.iterator(); iterator.hasNext();) {
             addTarget((ObjectName) iterator.next());
         }

@@ -14,13 +14,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.loader;
+package org.gbean.geronimo;
 
+import java.net.URI;
 import javax.management.ObjectName;
+
+import org.apache.geronimo.kernel.config.ConfigurationStore;
+import org.gbean.loader.Loader;
 
 /**
  * @version $Revision$ $Date$
  */
-public interface Loader {
-    ObjectName load(String location);
+public class LoaderBridge implements Loader {
+    private final ConfigurationStore configurationStore;
+
+    public LoaderBridge(ConfigurationStore configurationStore) {
+        this.configurationStore = configurationStore;
+    }
+
+    public ObjectName load(String location) {
+        URI configurationUri = URI.create(location);
+        try {
+            return configurationStore.loadConfiguration(configurationUri);
+        } catch (Exception e) {
+            throw new RuntimeException("Error loading configuration: " + configurationUri, e);
+        }
+    }
 }

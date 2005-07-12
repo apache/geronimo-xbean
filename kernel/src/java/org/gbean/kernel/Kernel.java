@@ -18,6 +18,7 @@ package org.gbean.kernel;
 
 import java.util.Set;
 import java.util.Date;
+import java.util.Collection;
 import javax.management.ObjectName;
 
 import org.gbean.service.ServiceFactory;
@@ -153,15 +154,27 @@ public interface Kernel {
 
     /**
      * Returns a Set of all services matching the object name pattern
+     * @return a List of the matching services registered with this kernel
+     */
+    Collection listServices(ObjectName pattern);
+
+    /**
+     * Returns a Set of all services matching the set of object name pattern
+     * @return a List of the matching services registered with this kernel
+     */
+    Set listServices(Set patterns);
+
+    /**
+     * Returns a Set of all services matching the object name pattern
      * @return a List of javax.management.ObjectName of matching services registered with this kernel
      */
-    Set listServices(ObjectName pattern);
+    Set listServiceNames(ObjectName pattern);
 
     /**
      * Returns a Set of all services matching the set of object name pattern
      * @return a List of javax.management.ObjectName of matching services registered with this kernel
      */
-    Set listServices(Set patterns);
+    Set listServiceNames(Set patterns);
 
     /**
      * Brings the kernel online

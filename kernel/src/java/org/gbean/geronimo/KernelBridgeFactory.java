@@ -21,6 +21,7 @@ package org.gbean.geronimo;
  */
 public class KernelBridgeFactory extends org.apache.geronimo.kernel.KernelFactory {
     public org.apache.geronimo.kernel.Kernel createKernel(String kernelName) {
-        return new KernelBridge(kernelName);
+//        return new KernelBridge(kernelName);
+        throw new UnsupportedOperationException();
     }
 }
