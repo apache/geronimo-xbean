@@ -20,13 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
-import java.security.SecureClassLoader;
 import java.security.cert.Certificate;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -40,28 +36,35 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.lang.reflect.Field;
-
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @version $Revision$ $Date$
  */
-public class JarFileClassLoader extends SecureClassLoader implements DestroyableClassLoader {
+public class JarFileClassLoader extends NamedClassLoader {
     private final Object lock = new Object();
-    private final String name;
     private final LinkedHashMap classPath;
     private boolean destroyed = false;
 
-    public JarFileClassLoader(String name, List urls) throws IOException {
+    public JarFileClassLoader(String name, List urls) {
         this(name, urls, Thread.currentThread().getContextClassLoader());
     }
 
-    public JarFileClassLoader(String name, List urls, ClassLoader parent) throws IOException {
-        super(parent);
-        this.name = name;
+    public JarFileClassLoader(String name, List urls, ClassLoader parent) {
+        super(name, new URL[0], parent);
 
         classPath = new LinkedHashMap();
+        addURLs(urls);
+    }
+
+    public URL[] getURLs() {
+        return (URL[]) classPath.keySet().toArray(new URL[classPath.keySet().size()]);
+    }
+
+    protected void addURL(URL url) {
+        addURLs(Collections.singletonList(url));
+    }
+
+    protected void addURLs(List urls) {
         LinkedList locationStack = new LinkedList(urls);
         try {
             while (!locationStack.isEmpty()) {
@@ -69,7 +72,7 @@ public class JarFileClassLoader extends SecureClassLoader implements Destroyable
 
                 if (!"file".equals(url.getProtocol())) {
                     // download the jar
-                    throw new IOException("Only local file jars are supported " + url);
+                    throw new Error("Only local file jars are supported " + url);
                 }
 
                 String path = url.getPath();
@@ -79,15 +82,27 @@ public class JarFileClassLoader extends SecureClassLoader implements Destroyable
 
                 File file = new File(path);
                 if (!file.canRead()) {
-                    throw new IllegalArgumentException("Can not read file: " + file.getAbsolutePath());
+                    // can't read file...
+                    continue;
                 }
 
                 // open the jar file
-                JarFile jarFile = new JarFile(file);
-                classPath.put(file.toURL(), jarFile);
+                JarFile jarFile = null;
+                try {
+                    jarFile = new JarFile(file);
+                } catch (IOException e) {
+                    // can't seem to open the file
+                    continue;
+                }
+                classPath.put(url, jarFile);
 
                 // push the manifest classpath on the stack (make sure to maintain the order)
-                Manifest manifest = jarFile.getManifest();
+                Manifest manifest = null;
+                try {
+                    manifest = jarFile.getManifest();
+                } catch (IOException ignored) {
+                }
+
                 if (manifest != null) {
                     Attributes mainAttributes = manifest.getMainAttributes();
                     String manifestClassPath = mainAttributes.getValue(Attributes.Name.CLASS_PATH);
@@ -106,9 +121,6 @@ public class JarFileClassLoader extends SecureClassLoader implements Destroyable
                     }
                 }
             }
-        } catch (IOException e) {
-            destroy();
-            throw e;
         } catch (Error e) {
             destroy();
             throw e;
@@ -130,43 +142,10 @@ public class JarFileClassLoader extends SecureClassLoader implements Destroyable
             }
             classPath.clear();
         }
-        LogFactory.release(this);
-        clearSoftCache(ObjectInputStream.class, "subclassAudits");
-        clearSoftCache(ObjectOutputStream.class, "subclassAudits");
-        clearSoftCache(ObjectStreamClass.class, "localDescs");
-        clearSoftCache(ObjectStreamClass.class, "reflectors");
+        super.destroy();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    private static Object clearSoftCacheLock = new Object();
-    private static boolean clearSoftCacheFailed = false;
-    private void clearSoftCache(Class clazz, String fieldName) {
-        Map cache = null;
-        try {
-            Field f = clazz.getDeclaredField(fieldName);
-            f.setAccessible(true);
-            cache = (Map) f.get(null);
-        } catch (Throwable e) {
-            synchronized (clearSoftCacheLock) {
-                // only print the failed message once per vm
-                if (!clearSoftCacheFailed) {
-                    clearSoftCacheFailed = true;
-                    LogFactory.getLog(JarFileClassLoader.class).error("Unable to clear SoftCache field " + fieldName + " in class " + clazz);
-                }
-            }
-        }
-
-        if (cache != null) {
-            synchronized (cache) {
-                cache.clear();
-            }
-        }
-    }
-
-    protected URL findResource(String resourceName) {
+    public URL findResource(String resourceName) {
         URL jarUrl = null;
         synchronized (lock) {
             if (destroyed) {
@@ -191,7 +170,7 @@ public class JarFileClassLoader extends SecureClassLoader implements Destroyable
         }
     }
 
-    protected Enumeration findResources(String resourceName) throws IOException {
+    public Enumeration findResources(String resourceName) throws IOException {
         LinkedList resources = new LinkedList();
         synchronized (lock) {
             if (destroyed) {
@@ -317,7 +296,6 @@ public class JarFileClassLoader extends SecureClassLoader implements Destroyable
 
             definePackage(packageName, specTitle, specVersion, specVendor, implTitle, implVersion, implVendor, sealBase);
         }
-
     }
 
     private String getAttribute(Attributes.Name name, Attributes packageAttributes, Attributes mainAttributes) {

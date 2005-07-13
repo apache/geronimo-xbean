@@ -16,7 +16,6 @@
  */
 package org.gbean.configuration;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
@@ -24,7 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.gbean.classloader.JarFileClassLoader;
+import org.gbean.classloader.NamedClassLoader;
 import org.gbean.repository.Repository;
 
 /**
@@ -34,7 +33,7 @@ public final class ConfigurationUtil {
     private ConfigurationUtil() {
     }
 
-    public static ClassLoader createClassLoader(String name, List dependencies, ClassLoader parentClassLoader, Collection repositories) throws IOException {
+    public static ClassLoader createClassLoader(String name, List dependencies, ClassLoader parentClassLoader, Collection repositories) {
         List urls = new LinkedList();
         for (Iterator i = dependencies.iterator(); i.hasNext();) {
             URI uri = (URI) i.next();
@@ -54,6 +53,6 @@ public final class ConfigurationUtil {
             }
             urls.add(url);
         }
-        return new JarFileClassLoader(name, urls, parentClassLoader);
+        return new NamedClassLoader(name, (URL[]) urls.toArray(new URL[urls.size()]), parentClassLoader);
     }
 }
