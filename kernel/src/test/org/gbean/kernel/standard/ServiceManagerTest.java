@@ -24,12 +24,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executor;
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
-import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
 import edu.emory.mathcs.backport.java.util.concurrent.Callable;
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
+import edu.emory.mathcs.backport.java.util.concurrent.Executor;
+import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
+import org.gbean.kernel.ForcedStopException;
 import org.gbean.kernel.IllegalServiceStateException;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.KernelMonitor;
@@ -50,9 +51,8 @@ import org.gbean.kernel.StaticServiceFactory;
 import org.gbean.kernel.StopStrategies;
 import org.gbean.kernel.StopStrategy;
 import org.gbean.kernel.StringServiceName;
-import org.gbean.kernel.UnsatisfiedConditionsException;
 import org.gbean.kernel.UnregisterServiceException;
-import org.gbean.kernel.ForcedStopException;
+import org.gbean.kernel.UnsatisfiedConditionsException;
 
 /**
  * @author Dain Sundstrom
