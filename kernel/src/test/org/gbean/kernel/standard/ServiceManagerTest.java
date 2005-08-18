@@ -26,6 +26,9 @@ import java.util.Set;
 
 import edu.emory.mathcs.backport.java.util.concurrent.Executor;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
+import edu.emory.mathcs.backport.java.util.concurrent.Callable;
+import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
 import junit.framework.TestCase;
 import org.gbean.kernel.IllegalServiceStateException;
 import org.gbean.kernel.Kernel;
@@ -49,6 +52,7 @@ import org.gbean.kernel.StopStrategy;
 import org.gbean.kernel.StringServiceName;
 import org.gbean.kernel.UnsatisfiedConditionsException;
 import org.gbean.kernel.UnregisterServiceException;
+import org.gbean.kernel.ForcedStopException;
 
 /**
  * @author Dain Sundstrom
@@ -78,49 +82,73 @@ public class ServiceManagerTest extends TestCase {
 
     public void testInitializeDestroy() throws Exception {
         initialize();
-        destroy();
+        destroy(StopStrategies.SYNCHRONOUS);
         initialize();
-        destroy();
+        destroy(StopStrategies.SYNCHRONOUS);
     }
 
     public void testStartStop() throws Exception {
-        startStop(StartStrategies.ASYNCHRONOUS);
-        startStop(StartStrategies.SYNCHRONOUS);
-        startStop(StartStrategies.UNREGISTER);
-        startStop(StartStrategies.BLOCK);
+        startStop(StartStrategies.ASYNCHRONOUS, false);
+        startStop(StartStrategies.SYNCHRONOUS, false);
+        startStop(StartStrategies.UNREGISTER, false);
+        startStop(StartStrategies.BLOCK, false);
 
-        startStop(StartStrategies.ASYNCHRONOUS);
-        startStop(StartStrategies.SYNCHRONOUS);
-        startStop(StartStrategies.UNREGISTER);
-        startStop(StartStrategies.BLOCK);
+        startStop(StartStrategies.ASYNCHRONOUS, false);
+        startStop(StartStrategies.SYNCHRONOUS, false);
+        startStop(StartStrategies.UNREGISTER, false);
+        startStop(StartStrategies.BLOCK, false);
     }
 
-    private void startStop(StartStrategy startStrategy) throws Exception {
-        start(false, startStrategy);
+    public void testStartRecursive() throws Exception {
+        startStop(StartStrategies.ASYNCHRONOUS, true);
+        startStop(StartStrategies.SYNCHRONOUS, true);
+        startStop(StartStrategies.UNREGISTER, true);
+        startStop(StartStrategies.BLOCK, true);
+
+        startStop(StartStrategies.ASYNCHRONOUS, true);
+        startStop(StartStrategies.SYNCHRONOUS, true);
+        startStop(StartStrategies.UNREGISTER, true);
+        startStop(StartStrategies.BLOCK, true);
+    }
+
+    private void startStop(StartStrategy startStrategy, boolean recursive) throws Exception {
+        start(recursive, startStrategy);
         stop(StopStrategies.SYNCHRONOUS);
 
-        start(false, startStrategy);
-        start(false, startStrategy);
+        start(recursive, startStrategy);
+        start(recursive, startStrategy);
         stop(StopStrategies.SYNCHRONOUS);
         stop(StopStrategies.SYNCHRONOUS);
     }
 
     public void testStartException() throws Exception {
-        startException(StartStrategies.ASYNCHRONOUS);
-        startException(StartStrategies.SYNCHRONOUS);
-        startException(StartStrategies.UNREGISTER);
-        startException(StartStrategies.BLOCK);
+        startException(StartStrategies.ASYNCHRONOUS, false);
+        startException(StartStrategies.SYNCHRONOUS, false);
+        startException(StartStrategies.UNREGISTER, false);
+        startException(StartStrategies.BLOCK, false);
 
-        startException(StartStrategies.ASYNCHRONOUS);
-        startException(StartStrategies.SYNCHRONOUS);
-        startException(StartStrategies.UNREGISTER);
-        startException(StartStrategies.BLOCK);
+        startException(StartStrategies.ASYNCHRONOUS, false);
+        startException(StartStrategies.SYNCHRONOUS, false);
+        startException(StartStrategies.UNREGISTER, false);
+        startException(StartStrategies.BLOCK, false);
     }
 
-    private void startException(StartStrategy startStrategy) throws Exception {
+    public void testStartExceptionRecursive() throws Exception {
+        startException(StartStrategies.ASYNCHRONOUS, true);
+        startException(StartStrategies.SYNCHRONOUS, true);
+        startException(StartStrategies.UNREGISTER, true);
+        startException(StartStrategies.BLOCK, true);
+
+        startException(StartStrategies.ASYNCHRONOUS, true);
+        startException(StartStrategies.SYNCHRONOUS, true);
+        startException(StartStrategies.UNREGISTER, true);
+        startException(StartStrategies.BLOCK, true);
+    }
+
+    private void startException(StartStrategy startStrategy, boolean recursive) throws Exception {
         serviceFactory.throwExceptionFromCreate = true;
         try {
-            start(false, startStrategy);
+            start(recursive, startStrategy);
         } catch (MockCreateException e) {
             assertTrue(startStrategy == StartStrategies.SYNCHRONOUS || startStrategy == StartStrategies.BLOCK);
             assertEquals(serviceFactory.createException, e);
@@ -129,6 +157,187 @@ public class ServiceManagerTest extends TestCase {
             assertSame(serviceFactory.createException, e.getCause());
         }
         stop(StopStrategies.SYNCHRONOUS);
+    }
+
+    public void testStartWaiting() throws Exception {
+        startWaiting(StartStrategies.ASYNCHRONOUS, false);
+        startWaiting(StartStrategies.SYNCHRONOUS, false);
+        startWaiting(StartStrategies.UNREGISTER, false);
+
+        startWaiting(StartStrategies.ASYNCHRONOUS, false);
+        startWaiting(StartStrategies.SYNCHRONOUS, false);
+        startWaiting(StartStrategies.UNREGISTER, false);
+    }
+
+    public void testStartWaitingRecursive() throws Exception {
+        startWaiting(StartStrategies.ASYNCHRONOUS, true);
+        startWaiting(StartStrategies.SYNCHRONOUS, true);
+        startWaiting(StartStrategies.UNREGISTER, true);
+
+        startWaiting(StartStrategies.ASYNCHRONOUS, true);
+        startWaiting(StartStrategies.SYNCHRONOUS, true);
+        startWaiting(StartStrategies.UNREGISTER, true);
+    }
+
+    private void startWaiting(StartStrategy startStrategy, boolean recursive) throws Exception {
+        startCondition.satisfied = false;
+        try {
+            start(recursive, startStrategy);
+        } catch (UnsatisfiedConditionsException e) {
+            assertTrue(startStrategy == StartStrategies.SYNCHRONOUS);
+            assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+        } catch (UnregisterServiceException e) {
+            assertEquals(StartStrategies.UNREGISTER, startStrategy);
+            UnsatisfiedConditionsException cause = (UnsatisfiedConditionsException) e.getCause();
+            assertTrue(cause.getUnsatisfiedConditions().contains(startCondition));
+        }
+        stop(StopStrategies.SYNCHRONOUS);
+    }
+
+    public void testStartWaitingStart() throws Exception {
+        startWaitingStart(StartStrategies.ASYNCHRONOUS, false);
+        startWaitingStart(StartStrategies.SYNCHRONOUS, false);
+        startWaitingStart(StartStrategies.UNREGISTER, false);
+
+        startWaitingStart(StartStrategies.ASYNCHRONOUS, false);
+        startWaitingStart(StartStrategies.SYNCHRONOUS, false);
+        startWaitingStart(StartStrategies.UNREGISTER, false);
+    }
+
+    public void testStartWaitingStartRecursive() throws Exception {
+        startWaitingStart(StartStrategies.ASYNCHRONOUS, true);
+        startWaitingStart(StartStrategies.SYNCHRONOUS, true);
+        startWaitingStart(StartStrategies.UNREGISTER, true);
+
+        startWaitingStart(StartStrategies.ASYNCHRONOUS, true);
+        startWaitingStart(StartStrategies.SYNCHRONOUS, true);
+        startWaitingStart(StartStrategies.UNREGISTER, true);
+    }
+
+    private void startWaitingStart(StartStrategy startStrategy, boolean recursive) throws Exception {
+        startCondition.satisfied = recursive;
+        try {
+            start(recursive, startStrategy);
+        } catch (UnsatisfiedConditionsException e) {
+            assertTrue(startStrategy == StartStrategies.SYNCHRONOUS);
+            assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+        } catch (UnregisterServiceException e) {
+            assertEquals(StartStrategies.UNREGISTER, startStrategy);
+            UnsatisfiedConditionsException cause = (UnsatisfiedConditionsException) e.getCause();
+            assertTrue(cause.getUnsatisfiedConditions().contains(startCondition));
+        }
+        try {
+            start(recursive, startStrategy);
+        } catch (UnsatisfiedConditionsException e) {
+            assertTrue(startStrategy == StartStrategies.SYNCHRONOUS);
+            assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+        } catch (UnregisterServiceException e) {
+            assertEquals(StartStrategies.UNREGISTER, startStrategy);
+            UnsatisfiedConditionsException cause = (UnsatisfiedConditionsException) e.getCause();
+            assertTrue(cause.getUnsatisfiedConditions().contains(startCondition));
+        }
+        startCondition.satisfied = true;
+        start(recursive, startStrategy);
+        start(recursive, startStrategy);
+        stop(StopStrategies.SYNCHRONOUS);
+    }
+
+    public void testBlockStartWaiting() throws Exception {
+        startCondition.satisfied = false;
+        startCondition.initializedSignal = new CountDownLatch(1);
+        FutureTask startTask = new FutureTask(new Callable() {
+            public Object call() throws Exception {
+                start(false, StartStrategies.BLOCK);
+                return Boolean.TRUE;
+            }
+        });
+        Thread startThread = new Thread(startTask, "StartTask");
+        startThread.setDaemon(true);
+        startThread.start();
+
+        // wait for the start thread to reach the startContion initialize method
+        assertTrue(startCondition.initializedSignal.await(5, TimeUnit.SECONDS));
+
+        // we should not have a service instance and be in the starting state
+        assertSame(ServiceState.STARTING, serviceManager.getState());
+        assertNull(serviceManager.getService());
+        assertEquals(0, serviceManager.getStartTime());
+        assertNotNull(serviceMonitor.starting);
+        assertNull(serviceMonitor.waitingToStart);
+        assertNull(serviceMonitor.startError);
+        assertNull(serviceMonitor.running);
+        assertNull(serviceMonitor.stopping);
+        assertNull(serviceMonitor.stopError);
+        assertNull(serviceMonitor.stopped);
+        assertTrue(startCondition.initializeCalled);
+        assertTrue(startCondition.isSatisfiedCalled);
+        assertFalse(startCondition.destroyCalled);
+
+        long now = System.currentTimeMillis();
+        // introduce a bit of delay so subsequent times are much less likely to equal to not
+        Thread.sleep(500);
+
+        startCondition.satisfied = true;
+        startCondition.context.setSatisfied();
+
+        // wait for the start task to complete
+        assertEquals(Boolean.TRUE, startTask.get(5, TimeUnit.SECONDS));
+
+        // we should be running
+        assertSame(ServiceState.RUNNING, serviceManager.getState());
+        assertSame(SERVICE, serviceManager.getService());
+        assertTrue(serviceManager.getStartTime() >= now);
+        assertNotNull(serviceMonitor.starting);
+        assertNull(serviceMonitor.waitingToStart);
+        assertNull(serviceMonitor.startError);
+        assertNotNull(serviceMonitor.running);
+        assertNull(serviceMonitor.stopping);
+        assertNull(serviceMonitor.stopError);
+        assertNull(serviceMonitor.stopped);
+        assertTrue(startCondition.initializeCalled);
+        assertTrue(startCondition.isSatisfiedCalled);
+        assertFalse(startCondition.destroyCalled);
+
+        stop(StopStrategies.SYNCHRONOUS);
+    }
+
+    public void testDisabledStart() throws Exception {
+        disabledStart(StartStrategies.ASYNCHRONOUS);
+        disabledStart(StartStrategies.SYNCHRONOUS);
+        disabledStart(StartStrategies.UNREGISTER);
+        disabledStart(StartStrategies.BLOCK);
+
+        disabledStart(StartStrategies.ASYNCHRONOUS);
+        disabledStart(StartStrategies.SYNCHRONOUS);
+        disabledStart(StartStrategies.UNREGISTER);
+        disabledStart(StartStrategies.BLOCK);
+    }
+
+    private void disabledStart(StartStrategy startStrategy) throws Exception {
+        serviceFactory.setEnabled(false);
+        try {
+            serviceManager.start(false, startStrategy);
+            fail("A disabled service should throw an IllegalServiceStateException from start");
+        } catch (IllegalServiceStateException e) {
+            // expected
+        }
+
+        // move to starting disable, move to running, and try to restart
+        serviceFactory.setEnabled(true);
+        startCondition.satisfied = false;
+        start(false, StartStrategies.ASYNCHRONOUS);
+
+        serviceFactory.setEnabled(false);
+        startCondition.satisfied = true;
+        start(false, startStrategy);
+        start(false, startStrategy);
+        stop(StopStrategies.ASYNCHRONOUS);
+        try {
+            serviceManager.start(false, startStrategy);
+            fail("A disabled service should throw an IllegalServiceStateException from start");
+        } catch (IllegalServiceStateException e) {
+            // expected
+        }
     }
 
     public void testStopException() throws Exception {
@@ -178,166 +387,87 @@ public class ServiceManagerTest extends TestCase {
         stop(stopStrategy);
     }
 
-    //todo
-    public void testStartWaiting() throws Exception {
-        startCondition.satisfied = false;
-        start(false, StartStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-
-        start(false, StartStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-    }
-
-    //todo
-    public void testStartWaitingStart() throws Exception {
-        startCondition.satisfied = false;
-        start(false, StartStrategies.ASYNCHRONOUS);
-        start(false, StartStrategies.ASYNCHRONOUS);
-        startCondition.satisfied = true;
-        start(false, StartStrategies.ASYNCHRONOUS);
-        start(false, StartStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-
-        startCondition.satisfied = false;
-        start(false, StartStrategies.ASYNCHRONOUS);
-        start(false, StartStrategies.ASYNCHRONOUS);
-        startCondition.satisfied = true;
-        start(false, StartStrategies.ASYNCHRONOUS);
-        start(false, StartStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-    }
-
-    public void testDisabledStart() throws Exception {
-        disabledStart(StartStrategies.ASYNCHRONOUS);
-        disabledStart(StartStrategies.SYNCHRONOUS);
-        disabledStart(StartStrategies.UNREGISTER);
-        disabledStart(StartStrategies.BLOCK);
-
-        disabledStart(StartStrategies.ASYNCHRONOUS);
-        disabledStart(StartStrategies.SYNCHRONOUS);
-        disabledStart(StartStrategies.UNREGISTER);
-        disabledStart(StartStrategies.BLOCK);
-    }
-
-    private void disabledStart(StartStrategy startStrategy) throws Exception {
-        serviceFactory.setEnabled(false);
-        try {
-            serviceManager.start(false, startStrategy);
-            fail("A disabled service should throw an IllegalServiceStateException from start");
-        } catch (IllegalServiceStateException e) {
-            // expected
-        }
-
-        // move to starting disable, move to running, and try to restart
-        serviceFactory.setEnabled(true);
-        startCondition.satisfied = false;
-        start(false, StartStrategies.ASYNCHRONOUS);
-
-        serviceFactory.setEnabled(false);
-//        try {
-//            start(false, startStrategy);
-//        } catch (IllegalServiceStateException e) {
-//            assertTrue(startStrategy == StartStrategies.UNREGISTER);
-//        } catch (UnsatisfiedConditionsException e) {
-//            assertTrue(startStrategy == StartStrategies.SYNCHRONOUS);
-//            assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
-//        } catch (UnregisterServiceException e) {
-//            assertEquals(StartStrategies.UNREGISTER, startStrategy);
-//            UnsatisfiedConditionsException cause = (UnsatisfiedConditionsException) e.getCause();
-//            assertTrue(cause.getUnsatisfiedConditions().contains(startCondition));
-//        }
-
-        startCondition.satisfied = true;
-        try {
-            start(false, startStrategy);
-        } catch (IllegalServiceStateException e) {
-            assertTrue(startStrategy == StartStrategies.UNREGISTER);
-        }
-        try {
-            start(false, startStrategy);
-        } catch (IllegalServiceStateException e) {
-            assertTrue(startStrategy == StartStrategies.UNREGISTER);
-        }
-        stop(StopStrategies.ASYNCHRONOUS);
-        try {
-            serviceManager.start(false, startStrategy);
-            fail("A disabled service should throw an IllegalServiceStateException from start");
-        } catch (IllegalServiceStateException e) {
-            // expected
-        }
-    }
-
-    public void testStartRecursive() throws Exception {
-        startRecursive(StartStrategies.ASYNCHRONOUS);
-        startRecursive(StartStrategies.SYNCHRONOUS);
-        startRecursive(StartStrategies.UNREGISTER);
-        startRecursive(StartStrategies.BLOCK);
-
-        startRecursive(StartStrategies.ASYNCHRONOUS);
-        startRecursive(StartStrategies.SYNCHRONOUS);
-        startRecursive(StartStrategies.UNREGISTER);
-        startRecursive(StartStrategies.BLOCK);
-    }
-
-    private void startRecursive(StartStrategy startStrategy) throws Exception {
-        start(true, startStrategy);
-        stop(StopStrategies.ASYNCHRONOUS);
-    }
-
-    public void testExceptionStartRecursive() throws Exception {
-        exceptionStartRecursive(StartStrategies.ASYNCHRONOUS);
-        exceptionStartRecursive(StartStrategies.SYNCHRONOUS);
-        exceptionStartRecursive(StartStrategies.UNREGISTER);
-        exceptionStartRecursive(StartStrategies.BLOCK);
-    }
-
-    private void exceptionStartRecursive(StartStrategy startStrategy) throws Exception {
-        serviceFactory.throwExceptionFromCreate = true;
-        try {
-            start(true, startStrategy);
-        } catch (MockCreateException e) {
-            assertTrue(startStrategy == StartStrategies.SYNCHRONOUS || startStrategy == StartStrategies.BLOCK);
-            assertEquals(serviceFactory.createException, e);
-        } catch (UnregisterServiceException e) {
-            assertEquals(StartStrategies.UNREGISTER, startStrategy);
-            assertSame(serviceFactory.createException, e.getCause());
-        }
-        stop(StopStrategies.ASYNCHRONOUS);
-    }
-
-    public void testWaitingStartRecursive() throws Exception {
-        startCondition.satisfied = false;
-        start(true, StartStrategies.ASYNCHRONOUS);
-        start(true, StartStrategies.ASYNCHRONOUS);
-        startCondition.satisfied = true;
-        start(true, StartStrategies.ASYNCHRONOUS);
-        start(true, StartStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-
-        startCondition.satisfied = false;
-        start(true, StartStrategies.ASYNCHRONOUS);
-        start(true, StartStrategies.ASYNCHRONOUS) ;
-        startCondition.satisfied = true;
-        start(true, StartStrategies.ASYNCHRONOUS);
-        start(true, StartStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-    }
-
     public void testWaitingStop() throws Exception {
-        start(false, StartStrategies.ASYNCHRONOUS);
-        stopCondition.satisfied = false;
-        stop(StopStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-        stopCondition.satisfied = true;
-        stop(StopStrategies.ASYNCHRONOUS);
-
-        start(false, StartStrategies.ASYNCHRONOUS);
-        stopCondition.satisfied = false;
-        stop(StopStrategies.ASYNCHRONOUS);
-        stop(StopStrategies.ASYNCHRONOUS);
-        stopCondition.satisfied = true;
-        stop(StopStrategies.ASYNCHRONOUS);
+        waitingStop(StopStrategies.ASYNCHRONOUS);
+        waitingStop(StopStrategies.SYNCHRONOUS);
+        waitingStop(StopStrategies.FORCE);
     }
+
+    public void waitingStop(StopStrategy stopStrategy) throws Exception {
+        start(false, StartStrategies.SYNCHRONOUS);
+        stopCondition.satisfied = false;
+        try {
+            stop(stopStrategy);
+        } catch (UnsatisfiedConditionsException e) {
+            assertTrue(stopStrategy == StopStrategies.SYNCHRONOUS);
+            assertTrue(e.getUnsatisfiedConditions().contains(stopCondition));
+        }
+        try {
+            stop(stopStrategy);
+        } catch (UnsatisfiedConditionsException e) {
+            assertTrue(stopStrategy == StopStrategies.SYNCHRONOUS);
+            assertTrue(e.getUnsatisfiedConditions().contains(stopCondition));
+        }
+
+        stopCondition.satisfied = true;
+        stop(stopStrategy);
+    }
+
+    public void testBlockStopWaiting() throws Exception {
+        start(false, StartStrategies.SYNCHRONOUS);
+        stopCondition.satisfied = false;
+        stopCondition.initializedSignal = new CountDownLatch(1);
+        FutureTask stopTask = new FutureTask(new Callable() {
+            public Object call() throws Exception {
+                stop(StopStrategies.BLOCK);
+                return Boolean.TRUE;
+            }
+        });
+        Thread stopThread = new Thread(stopTask, "StopTask");
+        stopThread.setDaemon(true);
+        stopThread.start();
+
+        // wait for the stop thread to reach the stopContion initialize method
+        assertTrue(stopCondition.initializedSignal.await(5, TimeUnit.SECONDS));
+
+        // we should blocked waiting to stop
+        assertSame(ServiceState.STOPPING, serviceManager.getState());
+        assertTrue(serviceManager.getStartTime() > 0);
+        assertSame(SERVICE, serviceManager.getService());
+        assertNull(serviceMonitor.waitingToStop);
+        assertNull(serviceMonitor.stopError);
+        assertNull(serviceMonitor.stopped);
+        assertNull(serviceMonitor.unregistered);
+        assertFalse(startCondition.initializeCalled);
+        assertFalse(startCondition.isSatisfiedCalled);
+        assertFalse(startCondition.destroyCalled);
+        assertTrue(stopCondition.initializeCalled);
+        assertTrue(stopCondition.isSatisfiedCalled);
+        assertFalse(stopCondition.destroyCalled);
+
+        // wait for the start task to complete
+        stopCondition.satisfied = true;
+        stopCondition.context.setSatisfied();
+        assertEquals(Boolean.TRUE, stopTask.get(5, TimeUnit.SECONDS));
+
+        // we should be STOPPED
+        assertSame(ServiceState.STOPPED, serviceManager.getState());
+        assertEquals(0, serviceManager.getStartTime());
+        assertNull(serviceManager.getService());
+        assertNotNull(serviceMonitor.stopping);
+        assertNull(serviceMonitor.waitingToStop);
+        assertNull(serviceMonitor.stopError);
+        assertNotNull(serviceMonitor.stopped);
+        assertNull(serviceMonitor.unregistered);
+        assertEquals(serviceMonitor.stopping.getEventId() + 1, serviceMonitor.stopped.getEventId());
+        assertFalse(startCondition.initializeCalled);
+        assertFalse(startCondition.isSatisfiedCalled);
+        assertTrue(startCondition.destroyCalled);
+        assertTrue(stopCondition.initializeCalled);
+        assertTrue(stopCondition.isSatisfiedCalled);
+        assertTrue(stopCondition.destroyCalled);
+    }
+
 
     public void testStartFromStopping() throws Exception {
         startFromStopping(StartStrategies.ASYNCHRONOUS);
@@ -360,18 +490,108 @@ public class ServiceManagerTest extends TestCase {
         stop(StopStrategies.ASYNCHRONOUS);
     }
 
-    private void initialize() throws Exception {
-        serviceMonitor.reset();
-        serviceManager.initialize();
+    public void testNotRestartableInitDestroy() throws Exception {
+        notRestartableInitDestroy(StopStrategies.ASYNCHRONOUS);
+        notRestartableInitDestroy(StopStrategies.SYNCHRONOUS);
+        notRestartableInitDestroy(StopStrategies.FORCE);
+        notRestartableInitDestroy(StopStrategies.BLOCK);
+    }
 
+    private void notRestartableInitDestroy(StopStrategy stopStrategy) throws Exception {
+        serviceFactory.restartable = false;
+        initialize();
+        destroy(stopStrategy);
+    }
+
+    public void testNotRestartableInitException() throws Exception {
+        serviceFactory.throwExceptionFromCreate = true;
+        serviceFactory.restartable = false;
+        initialize();
+    }
+
+    public void testNotRestartableInitWaiting() throws Exception {
+        startCondition.satisfied = false;
+        serviceFactory.restartable = false;
+        initialize();
+    }
+
+    public void testNotRestartableInitDisabled() throws Exception {
+        serviceFactory.setEnabled(false);
+        serviceFactory.restartable = false;
+        initialize();
+    }
+
+    public void testNotRestartableDestroyException() throws Exception {
+        notRestartableDestroyException(StopStrategies.ASYNCHRONOUS);
+        notRestartableDestroyException(StopStrategies.SYNCHRONOUS);
+        notRestartableDestroyException(StopStrategies.FORCE);
+        notRestartableDestroyException(StopStrategies.BLOCK);
+    }
+
+    private void notRestartableDestroyException(StopStrategy stopStrategy) throws Exception {
+        serviceFactory.throwExceptionFromDestroy = true;
+        serviceFactory.restartable = false;
+        initialize();
+        destroy(stopStrategy);
+    }
+
+    public void testNotRestartableInitDestroyException() throws Exception {
+        notRestartableInitDestroyException(StopStrategies.ASYNCHRONOUS);
+        notRestartableInitDestroyException(StopStrategies.SYNCHRONOUS);
+        notRestartableInitDestroyException(StopStrategies.FORCE);
+        notRestartableInitDestroyException(StopStrategies.BLOCK);
+    }
+
+    private void notRestartableInitDestroyException(StopStrategy stopStrategy) throws Exception {
+        serviceFactory.throwExceptionFromCreate = true;
+        serviceFactory.throwExceptionFromDestroy = true;
+        serviceFactory.restartable = false;
+        initialize();
+        destroy(stopStrategy);
+    }
+
+    public void testNotRestartableWaitingStop() throws Exception {
+        notRestartableWaitingDestroy(StopStrategies.ASYNCHRONOUS);
+        notRestartableWaitingDestroy(StopStrategies.SYNCHRONOUS);
+        notRestartableWaitingDestroy(StopStrategies.FORCE);
+    }
+
+    public void notRestartableWaitingDestroy(StopStrategy stopStrategy) throws Exception {
+        serviceFactory.restartable = false;
+        initialize();
+        stopCondition.satisfied = false;
+        destroy(stopStrategy);
+        destroy(stopStrategy);
+        stopCondition.satisfied = true;
+        destroy(stopStrategy);
+    }
+
+    public void testNotRestartableBlockWaitingStop() throws Exception {
+        serviceFactory.restartable = false;
+        initialize();
+        stopCondition.satisfied = false;
+        stopCondition.initializedSignal = new CountDownLatch(1);
+        FutureTask destroyTask = new FutureTask(new Callable() {
+            public Object call() throws Exception {
+                destroy(StopStrategies.BLOCK);
+                return Boolean.TRUE;
+            }
+        });
+        Thread destroyThread = new Thread(destroyTask, "DestroyTask");
+        destroyThread.setDaemon(true);
+        destroyThread.start();
+
+        // wait for the stop thread to reach the stopContion initialize method
+        assertTrue(stopCondition.initializedSignal.await(5, TimeUnit.SECONDS));
+
+        // we should blocked waiting to stop
+        assertSame(ServiceState.RUNNING, serviceManager.getState());
         assertSame(serviceName, serviceManager.getServiceName());
         assertSame(serviceFactory, serviceManager.getServiceFactory());
         assertSame(classLoader, serviceManager.getClassLoader());
-        assertEquals(0, serviceManager.getStartTime());
-        assertNull(serviceManager.getService());
-        assertSame(ServiceState.STOPPED, serviceManager.getState());
-        // verify expected events fired
-        assertNotNull(serviceMonitor.registered);
+        assertTrue(serviceManager.getStartTime() > 0);
+        assertNotNull(serviceManager.getService());
+        assertNull(serviceMonitor.registered);
         assertNull(serviceMonitor.starting);
         assertNull(serviceMonitor.waitingToStart);
         assertNull(serviceMonitor.startError);
@@ -381,6 +601,145 @@ public class ServiceManagerTest extends TestCase {
         assertNull(serviceMonitor.stopError);
         assertNull(serviceMonitor.stopped);
         assertNull(serviceMonitor.unregistered);
+
+        // wait for the destroy task to complete
+        stopCondition.satisfied = true;
+        stopCondition.context.setSatisfied();
+        assertEquals(Boolean.TRUE, destroyTask.get(5, TimeUnit.SECONDS));
+
+        // we should be STOPPED
+        assertSame(ServiceState.STOPPED, serviceManager.getState());
+        assertEquals(0, serviceManager.getStartTime());
+        assertNull(serviceManager.getService());
+        assertNull(serviceMonitor.registered);
+        assertNull(serviceMonitor.starting);
+        assertNull(serviceMonitor.waitingToStart);
+        assertNull(serviceMonitor.startError);
+        assertNull(serviceMonitor.running);
+        assertNotNull(serviceMonitor.stopping);
+        assertNull(serviceMonitor.waitingToStop);
+        assertNull(serviceMonitor.stopError);
+        assertNotNull(serviceMonitor.stopped);
+        assertNotNull(serviceMonitor.unregistered);
+        assertEquals(serviceMonitor.stopping.getEventId() + 1, serviceMonitor.stopped.getEventId());
+        assertEquals(serviceMonitor.stopping.getEventId() + 2, serviceMonitor.unregistered.getEventId());
+        assertFalse(startCondition.initializeCalled);
+        assertFalse(startCondition.isSatisfiedCalled);
+        assertTrue(startCondition.destroyCalled);
+        assertTrue(stopCondition.initializeCalled);
+        assertTrue(stopCondition.isSatisfiedCalled);
+        assertTrue(stopCondition.destroyCalled);
+    }
+
+    private void initialize() throws Exception {
+        long now = System.currentTimeMillis();
+        // introduce a bit of delay so subsequent times are much less likely to equal to not
+        Thread.sleep(50);
+
+        serviceMonitor.reset();
+        startCondition.reset();
+        stopCondition.reset();
+        kernel.reset();
+        try {
+            serviceManager.initialize();
+        } catch (MockCreateException e) {
+            assertTrue(serviceFactory.throwExceptionFromCreate == true);
+            assertSame(serviceFactory.createException, e);
+        } catch (UnsatisfiedConditionsException e) {
+            assertTrue(startCondition.satisfied == false);
+            assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+        } catch (IllegalServiceStateException e) {
+            assertFalse(serviceFactory.isEnabled());
+        }
+
+        assertSame(serviceName, serviceManager.getServiceName());
+        assertSame(serviceFactory, serviceManager.getServiceFactory());
+        assertSame(classLoader, serviceManager.getClassLoader());
+
+        if (serviceFactory.restartable) {
+            assertSame(ServiceState.STOPPED, serviceManager.getState());
+            assertEquals(0, serviceManager.getStartTime());
+            assertNull(serviceManager.getService());
+            assertNotNull(serviceMonitor.registered);
+            assertNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNull(serviceMonitor.running);
+            assertNull(serviceMonitor.stopping);
+            assertNull(serviceMonitor.waitingToStop);
+            assertNull(serviceMonitor.stopError);
+            assertNull(serviceMonitor.stopped);
+            assertNull(serviceMonitor.unregistered);
+            assertFalse(startCondition.initializeCalled);
+            assertFalse(startCondition.isSatisfiedCalled);
+            assertFalse(startCondition.destroyCalled);
+            assertFalse(stopCondition.initializeCalled);
+            assertFalse(stopCondition.isSatisfiedCalled);
+            assertFalse(stopCondition.destroyCalled);
+        } else if (!serviceFactory.isEnabled()) {
+            assertSame(ServiceState.STOPPED, serviceManager.getState());
+            assertEquals(0, serviceManager.getStartTime());
+            assertNull(serviceManager.getService());
+            assertNull(serviceMonitor.registered);
+            assertNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNull(serviceMonitor.running);
+            assertNull(serviceMonitor.stopping);
+            assertNull(serviceMonitor.stopError);
+            assertNull(serviceMonitor.stopped);
+            assertNull(serviceMonitor.unregistered);
+            assertFalse(startCondition.initializeCalled);
+            assertFalse(startCondition.isSatisfiedCalled);
+            assertFalse(startCondition.destroyCalled);
+            assertFalse(stopCondition.initializeCalled);
+            assertFalse(stopCondition.isSatisfiedCalled);
+            assertFalse(stopCondition.destroyCalled);
+        } else if (serviceFactory.throwExceptionFromCreate != true && startCondition.satisfied == true) {
+            assertSame(ServiceState.RUNNING, serviceManager.getState());
+            assertSame(SERVICE, serviceManager.getService());
+            assertTrue(serviceManager.getStartTime() > now);
+            assertNotNull(serviceMonitor.registered);
+            assertNotNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNotNull(serviceMonitor.running);
+            assertNull(serviceMonitor.stopping);
+            assertNull(serviceMonitor.stopError);
+            assertNull(serviceMonitor.stopped);
+            assertNull(serviceMonitor.unregistered);
+            assertEquals(serviceMonitor.registered.getEventId() + 1, serviceMonitor.starting.getEventId());
+            assertEquals(serviceMonitor.registered.getEventId() + 2, serviceMonitor.running.getEventId());
+            assertTrue(startCondition.initializeCalled);
+            assertTrue(startCondition.isSatisfiedCalled);
+            assertFalse(startCondition.destroyCalled);
+            assertFalse(stopCondition.initializeCalled);
+            assertFalse(stopCondition.isSatisfiedCalled);
+            assertFalse(stopCondition.destroyCalled);
+        } else {
+            assertSame(ServiceState.STOPPED, serviceManager.getState());
+            assertEquals(0, serviceManager.getStartTime());
+            assertNull(serviceManager.getService());
+            assertNotNull(serviceMonitor.registered);
+            assertNotNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNull(serviceMonitor.running);
+            assertNotNull(serviceMonitor.stopping);
+            assertNull(serviceMonitor.stopError);
+            assertNotNull(serviceMonitor.stopped);
+            assertNotNull(serviceMonitor.unregistered);
+            assertEquals(serviceMonitor.registered.getEventId() + 1, serviceMonitor.starting.getEventId());
+            assertEquals(serviceMonitor.registered.getEventId() + 2, serviceMonitor.stopping.getEventId());
+            assertEquals(serviceMonitor.registered.getEventId() + 3, serviceMonitor.stopped.getEventId());
+            assertEquals(serviceMonitor.registered.getEventId() + 4, serviceMonitor.unregistered.getEventId());
+            assertTrue(startCondition.initializeCalled);
+            assertTrue(startCondition.isSatisfiedCalled);
+            assertTrue(startCondition.destroyCalled);
+            assertFalse(stopCondition.initializeCalled);
+            assertFalse(stopCondition.isSatisfiedCalled);
+            assertFalse(stopCondition.destroyCalled);
+        }
     }
 
     private void start(boolean recursive, StartStrategy startStrategy) throws Exception {
@@ -585,6 +944,7 @@ public class ServiceManagerTest extends TestCase {
         serviceMonitor.reset();
         startCondition.reset();
         stopCondition.reset();
+        kernel.reset();
         ServiceState initialState = serviceManager.getState();
         serviceManager.stop(stopStrategy);
 
@@ -622,7 +982,7 @@ public class ServiceManagerTest extends TestCase {
             assertFalse(stopCondition.initializeCalled);
             assertFalse(stopCondition.isSatisfiedCalled);
             assertFalse(stopCondition.destroyCalled);
-        } else if (!stopCondition.satisfied) {
+        } else if (!stopCondition.satisfied && stopStrategy != StopStrategies.FORCE) {
             //
             // waiting to stop
             //
@@ -674,12 +1034,21 @@ public class ServiceManagerTest extends TestCase {
                 assertNotNull(serviceMonitor.stopping);
             }
             assertNull(serviceMonitor.waitingToStop);
-            assertNull(serviceMonitor.stopError);
+            if (stopStrategy == StopStrategies.FORCE) {
+                assertNotNull(serviceMonitor.stopError);
+                ForcedStopException cause = (ForcedStopException) serviceMonitor.stopError.getCause();
+                assertTrue(cause.getUnsatisfiedConditions().contains(stopCondition));
+            } else {
+                assertNull(serviceMonitor.stopError);
+            }
             assertNotNull(serviceMonitor.stopped);
             assertNull(serviceMonitor.unregistered);
 
             // verify events fired in the correct order
-            if (initialState != ServiceState.STOPPING) {
+            if (stopStrategy == StopStrategies.FORCE) {
+                assertEquals(serviceMonitor.stopping.getEventId() + 1, serviceMonitor.stopError.getEventId());
+                assertEquals(serviceMonitor.stopping.getEventId() + 2, serviceMonitor.stopped.getEventId());
+            } else if (initialState != ServiceState.STOPPING) {
                 assertEquals(serviceMonitor.stopping.getEventId() + 1, serviceMonitor.stopped.getEventId());
             }
 
@@ -742,27 +1111,121 @@ public class ServiceManagerTest extends TestCase {
         }
     }
 
-    private void destroy() throws UnsatisfiedConditionsException, IllegalServiceStateException {
+    private void destroy(StopStrategy stopStrategy) {
+        ServiceState initialState = serviceManager.getState();
         serviceMonitor.reset();
-        serviceManager.destroy(StopStrategies.SYNCHRONOUS);
+        startCondition.reset();
+        stopCondition.reset();
+        kernel.reset();
+        try {
+            serviceManager.destroy(stopStrategy);
+        } catch (IllegalServiceStateException e) {
+            assertFalse(stopCondition.satisfied);
+            assertSame(StopStrategies.ASYNCHRONOUS, stopStrategy);
+        } catch (UnsatisfiedConditionsException e) {
+            assertFalse(stopCondition.satisfied);
+            assertSame(StopStrategies.SYNCHRONOUS, stopStrategy);
+            assertTrue(e.getUnsatisfiedConditions().contains(stopCondition));
+        }
 
-        assertSame(serviceName, serviceManager.getServiceName());
-        assertSame(serviceFactory, serviceManager.getServiceFactory());
-        assertSame(classLoader, serviceManager.getClassLoader());
-        assertEquals(0, serviceManager.getStartTime());
-        assertNull(serviceManager.getService());
-        assertSame(ServiceState.STOPPED, serviceManager.getState());
-        // verify expected events fired
-        assertNull(serviceMonitor.registered);
-        assertNull(serviceMonitor.starting);
-        assertNull(serviceMonitor.waitingToStart);
-        assertNull(serviceMonitor.startError);
-        assertNull(serviceMonitor.running);
-        assertNull(serviceMonitor.stopping);
-        assertNull(serviceMonitor.waitingToStop);
-        assertNull(serviceMonitor.stopError);
-        assertNull(serviceMonitor.stopped);
-        assertNotNull(serviceMonitor.unregistered);
+        if (serviceFactory.restartable || initialState == ServiceState.STOPPED) {
+            assertSame(ServiceState.STOPPED, serviceManager.getState());
+            assertSame(serviceName, serviceManager.getServiceName());
+            assertSame(serviceFactory, serviceManager.getServiceFactory());
+            assertSame(classLoader, serviceManager.getClassLoader());
+            assertEquals(0, serviceManager.getStartTime());
+            assertNull(serviceManager.getService());
+            // verify expected events fired
+            assertNull(serviceMonitor.registered);
+            assertNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNull(serviceMonitor.running);
+            assertNull(serviceMonitor.stopping);
+            assertNull(serviceMonitor.waitingToStop);
+            assertNull(serviceMonitor.stopError);
+            assertNull(serviceMonitor.stopped);
+            assertNotNull(serviceMonitor.unregistered);
+        } else if (!stopCondition.satisfied && stopStrategy != StopStrategies.FORCE) {
+            assertSame(ServiceState.RUNNING, serviceManager.getState());
+            assertSame(serviceName, serviceManager.getServiceName());
+            assertSame(serviceFactory, serviceManager.getServiceFactory());
+            assertSame(classLoader, serviceManager.getClassLoader());
+            assertTrue(serviceManager.getStartTime() > 0);
+            assertNotNull(serviceManager.getService());
+            assertNull(serviceMonitor.registered);
+            assertNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNull(serviceMonitor.running);
+            assertNull(serviceMonitor.stopping);
+            if (stopStrategy == StopStrategies.ASYNCHRONOUS) {
+                assertNotNull(serviceMonitor.waitingToStop);
+                assertTrue(serviceMonitor.waitingToStop.getUnsatisfiedConditions().contains(stopCondition));
+            } else {
+                assertNull(serviceMonitor.waitingToStop);
+            }
+            assertNull(serviceMonitor.stopError);
+            assertNull(serviceMonitor.stopped);
+            assertNull(serviceMonitor.unregistered);
+        } else if (serviceFactory.throwExceptionFromDestroy != true) {
+            assertSame(ServiceState.STOPPED, serviceManager.getState());
+            assertEquals(0, serviceManager.getStartTime());
+            assertNull(serviceManager.getService());
+            assertNull(serviceMonitor.registered);
+            assertNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNull(serviceMonitor.running);
+            assertNotNull(serviceMonitor.stopping);
+            assertNull(serviceMonitor.waitingToStop);
+            if (!stopCondition.satisfied && stopStrategy == StopStrategies.FORCE) {
+                assertNotNull(serviceMonitor.stopError);
+            } else {
+                assertNull(serviceMonitor.stopError);
+            }
+            assertNotNull(serviceMonitor.stopped);
+            assertNotNull(serviceMonitor.unregistered);
+            if (!stopCondition.satisfied && stopStrategy == StopStrategies.FORCE) {
+                assertEquals(serviceMonitor.stopError.getEventId() + 1, serviceMonitor.stopping.getEventId());
+                assertEquals(serviceMonitor.stopError.getEventId() + 2, serviceMonitor.stopped.getEventId());
+                assertEquals(serviceMonitor.stopError.getEventId() + 3, serviceMonitor.unregistered.getEventId());
+            } else {
+                assertEquals(serviceMonitor.stopping.getEventId() + 1, serviceMonitor.stopped.getEventId());
+                assertEquals(serviceMonitor.stopping.getEventId() + 2, serviceMonitor.unregistered.getEventId());
+
+            }
+            assertFalse(startCondition.initializeCalled);
+            assertFalse(startCondition.isSatisfiedCalled);
+            assertTrue(startCondition.destroyCalled);
+            // There is no way to determine if the init should have been called
+            // stopCondition.initializeCalled
+            assertTrue(stopCondition.isSatisfiedCalled);
+            assertTrue(stopCondition.destroyCalled);
+        } else {
+            assertSame(ServiceState.STOPPED, serviceManager.getState());
+            assertEquals(0, serviceManager.getStartTime());
+            assertNull(serviceManager.getService());
+            assertNull(serviceMonitor.registered);
+            assertNull(serviceMonitor.starting);
+            assertNull(serviceMonitor.waitingToStart);
+            assertNull(serviceMonitor.startError);
+            assertNull(serviceMonitor.running);
+            assertNotNull(serviceMonitor.stopping);
+            assertNull(serviceMonitor.waitingToStop);
+            assertNotNull(serviceMonitor.stopError);
+            assertNotNull(serviceMonitor.stopped);
+            assertNotNull(serviceMonitor.unregistered);
+            assertEquals(serviceMonitor.stopping.getEventId() + 1, serviceMonitor.stopError.getEventId());
+            assertEquals(serviceMonitor.stopping.getEventId() + 2, serviceMonitor.stopped.getEventId());
+            assertEquals(serviceMonitor.stopping.getEventId() + 3, serviceMonitor.unregistered.getEventId());
+            assertFalse(startCondition.initializeCalled);
+            assertFalse(startCondition.isSatisfiedCalled);
+            assertTrue(startCondition.destroyCalled);
+            assertTrue(stopCondition.initializeCalled);
+            assertTrue(stopCondition.isSatisfiedCalled);
+            assertTrue(stopCondition.destroyCalled);
+        }
     }
 
     protected void setUp() throws Exception {
@@ -836,6 +1299,8 @@ public class ServiceManagerTest extends TestCase {
         boolean initializeCalled = false;
         boolean isSatisfiedCalled = false;
         boolean destroyCalled = false;
+        ServiceConditionContext context;
+        CountDownLatch initializedSignal;
 
         private void reset() {
             initializeCalled = false;
@@ -845,6 +1310,10 @@ public class ServiceManagerTest extends TestCase {
 
         public void initialize(ServiceConditionContext context) {
             initializeCalled = true;
+            this.context = context;
+            if (initializedSignal != null) {
+                initializedSignal.countDown();
+            }
         }
 
         public boolean isSatisfied() {
@@ -862,6 +1331,8 @@ public class ServiceManagerTest extends TestCase {
         boolean initializeCalled = false;
         boolean isSatisfiedCalled = false;
         boolean destroyCalled = false;
+        ServiceConditionContext context;
+        CountDownLatch initializedSignal;
 
         private void reset() {
             initializeCalled = false;
@@ -871,6 +1342,10 @@ public class ServiceManagerTest extends TestCase {
 
         public void initialize(ServiceConditionContext context) {
             initializeCalled = true;
+            this.context = context;
+            if (initializedSignal != null) {
+                initializedSignal.countDown();
+            }
         }
 
         public boolean isSatisfied() {

@@ -41,6 +41,7 @@ import org.gbean.kernel.StartStrategy;
 import org.gbean.kernel.StopStrategy;
 import org.gbean.kernel.UnregisterServiceException;
 import org.gbean.kernel.UnsatisfiedConditionsException;
+import org.gbean.kernel.ServiceRegistrationException;
 
 /**
  * The ServiceManager handles the life cycle of a single service.   The manager is responsible for gaurenteeing that
@@ -182,11 +183,18 @@ public class ServiceManager {
      * @see Kernel#registerService(ServiceName, ServiceFactory, ClassLoader)
      */
     public void initialize() throws IllegalServiceStateException, UnsatisfiedConditionsException, Exception {
+        if (!serviceFactory.isRestartable() && !serviceFactory.isEnabled()) {
+            throw new IllegalServiceStateException("A disabled non-restartable service factory can not be initalized", serviceName);
+        }
+
+        serviceMonitor.serviceRegistered(createServiceEvent());
+
         // if we are not restartable, we need to start immediately, otherwise we are not going to register this service
         if (!serviceFactory.isRestartable()) {
             try {
                 start(false, StartStrategies.UNREGISTER);
             } catch (UnregisterServiceException e) {
+                serviceMonitor.serviceUnregistered(createServiceEvent());
                 Throwable cause = e.getCause();
                 if (cause instanceof Exception) {
                     throw (Exception) cause;
@@ -207,14 +215,6 @@ public class ServiceManager {
             } finally {
                 unlock();
             }
-        }
-
-        // cool we are registered
-        serviceMonitor.serviceRegistered(createServiceEvent());
-
-        // if we are not restartable, we need to notify everyone we just started
-        if (!serviceFactory.isRestartable()) {
-            serviceMonitor.serviceRunning(createServiceEvent());
         }
     }
 
@@ -240,6 +240,8 @@ public class ServiceManager {
             lock("destroy");
             try {
                 if (state != ServiceState.STOPPED) {
+                    state = ServiceState.STARTING;
+                    serviceMonitor.serviceStopping(createServiceEvent());
                     try {
                         // destroy the service
                         serviceFactory.destroyService(standardServiceContext);
@@ -529,6 +531,7 @@ public class ServiceManager {
                         // Grab a synchronized lock on the service factory before changing state and getting a snapshot of
                         // the stopConditions.  This allows other code to assure the service is in the correct state before
                         // adding a stopCondition.
+                        // todo broken
                         synchronized (serviceFactory) {
                             state = ServiceState.STOPPING;
                             stopConditions = new AggregateConditions(kernel, serviceName, classLoader, serviceFactory.getStopConditions(), lock);

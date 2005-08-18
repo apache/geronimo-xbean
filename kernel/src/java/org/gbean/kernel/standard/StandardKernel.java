@@ -241,6 +241,11 @@ public class StandardKernel implements Kernel {
             throw new IllegalStateException("Kernel is stopped");
         }
 
+        if (!serviceFactory.isEnabled()) {
+            throw new ServiceRegistrationException(serviceName,
+                    new IllegalServiceStateException("A disabled non-restartable service factory can not be registered", serviceName));
+        }
+
         FutureTask registrationTask = null;
 
         //
