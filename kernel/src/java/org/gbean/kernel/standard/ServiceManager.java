@@ -41,7 +41,6 @@ import org.gbean.kernel.StartStrategy;
 import org.gbean.kernel.StopStrategy;
 import org.gbean.kernel.UnregisterServiceException;
 import org.gbean.kernel.UnsatisfiedConditionsException;
-import org.gbean.kernel.ServiceRegistrationException;
 
 /**
  * The ServiceManager handles the life cycle of a single service.   The manager is responsible for gaurenteeing that
