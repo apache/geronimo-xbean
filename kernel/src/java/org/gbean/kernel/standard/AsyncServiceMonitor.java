@@ -44,7 +44,7 @@ public class AsyncServiceMonitor implements ServiceMonitor {
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public void serviceRegistered(final ServiceEvent serviceEvent) {
         executor.execute(new Runnable() {

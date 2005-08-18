@@ -49,7 +49,7 @@ public class StandardServiceContext implements ServiceContext {
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public Kernel getKernel() {
         return kernel;

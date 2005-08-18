@@ -53,7 +53,7 @@ public class NonRestartableStopConditions extends AggregateConditions {
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public synchronized void initialize() {
         updateConditions();

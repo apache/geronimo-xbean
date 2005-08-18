@@ -73,7 +73,7 @@ public class StandardServiceConditionContext implements ServiceConditionContext 
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public Kernel getKernel() {
         return kernel;

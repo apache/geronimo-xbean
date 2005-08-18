@@ -28,7 +28,7 @@ import org.gbean.kernel.KernelFactory;
  */
 public class StandardKernelFactory extends KernelFactory {
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     protected Kernel createKernelInternal(String name) {
         return new StandardKernel(name);
