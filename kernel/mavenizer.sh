@@ -18,12 +18,8 @@ cp pom.xml $DIR
 
     mkdir main ; mv java main 
   
-    mv resources main
-
     ( cd test ; mkdir java ; mv org java )
   
-    mv test-data test/resources
-
   )
 
 )
