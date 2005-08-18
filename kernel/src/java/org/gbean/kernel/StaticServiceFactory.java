@@ -46,7 +46,7 @@ public class StaticServiceFactory implements ServiceFactory {
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public boolean isRestartable() {
         return false;

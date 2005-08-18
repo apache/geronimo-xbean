@@ -26,7 +26,7 @@ package org.gbean.kernel;
  */
 public class NullServiceMonitor implements ServiceMonitor {
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public void serviceRegistered(ServiceEvent serviceEvent) {
     }

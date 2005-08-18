@@ -47,7 +47,7 @@ public class RunningServiceCondition implements ServiceCondition {
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public synchronized void initialize(ServiceConditionContext context) {
         if (context == null) throw new NullPointerException("context is null");
