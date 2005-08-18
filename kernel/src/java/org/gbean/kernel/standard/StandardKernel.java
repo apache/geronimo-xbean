@@ -118,7 +118,7 @@ public class StandardKernel implements Kernel {
     }
 
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     public void destroy() throws KernelErrorsError {
         // if we are already stopped return
