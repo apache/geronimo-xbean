@@ -32,7 +32,7 @@ public class KernelMonitorBroadcaster implements KernelMonitor {
     /**
      * The monitors of kernel events.
      */
-    private final List kernelMonitors = new CopyOnWriteArrayList();
+    private final CopyOnWriteArrayList kernelMonitors = new CopyOnWriteArrayList();
 
     /**
      * Adds a kernel monitor.
@@ -40,7 +40,7 @@ public class KernelMonitorBroadcaster implements KernelMonitor {
      * @param kernelMonitor the kernel monitor to add
      */
     public void addKernelMonitor(KernelMonitor kernelMonitor) {
-        kernelMonitors.add(kernelMonitor);
+        kernelMonitors.addIfAbsent(kernelMonitor);
     }
 
     /**

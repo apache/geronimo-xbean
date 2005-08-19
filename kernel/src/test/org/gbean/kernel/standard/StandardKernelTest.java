@@ -237,7 +237,7 @@ public class StandardKernelTest extends TestCase {
     private static class MockServiceFactory extends StaticServiceFactory {
         private boolean restartable = true;
 
-        public MockServiceFactory() throws NullPointerException {
+        private MockServiceFactory() throws NullPointerException {
             super(SERVICE);
         }
 
