@@ -38,7 +38,7 @@ public final class StopStrategies {
 
     private static class Synchronous implements StopStrategy {
         public boolean waitForUnsatisfiedConditions(ServiceName serviceName, Set conditions) throws UnsatisfiedConditionsException {
-            throw new UnsatisfiedConditionsException("Unsatisfied start conditions", serviceName, conditions);
+            throw new UnsatisfiedConditionsException("Unsatisfied stop conditions", serviceName, conditions);
         }
 
     }
