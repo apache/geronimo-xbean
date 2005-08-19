@@ -16,6 +16,7 @@
  */
 package org.gbean.kernel;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -41,7 +42,7 @@ public class ForcedStopException extends Exception {
                 " serviceName=" + serviceName +
                 ", unsatisfiedConditions=" + unsatisfiedConditions);
         this.serviceName = serviceName;
-        this.unsatisfiedConditions = unsatisfiedConditions;
+        this.unsatisfiedConditions = Collections.unmodifiableSet(unsatisfiedConditions);
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.gbean.kernel;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -40,7 +41,7 @@ public class UnsatisfiedConditionsException extends Exception {
     public UnsatisfiedConditionsException(String message, ServiceName serviceName, Set unsatisfiedConditions) {
         super(message + ": serviceName=" + serviceName + ": unsatisfiedConditions=" + unsatisfiedConditions);
         this.serviceName = serviceName;
-        this.unsatisfiedConditions = unsatisfiedConditions;
+        this.unsatisfiedConditions = Collections.unmodifiableSet(unsatisfiedConditions);
     }
 
     /**

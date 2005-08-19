@@ -61,14 +61,14 @@ import org.gbean.kernel.UnsatisfiedConditionsException;
  */
 public class ServiceManagerTest extends TestCase {
     private static final Object SERVICE = new Object();
-    private MockKernel kernel = new MockKernel();
-    private StringServiceName serviceName = new StringServiceName("Service");
-    private StringServiceName ownedServiceName = new StringServiceName("OwnedService");
-    private MockStartCondition startCondition = new MockStartCondition();
-    private MockStopCondition stopCondition = new MockStopCondition();
-    private MockServiceFactory serviceFactory = new MockServiceFactory();
-    private ClassLoader classLoader = new URLClassLoader(new URL[0]);
-    private MockServiceMonitor serviceMonitor = new MockServiceMonitor();
+    private final MockKernel kernel = new MockKernel();
+    private final StringServiceName serviceName = new StringServiceName("Service");
+    private final StringServiceName ownedServiceName = new StringServiceName("OwnedService");
+    private final MockStartCondition startCondition = new MockStartCondition();
+    private final MockStopCondition stopCondition = new MockStopCondition();
+    private final MockServiceFactory serviceFactory = new MockServiceFactory();
+    private final ClassLoader classLoader = new URLClassLoader(new URL[0]);
+    private final MockServiceMonitor serviceMonitor = new MockServiceMonitor();
     private ServiceManager serviceManager;
 
     public void testInitialState() {
@@ -155,6 +155,7 @@ public class ServiceManagerTest extends TestCase {
         } catch (UnregisterServiceException e) {
             assertEquals(StartStrategies.UNREGISTER, startStrategy);
             assertSame(serviceFactory.createException, e.getCause());
+            assertEquals(serviceName, e.getServiceName());
         }
         stop(StopStrategies.SYNCHRONOUS);
     }
@@ -186,10 +187,13 @@ public class ServiceManagerTest extends TestCase {
         } catch (UnsatisfiedConditionsException e) {
             assertTrue(startStrategy == StartStrategies.SYNCHRONOUS);
             assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+            assertEquals(serviceName, e.getServiceName());
         } catch (UnregisterServiceException e) {
             assertEquals(StartStrategies.UNREGISTER, startStrategy);
+            assertEquals(serviceName, e.getServiceName());
             UnsatisfiedConditionsException cause = (UnsatisfiedConditionsException) e.getCause();
             assertTrue(cause.getUnsatisfiedConditions().contains(startCondition));
+            assertEquals(serviceName, cause.getServiceName());
         }
         stop(StopStrategies.SYNCHRONOUS);
     }
@@ -221,20 +225,26 @@ public class ServiceManagerTest extends TestCase {
         } catch (UnsatisfiedConditionsException e) {
             assertTrue(startStrategy == StartStrategies.SYNCHRONOUS);
             assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+            assertEquals(serviceName, e.getServiceName());
         } catch (UnregisterServiceException e) {
             assertEquals(StartStrategies.UNREGISTER, startStrategy);
+            assertEquals(serviceName, e.getServiceName());
             UnsatisfiedConditionsException cause = (UnsatisfiedConditionsException) e.getCause();
             assertTrue(cause.getUnsatisfiedConditions().contains(startCondition));
+            assertEquals(serviceName, cause.getServiceName());
         }
         try {
             start(recursive, startStrategy);
         } catch (UnsatisfiedConditionsException e) {
             assertTrue(startStrategy == StartStrategies.SYNCHRONOUS);
             assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+            assertEquals(serviceName, e.getServiceName());
         } catch (UnregisterServiceException e) {
             assertEquals(StartStrategies.UNREGISTER, startStrategy);
+            assertEquals(serviceName, e.getServiceName());
             UnsatisfiedConditionsException cause = (UnsatisfiedConditionsException) e.getCause();
             assertTrue(cause.getUnsatisfiedConditions().contains(startCondition));
+            assertEquals(serviceName, cause.getServiceName());
         }
         startCondition.satisfied = true;
         start(recursive, startStrategy);
@@ -320,6 +330,7 @@ public class ServiceManagerTest extends TestCase {
             fail("A disabled service should throw an IllegalServiceStateException from start");
         } catch (IllegalServiceStateException e) {
             // expected
+            assertEquals(serviceName, e.getServiceName());
         }
 
         // move to starting disable, move to running, and try to restart
@@ -337,6 +348,7 @@ public class ServiceManagerTest extends TestCase {
             fail("A disabled service should throw an IllegalServiceStateException from start");
         } catch (IllegalServiceStateException e) {
             // expected
+            assertEquals(serviceName, e.getServiceName());
         }
     }
 
@@ -382,6 +394,7 @@ public class ServiceManagerTest extends TestCase {
             assertEquals(serviceFactory.createException, e);
         } catch (UnregisterServiceException e) {
             assertEquals(StartStrategies.UNREGISTER, startStrategy);
+            assertEquals(serviceName, e.getServiceName());
             assertSame(serviceFactory.createException, e.getCause());
         }
         stop(stopStrategy);
@@ -401,12 +414,14 @@ public class ServiceManagerTest extends TestCase {
         } catch (UnsatisfiedConditionsException e) {
             assertTrue(stopStrategy == StopStrategies.SYNCHRONOUS);
             assertTrue(e.getUnsatisfiedConditions().contains(stopCondition));
+            assertEquals(serviceName, e.getServiceName());
         }
         try {
             stop(stopStrategy);
         } catch (UnsatisfiedConditionsException e) {
             assertTrue(stopStrategy == StopStrategies.SYNCHRONOUS);
             assertTrue(e.getUnsatisfiedConditions().contains(stopCondition));
+            assertEquals(serviceName, e.getServiceName());
         }
 
         stopCondition.satisfied = true;
@@ -483,8 +498,9 @@ public class ServiceManagerTest extends TestCase {
         try {
             serviceManager.start(false, startStrategy);
             fail("Should have thrown an IllegalServiceStateException since start on a stopping service is an error");
-        } catch (IllegalServiceStateException excpected) {
+        } catch (IllegalServiceStateException e) {
             // expected
+            assertEquals(serviceName, e.getServiceName());
         }
         stopCondition.satisfied = true;
         stop(StopStrategies.ASYNCHRONOUS);
@@ -643,13 +659,15 @@ public class ServiceManagerTest extends TestCase {
         try {
             serviceManager.initialize();
         } catch (MockCreateException e) {
-            assertTrue(serviceFactory.throwExceptionFromCreate == true);
+            assertTrue(serviceFactory.throwExceptionFromCreate);
             assertSame(serviceFactory.createException, e);
         } catch (UnsatisfiedConditionsException e) {
-            assertTrue(startCondition.satisfied == false);
+            assertTrue(!startCondition.satisfied);
             assertTrue(e.getUnsatisfiedConditions().contains(startCondition));
+            assertEquals(serviceName, e.getServiceName());
         } catch (IllegalServiceStateException e) {
             assertFalse(serviceFactory.isEnabled());
+            assertEquals(serviceName, e.getServiceName());
         }
 
         assertSame(serviceName, serviceManager.getServiceName());
@@ -695,7 +713,7 @@ public class ServiceManagerTest extends TestCase {
             assertFalse(stopCondition.initializeCalled);
             assertFalse(stopCondition.isSatisfiedCalled);
             assertFalse(stopCondition.destroyCalled);
-        } else if (serviceFactory.throwExceptionFromCreate != true && startCondition.satisfied == true) {
+        } else if (!serviceFactory.throwExceptionFromCreate && startCondition.satisfied) {
             assertSame(ServiceState.RUNNING, serviceManager.getState());
             assertSame(SERVICE, serviceManager.getService());
             assertTrue(serviceManager.getStartTime() > now);
@@ -1038,6 +1056,7 @@ public class ServiceManagerTest extends TestCase {
                 assertNotNull(serviceMonitor.stopError);
                 ForcedStopException cause = (ForcedStopException) serviceMonitor.stopError.getCause();
                 assertTrue(cause.getUnsatisfiedConditions().contains(stopCondition));
+                assertEquals(serviceName, cause.getServiceName());
             } else {
                 assertNull(serviceMonitor.stopError);
             }
@@ -1122,10 +1141,12 @@ public class ServiceManagerTest extends TestCase {
         } catch (IllegalServiceStateException e) {
             assertFalse(stopCondition.satisfied);
             assertSame(StopStrategies.ASYNCHRONOUS, stopStrategy);
+            assertEquals(serviceName, e.getServiceName());
         } catch (UnsatisfiedConditionsException e) {
             assertFalse(stopCondition.satisfied);
             assertSame(StopStrategies.SYNCHRONOUS, stopStrategy);
             assertTrue(e.getUnsatisfiedConditions().contains(stopCondition));
+            assertEquals(serviceName, e.getServiceName());
         }
 
         if (serviceFactory.restartable || initialState == ServiceState.STOPPED) {
@@ -1168,7 +1189,7 @@ public class ServiceManagerTest extends TestCase {
             assertNull(serviceMonitor.stopError);
             assertNull(serviceMonitor.stopped);
             assertNull(serviceMonitor.unregistered);
-        } else if (serviceFactory.throwExceptionFromDestroy != true) {
+        } else if (!serviceFactory.throwExceptionFromDestroy) {
             assertSame(ServiceState.STOPPED, serviceManager.getState());
             assertEquals(0, serviceManager.getStartTime());
             assertNull(serviceManager.getService());
@@ -1245,11 +1266,12 @@ public class ServiceManagerTest extends TestCase {
     }
 
     private class MockServiceFactory extends StaticServiceFactory {
-        boolean restartable = true;
-        boolean throwExceptionFromCreate = false;
-        boolean throwExceptionFromDestroy = false;
-        MockCreateException createException;
-        MockDestroyException destroyException;
+        private boolean restartable = true;
+        private boolean throwExceptionFromCreate = false;
+        private boolean throwExceptionFromDestroy = false;
+        private MockCreateException createException;
+        private MockDestroyException destroyException;
+        private ServiceContext serviceContext;
 
         private MockServiceFactory() throws NullPointerException {
             super(SERVICE);
@@ -1263,44 +1285,63 @@ public class ServiceManagerTest extends TestCase {
             return restartable;
         }
 
-        public Set getStartConditions() {
+        public synchronized Set getStartConditions() {
             Set startConditions = new HashSet(super.getStartConditions());
             startConditions.add(startCondition);
             return startConditions;
         }
 
-        public Set getStopConditions() {
+        public synchronized Set getStopConditions() {
             Set stopConditions = new HashSet(super.getStopConditions());
             stopConditions.add(stopCondition);
             return stopConditions;
         }
 
         public Object createService(ServiceContext serviceContext) {
-            createException = new MockCreateException();
+            assertValidServiceContext(serviceContext);
+            this.serviceContext = serviceContext;
+
+            createException = new MockCreateException("MockCreateException");
             if (throwExceptionFromCreate) throw createException;
             return super.createService(serviceContext);
         }
 
         public void destroyService(ServiceContext serviceContext) {
-            destroyException = new MockDestroyException();
+            assertSame(this.serviceContext, serviceContext);
+            assertValidServiceContext(serviceContext);
+
+            destroyException = new MockDestroyException("MockDestroyException");
             if (throwExceptionFromDestroy) throw destroyException;
             super.destroyService(serviceContext);
         }
+
+        private void assertValidServiceContext(ServiceContext serviceContext) {
+            assertSame(serviceName, serviceContext.getServiceName());
+            assertSame(kernel, serviceContext.getKernel());
+            assertSame(classLoader, serviceContext.getClassLoader());
+        }
+
     }
 
     private static class MockCreateException extends RuntimeException {
+        private MockCreateException(String message) {
+            super(message);
+        }
     }
 
     private static class MockDestroyException extends RuntimeException {
+        private MockDestroyException(String message) {
+            super(message);
+        }
     }
 
-    private static class MockStartCondition implements ServiceCondition {
-        boolean satisfied = true;
-        boolean initializeCalled = false;
-        boolean isSatisfiedCalled = false;
-        boolean destroyCalled = false;
-        ServiceConditionContext context;
-        CountDownLatch initializedSignal;
+    private class MockStartCondition implements ServiceCondition {
+        private boolean satisfied = true;
+        private boolean initializeCalled = false;
+        private boolean isSatisfiedCalled = false;
+        private boolean destroyCalled = false;
+        private ServiceConditionContext context;
+        private CountDownLatch initializedSignal;
 
         private void reset() {
             initializeCalled = false;
@@ -1309,6 +1350,7 @@ public class ServiceManagerTest extends TestCase {
         }
 
         public void initialize(ServiceConditionContext context) {
+            assertValidServiceConditionContext(context);
             initializeCalled = true;
             this.context = context;
             if (initializedSignal != null) {
@@ -1326,13 +1368,13 @@ public class ServiceManagerTest extends TestCase {
         }
     }
 
-    private static class MockStopCondition implements ServiceCondition {
-        boolean satisfied = true;
-        boolean initializeCalled = false;
-        boolean isSatisfiedCalled = false;
-        boolean destroyCalled = false;
-        ServiceConditionContext context;
-        CountDownLatch initializedSignal;
+    private class MockStopCondition implements ServiceCondition {
+        private boolean satisfied = true;
+        private boolean initializeCalled = false;
+        private boolean isSatisfiedCalled = false;
+        private boolean destroyCalled = false;
+        private ServiceConditionContext context;
+        private CountDownLatch initializedSignal;
 
         private void reset() {
             initializeCalled = false;
@@ -1341,6 +1383,7 @@ public class ServiceManagerTest extends TestCase {
         }
 
         public void initialize(ServiceConditionContext context) {
+            assertValidServiceConditionContext(context);
             initializeCalled = true;
             this.context = context;
             if (initializedSignal != null) {
@@ -1358,17 +1401,23 @@ public class ServiceManagerTest extends TestCase {
         }
     }
 
-    private static class MockServiceMonitor implements ServiceMonitor {
-        ServiceEvent registered;
-        ServiceEvent starting;
-        ServiceEvent waitingToStart;
-        ServiceEvent startError;
-        ServiceEvent running;
-        ServiceEvent stopping;
-        ServiceEvent waitingToStop;
-        ServiceEvent stopError;
-        ServiceEvent stopped;
-        ServiceEvent unregistered;
+    private void assertValidServiceConditionContext(ServiceConditionContext context) {
+        assertSame(serviceName, context.getServiceName());
+        assertSame(kernel, context.getKernel());
+        assertSame(classLoader, context.getClassLoader());
+    }
+
+    private class MockServiceMonitor implements ServiceMonitor {
+        private ServiceEvent registered;
+        private ServiceEvent starting;
+        private ServiceEvent waitingToStart;
+        private ServiceEvent startError;
+        private ServiceEvent running;
+        private ServiceEvent stopping;
+        private ServiceEvent waitingToStop;
+        private ServiceEvent stopError;
+        private ServiceEvent stopped;
+        private ServiceEvent unregistered;
 
         private void reset() {
             registered = null;
@@ -1385,47 +1434,67 @@ public class ServiceManagerTest extends TestCase {
 
         public void serviceRegistered(ServiceEvent serviceEvent) {
             registered = serviceEvent;
+            assertValidEvent(serviceEvent, false);
         }
 
         public void serviceStarting(ServiceEvent serviceEvent) {
             starting = serviceEvent;
+            assertValidEvent(serviceEvent, false);
         }
 
         public void serviceWaitingToStart(ServiceEvent serviceEvent) {
             waitingToStart = serviceEvent;
+            assertValidEvent(serviceEvent, false);
         }
 
         public void serviceStartError(ServiceEvent serviceEvent) {
             startError = serviceEvent;
+            assertValidEvent(serviceEvent, false);
         }
 
         public void serviceRunning(ServiceEvent serviceEvent) {
             running = serviceEvent;
+            assertValidEvent(serviceEvent, true);
         }
 
         public void serviceStopping(ServiceEvent serviceEvent) {
             stopping = serviceEvent;
+            assertValidEvent(serviceEvent, false);
         }
 
         public void serviceWaitingToStop(ServiceEvent serviceEvent) {
             waitingToStop = serviceEvent;
+            assertValidEvent(serviceEvent, true);
         }
 
         public void serviceStopError(ServiceEvent serviceEvent) {
             stopError = serviceEvent;
+            assertValidEvent(serviceEvent, false);
         }
 
         public void serviceStopped(ServiceEvent serviceEvent) {
             stopped = serviceEvent;
+            assertValidEvent(serviceEvent, false);
         }
 
         public void serviceUnregistered(ServiceEvent serviceEvent) {
             unregistered = serviceEvent;
+            assertValidEvent(serviceEvent, false);
+        }
+
+        private void assertValidEvent(ServiceEvent serviceEvent, boolean mustHaveService) {
+            assertSame(serviceName, serviceEvent.getServiceName());
+            assertSame(kernel, serviceEvent.getKernel());
+            assertSame(classLoader, serviceEvent.getClassLoader());
+            assertSame(serviceFactory, serviceEvent.getServiceFactory());
+            if (mustHaveService) {
+                assertSame(SERVICE, serviceEvent.getService());
+            }
         }
     }
 
     private static class MockKernel implements Kernel {
-        List startRecursive = new LinkedList();
+        private List startRecursive = new LinkedList();
 
         private void reset() {
             startRecursive.clear();

@@ -122,6 +122,7 @@ public class StaticServiceFactory implements ServiceFactory {
     /**
      * Returns the static service instance.
      *
+     * @param serviceContext ignored
      * @return the static service instance
      */
     public Object createService(ServiceContext serviceContext) {
@@ -130,6 +131,8 @@ public class StaticServiceFactory implements ServiceFactory {
 
     /**
      * This method is a noop.
+     *
+     * @param serviceContext ignored
      */
     public void destroyService(ServiceContext serviceContext) {
     }

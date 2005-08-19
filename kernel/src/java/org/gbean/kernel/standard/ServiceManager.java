@@ -100,12 +100,12 @@ public class ServiceManager {
     /**
      * The {@link ServiceCondition) objects required to be ready before this service can be completely started.
      */
-    private AggregateConditions startConditions;
+    private AggregateCondition startCondition;
 
     /**
      * The {@link ServiceCondition) objects required to be ready before this service can be completely stopped.
      */
-    private AggregateConditions stopConditions;
+    private AggregateCondition stopCondition;
 
     /**
      * The service instance.
@@ -210,7 +210,7 @@ public class ServiceManager {
             // method is called.  This should cause the stop logic of a stop condition to fire.
             lock("initialize");
             try {
-                stopConditions = new NonRestartableStopConditions(kernel, serviceName, classLoader, serviceFactory.getStartConditions(), lock, serviceFactory);
+                stopCondition = new NonRestartableStopCondition(kernel, serviceName, classLoader, lock, serviceFactory);
             } finally {
                 unlock();
             }
@@ -241,11 +241,13 @@ public class ServiceManager {
                 if (state != ServiceState.STOPPED) {
                     state = ServiceState.STARTING;
                     serviceMonitor.serviceStopping(createServiceEvent());
-                    try {
-                        // destroy the service
-                        serviceFactory.destroyService(standardServiceContext);
-                    } catch (Throwable e) {
-                        serviceMonitor.serviceStopError(createErrorServiceEvent(e));
+                    if (service != null) {
+                        try {
+                            // destroy the service
+                            serviceFactory.destroyService(standardServiceContext);
+                        } catch (Throwable e) {
+                            serviceMonitor.serviceStopError(createErrorServiceEvent(e));
+                        }
                     }
 
                     destroyAllConditions(serviceMonitor);
@@ -366,29 +368,23 @@ public class ServiceManager {
 
                     // if we are in the STOPPED state, we need to move to the STARTING state
                     if (state == ServiceState.STOPPED) {
-                        // Grab a synchronized lock on the service factory before changing state and getting a snapshot of
-                        // the startConditions.  This allows other code to assure the service is in the correct state before
-                        // adding a startCondition.
-                        synchronized (serviceFactory) {
-                            state = ServiceState.STARTING;
-                            startConditions = new AggregateConditions(kernel, serviceName, classLoader, serviceFactory.getStartConditions(), lock);
-                        }
-
                         // we are now officially starting
+                        state = ServiceState.STARTING;
                         serviceMonitor.serviceStarting(createServiceEvent());
 
                         // initialize the start conditions
-                        startConditions.initialize();
+                        startCondition = new AggregateCondition(kernel, serviceName, classLoader, lock, serviceFactory.getStartConditions());
+                        startCondition.initialize();
                     }
 
                     // are we satisfied?
-                    Set unsatisfiedConditions = startConditions.getUnsatisfied();
+                    Set unsatisfiedConditions = startCondition.getUnsatisfied();
                     satisfied = unsatisfiedConditions.isEmpty();
                     if (!satisfied) {
                         // if the stragegy wants us to wait for conditions to be satisfied, it will return true
                         if (startStrategy.waitForUnsatisfiedConditions(serviceName, unsatisfiedConditions)) {
                             // wait for satisfaction and loop
-                            startConditions.awaitSatisfaction();
+                            startCondition.awaitSatisfaction();
                         } else {
                             // no wait, notify the monitor and exit
                             serviceMonitor.serviceWaitingToStart(createWaitingServiceEvent(unsatisfiedConditions));
@@ -526,30 +522,24 @@ public class ServiceManager {
                     // if we are not the STOPPING state, transition to it
                     // we check on the stopConditions variable because non-restartable services preset this in the
                     // intialization method
-                    if (stopConditions == null) {
-                        // Grab a synchronized lock on the service factory before changing state and getting a snapshot of
-                        // the stopConditions.  This allows other code to assure the service is in the correct state before
-                        // adding a stopCondition.
-                        // todo broken
-                        synchronized (serviceFactory) {
-                            state = ServiceState.STOPPING;
-                            stopConditions = new AggregateConditions(kernel, serviceName, classLoader, serviceFactory.getStopConditions(), lock);
-                        }
-
+                    if (stopCondition == null) {
+                        // we are not officially stopping
                         serviceMonitor.serviceStopping(createServiceEvent());
+                        state = ServiceState.STOPPING;
 
                         // initialize all of the stop conditions
-                        stopConditions.initialize();
+                        stopCondition = new AggregateCondition(kernel, serviceName, classLoader, lock, serviceFactory.getStopConditions());
+                        stopCondition.initialize();
                     }
 
                     // are we satisfied?
-                    Set unsatisfiedConditions = stopConditions.getUnsatisfied();
+                    Set unsatisfiedConditions = stopCondition.getUnsatisfied();
                     satisfied = unsatisfiedConditions.isEmpty();
                     if (!satisfied) {
                         // if the stragegy wants us to wait for conditions to be satisfied, it will return true
                         if (stopStrategy.waitForUnsatisfiedConditions(serviceName, unsatisfiedConditions)) {
                             // wait for satisfaction and loop
-                            stopConditions.awaitSatisfaction();
+                            stopCondition.awaitSatisfaction();
                         } else {
                             // no wait, notify the monitor and exit
                             serviceMonitor.serviceWaitingToStop(createWaitingServiceEvent(unsatisfiedConditions));
@@ -568,11 +558,13 @@ public class ServiceManager {
             }
 
             if (serviceFactory.isRestartable()) {
-                try {
-                    // destroy the service
-                    serviceFactory.destroyService(standardServiceContext);
-                } catch (Throwable e) {
-                    serviceMonitor.serviceStopError(createErrorServiceEvent(e));
+                if (service != null) {
+                    try {
+                        // destroy the service
+                        serviceFactory.destroyService(standardServiceContext);
+                    } catch (Throwable e) {
+                        serviceMonitor.serviceStopError(createErrorServiceEvent(e));
+                    }
                 }
 
                 destroyAllConditions(serviceMonitor);
@@ -593,23 +585,23 @@ public class ServiceManager {
             throw new IllegalStateException("Current thread must hold lock before calling destroyAllConditions");
         }
 
-        if (startConditions != null) {
-            List errors = startConditions.destroy();
+        if (startCondition != null) {
+            List errors = startCondition.destroy();
             // errors from destroying the start conditions are stop errors because destroy is only called while
             // stopping the service
             for (Iterator iterator = errors.iterator(); iterator.hasNext();) {
                 Throwable stopError = (Throwable) iterator.next();
                 monitor.serviceStopError(createErrorServiceEvent(stopError));
             }
-            startConditions = null;
+            startCondition = null;
         }
-        if (stopConditions != null) {
-            List errors = stopConditions.destroy();
+        if (stopCondition != null) {
+            List errors = stopCondition.destroy();
             for (Iterator iterator = errors.iterator(); iterator.hasNext();) {
                 Throwable stopError = (Throwable) iterator.next();
                 monitor.serviceStopError(createErrorServiceEvent(stopError));
             }
-            stopConditions = null;
+            stopCondition = null;
         }
     }
 

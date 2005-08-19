@@ -16,6 +16,7 @@
  */
 package org.gbean.kernel;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -95,7 +96,7 @@ public class ServiceEvent {
         this.serviceFactory = serviceFactory;
         this.classLoader = classLoader;
         this.service = service;
-        this.unsatisfiedConditions = unsatisfiedConditions;
+        this.unsatisfiedConditions = Collections.unmodifiableSet(unsatisfiedConditions);
         cause = null;
     }
 

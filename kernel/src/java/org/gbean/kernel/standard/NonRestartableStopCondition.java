@@ -16,6 +16,7 @@
  */
 package org.gbean.kernel.standard;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ import org.gbean.kernel.ServiceFactory;
 import org.gbean.kernel.ServiceName;
 
 /**
- * A special sub-class of AggregateConditions used to manage the stop conditions of a non-restartable service.  This class
+ * A special sub-class of AggregateCondition used to manage the stop conditions of a non-restartable service.  This class
  * will update stop conditions to reflect the stop conditions currently registered with the service factory, when the
  * initialized or getUnsatisfied methods are called.
  *
@@ -34,30 +35,30 @@ import org.gbean.kernel.ServiceName;
  * @version $Id$
  * @since 1.0
  */
-public class NonRestartableStopConditions extends AggregateConditions {
+public class NonRestartableStopCondition extends AggregateCondition {
     private final ServiceFactory serviceFactory;
 
     /**
-     * Creates a NonRestartableStopConditions.
+     * Creates a NonRestartableStopCondition.
      *
      * @param kernel the kernel in which the service is registered
      * @param serviceName the name of the service
      * @param classLoader the class loader for the service
-     * @param conditions the conditions
      * @param lock the lock for the service manager
      * @param serviceFactory the service factory for the service
      */
-    public NonRestartableStopConditions(Kernel kernel, ServiceName serviceName, ClassLoader classLoader, Set conditions, Lock lock, ServiceFactory serviceFactory) {
-        super(kernel, serviceName, classLoader, conditions, lock);
+    public NonRestartableStopCondition(Kernel kernel, ServiceName serviceName, ClassLoader classLoader, Lock lock, ServiceFactory serviceFactory) {
+        super(kernel, serviceName, classLoader, lock, Collections.EMPTY_SET);
         this.serviceFactory = serviceFactory;
     }
 
     /**
-     * {@inheritDoc}
+     * Throws UnsupportedOperationException.  Initialize is not a valid operation for a NonRestartableStopCondition
+     *
+     * @throws UnsupportedOperationException always
      */
-    public synchronized void initialize() {
-        updateConditions();
-        super.initialize();
+    public synchronized void initialize() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("initialize should never be called on a NonRestartableStopCondition");
     }
 
     /**
@@ -69,20 +70,24 @@ public class NonRestartableStopConditions extends AggregateConditions {
     }
 
     private void updateConditions() {
-        if (destroyed) throw new IllegalStateException("destroyed");
+        if (isDestroyed()) throw new IllegalStateException("destroyed");
+
+        Set conditions = getConditions();
+
+        // add the new conditions
         Set stopConditions = serviceFactory.getStopConditions();
         for (Iterator iterator = stopConditions.iterator(); iterator.hasNext();) {
-            ServiceCondition serviceCondition = (ServiceCondition) iterator.next();
-            if (!conditions.contains(serviceCondition)) {
-                serviceCondition.initialize(context);
-                conditions.add(serviceCondition);
+            ServiceCondition condition = (ServiceCondition) iterator.next();
+            if (!conditions.contains(condition)) {
+                addCondition(condition);
             }
         }
+
+        // remove the conditions that were dropped
         for (Iterator iterator = conditions.iterator(); iterator.hasNext();) {
             ServiceCondition serviceCondition = (ServiceCondition) iterator.next();
             if (!stopConditions.contains(serviceCondition)) {
-                serviceCondition.destroy();
-                iterator.remove();
+                removeCondition(serviceCondition);
             }
         }
     }

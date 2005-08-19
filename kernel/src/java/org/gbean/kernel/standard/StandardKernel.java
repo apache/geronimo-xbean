@@ -323,7 +323,7 @@ public class StandardKernel implements Kernel {
         assert serviceName != null : "serviceName is null";
 
         FutureTask unregistrationTask = null;
-        final Throwable[] exceptionHandle = new Throwable[0];
+        UnregisterServiceManager unregisterCallable = null;
 
         //
         // This loop will continue until we put our unregistrationTask in the serviceManagers map.  If at any point,
@@ -356,7 +356,8 @@ public class StandardKernel implements Kernel {
 
                     // we are ready to register our serviceManager
                     existingRegistration = null;
-                    unregistrationTask = new FutureTask(new UnregisterServiceManager(serviceManager, stopStrategy, exceptionHandle));
+                    unregisterCallable = new UnregisterServiceManager(serviceManager, stopStrategy);
+                    unregistrationTask = new FutureTask(unregisterCallable);
                     serviceManagers.put(serviceName, unregistrationTask);
                 }
             }
@@ -380,9 +381,9 @@ public class StandardKernel implements Kernel {
         try {
             // if get returns any value other then null, the unregistration failed
             if (unregistrationTask.get() != null) {
-                synchronized (exceptionHandle) {
+                synchronized (unregisterCallable) {
                     // the root exception is contained in the exception handle
-                    throw new ServiceRegistrationException(serviceName, exceptionHandle[0]);
+                    throw new ServiceRegistrationException(serviceName, unregisterCallable.getThrowable());
                 }
             }
         } catch (InterruptedException e) {
@@ -841,12 +842,11 @@ public class StandardKernel implements Kernel {
     private class UnregisterServiceManager implements Callable {
         private final ServiceManager serviceManager;
         private final StopStrategy stopStrategy;
-        private final Throwable[] futureThrowable;
+        private Throwable throwable;
 
-        private UnregisterServiceManager(ServiceManager serviceManager, StopStrategy stopStrategy, Throwable[] futureThrowable) {
+        private UnregisterServiceManager(ServiceManager serviceManager, StopStrategy stopStrategy) {
             this.serviceManager = serviceManager;
             this.stopStrategy = stopStrategy;
-            this.futureThrowable = futureThrowable;
         }
 
         public Object call() {
@@ -859,11 +859,15 @@ public class StandardKernel implements Kernel {
             } catch (Throwable e) {
                 // we did not destroy the service... save the exception and return the service manager
                 // so it remains registered with the kernel
-                synchronized (futureThrowable) {
-                    futureThrowable[0] = e;
+                synchronized (this) {
+                    throwable = e;
                 }
                 return serviceManager;
             }
+        }
+
+        public synchronized Throwable getThrowable() {
+            return throwable;
         }
     }
 }

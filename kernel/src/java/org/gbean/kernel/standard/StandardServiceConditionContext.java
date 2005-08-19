@@ -48,12 +48,17 @@ public class StandardServiceConditionContext implements ServiceConditionContext 
     /**
      * The lock that must be acquired before signaling the condition.
      */
-    private Lock lock;
+    private final Lock lock;
 
     /**
      * The condition to signal when the {@link #setSatisfied()} method is called.
      */
-    private Condition condition;
+    private final Condition condition;
+
+    /**
+     * Has this condition been satisfied?  Once satisfied a condition is always considered satisfied.
+     */
+    private boolean satisfied = false;
 
     /**
      * Creates a service context for the specified service.
@@ -94,12 +99,26 @@ public class StandardServiceConditionContext implements ServiceConditionContext 
     }
 
     /**
+     * Gets the satisfied status of this condition.  Once satisfied a condition is considered satisfied until destroyed
+     * and reinitialized.  The ServiceManager uses the StandardServiceConditionContext to track the status of conditions
+     * so it will call setSatisfied() when the condition returns true from isSatisfied().
+     *
+     * @return satisfied status of this condition
+     */
+    public boolean isSatisfied() {
+        return satisfied;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public void setSatisfied() {
         lock.lock();
         try {
-            condition.signalAll();
+            if (!satisfied) {
+                satisfied = true;
+                condition.signalAll();
+            }
         } finally {
             lock.unlock();
         }
