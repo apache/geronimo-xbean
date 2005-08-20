@@ -25,6 +25,7 @@ import org.gbean.kernel.ServiceName;
 
 /**
  * The ServiceManagerFactory handles the construction ServiceManagers.
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -57,6 +58,7 @@ public class ServiceManagerFactory {
 
     /**
      * Creates a ServiceManagerFactory.
+     *
      * @param kernel the kernel in which the service will be registered
      * @param serviceMonitor the service monitor used for all services created by this factory
      * @param serviceExecutor the executor available to the service manager
@@ -73,6 +75,7 @@ public class ServiceManagerFactory {
 
     /**
      * Creates a ServiceManager.
+     *
      * @param serviceName the name of the service
      * @param serviceFactory the factory for the service
      * @param classLoader the classloader for the service
@@ -80,12 +83,12 @@ public class ServiceManagerFactory {
      */
     public ServiceManager createServiceManager(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
         return new ServiceManager(kernel,
-                    serviceName,
-                    serviceFactory,
-                    classLoader,
-                    serviceMonitor,
-                    serviceExecutor,
-                    timeoutDuration,
-                    timeoutUnits);
+                serviceName,
+                serviceFactory,
+                classLoader,
+                serviceMonitor,
+                serviceExecutor,
+                timeoutDuration,
+                timeoutUnits);
     }
 }

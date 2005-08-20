@@ -90,7 +90,7 @@ public class StandardKernel implements Kernel {
      * @param serviceExecutor the executor to use for asynchronous service operations
      * @param timeoutDuration the maximum duration to wait for a service event to complete
      * @param timeoutUnits the unit of measure for the timeoutDuration
-     */ 
+     */
     public StandardKernel(String kernelName, Executor serviceExecutor, long timeoutDuration, TimeUnit timeoutUnits) {
         this.kernelName = kernelName;
         serviceManagerFactory = new ServiceManagerFactory(this, serviceMonitor, serviceExecutor, timeoutDuration, timeoutUnits);

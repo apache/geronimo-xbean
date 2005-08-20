@@ -16,30 +16,31 @@
  */
 package org.gbean.kernel.standard;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import org.gbean.kernel.KernelErrorsError;
-import org.gbean.kernel.StopStrategies;
-import org.gbean.kernel.UnsatisfiedConditionsException;
-import org.gbean.kernel.IllegalServiceStateException;
-import org.gbean.kernel.ServiceName;
-import org.gbean.kernel.ServiceFactory;
-import org.gbean.kernel.ServiceAlreadyExistsException;
-import org.gbean.kernel.ServiceRegistrationException;
-import org.gbean.kernel.KernelOperationInterruptedException;
-import org.gbean.kernel.StopStrategy;
-import org.gbean.kernel.ServiceNotFoundException;
-import edu.emory.mathcs.backport.java.util.concurrent.Future;
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
-import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
 import edu.emory.mathcs.backport.java.util.concurrent.Callable;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
+import edu.emory.mathcs.backport.java.util.concurrent.Future;
+import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
+import org.gbean.kernel.IllegalServiceStateException;
+import org.gbean.kernel.KernelErrorsError;
+import org.gbean.kernel.KernelOperationInterruptedException;
+import org.gbean.kernel.ServiceAlreadyExistsException;
+import org.gbean.kernel.ServiceFactory;
+import org.gbean.kernel.ServiceName;
+import org.gbean.kernel.ServiceNotFoundException;
+import org.gbean.kernel.ServiceRegistrationException;
+import org.gbean.kernel.StopStrategies;
+import org.gbean.kernel.StopStrategy;
+import org.gbean.kernel.UnsatisfiedConditionsException;
 
 /**
  * The StandardServiceRegistry manages the registration of ServiceManagers for the kernel.
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -57,6 +58,7 @@ public class ServiceManagerRegistry {
 
     /**
      * Creates a ServiceManagerRegistry that uses the specified service manager factory to create new service managers.
+     *
      * @param serviceManagerFactory the factory for new service managers
      */
     public ServiceManagerRegistry(ServiceManagerFactory serviceManagerFactory) {
@@ -65,6 +67,7 @@ public class ServiceManagerRegistry {
 
     /**
      * Stops and destroys all services service managers.  This method will FORCE stop the services if necessary.
+     *
      * @throws KernelErrorsError if any errors occur while stopping or destroying the service managers
      */
     public void destroy() throws KernelErrorsError {
@@ -165,6 +168,7 @@ public class ServiceManagerRegistry {
 
     /**
      * Gets the service manager registered under the specified name.
+     *
      * @param serviceName the unique name of the service
      * @return the ServiceManager
      * @throws ServiceNotFoundException if there is no service registered under the specified name

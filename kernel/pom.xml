@@ -15,30 +15,30 @@
 *  limitations under the License.
 -->
 <project>
-  <!-- the version of maven's project object model -->
-  <modelVersion>4.0.0</modelVersion>
+    <!-- the version of maven's project object model -->
+    <modelVersion>4.0.0</modelVersion>
 
-  <name>GBean :: Kernel</name>
-  <artifactId>gbean-kernel</artifactId>
-  <groupId>gbean</groupId>
-  <version>1.0-alpha-1-SNAPSHOT</version>
-  <organization>
-    <name>GBean.org</name>
-    <url>http://gbean.org</url>
-  </organization>
+    <name>GBean :: Kernel</name>
+    <artifactId>gbean-kernel</artifactId>
+    <groupId>gbean</groupId>
+    <version>1.0-alpha-1-SNAPSHOT</version>
+    <organization>
+        <name>GBean.org</name>
+        <url>http://gbean.org</url>
+    </organization>
 
-  <repositories>
-    <repository>
-      <id>openejb</id>
-      <name>OpenEJB Repo</name>
-      <url>http://www.openejb.org/maven</url>
-      <layout>legacy</layout>
-    </repository>        
-  </repositories>
+    <repositories>
+        <repository>
+            <id>openejb</id>
+            <name>OpenEJB Repo</name>
+            <url>http://www.openejb.org/maven</url>
+            <layout>legacy</layout>
+        </repository>
+    </repositories>
 
-  <description>
+    <description>
     GBean is a kernel architecture and server for ioc containers such as spring.
-  </description>
+    </description>
 
     <url>http://www.gbean.org/</url>
 
@@ -47,11 +47,11 @@
             <id>repo1</id>
             <name>Maven Central Repository</name>
             <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
-         </repository>
-         <site>
+        </repository>
+        <site>
             <id>website</id>
             <url>scp://minotaur.apache.org/www/maven.apache.org/maven2/</url>
-         </site>
+        </site>
     </distributionManagement>
 
     <mailingLists>
@@ -84,30 +84,30 @@
     </developers>
 
     <dependencies>
-      <dependency>
-      <groupId>backport-util-concurrent</groupId>
-      <artifactId>backport-util-concurrent</artifactId>
-      <version>2.0_01_pd</version>
-     </dependency>
-      <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-     </dependency>     
-     </dependencies>
+        <dependency>
+            <groupId>backport-util-concurrent</groupId>
+            <artifactId>backport-util-concurrent</artifactId>
+            <version>2.0_01_pd</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+    </dependencies>
 
-<build>
-  <plugins>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.4</source>
-          <target>1.4</target>
-        </configuration>
-    </plugin>
-  </plugins>
-</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.4</source>
+                    <target>1.4</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
 

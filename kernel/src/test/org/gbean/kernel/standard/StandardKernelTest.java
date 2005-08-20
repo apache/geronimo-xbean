@@ -21,12 +21,12 @@ import java.net.URLClassLoader;
 
 import junit.framework.TestCase;
 import org.gbean.kernel.Kernel;
-import org.gbean.kernel.ServiceState;
-import org.gbean.kernel.StaticServiceFactory;
-import org.gbean.kernel.StringServiceName;
 import org.gbean.kernel.ServiceNotFoundException;
+import org.gbean.kernel.ServiceState;
 import org.gbean.kernel.StartStrategies;
+import org.gbean.kernel.StaticServiceFactory;
 import org.gbean.kernel.StopStrategies;
+import org.gbean.kernel.StringServiceName;
 
 /**
  * @author Dain Sundstrom
