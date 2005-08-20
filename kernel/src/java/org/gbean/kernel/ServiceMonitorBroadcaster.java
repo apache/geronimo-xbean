@@ -17,16 +17,17 @@
 package org.gbean.kernel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 
 /**
  * The ServiceMonitorBroadcaster broadcasts kernel events to registered service monitors.
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -45,6 +46,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
     /**
      * Creates a ServiceMonitorBroadcaster that notifies the specified kernel monitor when an error occurs while
      * notifying the registered service monitors.
+     *
      * @param kernelMonitor the monitor to notify when an error occurs while notifying the registered service monitors
      */
     public ServiceMonitorBroadcaster(KernelMonitor kernelMonitor) {
@@ -64,7 +66,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             Set monitors = (Set) serviceMonitors.get(serviceName);
             if (monitors == null) {
                 monitors = new LinkedHashSet();
-                serviceMonitors.put(serviceName, serviceMonitor);
+                serviceMonitors.put(serviceName, monitors);
             }
             monitors.add(serviceMonitor);
         }
@@ -90,6 +92,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
     /**
      * Gets the service monitors registered to recieve events for the specified service.  This will include all global
      * monitors and service specific monitors.
+     *
      * @param serviceName the name of the service
      * @return the monitors registerd to recieve events for the specified service
      */
@@ -119,7 +122,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             try {
                 serviceMonitor.serviceRegistered(serviceEvent);
             } catch (Throwable e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -137,8 +140,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceStarting(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -156,8 +159,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceWaitingToStart(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -175,8 +178,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceStartError(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -194,8 +197,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceRunning(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -213,8 +216,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceStopping(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -232,8 +235,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceWaitingToStop(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -251,8 +254,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceStopError(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -270,8 +273,8 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceStopped(serviceEvent);
-            } catch (Exception e) {
-                errors.add(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
+            } catch (Throwable e) {
+                errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
         if (!errors.isEmpty()) {
@@ -289,7 +292,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
             ServiceMonitor serviceMonitor = (ServiceMonitor) iterator.next();
             try {
                 serviceMonitor.serviceUnregistered(serviceEvent);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 errors.addAll(fireServiceNotificationError(serviceMonitor, serviceEvent, e));
             }
         }
@@ -308,6 +311,6 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
         } catch (Error e) {
             return Collections.singletonList(e);
         }
-        return null;
+        return Collections.EMPTY_LIST;
     }
 }

@@ -21,6 +21,7 @@ import org.gbean.kernel.standard.StandardKernel;
 
 /**
  * Tests the KernelMonitorBroadcaster.
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -34,130 +35,137 @@ public class KernelMonitorBroadcasterTest extends TestCase {
             ClassLoader.getSystemClassLoader(), null);
     private static final Throwable THROWABLE = new Throwable("test throwable");
 
-    private MockKernelMonitor kernelMonitor1 = new MockKernelMonitor();
-    private MockKernelMonitor kernelMonitor2 = new MockKernelMonitor();
-    private MockKernelMonitor kernelMonitor3 = new MockKernelMonitor();
-    private MockKernelMonitor kernelMonitor4 = new MockKernelMonitor();
+    private static final int MONITOR_COUNT = 4;
+    private MockKernelMonitor[] kernelMonitors = new MockKernelMonitor[MONITOR_COUNT];
     private KernelMonitorBroadcaster kernelMonitorBroadcaster = new KernelMonitorBroadcaster();
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        for (int i = 0; i < kernelMonitors.length; i++) {
+            kernelMonitors[i] = new MockKernelMonitor("monitor-" + i);
+            kernelMonitorBroadcaster.addKernelMonitor(kernelMonitors[i]);
+        }
+    }
 
     /**
      * Test that events are fired to all registered monitors.
      * Strategy:
      * <ul><li>
-     *      Add the monitors
+     * Add the monitors
      * </li><li>
-     *      Fire an event
+     * Fire an event
      * </li><li>
-     *      Verify that the event was called on each monitor
+     * Verify that the event was called on each monitor
      * </li></ul>
      */
     public void testFireEvent() {
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor1);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor2);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor3);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor4);
-
         kernelMonitorBroadcaster.serviceNotificationError(SERVICE_MONITOR, SERVICE_EVENT, THROWABLE);
+        assertNotificationCorrect();
+    }
 
-        assertTrue(kernelMonitor1.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor2.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor3.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor4.wasServiceNotificationErrorCalled());
+    private void assertNotificationCorrect() {
+        for (int i = 0; i < kernelMonitors.length; i++) {
+            MockKernelMonitor kernelMonitor = kernelMonitors[i];
+            assertTrue(kernelMonitor.wasNotificationCalled());
+        }
     }
 
     /**
      * Test that if a monitor is added more then once it only recieves the event once.
      * Strategy:
      * <ul><li>
-     *      Add a monitor several times
+     * Add a monitor several times
      * </li><li>
-     *      Fire an event
+     * Fire an event
      * </li><li>
-     *      Verify that the monitor was only notified once
+     * Verify that the monitor was only notified once
      * </li></ul>
      */
     public void testDoubleAdd() {
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor1);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor1);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor1);
+        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitors[1]);
+        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitors[1]);
+        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitors[1]);
 
         kernelMonitorBroadcaster.serviceNotificationError(SERVICE_MONITOR, SERVICE_EVENT, THROWABLE);
 
         // note the mock monitor asserts that it is only called once before requreing a reset
-        assertTrue(kernelMonitor1.wasServiceNotificationErrorCalled());
+        assertNotificationCorrect();
     }
 
     /**
      * Test that events are not fired to a monitor that has been removed.
      * Strategy:
      * <ul><li>
-     *      Add the monitors
+     * Add the monitors
      * </li><li>
-     *      Fire an event
+     * Fire an event
      * </li><li>
-     *      Verify that the event was called on each monitor
+     * Verify that the event was called on each monitor
      * </li><li>
-     *      Removes a monitors
+     * Removes a monitors
      * </li><li>
-     *      Fire an event
+     * Fire an event
      * </li><li>
-     *      Verify that the event was called on each monitor except the removed monitor
+     * Verify that the event was called on each monitor except the removed monitor
      * </li></ul>
      */
     public void testRemove() {
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor1);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor2);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor3);
-        kernelMonitorBroadcaster.addKernelMonitor(kernelMonitor4);
+        kernelMonitorBroadcaster.serviceNotificationError(SERVICE_MONITOR, SERVICE_EVENT, THROWABLE);
+
+        assertNotificationCorrect();
+
+        for (int i = 0; i < kernelMonitors.length; i++) {
+            MockKernelMonitor kernelMonitor = kernelMonitors[i];
+            kernelMonitor.rest();
+        }
+
+        kernelMonitorBroadcaster.removeKernelMonitor(kernelMonitors[1]);
 
         kernelMonitorBroadcaster.serviceNotificationError(SERVICE_MONITOR, SERVICE_EVENT, THROWABLE);
 
-        assertTrue(kernelMonitor1.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor2.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor3.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor4.wasServiceNotificationErrorCalled());
-
-        kernelMonitor1.rest();
-        kernelMonitor2.rest();
-        kernelMonitor3.rest();
-        kernelMonitor4.rest();
-
-        kernelMonitorBroadcaster.removeKernelMonitor(kernelMonitor2);
-
-        kernelMonitorBroadcaster.serviceNotificationError(SERVICE_MONITOR, SERVICE_EVENT, THROWABLE);
-
-        assertTrue(kernelMonitor1.wasServiceNotificationErrorCalled());
-        assertFalse(kernelMonitor2.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor3.wasServiceNotificationErrorCalled());
-        assertTrue(kernelMonitor4.wasServiceNotificationErrorCalled());
+        for (int i = 0; i < kernelMonitors.length; i++) {
+            MockKernelMonitor kernelMonitor = kernelMonitors[i];
+            if (i == 1) {
+                assertFalse(kernelMonitor.wasNotificationCalled());
+            } else {
+                assertTrue(kernelMonitor.wasNotificationCalled());
+            }
+        }
     }
 
     /**
      * Tests that no exceptions are thrown if an attempt is made to remove a monitor not registered.
      */
     public void testRemoveUnassociated() {
-        kernelMonitorBroadcaster.removeKernelMonitor(kernelMonitor1);        
+        kernelMonitorBroadcaster.removeKernelMonitor(new MockKernelMonitor("unassociated monitor"));
     }
 
     private static class MockKernelMonitor implements KernelMonitor {
-        private boolean serviceNotificationErrorCalled = false;
+        private final String name;
+        private boolean notificationCalled = false;
 
-        private void rest() {
-            serviceNotificationErrorCalled = false;
+        private MockKernelMonitor(String name) {
+            this.name = name;
         }
 
-        public boolean wasServiceNotificationErrorCalled() {
-            return serviceNotificationErrorCalled;
+        public String toString() {
+            return name;
+        }
+
+        private void rest() {
+            notificationCalled = false;
+        }
+
+        public boolean wasNotificationCalled() {
+            return notificationCalled;
         }
 
         public void serviceNotificationError(ServiceMonitor serviceMonitor, ServiceEvent serviceEvent, Throwable throwable) {
-            assertFalse(serviceNotificationErrorCalled);
-            serviceNotificationErrorCalled = true;
+            assertFalse(notificationCalled);
+            notificationCalled = true;
             assertSame(SERVICE_MONITOR, serviceMonitor);
             assertSame(SERVICE_EVENT, serviceEvent);
             assertSame(THROWABLE, throwable);
         }
     }
-
-
 }

@@ -16,14 +16,15 @@
  */
 package org.gbean.kernel;
 
-import java.util.List;
-import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * The KernelMonitorBroadcaster broadcasts kernel events to registered kernel monitors.
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0

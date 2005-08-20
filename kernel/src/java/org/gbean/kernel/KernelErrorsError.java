@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Groups a collection of errors from a set of work so they maybe be thrown together from the kernel.  This is used
@@ -41,20 +42,20 @@ public class KernelErrorsError extends Error {
      * @param errors the errors
      */
     public KernelErrorsError(List errors) {
-        assert errors != null : "errors is null";
-        assert !errors.isEmpty() : "errors is empty";
-        assert assertAllErrors(errors);
-        this.errors = Collections.unmodifiableList(errors);
-    }
-
-    private static boolean assertAllErrors(List errors) {
-        for (Iterator iterator = errors.iterator(); iterator.hasNext();) {
-            Object o = iterator.next();
-            if (!(o instanceof Error)) {
-                throw new AssertionError("Errors contains an element that is not an instance of java.lang.Error: " + o);
+        if (errors == null) throw new NullPointerException("errors is null");
+        if (errors.isEmpty()) throw new IllegalArgumentException("errors is empty");
+        for (ListIterator iterator = errors.listIterator(); iterator.hasNext();) {
+            Object error = iterator.next();
+            if (error == null) {
+                throw new IllegalArgumentException("Errors element " + iterator.previousIndex() + " is null");
+            }
+            if (!(error instanceof Error)) {
+                throw new IllegalArgumentException("Errors element " + iterator.previousIndex() +
+                        " is not an instance of java.lang.Error " + error.getClass() + ": " + error);
             }
         }
-        return true;
+
+        this.errors = Collections.unmodifiableList(errors);
     }
 
     /**
