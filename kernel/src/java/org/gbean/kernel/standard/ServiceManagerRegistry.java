@@ -76,8 +76,9 @@ public class ServiceManagerRegistry {
 
         List managerFutures;
         synchronized (serviceManagers) {
-            managerFutures = new ArrayList();
+            managerFutures = new ArrayList(serviceManagers.values());
             serviceManagers.clear();
+
         }
 
         List managers = new ArrayList(managerFutures.size());
