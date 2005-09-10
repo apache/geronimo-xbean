@@ -34,6 +34,7 @@ public class ServiceRegistrationException extends Exception {
      */
     public ServiceRegistrationException(ServiceName serviceName, Throwable cause) {
         super(cause);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         this.serviceName = serviceName;
     }
 

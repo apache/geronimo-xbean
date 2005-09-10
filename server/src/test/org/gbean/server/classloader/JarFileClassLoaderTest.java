@@ -14,24 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel.standard;
+package org.gbean.server.classloader;
 
-import org.gbean.kernel.Kernel;
-import org.gbean.kernel.KernelFactory;
+import java.net.URL;
 
 /**
- * The kernel factory for StandardKernel instances.
+ * Test the JarFileClassLoader.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class StandardKernelFactory extends KernelFactory {
-    /**
-     * {@inheritDoc}
-     */
-    protected Kernel createKernelInternal(String name) {
-        if (name == null) throw new NullPointerException("name is null");
-        return new StandardKernel(name);
+public class JarFileClassLoaderTest extends MultiParentClassLoaderTest {
+    protected MultiParentClassLoader createClassLoader(String name, URL[] urls, ClassLoader[] parents) {
+        return new JarFileClassLoader(name, urls, parents);
     }
 }

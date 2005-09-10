@@ -22,6 +22,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.io.Serializable;
 
 import edu.emory.mathcs.backport.java.util.concurrent.Callable;
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
@@ -41,6 +50,7 @@ import org.gbean.kernel.StopStrategies;
 import org.gbean.kernel.StopStrategy;
 import org.gbean.kernel.StringServiceName;
 import org.gbean.kernel.UnsatisfiedConditionsException;
+import org.gbean.kernel.NullServiceMonitor;
 
 /**
  * Test the ServiceManagerRegistry.
@@ -56,6 +66,18 @@ public class ServiceManagerRegistryTest extends TestCase {
     private static final StringServiceName SERVICE_NAME = new StringServiceName("Service");
     private static final StaticServiceFactory SERVICE_FACTORY = new StaticServiceFactory(new Object());
     private static final ClassLoader CLASS_LOADER = new URLClassLoader(new URL[0]);
+    private static final Class[] EXPECTED_TYPES =  new Class[] {
+       TreeSet.class,
+       AbstractSet.class,
+       AbstractCollection.class,
+       Object.class,
+       SortedSet.class,
+       Set.class,
+       Collection.class,
+       Cloneable.class,
+       Serializable.class,
+       List.class
+    };
     private final MockServiceManager serviceManager = new MockServiceManager();
     private final MockServiceManagerFactory serviceManagerFactory = new MockServiceManagerFactory();
     private final ServiceManagerRegistry registry = new ServiceManagerRegistry(serviceManagerFactory);
@@ -580,7 +602,11 @@ public class ServiceManagerRegistryTest extends TestCase {
 
         if (throwable == null) {
             assertTrue(registry.isRegistered(SERVICE_NAME));
-            assertEquals(serviceManager, registry.getServiceManager(SERVICE_NAME));
+            assertSame(serviceManager, registry.getServiceManager(SERVICE_NAME));
+            for (int i = 0; i < EXPECTED_TYPES.length; i++) {
+                assertSame(serviceManager, registry.getServiceManager(EXPECTED_TYPES[i]));
+                assertTrue(registry.getServiceManagers(EXPECTED_TYPES[i]).contains(serviceManager));
+            }
         } else {
             assertFalse(registry.isRegistered(SERVICE_NAME));
             try {
@@ -589,6 +615,10 @@ public class ServiceManagerRegistryTest extends TestCase {
             } catch (ServiceNotFoundException expected) {
                 // expected
                 assertEquals(SERVICE_NAME, expected.getServiceName());
+            }
+            for (int i = 0; i < EXPECTED_TYPES.length; i++) {
+                assertNull(registry.getServiceManager(EXPECTED_TYPES[i]));
+                assertTrue(registry.getServiceManagers(EXPECTED_TYPES[i]).isEmpty());
             }
         }
         assertTrue(serviceManager.isInitializeCalled());
@@ -620,9 +650,17 @@ public class ServiceManagerRegistryTest extends TestCase {
                 // expected
                 assertEquals(SERVICE_NAME, expected.getServiceName());
             }
+            for (int i = 0; i < EXPECTED_TYPES.length; i++) {
+                assertNull(registry.getServiceManager(EXPECTED_TYPES[i]));
+                assertTrue(registry.getServiceManagers(EXPECTED_TYPES[i]).isEmpty());
+            }
         } else {
             assertTrue(registry.isRegistered(SERVICE_NAME));
-            assertEquals(serviceManager, registry.getServiceManager(SERVICE_NAME));
+            assertSame(serviceManager, registry.getServiceManager(SERVICE_NAME));
+            for (int i = 0; i < EXPECTED_TYPES.length; i++) {
+                assertSame(serviceManager, registry.getServiceManager(EXPECTED_TYPES[i]));
+                assertTrue(registry.getServiceManagers(EXPECTED_TYPES[i]).contains(serviceManager));
+            }
         }
         assertFalse(serviceManager.isInitializeCalled());
         assertTrue(serviceManager.isDestroyCalled());
@@ -684,7 +722,7 @@ public class ServiceManagerRegistryTest extends TestCase {
             super(null, null, null, 0, null);
         }
 
-        public ServiceManager createServiceManager(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
+        public ServiceManager createServiceManager(long serviceId, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
             assertEquals(SERVICE_NAME, serviceName);
             assertEquals(SERVICE_FACTORY, serviceFactory);
             assertEquals(CLASS_LOADER, classLoader);
@@ -709,10 +747,19 @@ public class ServiceManagerRegistryTest extends TestCase {
         private Throwable stopException;
         private CountDownLatch enterWaiting = new CountDownLatch(1);
         private CountDownLatch exitWaiting = new CountDownLatch(0);
+        private static final Set TYPES = Collections.unmodifiableSet(new HashSet(Arrays.asList(
+                new Class[] {TreeSet.class, List.class} )));
 
 
         private MockServiceManager() {
-            super(null, null, null, null, null, null, 0, null);
+            super(null,
+                    0,
+                    new StringServiceName("MockService"),
+                    new StaticServiceFactory(new Object()),
+                    null,
+                    new NullServiceMonitor(),
+                    0,
+                    null);
         }
 
         private synchronized void reset() {
@@ -722,6 +769,10 @@ public class ServiceManagerRegistryTest extends TestCase {
             initializeException = null;
             destroyException = null;
             stopException = null;
+        }
+
+        public Set getServiceTypes() {
+            return TYPES;
         }
 
         public void initialize() throws IllegalServiceStateException, UnsatisfiedConditionsException, Exception {

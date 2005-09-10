@@ -37,6 +37,8 @@ public class KernelOperationInterruptedException extends RuntimeException {
      */
     public KernelOperationInterruptedException(InterruptedException cause, ServiceName serviceName, String operationName) {
         super(cause);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (operationName == null) throw new NullPointerException("operationName is null");
         this.serviceName = serviceName;
         this.operationName = operationName;
     }
@@ -51,6 +53,8 @@ public class KernelOperationInterruptedException extends RuntimeException {
      */
     public KernelOperationInterruptedException(String message, InterruptedException cause, ServiceName serviceName, String operationName) {
         super(message, cause);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (operationName == null) throw new NullPointerException("operationName is null");
         this.serviceName = serviceName;
         this.operationName = operationName;
     }

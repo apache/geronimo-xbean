@@ -19,8 +19,10 @@ package org.gbean.kernel.standard;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Collections;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executor;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
 import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
@@ -41,6 +43,7 @@ import org.gbean.kernel.StartStrategy;
 import org.gbean.kernel.StopStrategy;
 import org.gbean.kernel.UnregisterServiceException;
 import org.gbean.kernel.UnsatisfiedConditionsException;
+import org.gbean.kernel.InvalidServiceTypeException;
 
 /**
  * The ServiceManager handles the life cycle of a single service.   The manager is responsible for gaurenteeing that
@@ -52,11 +55,16 @@ import org.gbean.kernel.UnsatisfiedConditionsException;
  * @version $Id$
  * @since 1.0
  */
-public class ServiceManager {
+public class ServiceManager implements Comparable {
     /**
      * The kernel in which this service is registered.
      */
     private final Kernel kernel;
+
+    /**
+     * The unique id of this service in the kernel.
+     */
+    private final long serviceId;
 
     /**
      * The unique name of this service in the kernel.
@@ -69,6 +77,11 @@ public class ServiceManager {
     private final ServiceFactory serviceFactory;
 
     /**
+     * The type of service this service manager will create.  This value is cached from the serviceFactory.getT
+     */
+    private final Set serviceTypes;
+
+    /**
      * The class loader for this service.
      */
     private final ClassLoader classLoader;
@@ -79,7 +92,7 @@ public class ServiceManager {
      * {@link ServiceState#STARTING} and {@link ServiceState#STOPPING} states since events are propagated in a separate
      * thread.
      */
-    private final AsyncServiceMonitor serviceMonitor;
+    private final ServiceMonitor serviceMonitor;
 
     /**
      * The service context given to the service factory.  This contans a reference to the kernel, serviceName and
@@ -146,31 +159,33 @@ public class ServiceManager {
      * Creates a service manager for a single service.
      *
      * @param kernel the kernel in which this wraper will be registered
+     * @param serviceId the unique id of this service in the kernel
      * @param serviceName the unique name of this service in the kernel
      * @param serviceFactory the factory used to create and destroy the service instance
      * @param classLoader the class loader for this service
      * @param serviceMonitor the monitor of service events
      * @param timeoutDuration the maximum duration to wait for a lock
      * @param timeoutUnits the unit of measure for the timeoutDuration
-     * @param executor the executor that is used to deliver the asynchronous service events to the serviceMonitor
      */
     public ServiceManager(Kernel kernel,
+            long serviceId,
             ServiceName serviceName,
             ServiceFactory serviceFactory,
             ClassLoader classLoader,
             ServiceMonitor serviceMonitor,
-            Executor executor,
             long timeoutDuration,
             TimeUnit timeoutUnits) {
 
         this.kernel = kernel;
+        this.serviceId = serviceId;
         this.serviceName = serviceName;
         this.serviceFactory = serviceFactory;
         this.classLoader = classLoader;
-        this.serviceMonitor = new AsyncServiceMonitor(serviceMonitor, executor);
+        this.serviceMonitor = serviceMonitor;
         this.timeoutDuration = timeoutDuration;
         this.timeoutUnits = timeoutUnits;
         standardServiceContext = new StandardServiceContext(kernel, serviceName, classLoader);
+        serviceTypes = Collections.unmodifiableSet(new LinkedHashSet(Arrays.asList(serviceFactory.getTypes())));
     }
 
     /**
@@ -267,12 +282,29 @@ public class ServiceManager {
     }
 
     /**
+     * Gets the unique id of this service in the kernel.
+     *
+     * @return the unique id of this service in the kernel
+     */
+    public long getServiceId() {
+        return serviceId;
+    }
+
+    /**
      * Gets the unique name of this service in the kernel.
      *
-     * @return the unque name of this servce in the kernel
+     * @return the unique name of this servce in the kernel
      */
     public ServiceName getServiceName() {
         return serviceName;
+    }
+
+    /**
+     * Gets the types of the service that will be managed by this service manager.
+     * @return the types of the service
+     */
+    public Set getServiceTypes() {
+        return serviceTypes;
     }
 
     /**
@@ -396,6 +428,17 @@ public class ServiceManager {
                 // we are ready to create the service
                 service = serviceFactory.createService(standardServiceContext);
 
+                // verify that the service implements all of the types
+                if (service == null) {
+                    throw new NullPointerException("Service factory return null from createService for service " + serviceName);
+                }
+                for (Iterator iterator = serviceTypes.iterator(); iterator.hasNext();) {
+                    Class type = (Class) iterator.next();
+                    if (!type.isInstance(service)) {
+                        throw new InvalidServiceTypeException(serviceName, type, service.getClass());
+                    }
+                }
+
                 // success transition to running
                 startTime = System.currentTimeMillis();
                 state = ServiceState.RUNNING;
@@ -453,6 +496,7 @@ public class ServiceManager {
 
     private void startOwnedServices(StartStrategy startStrategy) throws IllegalServiceStateException, UnsatisfiedConditionsException, Exception {
         Set ownedServices = serviceFactory.getOwnedServices();
+        if (ownedServices == null) throw new NullPointerException("serviceFactory.getOwnedServices() returned null");
         for (Iterator iterator = ownedServices.iterator(); iterator.hasNext();) {
             ServiceName ownedService = (ServiceName) iterator.next();
             try {
@@ -650,14 +694,41 @@ public class ServiceManager {
     }
 
     private ServiceEvent createServiceEvent() {
-        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, service);
+        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, service, null, null);
     }
 
     private ServiceEvent createWaitingServiceEvent(Set unsatisfiedConditions) {
-        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, service, unsatisfiedConditions);
+        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, service, null, unsatisfiedConditions);
     }
 
     private ServiceEvent createErrorServiceEvent(Throwable cause) {
-        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, cause);
+        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, null, cause, null);
+    }
+
+    public int hashCode() {
+        return (int) (serviceId ^ (serviceId >>> 32));
+    }
+
+    public boolean equals(Object o) {
+        if (o instanceof ServiceManager) {
+            return serviceId == ((ServiceManager)o).serviceId;
+        }
+        return false;
+    }
+
+    public int compareTo(Object o) {
+        ServiceManager serviceManager = (ServiceManager) o;
+
+        if (serviceId < serviceManager.serviceId) {
+            return -1;
+        } else if (serviceId > serviceManager.serviceId) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    public String toString() {
+        return "[ServiceManager: serviceId=" + serviceId + ", serviceName=" + serviceName + ", state=" + state + "]";
     }
 }

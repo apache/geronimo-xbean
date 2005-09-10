@@ -36,6 +36,7 @@ public class StringServiceName implements ServiceName {
      */
     public StringServiceName(String name) {
         if (name == null) throw new NullPointerException("name is null");
+        if (name.length() == 0) throw new IllegalArgumentException("name must be atleast one character long");
         this.name = name;
     }
 

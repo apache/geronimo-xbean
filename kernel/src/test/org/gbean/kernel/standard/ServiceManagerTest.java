@@ -26,7 +26,6 @@ import java.util.Set;
 
 import edu.emory.mathcs.backport.java.util.concurrent.Callable;
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
-import edu.emory.mathcs.backport.java.util.concurrent.Executor;
 import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
@@ -55,6 +54,7 @@ import org.gbean.kernel.UnregisterServiceException;
 import org.gbean.kernel.UnsatisfiedConditionsException;
 
 /**
+ * Test ServiceManager.
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -71,6 +71,9 @@ public class ServiceManagerTest extends TestCase {
     private final MockServiceMonitor serviceMonitor = new MockServiceMonitor();
     private ServiceManager serviceManager;
 
+    /**
+     * Tests that the initial state of the service manager is as expected.
+     */
     public void testInitialState() {
         assertSame(serviceName, serviceManager.getServiceName());
         assertSame(serviceFactory, serviceManager.getServiceFactory());
@@ -80,6 +83,10 @@ public class ServiceManagerTest extends TestCase {
         assertSame(ServiceState.STOPPED, serviceManager.getState());
     }
 
+    /**
+     * Tests that initialize and destroy work without exception.
+     * @throws Exception if a problem occurs
+     */
     public void testInitializeDestroy() throws Exception {
         initialize();
         destroy(StopStrategies.SYNCHRONOUS);
@@ -87,6 +94,10 @@ public class ServiceManagerTest extends TestCase {
         destroy(StopStrategies.SYNCHRONOUS);
     }
 
+    /**
+     * Tests that start and stop work without exception.
+     * @throws Exception if a problem occurs
+     */
     public void testStartStop() throws Exception {
         startStop(StartStrategies.ASYNCHRONOUS, false);
         startStop(StartStrategies.SYNCHRONOUS, false);
@@ -99,6 +110,10 @@ public class ServiceManagerTest extends TestCase {
         startStop(StartStrategies.BLOCK, false);
     }
 
+    /**
+     * Tests that startRecursive results in recursive start calls on the owned services.
+     * @throws Exception if a problem occurs
+     */
     public void testStartRecursive() throws Exception {
         startStop(StartStrategies.ASYNCHRONOUS, true);
         startStop(StartStrategies.SYNCHRONOUS, true);
@@ -121,6 +136,10 @@ public class ServiceManagerTest extends TestCase {
         stop(StopStrategies.SYNCHRONOUS);
     }
 
+    /**
+     * Tests how the start strategies respond when an Exception is thrown.
+     * @throws Exception if a problem occurs
+     */
     public void testStartException() throws Exception {
         startException(StartStrategies.ASYNCHRONOUS, false);
         startException(StartStrategies.SYNCHRONOUS, false);
@@ -133,6 +152,10 @@ public class ServiceManagerTest extends TestCase {
         startException(StartStrategies.BLOCK, false);
     }
 
+    /**
+     * Tests how startRecursive start strategies respond when an Exception is thrown.
+     * @throws Exception if a problem occurs
+     */
     public void testStartExceptionRecursive() throws Exception {
         startException(StartStrategies.ASYNCHRONOUS, true);
         startException(StartStrategies.SYNCHRONOUS, true);
@@ -160,6 +183,10 @@ public class ServiceManagerTest extends TestCase {
         stop(StopStrategies.SYNCHRONOUS);
     }
 
+    /**
+     * Tests how the start strategies respond when confronted with an unsatisfied start condition.
+     * @throws Exception if a problem occurs
+     */
     public void testStartWaiting() throws Exception {
         startWaiting(StartStrategies.ASYNCHRONOUS, false);
         startWaiting(StartStrategies.SYNCHRONOUS, false);
@@ -170,6 +197,10 @@ public class ServiceManagerTest extends TestCase {
         startWaiting(StartStrategies.UNREGISTER, false);
     }
 
+    /**
+     * Tests how the startRecursive start strategies responed when confronted with an unsatisfied start condition.
+     * @throws Exception
+     */
     public void testStartWaitingRecursive() throws Exception {
         startWaiting(StartStrategies.ASYNCHRONOUS, true);
         startWaiting(StartStrategies.SYNCHRONOUS, true);
@@ -198,6 +229,11 @@ public class ServiceManagerTest extends TestCase {
         stop(StopStrategies.SYNCHRONOUS);
     }
 
+
+    /**
+     * Tests how the start strategies respond once a once unsatisfied start condition becomes satisfied.
+     * @throws Exception if a problem occurs
+     */
     public void testStartWaitingStart() throws Exception {
         startWaitingStart(StartStrategies.ASYNCHRONOUS, false);
         startWaitingStart(StartStrategies.SYNCHRONOUS, false);
@@ -208,6 +244,10 @@ public class ServiceManagerTest extends TestCase {
         startWaitingStart(StartStrategies.UNREGISTER, false);
     }
 
+    /**
+     * Tests how startRecursive start strategies respond once a once unsatisfied start condition becomes satisfied.
+     * @throws Exception if a problem occurs
+     */
     public void testStartWaitingStartRecursive() throws Exception {
         startWaitingStart(StartStrategies.ASYNCHRONOUS, true);
         startWaitingStart(StartStrategies.SYNCHRONOUS, true);
@@ -252,9 +292,13 @@ public class ServiceManagerTest extends TestCase {
         stop(StopStrategies.SYNCHRONOUS);
     }
 
+    /**
+     * Tests the BLOCK start stragegy.
+     * @throws Exception if a problem occurs
+     */
     public void testBlockStartWaiting() throws Exception {
         startCondition.satisfied = false;
-        startCondition.initializedSignal = new CountDownLatch(1);
+        startCondition.isSatisfiedSignal = new CountDownLatch(1);
         FutureTask startTask = new FutureTask(new Callable() {
             public Object call() throws Exception {
                 start(false, StartStrategies.BLOCK);
@@ -266,7 +310,7 @@ public class ServiceManagerTest extends TestCase {
         startThread.start();
 
         // wait for the start thread to reach the startContion initialize method
-        assertTrue(startCondition.initializedSignal.await(5, TimeUnit.SECONDS));
+        assertTrue(startCondition.isSatisfiedSignal.await(5, TimeUnit.SECONDS));
 
         // we should not have a service instance and be in the starting state
         assertSame(ServiceState.STARTING, serviceManager.getState());
@@ -311,6 +355,10 @@ public class ServiceManagerTest extends TestCase {
         stop(StopStrategies.SYNCHRONOUS);
     }
 
+    /**
+     * Tests how start responds when the service factory is not enabled.
+     * @throws Exception if a problem occurs
+     */
     public void testDisabledStart() throws Exception {
         disabledStart(StartStrategies.ASYNCHRONOUS);
         disabledStart(StartStrategies.SYNCHRONOUS);
@@ -352,6 +400,10 @@ public class ServiceManagerTest extends TestCase {
         }
     }
 
+    /**
+     * Tests how the stop strategies respond when destroyService throws an Exception.
+     * @throws Exception if a problem occurs
+     */
     public void testStopException() throws Exception {
         stopException(StopStrategies.ASYNCHRONOUS);
         stopException(StopStrategies.SYNCHRONOUS);
@@ -365,6 +417,10 @@ public class ServiceManagerTest extends TestCase {
         stop(stopStrategy);
     }
 
+    /**
+     * Tests how the start and stop strategies work when both create and destroy throw exceptions.
+     * @throws Exception if a problem occurs
+     */
     public void testStartStopsException() throws Exception {
         startStopsException(StartStrategies.ASYNCHRONOUS, StopStrategies.ASYNCHRONOUS);
         startStopsException(StartStrategies.ASYNCHRONOUS, StopStrategies.SYNCHRONOUS);
@@ -400,13 +456,17 @@ public class ServiceManagerTest extends TestCase {
         stop(stopStrategy);
     }
 
+    /**
+     * Tests how stop strategies respond when confronted with an unsatisfied stop condition.
+     * @throws Exception if a problem occurs
+     */
     public void testWaitingStop() throws Exception {
         waitingStop(StopStrategies.ASYNCHRONOUS);
         waitingStop(StopStrategies.SYNCHRONOUS);
         waitingStop(StopStrategies.FORCE);
     }
 
-    public void waitingStop(StopStrategy stopStrategy) throws Exception {
+    private void waitingStop(StopStrategy stopStrategy) throws Exception {
         start(false, StartStrategies.SYNCHRONOUS);
         stopCondition.satisfied = false;
         try {
@@ -428,10 +488,14 @@ public class ServiceManagerTest extends TestCase {
         stop(stopStrategy);
     }
 
+    /**
+     * Tests the BLOCK stop strategy.
+     * @throws Exception if a problem occurs
+     */
     public void testBlockStopWaiting() throws Exception {
         start(false, StartStrategies.SYNCHRONOUS);
         stopCondition.satisfied = false;
-        stopCondition.initializedSignal = new CountDownLatch(1);
+        stopCondition.isStatisfiedSignal = new CountDownLatch(1);
         FutureTask stopTask = new FutureTask(new Callable() {
             public Object call() throws Exception {
                 stop(StopStrategies.BLOCK);
@@ -443,7 +507,7 @@ public class ServiceManagerTest extends TestCase {
         stopThread.start();
 
         // wait for the stop thread to reach the stopContion initialize method
-        assertTrue(stopCondition.initializedSignal.await(5, TimeUnit.SECONDS));
+        assertTrue(stopCondition.isStatisfiedSignal.await(5, TimeUnit.SECONDS));
 
         // we should blocked waiting to stop
         assertSame(ServiceState.STOPPING, serviceManager.getState());
@@ -484,6 +548,10 @@ public class ServiceManagerTest extends TestCase {
     }
 
 
+    /**
+     * Tests that start throws an exception when the service is in the stoping state.
+     * @throws Exception if a problem occurs
+     */
     public void testStartFromStopping() throws Exception {
         startFromStopping(StartStrategies.ASYNCHRONOUS);
         startFromStopping(StartStrategies.SYNCHRONOUS);
@@ -506,6 +574,10 @@ public class ServiceManagerTest extends TestCase {
         stop(StopStrategies.ASYNCHRONOUS);
     }
 
+    /**
+     * Tests that a non-restartable servie is immedately started when initialized and stopped in destroy.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableInitDestroy() throws Exception {
         notRestartableInitDestroy(StopStrategies.ASYNCHRONOUS);
         notRestartableInitDestroy(StopStrategies.SYNCHRONOUS);
@@ -519,24 +591,40 @@ public class ServiceManagerTest extends TestCase {
         destroy(stopStrategy);
     }
 
+    /**
+     * Tests how initialize on a non-restartable service responds when an Exception is thrown from create service.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableInitException() throws Exception {
         serviceFactory.throwExceptionFromCreate = true;
         serviceFactory.restartable = false;
         initialize();
     }
 
+    /**
+     * Tests how initialize on a non-restartable service responds when confronted with an unsatisfied start condition.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableInitWaiting() throws Exception {
         startCondition.satisfied = false;
         serviceFactory.restartable = false;
         initialize();
     }
 
+    /**
+     * Tests how initialize on a non-restartable service responds when the service factory is disabled.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableInitDisabled() throws Exception {
         serviceFactory.setEnabled(false);
         serviceFactory.restartable = false;
         initialize();
     }
 
+    /**
+     * Tests how destroy on a non-restartable service responds when destroyService throws an exception.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableDestroyException() throws Exception {
         notRestartableDestroyException(StopStrategies.ASYNCHRONOUS);
         notRestartableDestroyException(StopStrategies.SYNCHRONOUS);
@@ -551,6 +639,11 @@ public class ServiceManagerTest extends TestCase {
         destroy(stopStrategy);
     }
 
+
+    /**
+     * Tests how destroy on a non-restartable service responds when createService and destroyService throws an exception.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableInitDestroyException() throws Exception {
         notRestartableInitDestroyException(StopStrategies.ASYNCHRONOUS);
         notRestartableInitDestroyException(StopStrategies.SYNCHRONOUS);
@@ -566,13 +659,17 @@ public class ServiceManagerTest extends TestCase {
         destroy(stopStrategy);
     }
 
+    /**
+     * Tests how destroy on a non-restartable service responds when confronted with an unsatisfied stop condition.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableWaitingStop() throws Exception {
         notRestartableWaitingDestroy(StopStrategies.ASYNCHRONOUS);
         notRestartableWaitingDestroy(StopStrategies.SYNCHRONOUS);
         notRestartableWaitingDestroy(StopStrategies.FORCE);
     }
 
-    public void notRestartableWaitingDestroy(StopStrategy stopStrategy) throws Exception {
+    private void notRestartableWaitingDestroy(StopStrategy stopStrategy) throws Exception {
         serviceFactory.restartable = false;
         initialize();
         stopCondition.satisfied = false;
@@ -582,11 +679,15 @@ public class ServiceManagerTest extends TestCase {
         destroy(stopStrategy);
     }
 
+    /**
+     * Tests the BLOCK stop strategy on a non-restartable service.
+     * @throws Exception if a problem occurs
+     */
     public void testNotRestartableBlockWaitingStop() throws Exception {
         serviceFactory.restartable = false;
         initialize();
         stopCondition.satisfied = false;
-        stopCondition.initializedSignal = new CountDownLatch(1);
+        stopCondition.isStatisfiedSignal = new CountDownLatch(1);
         FutureTask destroyTask = new FutureTask(new Callable() {
             public Object call() throws Exception {
                 destroy(StopStrategies.BLOCK);
@@ -598,7 +699,7 @@ public class ServiceManagerTest extends TestCase {
         destroyThread.start();
 
         // wait for the stop thread to reach the stopContion initialize method
-        assertTrue(stopCondition.initializedSignal.await(5, TimeUnit.SECONDS));
+        assertTrue(stopCondition.isStatisfiedSignal.await(5, TimeUnit.SECONDS));
 
         // we should blocked waiting to stop
         assertSame(ServiceState.RUNNING, serviceManager.getState());
@@ -1252,15 +1353,11 @@ public class ServiceManagerTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         serviceManager = new ServiceManager(kernel,
+                0,
                 serviceName,
                 serviceFactory,
                 classLoader,
                 serviceMonitor,
-                new Executor() {
-                    public void execute(Runnable command) {
-                        command.run();
-                    }
-                },
                 10,
                 TimeUnit.SECONDS);
     }
@@ -1341,7 +1438,7 @@ public class ServiceManagerTest extends TestCase {
         private boolean isSatisfiedCalled = false;
         private boolean destroyCalled = false;
         private ServiceConditionContext context;
-        private CountDownLatch initializedSignal;
+        private CountDownLatch isSatisfiedSignal;
 
         private void reset() {
             initializeCalled = false;
@@ -1353,13 +1450,13 @@ public class ServiceManagerTest extends TestCase {
             assertValidServiceConditionContext(context);
             initializeCalled = true;
             this.context = context;
-            if (initializedSignal != null) {
-                initializedSignal.countDown();
-            }
         }
 
         public boolean isSatisfied() {
             isSatisfiedCalled = true;
+            if (isSatisfiedSignal != null) {
+                isSatisfiedSignal.countDown();
+            }
             return satisfied;
         }
 
@@ -1374,7 +1471,7 @@ public class ServiceManagerTest extends TestCase {
         private boolean isSatisfiedCalled = false;
         private boolean destroyCalled = false;
         private ServiceConditionContext context;
-        private CountDownLatch initializedSignal;
+        private CountDownLatch isStatisfiedSignal;
 
         private void reset() {
             initializeCalled = false;
@@ -1386,13 +1483,13 @@ public class ServiceManagerTest extends TestCase {
             assertValidServiceConditionContext(context);
             initializeCalled = true;
             this.context = context;
-            if (initializedSignal != null) {
-                initializedSignal.countDown();
-            }
         }
 
         public boolean isSatisfied() {
             isSatisfiedCalled = true;
+            if (isStatisfiedSignal != null) {
+                isStatisfiedSignal.countDown();
+            }
             return satisfied;
         }
 
@@ -1575,7 +1672,23 @@ public class ServiceManagerTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
+        public Object getService(Class type) {
+            throw new UnsupportedOperationException();
+        }
+
+        public List getServices(Class type) {
+            throw new UnsupportedOperationException();
+        }
+
         public ServiceFactory getServiceFactory(ServiceName serviceName) throws ServiceNotFoundException {
+            throw new UnsupportedOperationException();
+        }
+
+        public ServiceFactory getServiceFactory(Class type) {
+            throw new UnsupportedOperationException();
+        }
+
+        public List getServiceFactories(Class type) {
             throw new UnsupportedOperationException();
         }
 

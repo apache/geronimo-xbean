@@ -19,11 +19,15 @@ package org.gbean.kernel;
 import junit.framework.TestCase;
 
 /**
+ * Tests StringServiceName.
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
 public class StringServiceNameTest extends TestCase {
+    /**
+     * Tests that the constuctor works when passed a string and fails when passed null.
+     */
     public void testConstructor() {
         new StringServiceName("foo");
 
@@ -34,15 +38,24 @@ public class StringServiceNameTest extends TestCase {
         }
     }
 
+    /**
+     * Tests that toString returns equivalent String as the one passed to the construcor.
+     */
     public void testToString() {
         assertEquals("foo", new StringServiceName("foo").toString());
     }
 
+    /**
+     * Tests that equals works when comparing two names created with equivalent strings, and fails when not.
+     */
     public void testEquals() {
         assertEquals(new StringServiceName("foo"), new StringServiceName("foo"));
         assertFalse(new StringServiceName("bar").equals(new StringServiceName("foo")));
     }
 
+    /**
+     * Tests that hashCode creates the same value when used on two names created with equivalent strings, and fails when not.
+     */
     public void testHashCode() {
         assertEquals(new StringServiceName("foo").hashCode(), new StringServiceName("foo").hashCode());
         assertFalse(new StringServiceName("bar").hashCode() == new StringServiceName("foo").hashCode());

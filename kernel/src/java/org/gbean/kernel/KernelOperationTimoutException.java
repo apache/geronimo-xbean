@@ -36,6 +36,8 @@ public class KernelOperationTimoutException extends RuntimeException {
      */
     public KernelOperationTimoutException(ServiceName serviceName, String operationName) {
         super("Kernel operation timed out: serviceName=" + serviceName + ", operationName=" + operationName);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (operationName == null) throw new NullPointerException("operationName is null");
         this.serviceName = serviceName;
         this.operationName = operationName;
     }
@@ -49,6 +51,8 @@ public class KernelOperationTimoutException extends RuntimeException {
      */
     public KernelOperationTimoutException(String message, ServiceName serviceName, String operationName) {
         super(message);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (operationName == null) throw new NullPointerException("operationName is null");
         this.serviceName = serviceName;
         this.operationName = operationName;
     }

@@ -20,7 +20,6 @@ import edu.emory.mathcs.backport.java.util.concurrent.Executor;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.ServiceFactory;
-import org.gbean.kernel.ServiceMonitorBroadcaster;
 import org.gbean.kernel.ServiceName;
 
 /**
@@ -76,18 +75,19 @@ public class ServiceManagerFactory {
     /**
      * Creates a ServiceManager.
      *
+     * @param serviceId the id of the service
      * @param serviceName the name of the service
      * @param serviceFactory the factory for the service
      * @param classLoader the classloader for the service
      * @return a new service manager
      */
-    public ServiceManager createServiceManager(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
+    public ServiceManager createServiceManager(long serviceId, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
         return new ServiceManager(kernel,
+                serviceId,
                 serviceName,
                 serviceFactory,
                 classLoader,
-                serviceMonitor,
-                serviceExecutor,
+                new AsyncServiceMonitor(serviceMonitor, serviceExecutor),
                 timeoutDuration,
                 timeoutUnits);
     }

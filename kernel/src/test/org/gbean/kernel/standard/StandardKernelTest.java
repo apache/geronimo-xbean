@@ -29,6 +29,7 @@ import org.gbean.kernel.StopStrategies;
 import org.gbean.kernel.StringServiceName;
 
 /**
+ * Tests the StandardKernel.
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -42,6 +43,10 @@ public class StandardKernelTest extends TestCase {
     private final MockServiceFactory serviceFactory = new MockServiceFactory();
     private final ClassLoader classLoader = new URLClassLoader(new URL[0]);
 
+    /**
+     * Tests the initial state of the kernel is as expected.
+     * @throws Exception if a problem occurs
+     */
     public void testInitialState() throws Exception {
         assertEquals(KERNEL_NAME, kernel.getKernelName());
         assertTrue(kernel.isRunning());
@@ -223,6 +228,10 @@ public class StandardKernelTest extends TestCase {
         }
     }
 
+    /**
+     * Test the life cycle of a simple service.
+     * @throws Exception if a problem occurs
+     */ 
     public void testSimpleLifecycle() throws Exception {
         kernel.registerService(serviceName, serviceFactory, classLoader);
         assertTrue(kernel.isRegistered(serviceName));

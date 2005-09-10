@@ -59,8 +59,10 @@ public final class ServiceState implements Serializable {
     static {
         for (int i = 0; i < serviceStateIndex.length; i++) {
             ServiceState serviceState = serviceStateIndex[i];
-            assert serviceState.getIndex() != i : serviceState + " state index is " + serviceState.getIndex() +
-                    ", but is located at index " + i + " in the serviceStateIndex";
+            if (serviceState.getIndex() != i) {
+                throw new AssertionError(serviceState + " state index is " + serviceState.getIndex() +
+                    ", but is located at index " + i + " in the serviceStateIndex");
+            }
         }
     }
 
@@ -86,6 +88,7 @@ public final class ServiceState implements Serializable {
      * @throws IllegalArgumentException if the state index is not STARTING, RUNNING, STOPPING or FAILED
      */
     public static ServiceState parseServiceState(String state) {
+        if (state == null) throw new NullPointerException("state is null");
         if (STARTING.toString().equalsIgnoreCase(state)) {
             return STARTING;
         } else if (RUNNING.toString().equalsIgnoreCase(state)) {

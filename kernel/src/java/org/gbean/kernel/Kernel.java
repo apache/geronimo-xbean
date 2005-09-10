@@ -16,6 +16,8 @@
  */
 package org.gbean.kernel;
 
+import java.util.List;
+
 /**
  * This iterface defines the API for managing and monitoring service life-cycle. A kernel can be constructed with the
  * following code:
@@ -257,11 +259,29 @@ public interface Kernel {
      * or STARTING state this method will throw an IllegalArgumentException.
      *
      * @param serviceName the unique name of the service
-     * @return the service factory associated with the specified name
+     * @return the service associated with the specified name
      * @throws ServiceNotFoundException if there is no service registered under the specified name
      * @throws IllegalArgumentException if the service is not in the RUNNING, or STARTING state
      */
     Object getService(ServiceName serviceName) throws ServiceNotFoundException, IllegalArgumentException;
+
+    /**
+     * Gets the first running service registered with the kernel that is an instance of the specified type.  If no
+     * running services are instances of the specified type, null is returned.
+     *
+     * @param type the of the desired service
+     * @return the first registered service that is an instance of the specified type and is running
+     */
+    Object getService(Class type);
+
+    /**
+     * Gets the all of running service registered with the kernel that are an instances of the specified type.  If no
+     * running services are instances of the specified type, an empty list is returned
+     *
+     * @param type the of the desired service
+     * @return the registered services that are instances of the specified type and are running 
+     */
+    List getServices(Class type);
 
     /**
      * Gets the service factory registered under the specified name.
@@ -271,6 +291,24 @@ public interface Kernel {
      * @throws ServiceNotFoundException if there is no service registered under the specified name
      */
     ServiceFactory getServiceFactory(ServiceName serviceName) throws ServiceNotFoundException;
+
+    /**
+     * Gets the first service factory registered with the kernel that creates an instance of the specified type.
+     * If no service factories create an instance of the specified type, null is returned.
+     *
+     * @param type the of the desired service
+     * @return the first service factory registered with the kernel that creates an instance of the specified type
+     */
+    ServiceFactory getServiceFactory(Class type);
+
+    /**
+     * Gets the all of the service factories registered with the kernel that create an instances of the specified type.
+     * If no service factories create an instance of the specified type, an empty list is returned.
+     *
+     * @param type the of the desired service
+     * @return the registered services that are instances of the specified type and are running
+     */
+    List getServiceFactories(Class type);
 
     /**
      * Gets the class loader associated with the specifed service.

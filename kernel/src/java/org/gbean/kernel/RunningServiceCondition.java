@@ -41,6 +41,7 @@ public class RunningServiceCondition implements ServiceCondition {
      * @param stopOnServiceShutdown if the our service should be stopped when the specified service shutsdown
      */
     public RunningServiceCondition(ServiceName dependency, boolean ownedRelationship, boolean stopOnServiceShutdown) {
+        if (dependency == null) throw new NullPointerException("dependency is null");
         this.dependency = dependency;
         this.ownedRelationship = ownedRelationship;
         this.stopOnServiceShutdown = stopOnServiceShutdown;

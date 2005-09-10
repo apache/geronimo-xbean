@@ -63,6 +63,7 @@ public class AggregateCondition {
         satisfiedSignal = lock.newCondition();
 
         // add the conditions to the registry
+        if (conditions == null) throw new NullPointerException("conditions is null");
         for (Iterator iterator = conditions.iterator(); iterator.hasNext();) {
             ServiceCondition serviceCondition = (ServiceCondition) iterator.next();
             addCondition(serviceCondition);

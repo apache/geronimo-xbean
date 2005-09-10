@@ -14,16 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel;
+package org.gbean.server.classloader;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.SortedSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -36,6 +36,7 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.NoOp;
 
 /**
+ * Tests the MultiParentClassLoader including classloading and resource loading.
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -53,8 +54,8 @@ public class MultiParentClassLoaderTest extends TestCase {
     private static final String NAME = "my test class loader";
 
     /**
-     * Verify that the test jars are valid
-     * @throws Exception
+     * Verify that the test jars are valid.
+     * @throws Exception if a problem occurs
      */
     public void testTestJars() throws Exception {
         for (int i = 0; i < files.length; i++) {
@@ -69,12 +70,12 @@ public class MultiParentClassLoaderTest extends TestCase {
             // clazz shared by all
             Class clazz = urlClassLoader.loadClass(CLASS_NAME);
             assertNotNull(clazz);
-            assertTrue(clazz instanceof Serializable);
+            assertTrue(SortedSet.class.isAssignableFrom(clazz));
 
             // clazz specific to this jar
             clazz = urlClassLoader.loadClass(CLASS_NAME + i);
             assertNotNull(clazz);
-            assertTrue(clazz instanceof Serializable);
+            assertTrue(SortedSet.class.isAssignableFrom(clazz));
 
             // resource shared by all jars
             InputStream in = urlClassLoader.getResourceAsStream(ENTRY_NAME );
@@ -114,7 +115,7 @@ public class MultiParentClassLoaderTest extends TestCase {
         // load class specific to my class loader
         Class clazz = classLoader.loadClass(CLASS_NAME + 33);
         assertNotNull(clazz);
-        assertTrue(clazz instanceof Serializable);
+        assertTrue(SortedSet.class.isAssignableFrom(clazz));
         assertEquals(classLoader, clazz.getClassLoader());
 
         // load class specific to each parent class loader
@@ -122,14 +123,14 @@ public class MultiParentClassLoaderTest extends TestCase {
             URLClassLoader parent = parents[i];
             clazz = classLoader.loadClass(CLASS_NAME + i);
             assertNotNull(clazz);
-            assertTrue(clazz instanceof Serializable);
+            assertTrue(SortedSet.class.isAssignableFrom(clazz));
             assertEquals(parent, clazz.getClassLoader());
         }
 
         // class shared by all class loaders
         clazz = classLoader.loadClass(CLASS_NAME);
         assertNotNull(clazz);
-        assertTrue(clazz instanceof Serializable);
+        assertTrue(SortedSet.class.isAssignableFrom(clazz));
         assertEquals(parents[0], clazz.getClassLoader());
     }
 
@@ -164,6 +165,7 @@ public class MultiParentClassLoaderTest extends TestCase {
 
     /**
      * Test getResourceAsStream returns null when attempt is made to loade a non-existant resource.
+     * @throws Exception if a problem occurs
      */
     public void testGetNonExistantResourceAsStream() throws Exception {
         InputStream in = classLoader.getResourceAsStream(NON_EXISTANT_RESOURCE);
@@ -189,6 +191,7 @@ public class MultiParentClassLoaderTest extends TestCase {
 
     /**
      * Test getResource returns null when attempt is made to loade a non-existant resource.
+     * @throws Exception if a problem occurs
      */
     public void testGetNonExistantResource() throws Exception {
         URL resource = classLoader.getResource(NON_EXISTANT_RESOURCE);
@@ -218,6 +221,7 @@ public class MultiParentClassLoaderTest extends TestCase {
 
     /**
      * Test getResources returns an empty enumeration when attempt is made to loade a non-existant resource. 
+     * @throws Exception if a problem occurs
      */
     public void testGetNonExistantResources() throws Exception {
         Enumeration resources = classLoader.getResources(NON_EXISTANT_RESOURCE);
@@ -260,6 +264,7 @@ public class MultiParentClassLoaderTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
+        super.setUp();
         files = new File[3];
         for (int i = 0; i < files.length; i++) {
             files[i] = createJarFile(i);
@@ -271,7 +276,18 @@ public class MultiParentClassLoaderTest extends TestCase {
         }
 
         myFile = createJarFile(33);
-        classLoader = new MultiParentClassLoader(NAME, new URL[]{myFile.toURL()}, parents);
+        classLoader = createClassLoader(NAME, new URL[]{myFile.toURL()}, parents);
+    }
+
+    /**
+     * Creates the class loader to test.
+     * @param name the name of the classloader
+     * @param urls the urls to load classes and resources from
+     * @param parents the parents of the class loader
+     * @return the class loader to test
+     */
+    protected MultiParentClassLoader createClassLoader(String name, URL[] urls, ClassLoader[] parents) {
+        return new MultiParentClassLoader(name, urls, parents);
     }
 
     private static File createJarFile(int i) throws IOException {
@@ -312,7 +328,7 @@ public class MultiParentClassLoaderTest extends TestCase {
         });
         enhancer.setClassLoader(new URLClassLoader(new URL[0]));
         enhancer.setSuperclass(Object.class);
-        enhancer.setInterfaces(new Class[]{Serializable.class});
+        enhancer.setInterfaces(new Class[]{SortedSet.class});
         enhancer.setCallbackTypes(new Class[]{NoOp.class});
         enhancer.setUseFactory(false);
         ByteCode byteCode = new ByteCode();
@@ -323,6 +339,7 @@ public class MultiParentClassLoaderTest extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+        super.tearDown();
         for (int i = 0; i < files.length; i++) {
             files[i].delete();
             assertFileNotExists(files[i]);
@@ -341,5 +358,4 @@ public class MultiParentClassLoaderTest extends TestCase {
             return byteCode;
         }
     }
-
 }

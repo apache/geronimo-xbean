@@ -51,6 +51,7 @@ public abstract class KernelFactory {
      * @return the kernel or null if no kernel is registered under the specified name
      */
     public static Kernel getKernel(String name) {
+        if (name == null) throw new NullPointerException("name is null");
         return (Kernel) kernels.get(name);
     }
 
@@ -139,6 +140,8 @@ public abstract class KernelFactory {
      * @throws KernelAlreadyExistsException is a kernel already exists with the specified name
      */
     public final Kernel createKernel(String name) throws KernelAlreadyExistsException {
+        if (name == null) throw new NullPointerException("name is null");
+
         // quick check to see if a kernel already registerd wit the name
         if (kernels.containsKey(name)) {
             throw new KernelAlreadyExistsException(name);

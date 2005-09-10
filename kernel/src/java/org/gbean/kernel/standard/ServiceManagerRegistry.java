@@ -17,15 +17,19 @@
 package org.gbean.kernel.standard;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Callable;
 import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
-import edu.emory.mathcs.backport.java.util.concurrent.Future;
-import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
+import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
 import org.gbean.kernel.IllegalServiceStateException;
 import org.gbean.kernel.KernelErrorsError;
 import org.gbean.kernel.KernelOperationInterruptedException;
@@ -47,6 +51,11 @@ import org.gbean.kernel.UnsatisfiedConditionsException;
  */
 public class ServiceManagerRegistry {
     /**
+     * The sequence used for the serviceId assigned to service managers.
+     */
+    private final AtomicLong serviceId = new AtomicLong(1);
+
+    /**
      * The factory used to create service managers.
      */
     private final ServiceManagerFactory serviceManagerFactory;
@@ -55,6 +64,11 @@ public class ServiceManagerRegistry {
      * The registered service managers.
      */
     private final Map serviceManagers = new HashMap();
+
+    /**
+     * The service managers indexed by the service type.  This map is populated when a service enters the running state.
+     */
+    private final Map serviceManagersByType = new HashMap();
 
     /**
      * Creates a ServiceManagerRegistry that uses the specified service manager factory to create new service managers.
@@ -83,9 +97,9 @@ public class ServiceManagerRegistry {
 
         List managers = new ArrayList(managerFutures.size());
         for (Iterator iterator = managerFutures.iterator(); iterator.hasNext();) {
-            Future future = (Future) iterator.next();
+            RegistryFutureTask registryFutureTask = (RegistryFutureTask) iterator.next();
             try {
-                managers.add(future.get());
+                managers.add(registryFutureTask.get());
             } catch (InterruptedException e) {
                 // ignore -- this should not happen
                 errors.add(new AssertionError(e));
@@ -151,15 +165,15 @@ public class ServiceManagerRegistry {
      * @return true if there is a service registered with the specified name; false otherwise
      */
     public boolean isRegistered(ServiceName serviceName) {
-        assert serviceName != null : "serviceName is null";
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
 
-        Future serviceManagerFuture;
+        RegistryFutureTask registryFutureTask;
         synchronized (serviceManagers) {
-            serviceManagerFuture = (Future) serviceManagers.get(serviceName);
+            registryFutureTask = (RegistryFutureTask) serviceManagers.get(serviceName);
         }
         try {
             // the service is registered if we have a non-null future value
-            return serviceManagerFuture != null && serviceManagerFuture.get() != null;
+            return registryFutureTask != null && registryFutureTask.get() != null;
         } catch (InterruptedException e) {
             throw new KernelOperationInterruptedException(e, serviceName, "isRegistered");
         } catch (ExecutionException e) {
@@ -175,20 +189,20 @@ public class ServiceManagerRegistry {
      * @throws ServiceNotFoundException if there is no service registered under the specified name
      */
     public ServiceManager getServiceManager(ServiceName serviceName) throws ServiceNotFoundException {
-        assert serviceName != null : "serviceName is null";
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
 
-        Future serviceManagerFuture;
+        RegistryFutureTask registryFutureTask;
         synchronized (serviceManagers) {
-            serviceManagerFuture = (Future) serviceManagers.get(serviceName);
+            registryFutureTask = (RegistryFutureTask) serviceManagers.get(serviceName);
         }
 
         // this service has no future
-        if (serviceManagerFuture == null) {
+        if (registryFutureTask == null) {
             throw new ServiceNotFoundException(serviceName);
         }
 
         try {
-            ServiceManager serviceManager = (ServiceManager) serviceManagerFuture.get();
+            ServiceManager serviceManager = (ServiceManager) registryFutureTask.get();
             if (serviceManager == null) {
                 throw new ServiceNotFoundException(serviceName);
             }
@@ -199,6 +213,120 @@ public class ServiceManagerRegistry {
             // registration threw an exception which means it didn't register
             throw new ServiceNotFoundException(serviceName);
         }
+    }
+
+    /**
+     * Gets the first registered service manager that creates an instance of the specified type, or null if no service
+     * managers create an instance of the specified type.
+     *
+     * @param type the of the desired service
+     * @return the first registered service manager that creates an instance of the specified type, or null if none found
+     */
+    public ServiceManager getServiceManager(Class type) {
+        SortedSet serviceManagerFutures = getServiceManagerFutures(type);
+        for (Iterator iterator = serviceManagerFutures.iterator(); iterator.hasNext();) {
+            RegistryFutureTask registryFutureTask = (RegistryFutureTask) iterator.next();
+            try {
+                ServiceManager serviceManager = (ServiceManager) registryFutureTask.get();
+                if (serviceManager != null) {
+                    return serviceManager;
+                }
+            } catch (InterruptedException e) {
+                throw new KernelOperationInterruptedException(e, registryFutureTask.getServiceName(), "getServiceManagers(java.lang.Class)");
+            } catch (ExecutionException ignored) {
+                // registration threw an exception which means it didn't register
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets all service managers that create an instances of the specified type, or an empty list if no service
+     * managers create an instance of the specified type.
+     *
+     * @param type the of the desired service managers
+     * @return all service managers that create an instances of the specified type, or an empty list if none found
+     */
+    public List getServiceManagers(Class type) {
+        SortedSet serviceManagerFutures = getServiceManagerFutures(type);
+        List serviceManagers = new ArrayList(serviceManagerFutures.size());
+        for (Iterator iterator = serviceManagerFutures.iterator(); iterator.hasNext();) {
+            RegistryFutureTask registryFutureTask = (RegistryFutureTask) iterator.next();
+            try {
+                ServiceManager serviceManager = (ServiceManager) registryFutureTask.get();
+                if (serviceManager != null) {
+                    serviceManagers.add(serviceManager);
+                }
+            } catch (InterruptedException e) {
+                throw new KernelOperationInterruptedException(e, registryFutureTask.getServiceName(), "getServiceManagers(java.lang.Class)");
+            } catch (ExecutionException ignored) {
+                // registration threw an exception which means it didn't register
+            }
+        }
+        return serviceManagers;
+    }
+
+    /**
+     * Gets the first registed and running service that is an instance of the specified type, or null if no instances
+     * of the specified type are running.
+     *
+     * @param type the of the desired service
+     * @return the first registed and running service that is an instance of the specified type or null if none found
+     */
+    public synchronized Object getService(Class type) {
+        SortedSet serviceManagerFutures = getServiceManagerFutures(type);
+        for (Iterator iterator = serviceManagerFutures.iterator(); iterator.hasNext();) {
+            RegistryFutureTask registryFutureTask = (RegistryFutureTask) iterator.next();
+            try {
+                ServiceManager serviceManager = (ServiceManager) registryFutureTask.get();
+                if (serviceManager != null) {
+                    Object service = serviceManager.getService();
+                    if (service != null) {
+                        return service;
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new KernelOperationInterruptedException(e, registryFutureTask.getServiceName(), "getService(java.lang.Class)");
+            } catch (ExecutionException ignored) {
+                // registration threw an exception which means it didn't register
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the all of running service that are an instances of the specified type, or an empty list if no instances
+     * of the specified type are running.
+     *
+     * @param type the of the desired service
+     * @return the all of running service that are an instances of the specified type, or an empty list if none found
+     */
+    public synchronized List getServices(Class type) {
+        List serviceManagers = getServiceManagers(type);
+        List services = new ArrayList(serviceManagers.size());
+        for (Iterator iterator = serviceManagers.iterator(); iterator.hasNext();) {
+            ServiceManager serviceManager = (ServiceManager) iterator.next();
+            if (serviceManager != null) {
+                Object service = serviceManager.getService();
+                if (service != null) {
+                    services.add(service);
+                }
+            }
+        }
+        return services;
+    }
+
+    private SortedSet getServiceManagerFutures(Class type) {
+        SortedSet serviceManagerFutures;
+        synchronized (serviceManagers) {
+            serviceManagerFutures = (SortedSet) serviceManagersByType.get(type);
+            if (serviceManagerFutures != null) {
+                serviceManagerFutures = new TreeSet(serviceManagerFutures);
+            } else {
+                serviceManagerFutures = new TreeSet();
+            }
+        }
+        return serviceManagerFutures;
     }
 
     /**
@@ -215,16 +343,16 @@ public class ServiceManagerRegistry {
      * @throws ServiceRegistrationException if the service is not restartable and an error occured while starting the service
      */
     public void registerService(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException {
-        assert serviceName != null : "serviceName is null";
-        assert serviceFactory != null : "serviceFactory is null";
-        assert classLoader != null : "classLoader is null";
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (serviceFactory == null) throw new NullPointerException("serviceFactory is null");
+        if (classLoader == null) throw new NullPointerException("classLoader is null");
 
         if (!serviceFactory.isEnabled()) {
             throw new ServiceRegistrationException(serviceName,
                     new IllegalServiceStateException("A disabled non-restartable service factory can not be registered", serviceName));
         }
 
-        FutureTask registrationTask = null;
+        RegistryFutureTask registrationTask = null;
 
         //
         // This loop will continue until we put our registrationTask in the serviceManagers map.  If at any point,
@@ -232,9 +360,9 @@ public class ServiceManagerRegistry {
         // a ServiceAlreadyExistsException exiting this method.
         //
         while (registrationTask == null) {
-            Future existingRegistration;
+            RegistryFutureTask existingRegistration;
             synchronized (serviceManagers) {
-                existingRegistration = (Future) serviceManagers.get(serviceName);
+                existingRegistration = (RegistryFutureTask) serviceManagers.get(serviceName);
 
                 // if we do not have an existing registration or the existing registration task is complete
                 // we can create the new registration task; otherwise we need to wait for the existing registration to
@@ -256,11 +384,13 @@ public class ServiceManagerRegistry {
 
                     // we are ready to register our serviceManager
                     existingRegistration = null;
-                    registrationTask = new FutureTask(new RegisterServiceManager(serviceManagerFactory,
+                    ServiceManager serviceManager = serviceManagerFactory.createServiceManager(serviceId.getAndIncrement(),
                             serviceName,
                             serviceFactory,
-                            classLoader));
+                            classLoader);
+                    registrationTask = RegistryFutureTask.createRegisterTask(serviceManager);
                     serviceManagers.put(serviceName, registrationTask);
+                    addTypeIndex(serviceManager, registrationTask);
                 }
             }
 
@@ -291,6 +421,7 @@ public class ServiceManagerRegistry {
                 // make sure our task is still the registered one
                 if (serviceManagers.get(serviceName) == registrationTask) {
                     serviceManagers.remove(serviceName);
+                    removeTypeIndex(registrationTask);
                 }
             }
             throw new ServiceRegistrationException(serviceName, e.getCause());
@@ -309,11 +440,10 @@ public class ServiceManagerRegistry {
      * @throws ServiceRegistrationException if the service could not be stopped
      */
     public void unregisterService(ServiceName serviceName, StopStrategy stopStrategy) throws ServiceNotFoundException, ServiceRegistrationException {
-        assert serviceName != null : "serviceName is null";
-        assert stopStrategy != null : "stopStrategy is null";
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (stopStrategy == null) throw new NullPointerException("stopStrategy is null");
 
-        FutureTask unregistrationTask = null;
-        UnregisterServiceManager unregisterCallable = null;
+        RegistryFutureTask unregistrationTask = null;
 
         //
         // This loop will continue until we put our unregistrationTask in the serviceManagers map.  If at any point,
@@ -321,9 +451,9 @@ public class ServiceManagerRegistry {
         // a ServiceNotFoundException exiting this method.
         //
         while (unregistrationTask == null) {
-            Future existingRegistration;
+            RegistryFutureTask existingRegistration;
             synchronized (serviceManagers) {
-                existingRegistration = (Future) serviceManagers.get(serviceName);
+                existingRegistration = (RegistryFutureTask) serviceManagers.get(serviceName);
                 if (existingRegistration == null) {
                     throw new ServiceNotFoundException(serviceName);
                 }
@@ -346,9 +476,9 @@ public class ServiceManagerRegistry {
 
                     // we are ready to register our serviceManager
                     existingRegistration = null;
-                    unregisterCallable = new UnregisterServiceManager(serviceManager, stopStrategy);
-                    unregistrationTask = new FutureTask(unregisterCallable);
+                    unregistrationTask = RegistryFutureTask.createUnregisterTask(serviceManager, stopStrategy);
                     serviceManagers.put(serviceName, unregistrationTask);
+                    addTypeIndex(serviceManager, unregistrationTask);
                 }
             }
 
@@ -376,12 +506,13 @@ public class ServiceManagerRegistry {
                     // make sure our task is still the registered one
                     if (serviceManagers.get(serviceName) == unregistrationTask) {
                         serviceManagers.remove(serviceName);
+                        removeTypeIndex(unregistrationTask);
                     }
                 }
             } else {
-                synchronized (unregisterCallable) {
+                synchronized (unregistrationTask) {
                     // the root exception is contained in the exception handle
-                    throw new ServiceRegistrationException(serviceName, unregisterCallable.getThrowable());
+                    throw new ServiceRegistrationException(serviceName, unregistrationTask.getThrowable());
                 }
             }
         } catch (InterruptedException e) {
@@ -392,52 +523,70 @@ public class ServiceManagerRegistry {
         }
     }
 
-    private static class RegisterServiceManager implements Callable {
-        private final ServiceManagerFactory serviceManagerFactory;
-        private final ServiceName serviceName;
-        private final ServiceFactory serviceFactory;
-        private final ClassLoader classLoader;
+    private void addTypeIndex(ServiceManager serviceManager, RegistryFutureTask registryFutureTask) {
+        if (serviceManager == null) throw new NullPointerException("serviceManager is null");
+        if (registryFutureTask == null) throw new NullPointerException("serviceManagerFuture is null");
 
-        private RegisterServiceManager(ServiceManagerFactory serviceManagerFactory, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
-            this.serviceManagerFactory = serviceManagerFactory;
-            this.serviceName = serviceName;
-            this.serviceFactory = serviceFactory;
-            this.classLoader = classLoader;
+        Set allTypes = new LinkedHashSet();
+        for (Iterator iterator = serviceManager.getServiceTypes().iterator(); iterator.hasNext();) {
+            Class serviceType = (Class) iterator.next();
+
+            if (serviceType.isArray()) {
+                throw new IllegalArgumentException("Service is an array: serviceName=" + serviceManager.getServiceName() +
+                        ", serviceType=" + serviceManager.getServiceTypes());
+            }
+
+            allTypes.add(serviceType);
+            allTypes.addAll(getAllSuperClasses(serviceType));
+            allTypes.addAll(getAllInterfaces(serviceType));
         }
 
-        public Object call() throws Exception {
-            ServiceManager serviceManager = serviceManagerFactory.createServiceManager(serviceName, serviceFactory, classLoader);
-            serviceManager.initialize();
-            return serviceManager;
+        synchronized (serviceManagers) {
+            for (Iterator iterator = allTypes.iterator(); iterator.hasNext();) {
+                Class type = (Class) iterator.next();
+                Set futureServiceManagers = (Set) serviceManagersByType.get(type);
+                if (futureServiceManagers == null) {
+                    futureServiceManagers = new TreeSet();
+                    serviceManagersByType.put(type, futureServiceManagers);
+                }
+                futureServiceManagers.add(registryFutureTask);
+            }
         }
     }
 
-    private static class UnregisterServiceManager implements Callable {
-        private final ServiceManager serviceManager;
-        private final StopStrategy stopStrategy;
-        private Throwable throwable;
-
-        private UnregisterServiceManager(ServiceManager serviceManager, StopStrategy stopStrategy) {
-            this.serviceManager = serviceManager;
-            this.stopStrategy = stopStrategy;
-        }
-
-        public Object call() {
-            try {
-                serviceManager.destroy(stopStrategy);
-                return null;
-            } catch (Throwable e) {
-                // Destroy failed, save the exception so it can be rethrown from the unregister method
-                synchronized (this) {
-                    throwable = e;
+    private void removeTypeIndex(RegistryFutureTask registryFutureTask) {
+        if (registryFutureTask == null) throw new NullPointerException("serviceManagerFuture is null");
+        synchronized (serviceManagers) {
+            for (Iterator iterator = serviceManagersByType.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Set serviceManagers = (Set) entry.getValue();
+                serviceManagers.remove(registryFutureTask);
+                if (serviceManagers.isEmpty()) {
+                    iterator.remove();
                 }
-                // return the service manager so the service remains registered
-                return serviceManager;
             }
         }
+    }
 
-        private synchronized Throwable getThrowable() {
-            return throwable;
+    private static Set getAllSuperClasses(Class clazz) {
+        Set allSuperClasses = new LinkedHashSet();
+        for (Class superClass = clazz.getSuperclass(); superClass != null; superClass = superClass.getSuperclass()) {
+            allSuperClasses.add(superClass);
         }
+        return allSuperClasses;
+    }
+
+    private static Set getAllInterfaces(Class clazz) {
+        Set allInterfaces = new LinkedHashSet();
+        LinkedList stack = new LinkedList();
+        stack.addAll(Arrays.asList(clazz.getInterfaces()));
+        while (!stack.isEmpty()) {
+            Class intf = (Class) stack.removeFirst();
+            if (!allInterfaces.contains(intf)) {
+                allInterfaces.add(intf);
+                stack.addAll(Arrays.asList(intf.getInterfaces()));
+            }
+        }
+        return allInterfaces;
     }
 }

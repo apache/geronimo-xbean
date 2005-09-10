@@ -32,6 +32,7 @@ public class ServiceAlreadyExistsException extends Exception {
      * @param serviceName the name of the service that already exists
      */
     public ServiceAlreadyExistsException(ServiceName serviceName) {
+        if (serviceName == null) throw new NullPointerException("name is null");
         this.serviceName = serviceName;
     }
 

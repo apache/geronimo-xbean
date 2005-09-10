@@ -17,19 +17,25 @@
 package org.gbean.kernel;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import junit.framework.TestCase;
 
 /**
+ * Tests the StaticServiceFactory.
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
 public class StaticServiceFactoryTest extends TestCase {
-    private static final Object SERVICE = new Object();
+    private static final Object SERVICE = new TreeSet();
     private static final ServiceContext SERVICE_CONTEXT = new MockServiceContext();
     private static final ServiceCondition START_CONDITION = new MockStartCondition();
+    private static final ServiceCondition STOP_CONDITION = new MockStopCondition();
 
+    /**
+     * Tests that the constructor works when called with an Object and fails when called with null.
+     */
     public void testConstructor() {
         new StaticServiceFactory(SERVICE);
         try {
@@ -39,14 +45,23 @@ public class StaticServiceFactoryTest extends TestCase {
         }
     }
 
+    /**
+     * Tests that create service returns the same object that was passed to the constructor.
+     */
     public void testCreateService() {
         assertSame(SERVICE, new StaticServiceFactory(SERVICE).createService(SERVICE_CONTEXT));
     }
 
+    /**
+     * Tests that the service factory is not restartable.
+     */
     public void testIsRestartable() {
         assertEquals(false, new StaticServiceFactory(SERVICE).isRestartable());
     }
 
+    /**
+     * Tests that geting and setting the enalbe flag.
+     */
     public void testEnabled() {
         StaticServiceFactory serviceFactory = new StaticServiceFactory(SERVICE);
         assertEquals(true, serviceFactory.isEnabled());
@@ -56,8 +71,12 @@ public class StaticServiceFactoryTest extends TestCase {
         assertEquals(true, serviceFactory.isEnabled());
     }
 
-    public void testDependency() {
+    /**
+     * Tests getting and setting start and stop conditions.
+     */
+    public void testConditions() {
         StaticServiceFactory serviceFactory = new StaticServiceFactory(SERVICE);
+
         // get the dependency set
         Set dependencies = serviceFactory.getStartConditions();
         assertNotNull(dependencies);
@@ -80,6 +99,40 @@ public class StaticServiceFactoryTest extends TestCase {
             fail("dependencies.clear() should have thrown an Exception");
         } catch (Exception expected) {
         }
+
+        // get the dependency set
+        dependencies = serviceFactory.getStopConditions();
+        assertNotNull(dependencies);
+        // it should be initially empty
+        assertTrue(dependencies.isEmpty());
+
+        serviceFactory.addStopCondition(STOP_CONDITION);
+        // old dependency set should still be empty... it is a snapshot
+        assertTrue(dependencies.isEmpty());
+
+        // get a new dependency set
+        dependencies = serviceFactory.getStopConditions();
+        assertNotNull(dependencies);
+        // should have our dependency in it
+        assertEquals(1, dependencies.size());
+        assertTrue(dependencies.contains(STOP_CONDITION));
+
+        try {
+            dependencies.clear();
+            fail("dependencies.clear() should have thrown an Exception");
+        } catch (Exception expected) {
+        }
+    }
+
+    /**
+     * Tests that getTypes returns an array containing a single class which is the class of the service passed to the constuctor.
+     */
+    public void testGetTypes() {
+        StaticServiceFactory serviceFactory = new StaticServiceFactory(SERVICE);
+        Class[] types = serviceFactory.getTypes();
+        assertNotNull(types);
+        assertEquals(1, types.length);
+        assertSame(SERVICE.getClass(), types[0]);
     }
 
     private static class MockServiceContext implements ServiceContext {
@@ -97,6 +150,20 @@ public class StaticServiceFactoryTest extends TestCase {
     }
 
     private static class MockStartCondition implements ServiceCondition {
+        public void initialize(ServiceConditionContext context) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isSatisfied() {
+            throw new UnsupportedOperationException();
+        }
+
+        public void destroy() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class MockStopCondition implements ServiceCondition {
         public void initialize(ServiceConditionContext context) {
             throw new UnsupportedOperationException();
         }

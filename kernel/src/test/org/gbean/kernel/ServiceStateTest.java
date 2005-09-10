@@ -21,11 +21,15 @@ import java.rmi.MarshalledObject;
 import junit.framework.TestCase;
 
 /**
+ * Tests that the ServiceState constants are consistent.
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
 public class ServiceStateTest extends TestCase {
+    /**
+     * Tests that the constances are .equals to them selves and no other constants.
+     */
     public void testEquals() {
         assertTrue(ServiceState.STARTING.equals(ServiceState.STARTING));
         assertFalse(ServiceState.STARTING.equals(ServiceState.RUNNING));
@@ -48,6 +52,9 @@ public class ServiceStateTest extends TestCase {
         assertTrue(ServiceState.STOPPED.equals(ServiceState.STOPPED));
     }
 
+    /**
+     * Tests that the constants create a hashCode that is equal to their own hashCode an no other constants hashCode.
+     */
     public void testHashCode() {
         assertTrue(ServiceState.STARTING.hashCode() == ServiceState.STARTING.hashCode());
         assertFalse(ServiceState.STARTING.hashCode() == ServiceState.RUNNING.hashCode());
@@ -70,6 +77,10 @@ public class ServiceStateTest extends TestCase {
         assertTrue(ServiceState.STOPPED.hashCode() == ServiceState.STOPPED.hashCode());
     }
 
+    /**
+     * Tests that getServiceState returns the same constant as the constant from which the index was gotten, and that
+     * getServiceState throws an exception if an attempt is make to get an unknown constant.
+     */
     public void testGetServiceState() {
         assertSame(ServiceState.STARTING, ServiceState.getServiceState(ServiceState.STARTING.getIndex()));
         assertSame(ServiceState.RUNNING, ServiceState.getServiceState(ServiceState.RUNNING.getIndex()));
@@ -91,7 +102,11 @@ public class ServiceStateTest extends TestCase {
         }
     }
 
-    public void testFromString() {
+    /**
+     * Tests that parseServiceState returns the same state when called with getName on a state, that it throws an exception
+     * for an unknown state and that the parsing is done using a case insensitive match.
+     */
+    public void testParseServiceState() {
         assertSame(ServiceState.STARTING, ServiceState.parseServiceState(ServiceState.STARTING.getName()));
         assertSame(ServiceState.RUNNING, ServiceState.parseServiceState(ServiceState.RUNNING.getName()));
         assertSame(ServiceState.STOPPING, ServiceState.parseServiceState(ServiceState.STOPPING.getName()));
@@ -110,6 +125,11 @@ public class ServiceStateTest extends TestCase {
         assertSame(ServiceState.STOPPED, ServiceState.parseServiceState("StoppeD"));
     }
 
+    /**
+     * Tests that when a state is serialized an deserialized it returns the same state object.  This test shoudl assure
+     * that there is only one state instance with a specific index in existant at one time.
+     * @throws Exception if a problem occurs
+     */
     public void testSerialization() throws Exception {
         assertSame(ServiceState.STARTING, copyServiceState(ServiceState.STARTING));
         assertSame(ServiceState.RUNNING, copyServiceState(ServiceState.RUNNING));

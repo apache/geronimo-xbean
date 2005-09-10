@@ -14,16 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel;
+package org.gbean.server.classloader;
 
-import java.net.URLClassLoader;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLStreamHandlerFactory;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.io.IOException;
 
 /**
  * A MultiParentClassLoader is a simple extension of the URLClassLoader that simply changes the single parent class
@@ -36,8 +36,7 @@ import java.io.IOException;
  * @version $Id$
  * @since 1.0
  */
-public class MultiParentClassLoader extends URLClassLoader {
-    private final String name;
+public class MultiParentClassLoader extends NamedClassLoader {
     private final ClassLoader[] parents;
 
     /**
@@ -46,8 +45,7 @@ public class MultiParentClassLoader extends URLClassLoader {
      * @param urls the urls from which this class loader will classes and resources
      */
     public MultiParentClassLoader(String name, URL[] urls) {
-        super(urls);
-        this.name = name;
+        super(name, urls);
         parents = new ClassLoader[0];
     }
 
@@ -80,8 +78,7 @@ public class MultiParentClassLoader extends URLClassLoader {
      * @param parents the parents of this class loader
      */
     public MultiParentClassLoader(String name, URL[] urls, ClassLoader[] parents) {
-        super(urls);
-        this.name = name;
+        super(name, urls);
         this.parents = copyParents(parents);
     }
 
@@ -94,8 +91,7 @@ public class MultiParentClassLoader extends URLClassLoader {
      * @param factory the URLStreamHandlerFactory used to access the urls
      */
     public MultiParentClassLoader(String name, URL[] urls, ClassLoader[] parents, URLStreamHandlerFactory factory) {
-        super(urls, null, factory);
-        this.name = name;
+        super(name, urls, null, factory);
         this.parents = copyParents(parents);
     }
 
@@ -109,14 +105,6 @@ public class MultiParentClassLoader extends URLClassLoader {
             newParentsArray[i] = parent;
         }
         return newParentsArray;
-    }
-
-    /**
-     * Gets the name of this class loader.
-     * @return the name of this class loader
-     */
-    public String getName() {
-        return name;
     }
 
     /**
@@ -184,6 +172,10 @@ public class MultiParentClassLoader extends URLClassLoader {
     }
 
     public String toString() {
-        return "[" + getClass().getName() + " name=" + name + "]";
+        return "[" + getClass().getName() + ":" +
+                " name=" + getName() +
+                " urls=" + Arrays.asList(getURLs()) +
+                " parents=" + Arrays.asList(parents) +
+                "]";
     }
 }

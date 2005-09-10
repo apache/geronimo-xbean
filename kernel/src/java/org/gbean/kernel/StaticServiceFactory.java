@@ -45,6 +45,10 @@ public class StaticServiceFactory implements ServiceFactory {
         this.service = service;
     }
 
+    public Class[] getTypes() {
+        return new Class[]{service.getClass()};
+    }
+
     /**
      * {@inheritDoc}
      */

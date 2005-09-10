@@ -32,6 +32,7 @@ public class ServiceNotFoundException extends Exception {
      * @param serviceName the name of the service that was not found.
      */
     public ServiceNotFoundException(ServiceName serviceName) {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         this.serviceName = serviceName;
     }
 

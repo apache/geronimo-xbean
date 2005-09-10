@@ -33,6 +33,7 @@ public class KernelAlreadyExistsException extends RuntimeException {
      */
     public KernelAlreadyExistsException(String name) {
         super("A kernel is already registered with the name " + name);
+        if (name == null) throw new NullPointerException("name is null");
         this.name = name;
     }
 

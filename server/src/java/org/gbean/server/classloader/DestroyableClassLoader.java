@@ -14,24 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel.standard;
-
-import org.gbean.kernel.Kernel;
-import org.gbean.kernel.KernelFactory;
+package org.gbean.server.classloader;
 
 /**
- * The kernel factory for StandardKernel instances.
+ * DestroyableClassLoader is a mixin interface for a ClassLoader that add a destroy method to propertly cleanup a
+ * classloader then dereferenced by the server.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class StandardKernelFactory extends KernelFactory {
+public interface DestroyableClassLoader {
     /**
-     * {@inheritDoc}
+     * Destroys the clasloader releasing all resources.  After this mehtod is called, the class loader will no longer
+     * load any classes or resources.
      */
-    protected Kernel createKernelInternal(String name) {
-        if (name == null) throw new NullPointerException("name is null");
-        return new StandardKernel(name);
-    }
+    void destroy();
 }

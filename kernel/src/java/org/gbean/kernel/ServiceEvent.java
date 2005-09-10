@@ -16,7 +16,6 @@
  */
 package org.gbean.kernel;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -45,59 +44,24 @@ public class ServiceEvent {
      * @param serviceFactory the factory for the service
      * @param classLoader the class loader for the service
      * @param service the service instance if it exists
+     * @param cause the exception that caused the event if this is an exception event
+     * @param unsatisfiedConditions the unsatified conditions that caused the event if this is a waiting event
      */
-    public ServiceEvent(long eventId, Kernel kernel, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader, Object service) {
+    public ServiceEvent(long eventId, Kernel kernel, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader, Object service, Throwable cause, Set unsatisfiedConditions) {
+        if (kernel == null) throw new NullPointerException("kernel is null");
+        if (serviceName == null) throw new NullPointerException("name is null");
+        if (serviceFactory == null) throw new NullPointerException("serviceFactory is null");
+        if (classLoader == null) throw new NullPointerException("classLoader is null");
+        if (unsatisfiedConditions != null && cause != null) throw new IllegalArgumentException("Either unsatisfiedConditions or cause must be null");
+        if (cause != null && service != null) throw new IllegalArgumentException("A ServiceEvent can not carry both a cause and a service");
         this.eventId = eventId;
         this.kernel = kernel;
         this.serviceName = serviceName;
         this.serviceFactory = serviceFactory;
         this.classLoader = classLoader;
         this.service = service;
-        cause = null;
-        unsatisfiedConditions = null;
-    }
-
-    /**
-     * Creates an error service event.
-     *
-     * @param eventId the sequence number for this event
-     * @param kernel the kernel in which the service is registered
-     * @param serviceName the name of the service
-     * @param serviceFactory the factory for the service
-     * @param classLoader the class loader for the service
-     * @param cause the error that occured
-     */
-    public ServiceEvent(long eventId, Kernel kernel, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader, Throwable cause) {
-        this.eventId = eventId;
-        this.kernel = kernel;
-        this.serviceName = serviceName;
-        this.serviceFactory = serviceFactory;
-        this.classLoader = classLoader;
         this.cause = cause;
-        service = null;
-        unsatisfiedConditions = null;
-    }
-
-    /**
-     * Creates a waiting service event.
-     *
-     * @param eventId the sequence number for this event
-     * @param kernel the kernel in which the service is registered
-     * @param serviceName the name of the service
-     * @param serviceFactory the factory for the service
-     * @param classLoader the class loader for the service
-     * @param service the service instance if it exists
-     * @param unsatisfiedConditions the unsatified conditions
-     */
-    public ServiceEvent(long eventId, Kernel kernel, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader, Object service, Set unsatisfiedConditions) {
-        this.eventId = eventId;
-        this.kernel = kernel;
-        this.serviceName = serviceName;
-        this.serviceFactory = serviceFactory;
-        this.classLoader = classLoader;
-        this.service = service;
-        this.unsatisfiedConditions = Collections.unmodifiableSet(unsatisfiedConditions);
-        cause = null;
+        this.unsatisfiedConditions = unsatisfiedConditions;
     }
 
     /**

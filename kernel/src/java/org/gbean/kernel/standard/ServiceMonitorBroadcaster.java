@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel;
+package org.gbean.kernel.standard;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.gbean.kernel.ServiceMonitor;
+import org.gbean.kernel.KernelMonitor;
+import org.gbean.kernel.ServiceName;
+import org.gbean.kernel.ServiceEvent;
+import org.gbean.kernel.KernelErrorsError;
 
 /**
  * The ServiceMonitorBroadcaster broadcasts kernel events to registered service monitors.
@@ -50,6 +56,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
      * @param kernelMonitor the monitor to notify when an error occurs while notifying the registered service monitors
      */
     public ServiceMonitorBroadcaster(KernelMonitor kernelMonitor) {
+        if (kernelMonitor == null) throw new NullPointerException("kernelMonitor is null");
         this.kernelMonitor = kernelMonitor;
     }
 
@@ -62,6 +69,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
      * @param serviceName the unique name of the service to monitor or null to monitor all services
      */
     public void addServiceMonitor(ServiceMonitor serviceMonitor, ServiceName serviceName) {
+        if (serviceMonitor == null) throw new NullPointerException("serviceMonitor is null");
         synchronized (serviceMonitors) {
             Set monitors = (Set) serviceMonitors.get(serviceName);
             if (monitors == null) {
@@ -78,6 +86,7 @@ public class ServiceMonitorBroadcaster implements ServiceMonitor {
      * @param serviceMonitor the service monitor to remove
      */
     public void removeServiceMonitor(ServiceMonitor serviceMonitor) {
+        if (serviceMonitor == null) throw new NullPointerException("serviceMonitor is null");
         synchronized (serviceMonitors) {
             for (Iterator iterator = serviceMonitors.values().iterator(); iterator.hasNext();) {
                 Set monitors = (Set) iterator.next();

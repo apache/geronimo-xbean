@@ -40,6 +40,8 @@ public class UnsatisfiedConditionsException extends Exception {
      */
     public UnsatisfiedConditionsException(String message, ServiceName serviceName, Set unsatisfiedConditions) {
         super(message + ": serviceName=" + serviceName + ": unsatisfiedConditions=" + unsatisfiedConditions);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (unsatisfiedConditions == null) throw new NullPointerException("unsatisfiedConditions is null");
         this.serviceName = serviceName;
         this.unsatisfiedConditions = Collections.unmodifiableSet(unsatisfiedConditions);
     }

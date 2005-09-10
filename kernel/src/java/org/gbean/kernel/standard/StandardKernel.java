@@ -16,6 +16,10 @@
  */
 package org.gbean.kernel.standard;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import edu.emory.mathcs.backport.java.util.concurrent.Executor;
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
@@ -24,11 +28,9 @@ import org.gbean.kernel.IllegalServiceStateException;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.KernelErrorsError;
 import org.gbean.kernel.KernelMonitor;
-import org.gbean.kernel.KernelMonitorBroadcaster;
 import org.gbean.kernel.ServiceAlreadyExistsException;
 import org.gbean.kernel.ServiceFactory;
 import org.gbean.kernel.ServiceMonitor;
-import org.gbean.kernel.ServiceMonitorBroadcaster;
 import org.gbean.kernel.ServiceName;
 import org.gbean.kernel.ServiceNotFoundException;
 import org.gbean.kernel.ServiceRegistrationException;
@@ -92,6 +94,11 @@ public class StandardKernel implements Kernel {
      * @param timeoutUnits the unit of measure for the timeoutDuration
      */
     public StandardKernel(String kernelName, Executor serviceExecutor, long timeoutDuration, TimeUnit timeoutUnits) {
+        if (kernelName == null) throw new NullPointerException("kernelName is null");
+        if (kernelName.length() ==0) throw new IllegalArgumentException("kernelName must be atleast one character long");
+        if (serviceExecutor == null) throw new NullPointerException("serviceExecutor is null");
+        if (timeoutUnits == null) throw new NullPointerException("timeoutUnits is null");
+
         this.kernelName = kernelName;
         serviceManagerFactory = new ServiceManagerFactory(this, serviceMonitor, serviceExecutor, timeoutDuration, timeoutUnits);
         serviceManagerRegistry = new ServiceManagerRegistry(serviceManagerFactory);
@@ -141,6 +148,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void unregisterService(ServiceName serviceName) throws ServiceNotFoundException, ServiceRegistrationException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         unregisterService(serviceName, StopStrategies.SYNCHRONOUS);
     }
 
@@ -173,6 +181,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public ServiceState getServiceState(ServiceName serviceName) throws ServiceNotFoundException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         return serviceManager.getState();
     }
@@ -181,6 +190,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public long getServiceStartTime(ServiceName serviceName) throws ServiceNotFoundException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         return serviceManager.getStartTime();
     }
@@ -189,6 +199,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void startService(ServiceName serviceName) throws ServiceNotFoundException, IllegalServiceStateException, UnsatisfiedConditionsException, Exception {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         startService(serviceName, false, StartStrategies.SYNCHRONOUS);
     }
 
@@ -196,6 +207,8 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void startService(ServiceName serviceName, StartStrategy startStrategy) throws ServiceNotFoundException, IllegalServiceStateException, UnsatisfiedConditionsException, Exception {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (startStrategy == null) throw new NullPointerException("startStrategy is null");
         startService(serviceName, false, startStrategy);
     }
 
@@ -203,6 +216,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void startServiceRecursive(ServiceName serviceName) throws ServiceNotFoundException, IllegalServiceStateException, UnsatisfiedConditionsException, Exception {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         startService(serviceName, true, StartStrategies.SYNCHRONOUS);
     }
 
@@ -210,6 +224,8 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void startServiceRecursive(ServiceName serviceName, StartStrategy startStrategy) throws ServiceNotFoundException, IllegalServiceStateException, UnsatisfiedConditionsException, Exception {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (startStrategy == null) throw new NullPointerException("startStrategy is null");
         startService(serviceName, true, startStrategy);
     }
 
@@ -241,6 +257,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void stopService(ServiceName serviceName) throws ServiceNotFoundException, UnsatisfiedConditionsException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         stopService(serviceName, StopStrategies.SYNCHRONOUS);
     }
 
@@ -248,6 +265,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void stopService(ServiceName serviceName, StopStrategy stopStrategy) throws ServiceNotFoundException, UnsatisfiedConditionsException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         if (stopStrategy == null) throw new NullPointerException("stopStrategy is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         serviceManager.stop(stopStrategy);
@@ -257,6 +275,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public boolean isServiceEnabled(ServiceName serviceName) throws ServiceNotFoundException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         ServiceFactory serviceFactory = serviceManager.getServiceFactory();
         return serviceFactory.isEnabled();
@@ -266,6 +285,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void setServiceEnabled(ServiceName serviceName, boolean enabled) throws ServiceNotFoundException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         ServiceFactory serviceFactory = serviceManager.getServiceFactory();
         serviceFactory.setEnabled(enabled);
@@ -275,6 +295,7 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public Object getService(ServiceName serviceName) throws ServiceNotFoundException, IllegalArgumentException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         return serviceManager.getService();
     }
@@ -282,7 +303,34 @@ public class StandardKernel implements Kernel {
     /**
      * {@inheritDoc}
      */
+    public Object getService(Class type) {
+        if (type == null) throw new NullPointerException("type is null");
+        if (!isRunning()) {
+            return null;
+        }
+
+        Object service = serviceManagerRegistry.getService(type);
+        return service;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public List getServices(Class type) {
+        if (type == null) throw new NullPointerException("type is null");
+        if (!isRunning()) {
+            return null;
+        }
+
+        List services = serviceManagerRegistry.getServices(type);
+        return services;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public ServiceFactory getServiceFactory(ServiceName serviceName) throws ServiceNotFoundException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         return serviceManager.getServiceFactory();
     }
@@ -290,13 +338,44 @@ public class StandardKernel implements Kernel {
     /**
      * {@inheritDoc}
      */
+    public ServiceFactory getServiceFactory(Class type) {
+        if (type == null) throw new NullPointerException("type is null");
+        if (!isRunning()) {
+            return null;
+        }
+
+        ServiceManager serviceManager = serviceManagerRegistry.getServiceManager(type);
+        return serviceManager.getServiceFactory();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public List getServiceFactories(Class type) {
+        if (type == null) throw new NullPointerException("type is null");
+        if (!isRunning()) {
+            return null;
+        }
+
+        List serviceManagers = serviceManagerRegistry.getServiceManagers(type);
+        List serviceFactories = new ArrayList(serviceManagers.size());
+        for (Iterator iterator = serviceManagers.iterator(); iterator.hasNext();) {
+            ServiceManager serviceManager = (ServiceManager) iterator.next();
+            serviceFactories.add(serviceManager.getServiceFactory());
+        }
+        return serviceFactories;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public ClassLoader getClassLoaderFor(ServiceName serviceName) throws ServiceNotFoundException {
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         ServiceManager serviceManager = getServiceManager(serviceName);
         return serviceManager.getClassLoader();
     }
 
     private ServiceManager getServiceManager(ServiceName serviceName) throws ServiceNotFoundException {
-        if (serviceName == null) throw new NullPointerException("serviceName is null");
         if (!isRunning()) {
             throw new ServiceNotFoundException(serviceName);
         }
@@ -310,7 +389,9 @@ public class StandardKernel implements Kernel {
      */
     public void addKernelMonitor(KernelMonitor kernelMonitor) {
         if (kernelMonitor == null) throw new NullPointerException("kernelMonitor is null");
-        checkKernelState();
+        if (!running.get()) {
+            throw new IllegalStateException("Kernel is stopped");
+        }
         this.kernelMonitor.addKernelMonitor(kernelMonitor);
     }
 
@@ -327,7 +408,9 @@ public class StandardKernel implements Kernel {
      */
     public void addServiceMonitor(ServiceMonitor serviceMonitor) {
         if (serviceMonitor == null) throw new NullPointerException("serviceMonitor is null");
-        checkKernelState();
+        if (!running.get()) {
+            throw new IllegalStateException("Kernel is stopped");
+        }
         addServiceMonitor(serviceMonitor, null);
     }
 
@@ -336,8 +419,11 @@ public class StandardKernel implements Kernel {
      */
     public void addServiceMonitor(ServiceMonitor serviceMonitor, ServiceName serviceName) {
         if (serviceMonitor == null) throw new NullPointerException("serviceMonitor is null");
-        checkKernelState();
-        this.serviceMonitor.removeServiceMonitor(serviceMonitor);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
+        if (!running.get()) {
+            throw new IllegalStateException("Kernel is stopped");
+        }
+        this.serviceMonitor.addServiceMonitor(serviceMonitor, serviceName);
     }
 
     /**
@@ -346,11 +432,5 @@ public class StandardKernel implements Kernel {
     public void removeServiceMonitor(ServiceMonitor serviceMonitor) {
         if (serviceMonitor == null) throw new NullPointerException("serviceMonitor is null");
         this.serviceMonitor.removeServiceMonitor(serviceMonitor);
-    }
-
-    private void checkKernelState() {
-        if (!running.get()) {
-            throw new IllegalStateException("Kernel is stopped");
-        }
     }
 }

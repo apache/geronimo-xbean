@@ -28,6 +28,16 @@ import java.util.Set;
  */
 public interface ServiceFactory {
     /**
+     * Gets the types of the service this service factory will create.  These types is used to index the service within
+     * the kernel.  It is a start error to return an object from create service that is not an instance of every type.
+     * This is the only type used to index the service, so if the service factory returns a subclass of this type from
+     * createService, the subtypes will now be reflected in the index.
+     *
+     * @return the type of the service this service factory will create
+     */
+    Class[] getTypes();
+
+    /**
      * A restartable service can be started and stopped repeatedly in the kernel.  A service that is not restartable
      * immediately enters the RUNNING state when registered with the kernel, and can not be started or stopped.
      *

@@ -14,24 +14,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel.standard;
+package org.gbean.server.propertyeditor;
 
-import org.gbean.kernel.Kernel;
-import org.gbean.kernel.KernelFactory;
+import java.beans.PropertyEditorSupport;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
- * The kernel factory for StandardKernel instances.
+ * InetAddressEditor is a java beans property editor that can convert an URI to and from a String.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class StandardKernelFactory extends KernelFactory {
-    /**
-     * {@inheritDoc}
-     */
-    protected Kernel createKernelInternal(String name) {
-        if (name == null) throw new NullPointerException("name is null");
-        return new StandardKernel(name);
+public class URIEditor extends PropertyEditorSupport {
+    public void setAsText(String value) throws IllegalArgumentException {
+        try {
+            setValue(new URI(value));
+        } catch (URISyntaxException e) {
+            throw (IllegalArgumentException) new IllegalArgumentException().initCause(e);
+        }
+    }
+
+    public String getAsText() {
+        URI uri = (URI) getValue();
+        String text = uri.toString();
+        return text;
     }
 }

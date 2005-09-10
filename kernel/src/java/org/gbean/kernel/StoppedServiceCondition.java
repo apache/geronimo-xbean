@@ -36,6 +36,7 @@ public class StoppedServiceCondition implements ServiceCondition {
      * @param dependency the service that must be stopped
      */
     public StoppedServiceCondition(ServiceName dependency) {
+        if (dependency == null) throw new NullPointerException("dependency is null");
         this.dependency = dependency;
     }
 

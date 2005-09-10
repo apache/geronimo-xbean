@@ -34,6 +34,7 @@ public class IllegalServiceStateException extends Exception {
      */
     public IllegalServiceStateException(String message, ServiceName serviceName) {
         super(message + ": " + serviceName);
+        if (serviceName == null) throw new NullPointerException("serviceName is null");
         this.serviceName = serviceName;
     }
 

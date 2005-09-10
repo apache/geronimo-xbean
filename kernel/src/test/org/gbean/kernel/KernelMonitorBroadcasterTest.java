@@ -18,6 +18,7 @@ package org.gbean.kernel;
 
 import junit.framework.TestCase;
 import org.gbean.kernel.standard.StandardKernel;
+import org.gbean.kernel.standard.KernelMonitorBroadcaster;
 
 /**
  * Tests the KernelMonitorBroadcaster.
@@ -32,7 +33,10 @@ public class KernelMonitorBroadcasterTest extends TestCase {
             new StandardKernel("test"),
             new StringServiceName("service-name"),
             new StaticServiceFactory(new Object()),
-            ClassLoader.getSystemClassLoader(), null);
+            ClassLoader.getSystemClassLoader(), 
+            null,
+            null,
+            null);
     private static final Throwable THROWABLE = new Throwable("test throwable");
 
     private static final int MONITOR_COUNT = 4;

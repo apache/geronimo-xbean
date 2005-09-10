@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.gbean.kernel;
+package org.gbean.kernel.standard;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +23,14 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import org.gbean.kernel.standard.StandardKernel;
+import org.gbean.kernel.KernelErrorsError;
+import org.gbean.kernel.KernelMonitor;
+import org.gbean.kernel.NullServiceMonitor;
+import org.gbean.kernel.ServiceEvent;
+import org.gbean.kernel.ServiceMonitor;
+import org.gbean.kernel.ServiceName;
+import org.gbean.kernel.StaticServiceFactory;
+import org.gbean.kernel.StringServiceName;
 
 /**
  * Tests ServiceMonitorBroadcaster.
@@ -263,11 +270,11 @@ public class ServiceMonitorBroadcasterTest extends TestCase {
 
     private void assertNotificationCorrect(int serviceId, int notificationType) {
         for (Iterator iterator = expectedMonitors[serviceId].iterator(); iterator.hasNext();) {
-            MockServiceMonitor mockServiceMonitor = ((MockServiceMonitor) iterator.next());
+            MockServiceMonitor mockServiceMonitor = (MockServiceMonitor) iterator.next();
             assertEquals(notificationType, mockServiceMonitor.getCalled());
         }
         for (Iterator iterator = unexpectedMonitors[serviceId].iterator(); iterator.hasNext();) {
-            MockServiceMonitor mockServiceMonitor = ((MockServiceMonitor) iterator.next());
+            MockServiceMonitor mockServiceMonitor = (MockServiceMonitor) iterator.next();
             assertEquals(0, mockServiceMonitor.getCalled());
         }
         assertTrue("Unfired service errors " + kernelMonitor.getExpectedServiceMonitors(), kernelMonitor.getExpectedServiceMonitors().isEmpty());
@@ -361,6 +368,8 @@ public class ServiceMonitorBroadcasterTest extends TestCase {
                 serviceName,
                 SERVICE_FACTORY,
                 SYSTEM_CLASS_LOADER,
+                null,
+                null,
                 null);
     }
 
