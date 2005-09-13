@@ -17,21 +17,31 @@
 package org.gbean.kernel;
 
 /**
- * @version $Rev$ $Date$
+ * Signifies that an attempt was made to register a service using a name that already has a service registered.
+ *
+ * @author Dain Sundstrom
+ * @version $Id$
+ * @since 1.0
  */
-public class ServiceAlreadyExistsException extends KernelException {
-    public ServiceAlreadyExistsException() {
+public class ServiceAlreadyExistsException extends Exception {
+    private final ServiceName serviceName;
+
+    /**
+     * Creates a ServiceAlreadyExistsException for the specified service name.
+     *
+     * @param serviceName the name of the service that already exists
+     */
+    public ServiceAlreadyExistsException(ServiceName serviceName) {
+        if (serviceName == null) throw new NullPointerException("name is null");
+        this.serviceName = serviceName;
     }
 
-    public ServiceAlreadyExistsException(String message) {
-        super(message);
-    }
-
-    public ServiceAlreadyExistsException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ServiceAlreadyExistsException(Throwable cause) {
-        super(cause);
+    /**
+     * Gets the name of the service that caused this exception.
+     *
+     * @return the service name
+     */
+    public ServiceName getServiceName() {
+        return serviceName;
     }
 }

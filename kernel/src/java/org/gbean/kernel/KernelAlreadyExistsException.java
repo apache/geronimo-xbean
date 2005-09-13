@@ -17,31 +17,32 @@
 package org.gbean.kernel;
 
 /**
- * A service with the specified name was not found.
+ * Indicates that a kernel is already registerd with the KernelFactory under the specified name.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ServiceNotFoundException extends Exception {
-    private final ServiceName serviceName;
+public class KernelAlreadyExistsException extends RuntimeException {
+    private final String name;
 
     /**
-     * Creates a ServiceNotFoundException for the specified service name.
+     * Creates a KernelAlreadyExistsException using the specified name.
      *
-     * @param serviceName the name of the service that was not found.
+     * @param name the name of the kernel that was alredy registered
      */
-    public ServiceNotFoundException(ServiceName serviceName) {
-        if (serviceName == null) throw new NullPointerException("serviceName is null");
-        this.serviceName = serviceName;
+    public KernelAlreadyExistsException(String name) {
+        super("A kernel is already registered with the name " + name);
+        if (name == null) throw new NullPointerException("name is null");
+        this.name = name;
     }
 
     /**
-     * Gets the name of the service that was not found.
+     * Gets the name of the kernel that already existed.
      *
-     * @return the the name of the service that was not found
+     * @return the name of the kernel that already existed.
      */
-    public ServiceName getServiceName() {
-        return serviceName;
+    public String getName() {
+        return name;
     }
 }

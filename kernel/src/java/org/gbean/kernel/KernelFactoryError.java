@@ -17,22 +17,30 @@
 package org.gbean.kernel;
 
 /**
- * @version $Rev$ $Date$
+ * A problem occured while creating or using the kernel factory.  This error indicates that the kernel factory is
+ * misconfigured or there is a programming error in the use of the kernel factory.
+ *
+ * @author Dain Sundstrom
+ * @version $Id$
+ * @since 1.0
  */
 public class KernelFactoryError extends Error {
-    public KernelFactoryError() {
-        super();
-    }
-
+    /**
+     * Creates a KernelFactoryError using the specified message.
+     *
+     * @param message information about the cause of this error
+     */
     public KernelFactoryError(String message) {
         super(message);
     }
 
+    /**
+     * Creates a KernelFactoryError using the specified message and cause.
+     *
+     * @param message information about the cause of this error
+     * @param cause the cause of this error
+     */
     public KernelFactoryError(String message, Throwable cause) {
         super(message, cause);
-    }
-
-    public KernelFactoryError(Throwable cause) {
-        super(cause);
     }
 }

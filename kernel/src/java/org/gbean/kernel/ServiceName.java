@@ -16,31 +16,57 @@
  */
 package org.gbean.kernel;
 
-import java.util.Properties;
-import javax.management.ObjectName;
-import javax.management.MalformedObjectNameException;
-
 /**
- * @version $Revision$ $Date$
+ * The immutable unique name of a service.  A proper implementation of ServiceName must have a correct implementation of
+ * equals and hashCode.  A ServiceName should have one constructor that takes a single String and the toString method
+ * should return a String that can be used in the String constructor.  This means the following code should work:
+ * <p><blockquote><pre>
+ * Constructor constructor = serviceName.getClass().getConstructor(new Class[] {String.class});
+ * ServiceName name = constructor.newInstance(new Object[] {serviceName.toString()});
+ * </pre></blockquote>
+ *
+ * @author Dain Sundstrom
+ * @version $Id$
+ * @since 1.0
  */
-public final class ServiceName {
-    private ServiceName() {
-    }
+public interface ServiceName {
+    /**
+     * A service name must properly implement hashCode.  For example,
+     * <p><blockquote><pre>
+     * public int hashCode() {
+     *     int result = 17;
+     *     result = 37 * result + integer;
+     *     result = 37 * result + (object == null ? 0 : object.hashCode());
+     *     return result;
+     * }
+     * </pre></blockquote>
+     *
+     * @return the hash code
+     */
+    int hashCode();
 
-    public static ObjectName createName(String name) {
-        try {
-            return new ObjectName(name);
-        } catch (MalformedObjectNameException e) {
-            throw new MalformedServiceNameException(name);
-        }
-    }
+    /**
+     * A service name must property implement equals.  For example,
+     * <p><blockquote><pre>
+     * public boolean equals(Object obj) {
+     *     if (!(obj instanceof MyServiceName)) {
+     *         return false;
+     *     }
+     *     MyServiceName name = (MyServiceName) obj;
+     *     return integer == name.integer &&
+     *             (object == null ? name.object == null : object.equals(name.object));
+     * }
+     * </pre></blockquote>
+     *
+     * @param object some object
+     * @return true if the object is equivalent to this service name; false otherwise
+     */
+    boolean equals(Object object);
 
-    public static ObjectName createName(String domainName, Properties properties) {
-        try {
-            return new ObjectName(domainName, properties);
-        } catch (MalformedObjectNameException e) {
-            // todo more descriptive message here
-            throw new MalformedServiceNameException("");
-        }
-    }
+    /**
+     * A service name should return a string from toString that can be used in a String constructor.
+     *
+     * @return the connonical form of this name
+     */
+    String toString();
 }

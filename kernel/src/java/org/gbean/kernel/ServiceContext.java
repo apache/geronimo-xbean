@@ -17,31 +17,31 @@
 package org.gbean.kernel;
 
 /**
- * A service with the specified name was not found.
+ * This class contains context information available to a service factory during service construction and destruction.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ServiceNotFoundException extends Exception {
-    private final ServiceName serviceName;
+public interface ServiceContext {
+    /**
+     * Gets the kernel in which this service is registered.
+     *
+     * @return the kernel in which this service is registered
+     */
+    Kernel getKernel();
 
     /**
-     * Creates a ServiceNotFoundException for the specified service name.
+     * Gets the unique name of the service in the kernel.
      *
-     * @param serviceName the name of the service that was not found.
+     * @return the unique name of this service in the kernel
      */
-    public ServiceNotFoundException(ServiceName serviceName) {
-        if (serviceName == null) throw new NullPointerException("serviceName is null");
-        this.serviceName = serviceName;
-    }
+    ServiceName getServiceName();
 
     /**
-     * Gets the name of the service that was not found.
+     * Gets the class loader for this service.
      *
-     * @return the the name of the service that was not found
+     * @return the class loader for this service
      */
-    public ServiceName getServiceName() {
-        return serviceName;
-    }
+    ClassLoader getClassLoader();
 }

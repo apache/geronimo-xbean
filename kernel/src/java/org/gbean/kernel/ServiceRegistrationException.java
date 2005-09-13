@@ -17,29 +17,31 @@
 package org.gbean.kernel;
 
 /**
- * A service with the specified name was not found.
+ * A problem occured while attempting to register or unregister an exception.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ServiceNotFoundException extends Exception {
+public class ServiceRegistrationException extends Exception {
     private final ServiceName serviceName;
 
     /**
-     * Creates a ServiceNotFoundException for the specified service name.
+     * Creates a ServiceRegistrationException for the specified service caused by the specified Throwable.
      *
-     * @param serviceName the name of the service that was not found.
+     * @param serviceName the name of the service that was being registered or unregistered.
+     * @param cause the reason the registeration problem occured
      */
-    public ServiceNotFoundException(ServiceName serviceName) {
+    public ServiceRegistrationException(ServiceName serviceName, Throwable cause) {
+        super(cause);
         if (serviceName == null) throw new NullPointerException("serviceName is null");
         this.serviceName = serviceName;
     }
 
     /**
-     * Gets the name of the service that was not found.
+     * Gets the name of the service that had a registration problem.
      *
-     * @return the the name of the service that was not found
+     * @return the the name of the service that had a registration problem
      */
     public ServiceName getServiceName() {
         return serviceName;

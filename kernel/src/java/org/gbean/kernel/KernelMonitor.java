@@ -17,31 +17,20 @@
 package org.gbean.kernel;
 
 /**
- * A service with the specified name was not found.
+ * This interface defines the interface used to monitor kernel events.  A KernelMonitor can be registered with the
+ * kernel using the {@link Kernel#addKernelMonitor(KernelMonitor)} method.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ServiceNotFoundException extends Exception {
-    private final ServiceName serviceName;
-
+public interface KernelMonitor {
     /**
-     * Creates a ServiceNotFoundException for the specified service name.
+     * An error occured with notifiying a service monitor.
      *
-     * @param serviceName the name of the service that was not found.
+     * @param serviceMonitor the monitor that threw the exception
+     * @param serviceEvent the event that was being processed
+     * @param throwable the exception that was thrown
      */
-    public ServiceNotFoundException(ServiceName serviceName) {
-        if (serviceName == null) throw new NullPointerException("serviceName is null");
-        this.serviceName = serviceName;
-    }
-
-    /**
-     * Gets the name of the service that was not found.
-     *
-     * @return the the name of the service that was not found
-     */
-    public ServiceName getServiceName() {
-        return serviceName;
-    }
+    void serviceNotificationError(ServiceMonitor serviceMonitor, ServiceEvent serviceEvent, Throwable throwable);
 }

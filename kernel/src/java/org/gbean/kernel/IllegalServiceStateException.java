@@ -17,29 +17,31 @@
 package org.gbean.kernel;
 
 /**
- * A service with the specified name was not found.
+ * Indicates an operation was called on a service in a state that does not allow that operation to be called.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ServiceNotFoundException extends Exception {
+public class IllegalServiceStateException extends Exception {
     private final ServiceName serviceName;
 
     /**
-     * Creates a ServiceNotFoundException for the specified service name.
+     * Creates an IllegalServiceStateException.
      *
-     * @param serviceName the name of the service that was not found.
+     * @param message information about why the service is in an illegal state
+     * @param serviceName the name of the service
      */
-    public ServiceNotFoundException(ServiceName serviceName) {
+    public IllegalServiceStateException(String message, ServiceName serviceName) {
+        super(message + ": " + serviceName);
         if (serviceName == null) throw new NullPointerException("serviceName is null");
         this.serviceName = serviceName;
     }
 
     /**
-     * Gets the name of the service that was not found.
+     * Gets the name of the service that caused this exception.
      *
-     * @return the the name of the service that was not found
+     * @return the service name
      */
     public ServiceName getServiceName() {
         return serviceName;

@@ -16,29 +16,43 @@
 -->
 <project>
     <!-- the version of maven's project object model -->
-    <pomVersion>3</pomVersion>
+    <modelVersion>4.0.0</modelVersion>
 
     <name>GBean :: Kernel</name>
-    <id>gbean-kernel</id>
+    <artifactId>gbean-kernel</artifactId>
     <groupId>gbean</groupId>
-    <currentVersion>1.0-SNAPSHOT</currentVersion>
+    <version>1.0-alpha-1-SNAPSHOT</version>
     <organization>
         <name>GBean.org</name>
         <url>http://gbean.org</url>
     </organization>
 
-    <package>org.gbean</package>
-
-    <shortDescription>GBean: kernel for containers</shortDescription>
+    <repositories>
+        <repository>
+            <id>openejb</id>
+            <name>OpenEJB Repo</name>
+            <url>http://www.openejb.org/maven</url>
+            <layout>legacy</layout>
+        </repository>
+    </repositories>
 
     <description>
-        GBean is a kernel architecture and server for ioc containers such as spring.
+    GBean is a kernel architecture and server for ioc containers such as spring.
     </description>
 
     <url>http://www.gbean.org/</url>
 
-    <siteAddress>www.gbean.org</siteAddress>
-    <siteDirectory>/home/projects/gbean/public_html/maven</siteDirectory>
+    <distributionManagement>
+        <repository>
+            <id>repo1</id>
+            <name>Maven Central Repository</name>
+            <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
+        </repository>
+        <site>
+            <id>website</id>
+            <url>scp://minotaur.apache.org/www/maven.apache.org/maven2/</url>
+        </site>
+    </distributionManagement>
 
     <mailingLists>
         <mailingList>
@@ -58,6 +72,17 @@
         </mailingList>
     </mailingLists>
 
+    <developers>
+        <developer>
+            <name>Dain Sundstrom</name>
+            <id>dain</id>
+            <email>dain@iq80.com</email>
+            <roles>
+                <role>Despot</role>
+            </roles>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>backport-util-concurrent</groupId>
@@ -65,40 +90,24 @@
             <version>2.0_01_pd</version>
         </dependency>
         <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <version>2.1_2</version>
-            <type>test</type>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
         </dependency>
     </dependencies>
 
     <build>
-        <sourceDirectory>src/java</sourceDirectory>
-        <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
-        <unitTest>
-            <includes>
-                <include>**/*Test.java</include>
-            </includes>
-        </unitTest>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.4</source>
+                    <target>1.4</target>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
-
-    <reports>
-        <!-- <report>maven-license-plugin</report> -->
-        <!-- <report>maven-checkstyle-plugin</report>-->
-        <!-- <report>maven-pmd-plugin</report> -->
-        <!-- <report>maven-simian-plugin</report> -->
-        <!-- <report>maven-jdepend-plugin</report> -->
-        <!-- <report>maven-changelog-plugin</report> -->
-        <!-- <report>maven-statcvs-plugin</report> -->
-        <!-- <report>maven-file-activity-plugin</report> -->
-        <!-- <report>maven-developer-activity-plugin</report> -->
-        <report>maven-jxr-plugin</report>
-        <report>maven-javadoc-plugin</report>
-        <report>maven-junit-report-plugin</report>
-        <!-- <report>maven-faq-plugin</report> -->
-        <!-- <report>maven-clover-plugin</report>-->
-        <!-- <report>maven-changes-plugin</report>-->
-    </reports>
 
 </project>
 

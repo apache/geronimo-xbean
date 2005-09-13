@@ -17,29 +17,32 @@
 package org.gbean.kernel;
 
 /**
- * A service with the specified name was not found.
+ * Signafies that there was a problem starting a service and the StartStrategies would like the kernel to
+ * unregister the service.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ServiceNotFoundException extends Exception {
+public class UnregisterServiceException extends Exception {
     private final ServiceName serviceName;
 
     /**
-     * Creates a ServiceNotFoundException for the specified service name.
+     * Creates a UnregisterServiceException for the specified service name.
      *
-     * @param serviceName the name of the service that was not found.
+     * @param serviceName the name of the service that is to be unregistered
+     * @param cause the reason we are unregistering the service
      */
-    public ServiceNotFoundException(ServiceName serviceName) {
+    public UnregisterServiceException(ServiceName serviceName, Throwable cause) {
+        super(cause);
         if (serviceName == null) throw new NullPointerException("serviceName is null");
         this.serviceName = serviceName;
     }
 
     /**
-     * Gets the name of the service that was not found.
+     * Gets the name of the service that is to be unregistered.
      *
-     * @return the the name of the service that was not found
+     * @return the service name
      */
     public ServiceName getServiceName() {
         return serviceName;

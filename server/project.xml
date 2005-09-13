@@ -18,8 +18,8 @@
     <!-- the version of maven's project object model -->
     <pomVersion>3</pomVersion>
 
-    <name>GBean :: Kernel</name>
-    <id>gbean-kernel</id>
+    <name>GBean :: Server</name>
+    <id>gbean-server</id>
     <groupId>gbean</groupId>
     <currentVersion>1.0-SNAPSHOT</currentVersion>
     <organization>
@@ -29,10 +29,10 @@
 
     <package>org.gbean</package>
 
-    <shortDescription>GBean: kernel for containers</shortDescription>
+    <shortDescription>GBean: generic server components</shortDescription>
 
     <description>
-        GBean is a kernel architecture and server for ioc containers such as spring.
+        The GBean server module contains generic services useful in a server environment.
     </description>
 
     <url>http://www.gbean.org/</url>
@@ -69,6 +69,16 @@
             <artifactId>cglib-nodep</artifactId>
             <version>2.1_2</version>
             <type>test</type>
+        </dependency>
+        <dependency>
+            <groupId>gbean</groupId>
+            <artifactId>gbean-kernel</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>mx4j</groupId>
+            <artifactId>mx4j</artifactId>
+            <version>3.0.1</version>
         </dependency>
     </dependencies>
 
