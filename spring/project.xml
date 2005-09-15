@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+* Copyright 2005 the original author or authors.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+-->
+<project>
+    <!-- the version of maven's project object model -->
+    <pomVersion>3</pomVersion>
+
+    <name>XBean :: Spring</name>
+    <id>xbean-spring</id>
+    <groupId>xbean</groupId>
+    <currentVersion>1.0-SNAPSHOT</currentVersion>
+    <organization>
+        <name>XBean.org</name>
+        <url>http://xbean.org</url>
+    </organization>
+
+    <package>org.xbean</package>
+
+    <shortDescription>XBean: Spring Adaptor</shortDescription>
+
+    <description>
+        XBean Spring Adaptor adds some enhancements to Spring such as custom XML languages.
+    </description>
+
+    <url>http://www.xbean.org/</url>
+
+    <siteAddress>www.xbean.org</siteAddress>
+    <siteDirectory>/home/projects/xbean/public_html/maven</siteDirectory>
+
+    <mailingLists>
+        <mailingList>
+            <name>xbean developers</name>
+            <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
+        </mailingList>
+        <mailingList>
+            <name>xbean users</name>
+            <subscribe>mailto:user-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
+        </mailingList>
+        <mailingList>
+            <name>xbean source control messages</name>
+            <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
+        </mailingList>
+    </mailingLists>
+
+    <dependencies>
+        <dependency>
+            <groupId>springframework</groupId>
+            <artifactId>spring</artifactId>
+            <version>1.2.2</version>
+            <url>http://www.springframework.org</url>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/java</sourceDirectory>
+        <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+        <unitTest>
+            <includes>
+                <include>**/*Test.java</include>
+            </includes>
+        </unitTest>
+    </build>
+
+    <reports>
+        <!-- <report>maven-license-plugin</report> -->
+        <!-- <report>maven-checkstyle-plugin</report>-->
+        <!-- <report>maven-pmd-plugin</report> -->
+        <!-- <report>maven-simian-plugin</report> -->
+        <!-- <report>maven-jdepend-plugin</report> -->
+        <!-- <report>maven-changelog-plugin</report> -->
+        <!-- <report>maven-statcvs-plugin</report> -->
+        <!-- <report>maven-file-activity-plugin</report> -->
+        <!-- <report>maven-developer-activity-plugin</report> -->
+        <report>maven-jxr-plugin</report>
+        <report>maven-javadoc-plugin</report>
+        <report>maven-junit-report-plugin</report>
+        <!-- <report>maven-faq-plugin</report> -->
+        <!-- <report>maven-clover-plugin</report>-->
+        <!-- <report>maven-changes-plugin</report>-->
+    </reports>
+
+</project>
+
