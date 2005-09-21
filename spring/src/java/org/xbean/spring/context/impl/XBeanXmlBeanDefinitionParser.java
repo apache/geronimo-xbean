@@ -120,7 +120,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String localName = attribute.getName();
         String value = attribute.getValue();
         if (value != null) {
-            definition.getBeanDefinition().getPropertyValues().addPropertyValue(localName, value);
+            String propertyName = metadata.getPropertyName(element.getLocalName(), localName);
+            if (propertyName != null) {
+            definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
+            }
         }
     }
 

@@ -56,4 +56,15 @@ public class MappingMetaData {
         return className;
     }
 
+    /**
+     * Returns the property name for the given element and attribute name
+     * 
+     * @param elementName the XML local name of the element
+     * @param attributeName the XML local name of the attribute
+     * @return the property name to use or null if the attribute is not a valid property
+     */
+    public String getPropertyName(String elementName, String attributeName) {
+        return properties.getProperty(elementName + "." + attributeName, attributeName);
+    }
+
 }
