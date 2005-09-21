@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+
+  <!--  tests using nested beans -->
+
+  <bean id="restaurant"
+    class="org.xbean.spring.example.RestaurantService">
+    <property name="favourite">
+      <bean class="org.xbean.spring.example.PizzaService">
+        <property name="topping" value="Salami" />
+        <property name="cheese" value="Edam" />
+        <property name="size" value="17" />
+      </bean>
+    </property>
+    <property name="dinnerMenu">
+      <list>
+        <bean class="org.xbean.spring.example.PizzaService">
+          <property name="topping" value="Ham" />
+          <property name="cheese" value="Mozzarella" />
+          <property name="size" value="15" />
+        </bean>
+      </list>
+    </property>
+  </bean>
+
+
+</beans>
