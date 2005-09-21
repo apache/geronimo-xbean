@@ -5,8 +5,13 @@ package = org.xbean.spring.example
 
 # Mapping of XML Element localNames to classes 
 pizza = org.xbean.spring.example.PizzaService
+restaurant = org.xbean.spring.example.RestaurantService
 
 # Mapping of XML Attributes to property names
 pizza.myTopping = topping
+
+# Mapping of nested bean properties
+restaurant.dinnerMenu.list = dinnerMenu
+restaurant.favourite = favourite
 
 # END SNIPPET: config

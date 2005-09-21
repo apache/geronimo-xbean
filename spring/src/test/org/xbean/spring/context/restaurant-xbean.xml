@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans >
+
+  <!--  tests using nested beans -->
+
+  <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza" xmlns:foo="bar">
+    <dinnerMenu>
+      <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
+    </dinnerMenu>
+
+    <favourite>
+      <pizza myTopping="Salami" cheese="Edam" size="17"/>
+    </favourite>
+  </restaurant>
+</beans>

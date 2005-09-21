@@ -67,4 +67,25 @@ public class MappingMetaData {
         return properties.getProperty(elementName + "." + attributeName, attributeName);
     }
 
+    /**
+     * Returns a valid property name if the childElementName maps to a nested list property
+     * 
+     * @param elementName the owner element
+     * @param childElementName is the child element name which maps to the nested list property 
+     * @return the property name if available or null if it is not applicable
+     */
+    public String getNestedListProperty(String elementName, String childElementName) {
+        return properties.getProperty(elementName + "." + childElementName + ".list");
+    }
+    
+    /**
+     * Returns a valid property name if the childElementName maps to a nested bean property
+     * 
+     * @param elementName the owner element
+     * @param childElementName is the child element name which maps to the nested bean property 
+     * @return the property name if available or null if it is not applicable
+     */
+    public String getNestedProperty(String elementName, String childElementName) {
+        return properties.getProperty(elementName + "." + childElementName);
+    }
 }

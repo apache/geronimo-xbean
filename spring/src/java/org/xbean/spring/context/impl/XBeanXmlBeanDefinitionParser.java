@@ -19,20 +19,21 @@ package org.xbean.spring.context.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.support.BeanDefinitionReader;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.core.io.Resource;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
@@ -92,6 +93,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 element.setAttributeNS(null, "class", className);
                 BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
                 addAttributeProperties(definition, metadata, element);
+                addNestedPropertyElements(definition, metadata, element);
                 return definition;
             }
         }
@@ -108,9 +110,13 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             String uri = attribute.getNamespaceURI();
             String localName = attribute.getLocalName();
 
+            if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
+                continue;
+            }
+
             // we could use namespaced attributes to differentiate real spring
             // attributes from namespace-specific attributes
-            if ((uri != null && uri.length() > 0) || !reservedBeanAttributeNames.contains(localName)) {
+            if (((isEmpty(uri)) && !reservedBeanAttributeNames.contains(localName)) || (!isEmpty(uri) && !uri.equals("http://www.w3.org/2000/xmlns/"))) {
                 addAttributeProperty(definition, metadata, element, attribute);
             }
         }
@@ -122,9 +128,78 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         if (value != null) {
             String propertyName = metadata.getPropertyName(element.getLocalName(), localName);
             if (propertyName != null) {
-            definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
+                definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
             }
         }
+    }
+
+    /**
+     * Lets iterate through the children of this element and create any nested
+     * child properties
+     */
+    protected void addNestedPropertyElements(BeanDefinitionHolder definition, MappingMetaData metadata, Element element) {
+        NodeList nl = element.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                Element childElement = (Element) node;
+                String uri = childElement.getNamespaceURI();
+                String localName = childElement.getLocalName();
+
+                if (!isEmpty(uri) || !reservedElementNames.contains(localName)) {
+                    // we could be one of the following
+                    // * the child element maps to a <property> tag with inner
+                    // tags being the bean
+                    // * the child element maps to a <property><list> tag with
+                    // inner tags being the contents of the list
+                    // * the child element maps to a <property> tag and is the
+                    // bean tag too
+                    Object value = null;
+                    String propertyName = metadata.getNestedListProperty(element.getLocalName(), localName);
+                    if (propertyName != null) {
+                         value = parseListElement(childElement, propertyName);
+                    }
+                    else {
+                        propertyName = metadata.getNestedProperty(element.getLocalName(), localName);
+                        if (propertyName != null) {
+                            // lets find the first child bean that parses fine
+                            value = parseChildExtensionBean(childElement);
+                        }
+                    }
+                    if (value != null) {
+                        definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Iterates the children of this element to find the first nested bean
+     */
+    protected Object parseChildExtensionBean(Element element) {
+        NodeList nl = element.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                Element childElement = (Element) node;
+                String uri = childElement.getNamespaceURI();
+                String localName = childElement.getLocalName();
+
+                if (!isEmpty(uri) || !reservedElementNames.contains(localName)) {
+                    Object value = parseBeanFromExtensionElement(childElement);
+                    if (value != null) {
+                        return value;
+                    }
+                }
+                else if (isEmpty(uri)) {
+                    if (BEAN_ELEMENT.equals(localName)) {
+                        return parseBeanDefinitionElement(childElement, true);
+                    }
+                }
+            }
+        }
+        return null; 
     }
 
     /**
@@ -148,7 +223,9 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String uri = META_INF_PREFIX + createDiscoveryPathName(namespaceURI, localName);
         InputStream in = loadResource(uri);
         if (in == null) {
-            in = loadResource(META_INF_PREFIX + createDiscoveryPathName(namespaceURI));
+            if (namespaceURI != null && namespaceURI.length() > 0) {
+                in = loadResource(META_INF_PREFIX + createDiscoveryPathName(namespaceURI));
+            }
         }
 
         if (in != null) {
@@ -184,7 +261,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * the classpath to discover a text file
      */
     protected String createDiscoveryPathName(String uri, String localName) {
-        if (uri == null || uri.length() == 0) {
+        if (isEmpty(uri)) {
             return localName;
         }
         return createDiscoveryPathName(uri) + "/" + localName;
@@ -228,6 +305,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         }
     }
 
+    protected boolean isEmpty(String uri) {
+        return uri == null || uri.length() == 0;
+    }
+
     // -------------------------------------------------------------------------
     //
     // TODO we could apply the following patches into the Spring code -
@@ -268,4 +349,19 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         }
         return beanDefinitionCount;
     }
+
+    protected Object parsePropertySubElement(Element element, String beanName) throws BeanDefinitionStoreException {
+        String uri = element.getNamespaceURI();
+        String localName = element.getLocalName();
+
+        if (!isEmpty(uri) || !reservedElementNames.contains(localName)) {
+            Object answer = parseBeanFromExtensionElement(element);
+            if (answer != null) {
+                return answer;
+            }
+        }
+        return super.parsePropertySubElement(element, beanName);
+    }
+
+    
 }

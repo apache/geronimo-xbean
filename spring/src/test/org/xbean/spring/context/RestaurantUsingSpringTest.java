@@ -31,22 +31,24 @@ public class RestaurantUsingSpringTest extends SpringTestSupport {
 
     public void testPizza() throws Exception {
         RestaurantService restaurant = (RestaurantService) getBean("restaurant");
-        
-        PizzaService pizza = restaurant.getFavourite();
+
+        List dinners = restaurant.getDinnerMenu();
+        assertNotNull("dinners is null!", dinners);
+        assertEquals("dinners size: " + dinners, 1, dinners.size());
+        PizzaService pizza = (PizzaService) dinners.get(0);
+
+        assertEquals("topping", "Ham", pizza.getTopping());
+        assertEquals("cheese", "Mozzarella", pizza.getCheese());
+        assertEquals("size", 15, pizza.getSize());
+
+        pizza = restaurant.getFavourite();
+        assertNotNull("Pizza is null!", pizza);
         pizza.makePizza();
 
         assertEquals("topping", "Salami", pizza.getTopping());
         assertEquals("cheese", "Edam", pizza.getCheese());
         assertEquals("size", 17, pizza.getSize());
-        
-        List dinners = restaurant.getDinnerMenu();
-        assertNotNull("dinners is null!", dinners);
-        assertEquals("dinners size: " + dinners, 1, dinners.size());
-        pizza = (PizzaService) dinners.get(0);
-        
-        assertEquals("topping", "Ham", pizza.getTopping());
-        assertEquals("cheese", "Mozzarella", pizza.getCheese());
-        assertEquals("size", 15, pizza.getSize());
+
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
