@@ -21,6 +21,8 @@ package org.xbean.spring.example;
  *
  * @version $Revision: 1.1 $
  */
+
+// START SNIPPET: bean
 public class PizzaService {
 
     private String topping;
@@ -63,6 +65,6 @@ public class PizzaService {
     public void setTopping(String topping) {
         this.topping = topping;
     }
-    
-    
 }
+// END SNIPPET: bean
+
