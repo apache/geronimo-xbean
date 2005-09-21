@@ -32,9 +32,14 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -92,8 +97,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 // lets assume the class name == the package name plus the
                 element.setAttributeNS(null, "class", className);
                 BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
-                addAttributeProperties(definition, metadata, element);
-                addNestedPropertyElements(definition, metadata, element);
+                addAttributeProperties(definition, metadata, className, element);
+                addNestedPropertyElements(definition, metadata, className, element);
                 return definition;
             }
         }
@@ -103,7 +108,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     /**
      * Parses attribute names and values as being bean property expressions
      */
-    protected void addAttributeProperties(BeanDefinitionHolder definition, MappingMetaData metadata, Element element) {
+    protected void addAttributeProperties(BeanDefinitionHolder definition, MappingMetaData metadata, String className, Element element) {
         NamedNodeMap attributes = element.getAttributes();
         for (int i = 0, size = attributes.getLength(); i < size; i++) {
             Attr attribute = (Attr) attributes.item(i);
@@ -137,7 +142,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * Lets iterate through the children of this element and create any nested
      * child properties
      */
-    protected void addNestedPropertyElements(BeanDefinitionHolder definition, MappingMetaData metadata, Element element) {
+    protected void addNestedPropertyElements(BeanDefinitionHolder definition, MappingMetaData metadata, String className, Element element) {
         NodeList nl = element.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
@@ -157,7 +162,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                     Object value = null;
                     String propertyName = metadata.getNestedListProperty(element.getLocalName(), localName);
                     if (propertyName != null) {
-                         value = parseListElement(childElement, propertyName);
+                        value = parseListElement(childElement, propertyName);
                     }
                     else {
                         propertyName = metadata.getNestedProperty(element.getLocalName(), localName);
@@ -166,12 +171,69 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                             value = parseChildExtensionBean(childElement);
                         }
                     }
+                    if (propertyName == null) {
+                        value = tryParseNestedPropertyViaIntrospection(metadata, className, childElement);
+                        propertyName = localName;
+                    }
                     if (value != null) {
                         definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Attempts to use introspection to parse the nested property element.
+     */
+    protected Object tryParseNestedPropertyViaIntrospection(MappingMetaData metadata, String className, Element element) {
+        Class type = null;
+        String localName = element.getLocalName();
+        try {
+            type = loadClass(className);
+        }
+        catch (ClassNotFoundException e) {
+            throw new BeanDefinitionStoreException("Failed to load type: " + className + ". Reason: " + e, e);
+        }
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(type);
+            if (beanInfo != null) {
+                PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+                for (int i = 0; i < descriptors.length; i++) {
+                    PropertyDescriptor descriptor = descriptors[i];
+                    if (descriptor.getWriteMethod() != null) {
+                        String name = descriptor.getName();
+                        if (name.equals(localName)) {
+                            return parseNestedPropertyViaIntrospection(metadata, className, element, descriptor);
+                        }
+                    }
+                }
+            }
+        }
+        catch (IntrospectionException e) {
+            throw new BeanDefinitionStoreException("Failed to introspect type: " + className + ". Reason: " + e, e);
+        }
+        return null;
+    }
+
+    /**
+     * Attempts to use introspection to parse the nested property element.
+     */
+    protected Object parseNestedPropertyViaIntrospection(MappingMetaData metadata, String className, Element element, PropertyDescriptor descriptor) {
+        String name = descriptor.getName();
+        if (isCollection(descriptor.getPropertyType())) {
+            return parseListElement(element, name);
+        }
+        else {
+            return parseChildExtensionBean(element);
+        }
+    }
+
+    /**
+     * Returns true if the given type is a collection type or an array
+     */
+    protected boolean isCollection(Class type) {
+        return type.isArray() || Collection.class.isAssignableFrom(type);
     }
 
     /**
@@ -199,7 +261,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 }
             }
         }
-        return null; 
+        return null;
     }
 
     /**
@@ -363,5 +425,4 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         return super.parsePropertySubElement(element, beanName);
     }
 
-    
 }

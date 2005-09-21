@@ -2,7 +2,7 @@
 <!-- START SNIPPET: xml -->
 <beans >
 
-  <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza" xmlns:foo="bar">
+  <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza-simple">
     <dinnerMenu>
       <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
       <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
