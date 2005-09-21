@@ -5,6 +5,7 @@
   <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza" xmlns:foo="bar">
     <dinnerMenu>
       <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
+      <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
     </dinnerMenu>
 
     <favourite>

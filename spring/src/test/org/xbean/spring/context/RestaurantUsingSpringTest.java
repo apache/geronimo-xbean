@@ -34,12 +34,17 @@ public class RestaurantUsingSpringTest extends SpringTestSupport {
 
         List dinners = restaurant.getDinnerMenu();
         assertNotNull("dinners is null!", dinners);
-        assertEquals("dinners size: " + dinners, 1, dinners.size());
+        assertEquals("dinners size: " + dinners, 2, dinners.size());
+        
         PizzaService pizza = (PizzaService) dinners.get(0);
-
         assertEquals("topping", "Ham", pizza.getTopping());
         assertEquals("cheese", "Mozzarella", pizza.getCheese());
         assertEquals("size", 15, pizza.getSize());
+        
+         pizza = (PizzaService) dinners.get(1);
+        assertEquals("topping", "Eggs", pizza.getTopping());
+        assertEquals("cheese", "Mozzarella", pizza.getCheese());
+        assertEquals("size", 16, pizza.getSize());
 
         pizza = restaurant.getFavourite();
         assertNotNull("Pizza is null!", pizza);

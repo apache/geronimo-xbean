@@ -20,6 +20,11 @@
           <property name="cheese" value="Mozzarella" />
           <property name="size" value="15" />
         </bean>
+        <bean class="org.xbean.spring.example.PizzaService">
+          <property name="topping" value="Eggs" />
+          <property name="cheese" value="Mozzarella" />
+          <property name="size" value="16" />
+        </bean>
       </list>
     </property>
   </bean>
