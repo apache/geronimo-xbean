@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
 <beans >
-
-  <!--  tests using nested beans -->
 
   <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza" xmlns:foo="bar">
     <dinnerMenu>
@@ -13,3 +12,4 @@
     </favourite>
   </restaurant>
 </beans>
+<!-- END SNIPPET: xml -->
