@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans>
+<!-- START SNIPPET: xml -->
+<beans xmlns:p="http://xbean.org/schemas/pizza">
 
-  <pizzaService id="pizzaService" topping="Salami" cheese="Edam" size="17"/>
+  <p:pizza id="pizzaService" topping="Salami" cheese="Edam" size="17"/>
   
 </beans>
+<!-- END SNIPPET: xml -->
+

@@ -40,7 +40,7 @@ public abstract class SpringTestSupport extends TestCase {
 
     protected void tearDown() throws Exception {
         if (context != null) {
-            System.out.println("Closing down the spring context");
+            log.info("Closing down the spring context");
             context.destroy();
         }
     }

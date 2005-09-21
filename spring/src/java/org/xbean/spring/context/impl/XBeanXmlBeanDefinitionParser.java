@@ -45,6 +45,8 @@ import java.util.Set;
  * @version $Revision: 1.1 $
  */
 public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser {
+    public static final String META_INF_PREFIX = "META-INF/services/org/xbean/spring/";
+
     private static final Log log = LogFactory.getLog(XBeanXmlBeanDefinitionParser.class);
 
     /**
@@ -140,28 +142,38 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             return new MappingMetaData(packageName);
         }
 
-        String uri = "META-INF/services/org/xbean/spring/" + createDiscoveryPathName(namespaceURI, localName);
+        String uri = META_INF_PREFIX + createDiscoveryPathName(namespaceURI, localName);
+        InputStream in = loadResource(uri);
+        if (in == null) {
+            in = loadResource(META_INF_PREFIX + createDiscoveryPathName(namespaceURI));
+        }
 
+        if (in != null) {
+            try {
+                Properties properties = new Properties();
+                properties.load(in);
+                return new MappingMetaData(properties);
+            }
+            catch (IOException e) {
+                log.warn("Failed to load resource from uri: " + uri, e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Loads the resource from the given URI
+     */
+    protected InputStream loadResource(String uri) {
         // lets try the thread context class loader first
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
         if (in == null) {
             in = getClass().getClassLoader().getResourceAsStream(uri);
             if (in == null) {
-                logger.warn("Could not find resource: " + uri);
-                return null;
+                logger.debug("Could not find resource: " + uri);
             }
         }
-
-        // lets load the file
-        try {
-            Properties properties = new Properties();
-            properties.load(in);
-            return new MappingMetaData(properties);
-        }
-        catch (IOException e) {
-            log.warn("Failed to load resource from uri: " + uri, e);
-            return null;
-        }
+        return in;
     }
 
     /**
@@ -172,9 +184,17 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         if (uri == null || uri.length() == 0) {
             return localName;
         }
+        return createDiscoveryPathName(uri) + "/" + localName;
+    }
+
+    /**
+     * Converts the namespace and localName into a valid path name we can use on
+     * the classpath to discover a text file
+     */
+    protected String createDiscoveryPathName(String uri) {
         // TODO proper encoding required
         // lets replace any dodgy characters
-        return uri.replaceAll("://", "/").replace(':', '/').replace(' ', '_') + "/" + localName;
+        return uri.replaceAll("://", "/").replace(':', '/').replace(' ', '_');
     }
 
     /**
@@ -235,11 +255,11 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                     BeanDefinitionHolder bdHolder = parseBeanFromExtensionElement(ele);
                     if (bdHolder != null) {
                         beanDefinitionCount++;
+                        BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader().getBeanFactory());
                     }
                     else {
                         log.debug("Ignoring unknown element namespace: " + ele.getNamespaceURI() + " localName: " + ele.getLocalName());
                     }
-                    BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader().getBeanFactory());
                 }
             }
         }

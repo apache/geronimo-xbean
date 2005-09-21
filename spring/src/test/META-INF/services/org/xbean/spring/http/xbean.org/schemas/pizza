@@ -1,0 +1,9 @@
+# START SNIPPET: config
+
+# the default package that POJOs are in
+package = org.xbean.spring.example
+
+# Mapping of XML Element localNames to classes 
+pizza = org.xbean.spring.example.PizzaService
+
+# END SNIPPET: config

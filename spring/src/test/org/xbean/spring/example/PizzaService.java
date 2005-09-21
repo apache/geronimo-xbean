@@ -17,6 +17,9 @@
  **/
 package org.xbean.spring.example;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  *
  * @version $Revision: 1.1 $
@@ -25,13 +28,15 @@ package org.xbean.spring.example;
 // START SNIPPET: bean
 public class PizzaService {
 
+    private static final Log log = LogFactory.getLog(PizzaService.class);
+    
     private String topping;
     private String cheese;
     private int size;
     private double price;
     
     public void makePizza() {
-        System.out.println("Making a pizza with topping: " + topping + " cheese: " + cheese + " with size: " + size);
+        log.info("Making a pizza with topping: " + topping + " cheese: " + cheese + " with size: " + size);
     }
 
     public String getCheese() {
