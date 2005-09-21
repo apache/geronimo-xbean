@@ -17,25 +17,16 @@
  **/
 package org.xbean.spring.context;
 
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionParser;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
- * An XBean version of the regular Spring class to provide improved XML
- * handling.
- * 
- * @author James Strachan
+ *
  * @version $Revision: 1.1 $
  */
-public class XmlWebApplicationContext extends org.springframework.web.context.support.XmlWebApplicationContext {
+public class PizzaUsingXBeanWithJavaNamespaceTest extends PizzaUsingSpringTest {
 
-    public XmlWebApplicationContext() {
+    protected AbstractXmlApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("org/xbean/spring/context/pizza-xbean-java.xml");
     }
 
-    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-        super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(reader);
-    }
-
-  
 }
