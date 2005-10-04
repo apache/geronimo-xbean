@@ -72,7 +72,19 @@
       <version>1.0.3</version>
       <url>http://jakarta.apache.org/commons/logging/</url>
     </dependency>
-
+    
+    <!--  for systest Ant task  -->
+    <dependency>
+      <groupId>annogen</groupId>
+      <artifactId>annogen</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.6.2</version>
+    </dependency>
+    
     <!-- Unit Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
