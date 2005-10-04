@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- START SNIPPET: xml -->
-<beans >
+<beans>
 
-  <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza" xmlns:foo="bar">
+  <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza" xmlns:foo="http://acme.com" serviceName="foo:xyz">
     <dinnerMenu>
       <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
       <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>

@@ -18,6 +18,7 @@
 package org.xbean.spring.context;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionParser;
@@ -52,7 +53,13 @@ public class ClassPathXmlApplicationContext extends org.springframework.context.
 
     protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
         super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(reader);
+        XBeanXmlBeanDefinitionParser.configure(this, reader);
+    }
+
+    protected DefaultListableBeanFactory createBeanFactory() {
+        DefaultListableBeanFactory beanFactory = super.createBeanFactory();
+        XBeanXmlBeanDefinitionParser.registerCustomEditors(beanFactory);
+        return beanFactory;
     }
 
 

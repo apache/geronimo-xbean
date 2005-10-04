@@ -43,7 +43,7 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
 
     protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
         super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(reader);
+        XBeanXmlBeanDefinitionParser.configure(this, reader);
     }
 
     protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {

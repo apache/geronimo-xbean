@@ -34,7 +34,7 @@ public class XmlWebApplicationContext extends org.springframework.web.context.su
 
     protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
         super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(reader);
+        XBeanXmlBeanDefinitionParser.configure(this, reader);
     }
 
   

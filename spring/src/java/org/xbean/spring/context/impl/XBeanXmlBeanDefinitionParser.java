@@ -22,22 +22,30 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.namespace.QName;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditorManager;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -76,10 +84,18 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * Configures the XmlBeanDefinitionReader to work nicely with extensible XML
      * using this reader implementation.
      */
-    public static void configure(XmlBeanDefinitionReader reader) {
+    public static void configure(AbstractApplicationContext context, XmlBeanDefinitionReader reader) {
         reader.setValidating(false);
         reader.setNamespaceAware(true);
         reader.setParserClass(XBeanXmlBeanDefinitionParser.class);
+    }
+
+    /**
+     * Registers whatever custom editors we need
+     */
+    public static void registerCustomEditors(DefaultListableBeanFactory beanFactory) {
+        PropertyEditorManager.registerEditor(URI.class, URIEditor.class);
+        PropertyEditorManager.registerEditor(QName.class, QNameHelper.class);
     }
 
     /**
@@ -99,6 +115,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
                 addAttributeProperties(definition, metadata, className, element);
                 addNestedPropertyElements(definition, metadata, className, element);
+                coerceNamespaceAwarePropertyValues(definition, element);
                 return definition;
             }
         }
@@ -187,8 +204,59 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * Attempts to use introspection to parse the nested property element.
      */
     protected Object tryParseNestedPropertyViaIntrospection(MappingMetaData metadata, String className, Element element) {
-        Class type = null;
+        BeanInfo beanInfo = getBeanInfo(className);
         String localName = element.getLocalName();
+        if (beanInfo != null) {
+            PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+            for (int i = 0; i < descriptors.length; i++) {
+                PropertyDescriptor descriptor = descriptors[i];
+                if (descriptor.getWriteMethod() != null) {
+                    String name = descriptor.getName();
+                    if (name.equals(localName)) {
+                        return parseNestedPropertyViaIntrospection(metadata, className, element, descriptor);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Any namespace aware property values (such as QNames) need to be coerced
+     * while we still have access to the XML Element from which its value comes -
+     * so lets do that now before we trash the DOM and just have the bean
+     * definition.
+     */
+    protected void coerceNamespaceAwarePropertyValues(BeanDefinitionHolder definitionHolder, Element element) {
+        BeanDefinition definition = definitionHolder.getBeanDefinition();
+        if (definition instanceof AbstractBeanDefinition) {
+            AbstractBeanDefinition bd = (AbstractBeanDefinition) definition;
+            // lets check for any QName types
+            BeanInfo beanInfo = getBeanInfo(bd.getBeanClassName());
+            if (beanInfo != null) {
+                PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+                for (int i = 0; i < descriptors.length; i++) {
+                    PropertyDescriptor descriptor = descriptors[i];
+                    if (descriptor.getWriteMethod() != null && descriptor.getPropertyType().isAssignableFrom(QName.class)) {
+                        String name = descriptor.getName();
+                        MutablePropertyValues propertyValues = bd.getPropertyValues();
+                        PropertyValue propertyValue = propertyValues.getPropertyValue(name);
+                        if (propertyValue != null) {
+                            Object value = propertyValue.getValue();
+                            if (value instanceof String) {
+                                propertyValues.removePropertyValue(propertyValue);
+                                propertyValues.addPropertyValue(name, QNameHelper.createQName(element, (String) value));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected BeanInfo getBeanInfo(String className) throws BeanDefinitionStoreException {
+        BeanInfo info = null;
+        Class type = null;
         try {
             type = loadClass(className);
         }
@@ -196,24 +264,12 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             throw new BeanDefinitionStoreException("Failed to load type: " + className + ". Reason: " + e, e);
         }
         try {
-            BeanInfo beanInfo = Introspector.getBeanInfo(type);
-            if (beanInfo != null) {
-                PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
-                for (int i = 0; i < descriptors.length; i++) {
-                    PropertyDescriptor descriptor = descriptors[i];
-                    if (descriptor.getWriteMethod() != null) {
-                        String name = descriptor.getName();
-                        if (name.equals(localName)) {
-                            return parseNestedPropertyViaIntrospection(metadata, className, element, descriptor);
-                        }
-                    }
-                }
-            }
+            info = Introspector.getBeanInfo(type);
         }
         catch (IntrospectionException e) {
             throw new BeanDefinitionStoreException("Failed to introspect type: " + className + ". Reason: " + e, e);
         }
-        return null;
+        return info;
     }
 
     /**
@@ -378,8 +434,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     // 
     // -------------------------------------------------------------------------
     protected int parseBeanDefinitions(Element root) throws BeanDefinitionStoreException {
-        NodeList nl = root.getChildNodes();
         int beanDefinitionCount = 0;
+        NodeList nl = root.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
             if (node instanceof Element) {
@@ -424,5 +480,4 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         }
         return super.parsePropertySubElement(element, beanName);
     }
-
 }

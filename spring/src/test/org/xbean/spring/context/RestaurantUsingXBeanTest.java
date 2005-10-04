@@ -17,17 +17,33 @@
  **/
 package org.xbean.spring.context;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.xbean.spring.example.PizzaService;
 import org.xbean.spring.example.RestaurantService;
 
-import java.util.List;
+import javax.xml.namespace.QName;
 
 /**
  * 
  * @version $Revision: 1.1 $
  */
 public class RestaurantUsingXBeanTest extends RestaurantUsingSpringTest {
+    private static final Log log = LogFactory.getLog(RestaurantUsingXBeanTest.class);
+
+    public void testPizza() throws Exception {
+        super.testPizza();
+
+        RestaurantService restaurant = (RestaurantService) getBean("restaurant");
+        QName name = restaurant.getServiceName();
+        assertNotNull("Name is null", name);
+
+        assertEquals("Namespace URI", "http://acme.com", name.getNamespaceURI());
+        assertEquals("localName", "xyz", name.getLocalPart());
+        assertEquals("prefix", "foo", name.getPrefix());
+
+        log.info("Successfully converted the property to a QName: " + name);
+    }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/xbean/spring/context/restaurant-xbean.xml");

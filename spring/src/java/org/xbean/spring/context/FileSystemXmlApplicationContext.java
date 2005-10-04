@@ -54,7 +54,7 @@ public class FileSystemXmlApplicationContext extends
 
     protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
         super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(reader);
+        XBeanXmlBeanDefinitionParser.configure(this, reader);
     }
 
 }

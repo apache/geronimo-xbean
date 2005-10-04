@@ -70,6 +70,7 @@ public class PizzaService {
     public void setTopping(String topping) {
         this.topping = topping;
     }
+    
 }
 // END SNIPPET: bean
 

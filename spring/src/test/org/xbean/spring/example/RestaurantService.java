@@ -17,6 +17,8 @@
  **/
 package org.xbean.spring.example;
 
+import javax.xml.namespace.QName;
+
 import java.util.List;
 
 /**
@@ -29,7 +31,8 @@ public class RestaurantService {
     private PizzaService favourite;
     private List dinnerMenu;
     private PizzaService[] lunchMenu;
-
+    private QName serviceName;
+    
     public List getDinnerMenu() {
         return dinnerMenu;
     }
@@ -52,6 +55,14 @@ public class RestaurantService {
 
     public void setFavourite(PizzaService favourite) {
         this.favourite = favourite;
+    }
+
+    public QName getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(QName name) {
+        this.serviceName = name;
     }
 
 }
