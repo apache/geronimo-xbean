@@ -19,6 +19,7 @@ package org.xbean.spring.example;
 
 import javax.xml.namespace.QName;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -32,7 +33,8 @@ public class RestaurantService {
     private List dinnerMenu;
     private PizzaService[] lunchMenu;
     private QName serviceName;
-    
+    private URI uri;
+
     public List getDinnerMenu() {
         return dinnerMenu;
     }
@@ -63,6 +65,14 @@ public class RestaurantService {
 
     public void setServiceName(QName name) {
         this.serviceName = name;
+    }
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
 }

@@ -24,6 +24,8 @@ import org.xbean.spring.example.RestaurantService;
 
 import javax.xml.namespace.QName;
 
+import java.net.URI;
+
 /**
  * 
  * @version $Revision: 1.1 $
@@ -43,6 +45,12 @@ public class RestaurantUsingXBeanTest extends RestaurantUsingSpringTest {
         assertEquals("prefix", "foo", name.getPrefix());
 
         log.info("Successfully converted the property to a QName: " + name);
+        
+        URI uri = restaurant.getUri();
+        assertNotNull("URI is null", uri);
+        assertEquals("URI", new URI("http://cheese.com"), uri);
+        
+        log.info("Successfully converted the property to a URI: " + uri);
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
