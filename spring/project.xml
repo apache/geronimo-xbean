@@ -72,7 +72,17 @@
       <version>1.0.3</version>
       <url>http://jakarta.apache.org/commons/logging/</url>
     </dependency>
-    
+
+    <!--  for the QName support -->
+    <dependency>
+      <id>stax+api</id>
+      <version>1.0</version>
+      <properties>
+        <lib>true</lib>
+        <war.bundle>true</war.bundle>
+      </properties>
+    </dependency>
+
     <!--  for systest Ant task  -->
     <dependency>
       <groupId>annogen</groupId>
@@ -84,7 +94,7 @@
       <artifactId>ant</artifactId>
       <version>1.6.2</version>
     </dependency>
-    
+
     <!-- Unit Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
