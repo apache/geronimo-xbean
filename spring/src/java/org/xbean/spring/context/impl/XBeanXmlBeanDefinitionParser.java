@@ -32,6 +32,7 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -45,12 +46,14 @@ import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditorManager;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Enumeration;
 
 /**
  * An enhanced XML parser capable of handling custom XML schemas.
@@ -115,7 +118,9 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
                 addAttributeProperties(definition, metadata, className, element);
                 addNestedPropertyElements(definition, metadata, className, element);
+                addInlinedPropertiesFile(definition, metadata, className, element);
                 coerceNamespaceAwarePropertyValues(definition, element);
+
                 return definition;
             }
         }
@@ -219,6 +224,31 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             }
         }
         return null;
+    }
+
+    /**
+     * Parses a Properties file from the text node inside an element and
+     * adds the contents as properties of this bean.
+     * Only valid for elements containing a single text node and no sub-elements
+     */
+    protected void addInlinedPropertiesFile(BeanDefinitionHolder definition, MappingMetaData metadata, String className, Element element) {
+        NodeList childNodes = element.getChildNodes();
+        if (childNodes.getLength() == 1 && childNodes.item(0) instanceof Text) {
+            Text text = (Text)childNodes.item(0);
+            ByteArrayInputStream in = new ByteArrayInputStream(text.getData().getBytes());
+            Properties properties = new Properties();
+            try {
+                properties.load(in);
+            } catch (IOException e) {
+                return;
+            }
+            Enumeration enumeration = properties.propertyNames();
+            while (enumeration.hasMoreElements()) {
+                String name = (String) enumeration.nextElement();
+                Object value = properties.getProperty(name);
+                definition.getBeanDefinition().getPropertyValues().addPropertyValue(name, value);
+            }
+        }
     }
 
     /**
