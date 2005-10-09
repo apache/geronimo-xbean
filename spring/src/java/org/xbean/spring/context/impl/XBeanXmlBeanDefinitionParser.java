@@ -17,6 +17,24 @@
  **/
 package org.xbean.spring.context.impl;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditorManager;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.MutablePropertyValues;
@@ -24,6 +42,7 @@ import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -32,28 +51,10 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.xml.namespace.QName;
-
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditorManager;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Enumeration;
+import org.w3c.dom.Text;
 
 /**
  * An enhanced XML parser capable of handling custom XML schemas.
@@ -79,6 +80,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             ABSTRACT_ATTRIBUTE, SINGLETON_ATTRIBUTE, LAZY_INIT_ATTRIBUTE };
 
     private static final String JAVA_PACKAGE_PREFIX = "java://";
+    
+    private static final String BEAN_REFERENCE_SUFFIX = "-ref";
 
     private Set reservedElementNames = new HashSet(Arrays.asList(RESERVED_ELEMENT_NAMES));
     private Set reservedBeanAttributeNames = new HashSet(Arrays.asList(RESERVED_BEAN_ATTRIBUTE_NAMES));
@@ -153,12 +156,22 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String localName = attribute.getName();
         String value = attribute.getValue();
         if (value != null) {
-            String propertyName = metadata.getPropertyName(element.getLocalName(), localName);
-            if (propertyName != null) {
-                definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
+            if( localName.endsWith(BEAN_REFERENCE_SUFFIX) ) {
+                localName = localName.substring(0, localName.length()-BEAN_REFERENCE_SUFFIX.length());
+                String propertyName = metadata.getPropertyName(element.getLocalName(), localName);
+                if (propertyName != null) {
+                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, new RuntimeBeanReference(value));
+                }                
+            } else {
+                String propertyName = metadata.getPropertyName(element.getLocalName(), localName);
+                if (propertyName != null) {
+                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
+                }
             }
         }
     }
+    
+    
 
     /**
      * Lets iterate through the children of this element and create any nested
