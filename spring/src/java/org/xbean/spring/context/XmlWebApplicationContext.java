@@ -17,25 +17,49 @@
  **/
 package org.xbean.spring.context;
 
+import java.util.List;
+import java.util.Collections;
+import java.io.IOException;
+
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionParser;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
 
 /**
  * An XBean version of the regular Spring class to provide improved XML
  * handling.
  * 
  * @author James Strachan
- * @version $Revision: 1.1 $
+ * @author Dain Sundstrom
+ * @version $Id$
+ * @since 1.0
  */
-public class XmlWebApplicationContext extends org.springframework.web.context.support.XmlWebApplicationContext {
+public class XmlWebApplicationContext extends org.springframework.web.context.support.XmlWebApplicationContext implements SpringApplicationContext {
+    private final List xmlPreprocessors;
 
+    /**
+     * Creates a XmlWebApplicationContext which loads the configuration from the a web application context.
+     */
     public XmlWebApplicationContext() {
+        this.xmlPreprocessors = Collections.EMPTY_LIST;
     }
 
-    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-        super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(this, reader);
+    /**
+     * Creates a XmlWebApplicationContext which loads the configuration from the a web application context.
+     * @param xmlPreprocessors the SpringXmlPreprocessors to apply before passing the xml to Spring for processing
+     */
+    public XmlWebApplicationContext(List xmlPreprocessors) {
+        this.xmlPreprocessors = xmlPreprocessors;
     }
 
-  
+    /**
+     * {@inheritDoc}
+     */
+    protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws IOException {
+        XmlBeanDefinitionReader beanDefinitionReader = new XBeanXmlBeanDefinitionReader(this, beanFactory, xmlPreprocessors);
+
+        initBeanDefinitionReader(beanDefinitionReader);
+
+        loadBeanDefinitions(beanDefinitionReader);
+    }
 }

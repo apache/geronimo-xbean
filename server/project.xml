@@ -60,6 +60,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>backport175</groupId>
+            <artifactId>backport175</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
             <groupId>backport-util-concurrent</groupId>
             <artifactId>backport-util-concurrent</artifactId>
             <version>2.0_01_pd</version>

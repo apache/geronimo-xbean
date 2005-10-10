@@ -1608,6 +1608,10 @@ public class ServiceManagerTest extends TestCase {
         //
         // Unimplemented methods
         //
+        public void waitForDestruction() {
+            throw new UnsupportedOperationException();
+        }
+
         public void startService(ServiceName serviceName) throws ServiceNotFoundException, IllegalStateException {
             throw new UnsupportedOperationException();
         }

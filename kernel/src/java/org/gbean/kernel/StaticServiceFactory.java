@@ -17,7 +17,6 @@
 package org.gbean.kernel;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -27,11 +26,8 @@ import java.util.Set;
  * @version $Id$
  * @since 1.0
  */
-public class StaticServiceFactory implements ServiceFactory {
+public class StaticServiceFactory extends AbstractServiceFactory {
     private final Object service;
-    private boolean enabled = true;
-    private final Set startConditions = new HashSet();
-    private final Set stopConditions = new HashSet();
 
     /**
      * Creates a non-restartable service factory which will simply returns the specified service from the createService
@@ -54,66 +50,6 @@ public class StaticServiceFactory implements ServiceFactory {
      */
     public boolean isRestartable() {
         return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized boolean isEnabled() {
-        return enabled;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized Set getStartConditions() {
-        return Collections.unmodifiableSet(new HashSet(startConditions));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized void addStartCondition(ServiceCondition startCondition) throws NullPointerException {
-        if (startCondition == null) throw new NullPointerException("startCondition is null");
-        startConditions.add(startCondition);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized void removeStartCondition(ServiceCondition startCondition) throws NullPointerException {
-        if (startCondition == null) throw new NullPointerException("startCondition is null");
-        startConditions.remove(startCondition);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized Set getStopConditions() {
-        return Collections.unmodifiableSet(new HashSet(stopConditions));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized void addStopCondition(ServiceCondition stopCondition) throws NullPointerException {
-        if (stopCondition == null) throw new NullPointerException("stopCondition is null");
-        stopConditions.add(stopCondition);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized void removeStopCondition(ServiceCondition stopCondition) throws NullPointerException {
-        if (stopCondition == null) throw new NullPointerException("stopCondition is null");
-        stopConditions.remove(stopCondition);
     }
 
     /**

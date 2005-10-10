@@ -23,7 +23,9 @@ import java.util.Iterator;
 import edu.emory.mathcs.backport.java.util.concurrent.Executor;
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicBoolean;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.Condition;
 import org.gbean.kernel.IllegalServiceStateException;
 import org.gbean.kernel.Kernel;
 import org.gbean.kernel.KernelErrorsError;
@@ -41,6 +43,7 @@ import org.gbean.kernel.StopStrategies;
 import org.gbean.kernel.StopStrategy;
 import org.gbean.kernel.UnregisterServiceException;
 import org.gbean.kernel.UnsatisfiedConditionsException;
+import org.gbean.kernel.KernelFactory;
 
 /**
  * The standard kernel implementation.
@@ -73,7 +76,21 @@ public class StandardKernel implements Kernel {
     /**
      * If true, the kernel is still running.
      */
-    private final AtomicBoolean running = new AtomicBoolean(true);
+    private boolean running = true;
+
+    /**
+     * Lock that should be acquired before accessing the running boolean flag.
+     */
+    private final Lock destroyLock = new ReentrantLock();
+
+    /**
+     * The condition that is notified when the kernel has been destroyed.
+     */
+    private final Condition destroyCondition = destroyLock.newCondition();
+
+    /**
+     * Creates the service managers with handle service lifecycle.
+     */
     private ServiceManagerFactory serviceManagerFactory;
 
     /**
@@ -108,19 +125,61 @@ public class StandardKernel implements Kernel {
      * {@inheritDoc}
      */
     public void destroy() throws KernelErrorsError {
-        // if we are already stopped return
-        if (!running.compareAndSet(true, false)) {
-            return;
+        destroyLock.lock();
+        try {
+            // if we are already stopped simply return
+            if (!running) {
+                return;
+            }
+            running = false;
+        } finally {
+            destroyLock.unlock();
         }
 
+        // destroy all services
         serviceManagerRegistry.destroy();
+
+        // remove this kernel from the kernel factory registry
+        KernelFactory.destroyInstance(this);
+
+        // notify threads waiting for destroy to complete
+        destroyLock.lock();
+        try {
+            destroyCondition.signalAll();
+        } finally {
+            destroyLock.unlock();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void waitForDestruction() {
+        destroyLock.lock();
+        try {
+            // if we are already stopped simply return
+            if (!running) {
+                return;
+            }
+
+            // wait until destroy completes
+            destroyCondition.awaitUninterruptibly();
+        } finally {
+            destroyLock.unlock();
+        }
+
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isRunning() {
-        return running.get();
+        destroyLock.lock();
+        try {
+            return running;
+        } finally {
+            destroyLock.unlock();
+        }
     }
 
     /**
@@ -389,7 +448,7 @@ public class StandardKernel implements Kernel {
      */
     public void addKernelMonitor(KernelMonitor kernelMonitor) {
         if (kernelMonitor == null) throw new NullPointerException("kernelMonitor is null");
-        if (!running.get()) {
+        if (!isRunning()) {
             throw new IllegalStateException("Kernel is stopped");
         }
         this.kernelMonitor.addKernelMonitor(kernelMonitor);
@@ -408,7 +467,7 @@ public class StandardKernel implements Kernel {
      */
     public void addServiceMonitor(ServiceMonitor serviceMonitor) {
         if (serviceMonitor == null) throw new NullPointerException("serviceMonitor is null");
-        if (!running.get()) {
+        if (!isRunning()) {
             throw new IllegalStateException("Kernel is stopped");
         }
         addServiceMonitor(serviceMonitor, null);
@@ -420,7 +479,7 @@ public class StandardKernel implements Kernel {
     public void addServiceMonitor(ServiceMonitor serviceMonitor, ServiceName serviceName) {
         if (serviceMonitor == null) throw new NullPointerException("serviceMonitor is null");
         if (serviceName == null) throw new NullPointerException("serviceName is null");
-        if (!running.get()) {
+        if (!isRunning()) {
             throw new IllegalStateException("Kernel is stopped");
         }
         this.serviceMonitor.addServiceMonitor(serviceMonitor, serviceName);

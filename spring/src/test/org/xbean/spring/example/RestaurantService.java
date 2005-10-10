@@ -17,18 +17,21 @@
  **/
 package org.xbean.spring.example;
 
-import javax.xml.namespace.QName;
-
 import java.net.URI;
 import java.util.List;
+import javax.xml.namespace.QName;
+
+import org.apache.xml.utils.QName;
 
 /**
  * An owner POJO used for testing out nested properties
  * 
- * @org.xbean.XBean namespace="http://xbean.org/schemas/pizza" element="restaurant" 
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/pizza" element="restaurant"
  *   description="A Restaurant thingy"
- * 
- * @version $Revision: 1.1 $
+ *
+ * @author James Strachan
+ * @version $Id$
+ * @since 1.0
  */
 public class RestaurantService {
 

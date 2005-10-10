@@ -21,13 +21,18 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 /**
- * InetAddressEditor is a java beans property editor that can convert an ObjectName to and from a String.
+ * ObjectNameEditor is a java beans property editor that can convert an ObjectName to and from a String.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
 public class ObjectNameEditor extends PropertyEditorSupport {
+    /**
+     * Converts the specified string value into an ObjectName and stores the value in this instance.
+     * @param value the string to convert into an ObjectName
+     * @throws IllegalArgumentException if the specified string value is not a valid ObjectName
+     */
     public void setAsText(String value) throws IllegalArgumentException {
         try {
             setValue(new ObjectName(value));
@@ -36,8 +41,16 @@ public class ObjectNameEditor extends PropertyEditorSupport {
         }
     }
 
+    /**
+     * Converts the stored ObjectName value into a String.
+     * @return the canonical string form of the current ObjectName value
+     * @throws NullPointerException if the current ObjectName is null
+     */
     public String getAsText() {
         ObjectName objectName = (ObjectName) getValue();
+        if (objectName == null) {
+            throw new NullPointerException("Current ObjectName value is null");
+        }
         String text = objectName.getCanonicalName();
         return text;
     }

@@ -115,6 +115,9 @@ public class MultiParentClassLoader extends NamedClassLoader {
         return parents;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
         Class clazz = findLoadedClass(name);
         for (int i = 0; i < parents.length && clazz == null; i++) {
@@ -138,6 +141,9 @@ public class MultiParentClassLoader extends NamedClassLoader {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public URL getResource(String name) {
         URL url = null;
         for (int i = 0; i < parents.length && url == null; i++) {
@@ -153,6 +159,9 @@ public class MultiParentClassLoader extends NamedClassLoader {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Enumeration findResources(String name) throws IOException {
         List resources = new ArrayList();
 
@@ -171,6 +180,9 @@ public class MultiParentClassLoader extends NamedClassLoader {
         return Collections.enumeration(resources);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String toString() {
         return "[" + getClass().getName() + ":" +
                 " name=" + getName() +

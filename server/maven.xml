@@ -31,4 +31,27 @@
         <attainGoal name="clean"/>
         <attainGoal name="build"/>
     </goal>
+
+    <postGoal name="test:compile">
+        <taskdef name="annotationc"
+            classname="org.codehaus.backport175.compiler.task.AnnotationCTask">
+            <classpath>
+                <pathelement location="${maven.repo.local}/backport175/jars/backport175-1.0.jar"/>
+            </classpath>
+        </taskdef>
+
+        <annotationc
+            verbose="true"
+            >
+<!--            destdir="${basedir}/target/test-classes"-->
+<!--            properties="${basedir}/src/test/annotation.properties"-->
+<!--            copytodest="**/*.dtd"-->
+
+            <src path="${basedir}/src/test"/>
+            <classpath path="${basedir}/target/test-classes"/>
+<!--            <fileset dir="other">-->
+<!--                <include name="**/BAZ.java"/>-->
+<!--            </fileset>-->
+        </annotationc>
+    </postGoal>
 </project>

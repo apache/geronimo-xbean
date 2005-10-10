@@ -19,8 +19,6 @@ package org.xbean.spring.context.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -58,7 +56,8 @@ import java.util.Set;
  * An enhanced XML parser capable of handling custom XML schemas.
  * 
  * @author James Strachan
- * @version $Revision: 1.1 $
+ * @version $Id$
+ * @since 1.0
  */
 public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser {
 

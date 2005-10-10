@@ -21,13 +21,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * InetAddressEditor is a java beans property editor that can convert an URI to and from a String.
+ * URIEditor is a java beans property editor that can convert an URI to and from a String.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
 public class URIEditor extends PropertyEditorSupport {
+    /**
+     * Converts the specified string value into an URI and stores the value in this instance.
+     * @param value the string to convert into an URI
+     * @throws IllegalArgumentException if the specified string value is not a valid URI
+     */
     public void setAsText(String value) throws IllegalArgumentException {
         try {
             setValue(new URI(value));
@@ -36,8 +41,16 @@ public class URIEditor extends PropertyEditorSupport {
         }
     }
 
+    /**
+     * Converts the stored URI value into a String.
+     * @return the string form of the current URI value
+     * @throws NullPointerException if the current URI is null
+     */
     public String getAsText() {
         URI uri = (URI) getValue();
+        if (uri == null) {
+            throw new NullPointerException("Current URI value is null");
+        }
         String text = uri.toString();
         return text;
     }

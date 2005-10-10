@@ -17,41 +17,72 @@
  **/
 package org.xbean.spring.context;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.core.io.Resource;
-import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionParser;
-
-import java.io.IOException;
+import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
 
 /**
  * An XBean version of a regular Spring ApplicationContext which takes a
  * {@link Resource} as a parameter to load the application context
  * 
- * @version $Revision: 1.1 $
+ * @author James Strachan
+ * @author Dain Sundstrom
+ * @version $Id$
+ * @since 1.0
  */
-public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext {
+public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext implements SpringApplicationContext {
+    private final List xmlPreprocessors;
+    private final Resource resource;
 
-    private Resource resource;
-
+    /**
+     * Creates a ResourceXmlApplicationContext which loads the configuration from the specified Resource.
+     * @param resource the resource from which the configuration is loaded
+     */
     public ResourceXmlApplicationContext(Resource resource) {
         super();
+        this.xmlPreprocessors = Collections.EMPTY_LIST;
         this.resource = resource;
         refresh();
     }
 
-    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-        super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(this, reader);
+    /**
+     * Creates a ResourceXmlApplicationContext which loads the configuration from the specified Resource.
+     * @param resource the resource from which the configuration is loaded
+     * @param xmlPreprocessors the SpringXmlPreprocessors to apply before passing the xml to Spring for processing
+     */
+    public ResourceXmlApplicationContext(Resource resource, List xmlPreprocessors) {
+        super();
+        this.xmlPreprocessors = xmlPreprocessors;
+        this.resource = resource;
+        refresh();
     }
 
+    protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws IOException {
+        XmlBeanDefinitionReader beanDefinitionReader = new XBeanXmlBeanDefinitionReader(this, beanFactory, xmlPreprocessors);
+
+        initBeanDefinitionReader(beanDefinitionReader);
+
+        loadBeanDefinitions(beanDefinitionReader);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
         reader.loadBeanDefinitions(resource);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected String[] getConfigLocations() {
         return null;
     }
-
 }

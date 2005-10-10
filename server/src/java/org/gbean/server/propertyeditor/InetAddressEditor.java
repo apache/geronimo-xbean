@@ -28,6 +28,11 @@ import java.net.UnknownHostException;
  * @since 1.0
  */
 public class InetAddressEditor extends PropertyEditorSupport {
+    /**
+     * Converts the specified string value into an InetAddress and stores the value in this instance.
+     * @param value the string to convert into an InetAddress
+     * @throws IllegalArgumentException if the specified string value is not a valid InetAddress
+     */
     public void setAsText(String value) throws IllegalArgumentException {
         try {
             setValue(InetAddress.getByName(value));
@@ -36,8 +41,16 @@ public class InetAddressEditor extends PropertyEditorSupport {
         }
     }
 
-    public String getAsText() {
+    /**
+     * Converts the stored InetAddress value into a String.
+     * @return the string form of the current InetAddress value
+     * @throws NullPointerException if the current InetAddress is null
+     */
+    public String getAsText() throws NullPointerException {
         InetAddress inetAddress = (InetAddress) getValue();
+        if (inetAddress == null) {
+            throw new NullPointerException("Current InetAddress value is null");
+        }
         String text = inetAddress.toString();
         return text;
     }

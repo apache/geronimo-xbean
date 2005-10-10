@@ -17,50 +17,156 @@
  **/
 package org.xbean.spring.context;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
-import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionParser;
+import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
 
 /**
  * An XBean version of the regular Spring class to provide improved XML handling.
  * 
  * @author James Strachan
- * @version $Revision: 1.1 $
+ * @author Dain Sundstrom
+ * @version $Id$
+ * @since 1.0
  */
-public class ClassPathXmlApplicationContext extends org.springframework.context.support.ClassPathXmlApplicationContext {
+public class ClassPathXmlApplicationContext extends org.springframework.context.support.ClassPathXmlApplicationContext implements SpringApplicationContext {
+    private final List xmlPreprocessors;
 
-    public ClassPathXmlApplicationContext(String arg0) throws BeansException {
-        super(arg0);
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified location on the class
+     * path.
+     * @param configLocation the location of the configuration file on the class path
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String configLocation) throws BeansException {
+        this(new String[] {configLocation}, true, null, Collections.EMPTY_LIST);
     }
 
-    public ClassPathXmlApplicationContext(String[] arg0, ApplicationContext arg1) throws BeansException {
-        super(arg0, arg1);
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations) throws BeansException {
+        this(configLocations, true, null, Collections.EMPTY_LIST);
     }
 
-    public ClassPathXmlApplicationContext(String[] arg0, boolean arg1, ApplicationContext arg2) throws BeansException {
-        super(arg0, arg1, arg2);
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @param refresh if true the configurations are immedately loaded; otherwise the configurations are not loaded
+     * until refresh() is called
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations, boolean refresh) throws BeansException {
+        this(configLocations, refresh, null, Collections.EMPTY_LIST);
     }
 
-    public ClassPathXmlApplicationContext(String[] arg0, boolean arg1) throws BeansException {
-        super(arg0, arg1);
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @param parent the parent of this application context
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations, ApplicationContext parent) throws BeansException {
+        this(configLocations, true, parent, Collections.EMPTY_LIST);
     }
 
-    public ClassPathXmlApplicationContext(String[] arg0) throws BeansException {
-        super(arg0);
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @param refresh if true the configurations are immedately loaded; otherwise the configurations are not loaded
+     * until refresh() is called
+     * @param parent the parent of this application context
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations, boolean refresh, ApplicationContext parent) throws BeansException {
+        this(configLocations, refresh, parent, Collections.EMPTY_LIST);
     }
 
-    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-        super.initBeanDefinitionReader(reader);
-        XBeanXmlBeanDefinitionParser.configure(this, reader);
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified location on the class
+     * path.
+     * @param configLocation the location of the configuration file on the classpath
+     * @param xmlPreprocessors the SpringXmlPreprocessors to apply before passing the xml to Spring for processing
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String configLocation, List xmlPreprocessors) throws BeansException {
+        this(new String[] {configLocation}, true, null, xmlPreprocessors);
     }
 
-    protected DefaultListableBeanFactory createBeanFactory() {
-        DefaultListableBeanFactory beanFactory = super.createBeanFactory();
-        XBeanXmlBeanDefinitionParser.registerCustomEditors(beanFactory);
-        return beanFactory;
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @param xmlPreprocessors the SpringXmlPreprocessors to apply before passing the xml to Spring for processing
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations, List xmlPreprocessors) throws BeansException {
+        this(configLocations, true, null, xmlPreprocessors);
     }
 
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @param refresh if true the configurations are immedately loaded; otherwise the configurations are not loaded
+     * until refresh() is called
+     * @param xmlPreprocessors the SpringXmlPreprocessors to apply before passing the xml to Spring for processing
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations, boolean refresh, List xmlPreprocessors) throws BeansException {
+        this(configLocations, refresh, null, xmlPreprocessors);
+    }
 
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @param parent the parent of this application context
+     * @param xmlPreprocessors the SpringXmlPreprocessors to apply before passing the xml to Spring for processing
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations, ApplicationContext parent, List xmlPreprocessors) throws BeansException {
+        this(configLocations, true, parent, xmlPreprocessors);
+    }
+
+    /**
+     * Creates a ClassPathXmlApplicationContext which loads the configuration at the specified locations on the class
+     * path.
+     * @param configLocations the locations of the configuration files on the class path
+     * @param refresh if true the configurations are immedately loaded; otherwise the configurations are not loaded
+     * until refresh() is called
+     * @param parent the parent of this application context
+     * @param xmlPreprocessors the SpringXmlPreprocessors to apply before passing the xml to Spring for processing
+     * @throws BeansException if a problem occurs while reading the configuration
+     */
+    public ClassPathXmlApplicationContext(String[] configLocations, boolean refresh, ApplicationContext parent, List xmlPreprocessors) throws BeansException {
+        super(configLocations, false, parent);
+        this.xmlPreprocessors = xmlPreprocessors;
+        if (refresh) {
+            refresh();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws IOException {
+        XmlBeanDefinitionReader beanDefinitionReader = new XBeanXmlBeanDefinitionReader(this, beanFactory, xmlPreprocessors);
+
+        initBeanDefinitionReader(beanDefinitionReader);
+
+        loadBeanDefinitions(beanDefinitionReader);
+    }
 }

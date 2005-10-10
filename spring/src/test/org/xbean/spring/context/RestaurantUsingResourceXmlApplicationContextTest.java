@@ -21,8 +21,9 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * 
- * @version $Revision: 1.1 $
+ * @author James Strachan
+ * @version $Id$
+ * @since 1.0
  */
 public class RestaurantUsingResourceXmlApplicationContextTest extends RestaurantUsingSpringTest {
 

@@ -67,6 +67,9 @@ public class NamedClassLoader extends URLClassLoader implements DestroyableClass
         this.name = name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void destroy() {
         ClassLoaderUtil.destroy(this);
     }
@@ -79,6 +82,9 @@ public class NamedClassLoader extends URLClassLoader implements DestroyableClass
         return name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String toString() {
         return "[" + getClass().getName() + ":" +
                 " name=" + getName() +

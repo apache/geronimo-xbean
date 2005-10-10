@@ -20,6 +20,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 import org.gbean.kernel.standard.StandardKernelFactory;
@@ -55,6 +57,15 @@ public abstract class KernelFactory {
         return (Kernel) kernels.get(name);
     }
 
+    /**
+     * Gets a map of the existing kernels by kernel name.
+     *
+     * @return the existing kernels by kernel name.
+     */
+    public static Map getKernels() {
+        return new HashMap(kernels);
+    }
+    
     /**
      * Creates a kernel with the specified name.  This method will attempt to locate a KernelFactory implementation
      * using the following procedure
@@ -117,6 +128,20 @@ public abstract class KernelFactory {
 
         // Default is the standard kernel
         return new StandardKernelFactory();
+    }
+
+    /**
+     * Removes the kernel instance from the internal kernel registry.  This method should only be called by the kernel
+     * instance itself during destruction.
+     * @param kernel the kernel to destroy
+     * @throws KernelFactoryError if the kernel is still running
+     */
+    public static void destroyInstance(Kernel kernel) throws KernelFactoryError {
+        if (kernel.isRunning()) {
+            throw new KernelFactoryError("Kernel is running: name" + kernel.getKernelName());
+        }
+
+        kernels.remove(kernel.getKernelName(), kernel);
     }
 
     private static KernelFactory createKernelFactory(String className, ClassLoader classLoader) throws KernelFactoryError {

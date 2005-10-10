@@ -21,8 +21,9 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.xbean.spring.example.PizzaService;
 
 /**
- * 
- * @version $Revision: 1.1 $
+ * @author James Strachan
+ * @version $Id$
+ * @since 1.0
  */
 public class PizzaUsingSpringTest extends SpringTestSupport {
 

@@ -21,11 +21,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- *
- * @org.xbean.XBean element="pizza" 
+ * @org.xbean.XBean element="pizza"
  *  description="This is a tasty Pizza"
- * 
- * @version $Revision: 1.1 $
+ *
+ * @author James Strachan
+ * @version $Id$
+ * @since 1.0
  */
 
 // START SNIPPET: bean

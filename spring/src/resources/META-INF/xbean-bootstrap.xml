@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+* Copyright 2005 the original author or authors.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+-->
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <bean id="PropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+
+  <bean name="Main" class="org.gbean.server.main.KernelMain">
+    <property name="kernel" ref="Kernel"/>
+    <property name="services">
+      <map>
+        <entry key="AnnotationProvider" value-ref="AnnotationProvider"/>
+        <entry key="FileSystemRepository" value-ref="FileSystemRepository"/>
+        <entry key="SpringLoader" value-ref="SpringLoader"/>
+      </map>
+    </property>
+    <property name="next">
+      <bean class="org.gbean.server.loader.LoadAllMain">
+        <property name="kernel" ref="Kernel"/>
+      </bean>
+    </property>
+  </bean>
+
+  <bean name="KernelFactory" class="org.gbean.kernel.KernelFactory" factory-method="newInstance"/>
+  <bean name="Kernel" factory-bean="KernelFactory" factory-method="createKernel">
+    <constructor-arg index="0" value="gbean"/>
+  </bean>
+
+  <bean name="AnnotationProvider" class="org.gbean.server.annotation.Backport175AnnotationProvider"/>
+
+  <bean name="FileSystemRepository" class="org.gbean.server.repository.FileSystemRepository">
+    <property name="root" value="${xbean.base.dir}/repository"/>
+  </bean>
+
+
+  <bean name="SpringLoader" class="org.xbean.spring.loader.SpringLoader">
+    <property name="kernel" ref="Kernel"/>
+    <property name="baseDir" value="${xbean.base.dir}/conf"/>
+    <property name="xmlPreprocessors">
+      <list>
+        <bean class="org.xbean.spring.context.ClassLoaderXmlPreprocessor">
+          <constructor-arg index="0" ref="FileSystemRepository"/>
+        </bean>
+      </list>
+    </property>
+    <property name="beanFactoryPostProcessors">
+      <list>
+        <bean class="org.xbean.spring.configuration.NamedConstructorArgs">
+          <property name="annotationProvider" ref="AnnotationProvider"/>
+          <property name="defaultValues">
+            <list>
+              <bean class="org.xbean.spring.configuration.DefaultProperty">
+                <property name="name" value="serviceName"/>
+                <property name="type" value="java.lang.String"/>
+                <property name="value">
+                  <bean class="org.xbean.spring.reference.ServiceNameStringReference" factory-method="createBeanDefinition"/>
+                </property>
+              </bean>
+              <bean class="org.xbean.spring.configuration.DefaultProperty">
+                <property name="name" value="serviceName"/>
+                <property name="type" value="org.gbean.kernel.ServiceName"/>
+                <property name="value">
+                  <bean class="org.xbean.spring.reference.ServiceNameReference" factory-method="createBeanDefinition"/>
+                </property>
+              </bean>
+              <bean class="org.xbean.spring.configuration.DefaultProperty">
+                <property name="name" value="classLoader"/>
+                <property name="type" value="java.lang.ClassLoader"/>
+                <property name="value">
+                  <bean class="org.xbean.spring.reference.ClassLoaderReference" factory-method="createBeanDefinition"/>
+                </property>
+              </bean>
+              <bean class="org.xbean.spring.configuration.DefaultProperty">
+                <property name="name" value="kernel"/>
+                <property name="type" value="org.gbean.kernel.Kernel"/>
+                <property name="value">
+                  <bean class="org.xbean.spring.reference.KernelReference" factory-method="createBeanDefinition"/>
+                </property>
+              </bean>
+            </list>
+          </property>
+        </bean>
+<!--        <bean class="org.xbean.spring.configuration.LifecycleDetector">-->
+<!--          <property name="lifecycleInterfaces">-->
+<!--            <list>-->
+<!--              <bean class="org.xbean.spring.configuration.LifecycleInfo">-->
+<!--                <property name="type" value="example.SimpleLifecycle"/>-->
+<!--                <property name="initMethodName" value="start"/>-->
+<!--                <property name="destroyMethodName" value="stop"/>-->
+<!--              </bean>-->
+<!--            </list>-->
+<!--          </property>-->
+<!--        </bean>-->
+      </list>
+    </property>
+  </bean>
+</beans>

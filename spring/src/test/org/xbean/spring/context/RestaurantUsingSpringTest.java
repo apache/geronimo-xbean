@@ -24,8 +24,9 @@ import org.xbean.spring.example.RestaurantService;
 import java.util.List;
 
 /**
- * 
- * @version $Revision: 1.1 $
+ * @author James Strachan
+ * @version $Id$
+ * @since 1.0
  */
 public class RestaurantUsingSpringTest extends SpringTestSupport {
 

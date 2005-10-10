@@ -22,19 +22,28 @@ import java.util.Properties;
 /**
  * A helper class which understands how to map an XML namespaced element to
  * Spring bean configurations
- * 
- * @version $Revision: 1.1 $
+ *
+ * @author James Strachan
+ * @version $Id$
+ * @since 1.0
  */
 public class MappingMetaData {
-
     private Properties properties;
     private String packageName;
 
+    /**
+     * Creates an empty MappingMetaData for the specified Java package.
+     * @param packageName the Java package to map
+     */
     public MappingMetaData(String packageName) {
         this.packageName = packageName;
         this.properties = new Properties();
     }
 
+    /**
+     * Creates MappingMetaData using the specified properties which contan the package name.
+     * @param properties
+     */
     public MappingMetaData(Properties properties) {
         this.properties = properties;
         this.packageName = properties.getProperty("package", "");

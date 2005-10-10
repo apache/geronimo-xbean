@@ -115,10 +115,16 @@ public class JarFileClassLoader extends MultiParentClassLoader {
         addURLs(urls);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public URL[] getURLs() {
         return (URL[]) classPath.keySet().toArray(new URL[classPath.keySet().size()]);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected void addURL(URL url) {
         addURLs(Collections.singletonList(url));
     }
@@ -158,7 +164,7 @@ public class JarFileClassLoader extends MultiParentClassLoader {
                 }
 
                 // open the jar file
-                JarFile jarFile = null;
+                JarFile jarFile;
                 try {
                     jarFile = new JarFile(file);
                 } catch (IOException e) {
@@ -198,6 +204,9 @@ public class JarFileClassLoader extends MultiParentClassLoader {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void destroy() {
         synchronized (lock) {
             if (destroyed) {
@@ -216,6 +225,9 @@ public class JarFileClassLoader extends MultiParentClassLoader {
         super.destroy();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public URL findResource(String resourceName) {
         URL jarUrl = null;
         synchronized (lock) {
@@ -241,6 +253,9 @@ public class JarFileClassLoader extends MultiParentClassLoader {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Enumeration findResources(String resourceName) throws IOException {
         List resources = new ArrayList();
         List superResources = Collections.list(super.findResources(resourceName));
@@ -268,10 +283,13 @@ public class JarFileClassLoader extends MultiParentClassLoader {
         return Collections.enumeration(resources);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected Class findClass(String className) throws ClassNotFoundException {
         SecurityManager securityManager = System.getSecurityManager();
         if (securityManager != null) {
-            String packageName = null;
+            String packageName;
             int packageEnd = className.lastIndexOf('.');
             if (packageEnd >= 0) {
                 packageName = className.substring(0, packageEnd);
@@ -314,9 +332,7 @@ public class JarFileClassLoader extends MultiParentClassLoader {
                     }
                     bytes = out.toByteArray();
                 } finally {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
+                    inputStream.close();
                 }
             } catch (IOException e) {
                 throw new ClassNotFoundException(className, e);
@@ -387,9 +403,6 @@ public class JarFileClassLoader extends MultiParentClassLoader {
 
     private boolean isSealed(Attributes packageAttributes, Attributes mainAttributes) {
         String sealed = getAttribute(Attributes.Name.SEALED, packageAttributes, mainAttributes);
-        if (sealed == null) {
-            return false;
-        }
         if (sealed == null) {
             return false;
         }

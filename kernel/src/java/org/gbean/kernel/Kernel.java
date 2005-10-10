@@ -44,6 +44,11 @@ public interface Kernel {
     void destroy();
 
     /**
+     * Waits for the kernel to be destroyed.
+     */
+    void waitForDestruction();
+
+    /**
      * Gets the running status of the kernel.  Services can not be registered or started on a stopped kernel.
      *
      * @return true if the kernel is running; false otherwise

@@ -52,7 +52,6 @@ public final class ClassLoaderUtil {
      * Clears the caches maintained by the SunVM object stream implementation.  This method uses reflection and
      * setAccessable to obtain access to the Sun cache.  The cache is locked with a synchronize monitor and cleared.
      * This method completely clears the class loader cache which will impact preformance of object serialization.
-     *
      * @param clazz the name of the class containing the cache field
      * @param fieldName the name of the cache field
      */
