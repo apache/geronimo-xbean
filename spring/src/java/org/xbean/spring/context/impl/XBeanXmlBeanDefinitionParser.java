@@ -17,24 +17,6 @@
  **/
 package org.xbean.spring.context.impl;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditorManager;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.xml.namespace.QName;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.MutablePropertyValues;
@@ -56,6 +38,22 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import javax.xml.namespace.QName;
+
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
 /**
  * An enhanced XML parser capable of handling custom XML schemas.
  * 
@@ -63,7 +61,6 @@ import org.w3c.dom.Text;
  * @version $Revision: 1.1 $
  */
 public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser {
-    public static final String META_INF_PREFIX = "META-INF/services/org/xbean/spring/";
 
     private static final Log log = LogFactory.getLog(XBeanXmlBeanDefinitionParser.class);
 
@@ -71,16 +68,18 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * All the reserved Spring XML element names which cannot be overloaded by
      * an XML extension
      */
-    protected static final String[] RESERVED_ELEMENT_NAMES = { "beans", DESCRIPTION_ELEMENT, IMPORT_ELEMENT, ALIAS_ELEMENT, BEAN_ELEMENT,
-            CONSTRUCTOR_ARG_ELEMENT, PROPERTY_ELEMENT, LOOKUP_METHOD_ELEMENT, REPLACED_METHOD_ELEMENT, ARG_TYPE_ELEMENT, REF_ELEMENT, IDREF_ELEMENT,
-            VALUE_ELEMENT, NULL_ELEMENT, LIST_ELEMENT, SET_ELEMENT, MAP_ELEMENT, ENTRY_ELEMENT, KEY_ELEMENT, PROPS_ELEMENT, PROP_ELEMENT };
+    protected static final String[] RESERVED_ELEMENT_NAMES = { "beans", DESCRIPTION_ELEMENT, IMPORT_ELEMENT,
+            ALIAS_ELEMENT, BEAN_ELEMENT, CONSTRUCTOR_ARG_ELEMENT, PROPERTY_ELEMENT, LOOKUP_METHOD_ELEMENT,
+            REPLACED_METHOD_ELEMENT, ARG_TYPE_ELEMENT, REF_ELEMENT, IDREF_ELEMENT, VALUE_ELEMENT, NULL_ELEMENT,
+            LIST_ELEMENT, SET_ELEMENT, MAP_ELEMENT, ENTRY_ELEMENT, KEY_ELEMENT, PROPS_ELEMENT, PROP_ELEMENT };
 
-    protected static final String[] RESERVED_BEAN_ATTRIBUTE_NAMES = { ID_ATTRIBUTE, NAME_ATTRIBUTE, CLASS_ATTRIBUTE, PARENT_ATTRIBUTE, DEPENDS_ON_ATTRIBUTE,
-            FACTORY_METHOD_ATTRIBUTE, FACTORY_BEAN_ATTRIBUTE, DEPENDENCY_CHECK_ATTRIBUTE, AUTOWIRE_ATTRIBUTE, INIT_METHOD_ATTRIBUTE, DESTROY_METHOD_ATTRIBUTE,
+    protected static final String[] RESERVED_BEAN_ATTRIBUTE_NAMES = { ID_ATTRIBUTE, NAME_ATTRIBUTE, CLASS_ATTRIBUTE,
+            PARENT_ATTRIBUTE, DEPENDS_ON_ATTRIBUTE, FACTORY_METHOD_ATTRIBUTE, FACTORY_BEAN_ATTRIBUTE,
+            DEPENDENCY_CHECK_ATTRIBUTE, AUTOWIRE_ATTRIBUTE, INIT_METHOD_ATTRIBUTE, DESTROY_METHOD_ATTRIBUTE,
             ABSTRACT_ATTRIBUTE, SINGLETON_ATTRIBUTE, LAZY_INIT_ATTRIBUTE };
 
     private static final String JAVA_PACKAGE_PREFIX = "java://";
-    
+
     private static final String BEAN_REFERENCE_SUFFIX = "-ref";
 
     private Set reservedElementNames = new HashSet(Arrays.asList(RESERVED_ELEMENT_NAMES));
@@ -100,8 +99,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * Registers whatever custom editors we need
      */
     public static void registerCustomEditors(DefaultListableBeanFactory beanFactory) {
-        PropertyEditorManager.registerEditor(URI.class, URIEditor.class);
-        PropertyEditorManager.registerEditor(QName.class, QNameHelper.class);
+        PropertyEditorHelper.registerCustomEditors();
     }
 
     /**
@@ -123,7 +121,6 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 addNestedPropertyElements(definition, metadata, className, element);
                 addInlinedPropertiesFile(definition, metadata, className, element);
                 coerceNamespaceAwarePropertyValues(definition, element);
-
                 return definition;
             }
         }
@@ -133,7 +130,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     /**
      * Parses attribute names and values as being bean property expressions
      */
-    protected void addAttributeProperties(BeanDefinitionHolder definition, MappingMetaData metadata, String className, Element element) {
+    protected void addAttributeProperties(BeanDefinitionHolder definition, MappingMetaData metadata, String className,
+            Element element) {
         NamedNodeMap attributes = element.getAttributes();
         for (int i = 0, size = attributes.getLength(); i < size; i++) {
             Attr attribute = (Attr) attributes.item(i);
@@ -146,23 +144,27 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
             // we could use namespaced attributes to differentiate real spring
             // attributes from namespace-specific attributes
-            if (((isEmpty(uri)) && !reservedBeanAttributeNames.contains(localName)) || (!isEmpty(uri) && !uri.equals("http://www.w3.org/2000/xmlns/"))) {
+            if (((isEmpty(uri)) && !reservedBeanAttributeNames.contains(localName))
+                    || (!isEmpty(uri) && !uri.equals("http://www.w3.org/2000/xmlns/"))) {
                 addAttributeProperty(definition, metadata, element, attribute);
             }
         }
     }
 
-    protected void addAttributeProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element, Attr attribute) {
+    protected void addAttributeProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
+            Attr attribute) {
         String localName = attribute.getName();
         String value = attribute.getValue();
         if (value != null) {
-            if( localName.endsWith(BEAN_REFERENCE_SUFFIX) ) {
-                localName = localName.substring(0, localName.length()-BEAN_REFERENCE_SUFFIX.length());
+            if (localName.endsWith(BEAN_REFERENCE_SUFFIX)) {
+                localName = localName.substring(0, localName.length() - BEAN_REFERENCE_SUFFIX.length());
                 String propertyName = metadata.getPropertyName(element.getLocalName(), localName);
                 if (propertyName != null) {
-                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, new RuntimeBeanReference(value));
-                }                
-            } else {
+                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName,
+                            new RuntimeBeanReference(value));
+                }
+            }
+            else {
                 String propertyName = metadata.getPropertyName(element.getLocalName(), localName);
                 if (propertyName != null) {
                     definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
@@ -170,14 +172,13 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             }
         }
     }
-    
-    
 
     /**
      * Lets iterate through the children of this element and create any nested
      * child properties
      */
-    protected void addNestedPropertyElements(BeanDefinitionHolder definition, MappingMetaData metadata, String className, Element element) {
+    protected void addNestedPropertyElements(BeanDefinitionHolder definition, MappingMetaData metadata,
+            String className, Element element) {
         NodeList nl = element.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
@@ -240,19 +241,21 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     }
 
     /**
-     * Parses a Properties file from the text node inside an element and
-     * adds the contents as properties of this bean.
-     * Only valid for elements containing a single text node and no sub-elements
+     * Parses a Properties file from the text node inside an element and adds
+     * the contents as properties of this bean. Only valid for elements
+     * containing a single text node and no sub-elements
      */
-    protected void addInlinedPropertiesFile(BeanDefinitionHolder definition, MappingMetaData metadata, String className, Element element) {
+    protected void addInlinedPropertiesFile(BeanDefinitionHolder definition, MappingMetaData metadata,
+            String className, Element element) {
         NodeList childNodes = element.getChildNodes();
         if (childNodes.getLength() == 1 && childNodes.item(0) instanceof Text) {
-            Text text = (Text)childNodes.item(0);
+            Text text = (Text) childNodes.item(0);
             ByteArrayInputStream in = new ByteArrayInputStream(text.getData().getBytes());
             Properties properties = new Properties();
             try {
                 properties.load(in);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 return;
             }
             Enumeration enumeration = properties.propertyNames();
@@ -280,7 +283,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
                 for (int i = 0; i < descriptors.length; i++) {
                     PropertyDescriptor descriptor = descriptors[i];
-                    if (descriptor.getWriteMethod() != null && descriptor.getPropertyType().isAssignableFrom(QName.class)) {
+                    if (descriptor.getWriteMethod() != null
+                            && descriptor.getPropertyType().isAssignableFrom(QName.class)) {
                         String name = descriptor.getName();
                         MutablePropertyValues propertyValues = bd.getPropertyValues();
                         PropertyValue propertyValue = propertyValues.getPropertyValue(name);
@@ -318,7 +322,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     /**
      * Attempts to use introspection to parse the nested property element.
      */
-    protected Object parseNestedPropertyViaIntrospection(MappingMetaData metadata, String className, Element element, PropertyDescriptor descriptor) {
+    protected Object parseNestedPropertyViaIntrospection(MappingMetaData metadata, String className, Element element,
+            PropertyDescriptor descriptor) {
         String name = descriptor.getName();
         if (isCollection(descriptor.getPropertyType())) {
             return parseListElement(element, name);
@@ -381,11 +386,11 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             return new MappingMetaData(packageName);
         }
 
-        String uri = META_INF_PREFIX + createDiscoveryPathName(namespaceURI, localName);
+        String uri = NamespaceHelper.createDiscoveryPathName(namespaceURI, localName);
         InputStream in = loadResource(uri);
         if (in == null) {
             if (namespaceURI != null && namespaceURI.length() > 0) {
-                in = loadResource(META_INF_PREFIX + createDiscoveryPathName(namespaceURI));
+                in = loadResource(NamespaceHelper.createDiscoveryPathName(namespaceURI));
             }
         }
 
@@ -418,52 +423,19 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     }
 
     /**
-     * Converts the namespace and localName into a valid path name we can use on
-     * the classpath to discover a text file
-     */
-    protected String createDiscoveryPathName(String uri, String localName) {
-        if (isEmpty(uri)) {
-            return localName;
-        }
-        return createDiscoveryPathName(uri) + "/" + localName;
-    }
-
-    /**
-     * Converts the namespace and localName into a valid path name we can use on
-     * the classpath to discover a text file
-     */
-    protected String createDiscoveryPathName(String uri) {
-        // TODO proper encoding required
-        // lets replace any dodgy characters
-        return uri.replaceAll("://", "/").replace(':', '/').replace(' ', '_');
-    }
-
-    /**
-     * protected void preprocessXml(BeanDefinitionReader reader, Element root,
-     * Resource resource) throws BeanDefinitionStoreException { String localName =
-     * root.getNodeName(); String uri = root.getNamespaceURI(); boolean
-     * extensible = true; if (uri == null || uri.length() == 0) { if
-     * (reservedElementNames.contains(localName)) { extensible = false; } } if
-     * (extensible) { // lets see if we have a custom XML processor
-     * ElementProcessor handler = findElementProcessor(uri, localName); if
-     * (handler != null) { handler.processElement(root, reader, resource); } } //
-     * lets recurse into any children NodeList nl = root.getChildNodes(); for
-     * (int i = 0; i < nl.getLength(); i++) { Node node = nl.item(i); if (node
-     * instanceof Element) { Element element = (Element) node;
-     * preprocessXml(reader, element, resource); } } }
-     */
-
-    /**
      * Attempts to load the class on the current thread context class loader or
      * the class loader which loaded us
      */
     protected Class loadClass(String name) throws ClassNotFoundException {
-        try {
-            return Thread.currentThread().getContextClassLoader().loadClass(name);
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (contextClassLoader != null) {
+            try {
+                return contextClassLoader.loadClass(name);
+            }
+            catch (ClassNotFoundException e) {
+            }
         }
-        catch (ClassNotFoundException e) {
-            return getClass().getClassLoader().loadClass(name);
-        }
+        return getClass().getClassLoader().loadClass(name);
     }
 
     protected boolean isEmpty(String uri) {
@@ -494,16 +466,19 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 else if (BEAN_ELEMENT.equals(node.getNodeName())) {
                     beanDefinitionCount++;
                     BeanDefinitionHolder bdHolder = parseBeanDefinitionElement(ele, false);
-                    BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader().getBeanFactory());
+                    BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader()
+                            .getBeanFactory());
                 }
                 else {
                     BeanDefinitionHolder bdHolder = parseBeanFromExtensionElement(ele);
                     if (bdHolder != null) {
                         beanDefinitionCount++;
-                        BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader().getBeanFactory());
+                        BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader()
+                                .getBeanFactory());
                     }
                     else {
-                        log.debug("Ignoring unknown element namespace: " + ele.getNamespaceURI() + " localName: " + ele.getLocalName());
+                        log.debug("Ignoring unknown element namespace: " + ele.getNamespaceURI() + " localName: "
+                                + ele.getLocalName());
                     }
                 }
             }

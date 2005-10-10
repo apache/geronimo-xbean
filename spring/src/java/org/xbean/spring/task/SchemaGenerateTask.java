@@ -19,11 +19,13 @@ import java.io.File;
  */
 public class SchemaGenerateTask extends MatchingTask {
 
+    private String namespace;
     private Path srcDir = null;
     private Path mToolpath = null;
     private Path mClasspath = null;
     private String mIncludes = "**/*.java";
     private File destFile = new File("target/classes/activemq.xsd");
+    private String metaInfDir = "target/classes/";
 
     public File getDestFile() {
         return destFile;
@@ -31,6 +33,22 @@ public class SchemaGenerateTask extends MatchingTask {
 
     public void setDestFile(File scenariosFile) {
         this.destFile = scenariosFile;
+    }
+    
+    public String getMetaInfDir() {
+        return metaInfDir;
+    }
+
+    public void setMetaInfDir(String metaInfDir) {
+        this.metaInfDir = metaInfDir;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     public void setSrcDir(Path srcDir) {
@@ -78,6 +96,9 @@ public class SchemaGenerateTask extends MatchingTask {
     }
 
     public void execute() throws BuildException {
+        if (namespace == null) {
+            throw new BuildException("'namespace' must be specified");
+        }
         if (srcDir == null) {
             throw new BuildException("'srcDir' must be specified");
         }
@@ -103,7 +124,7 @@ public class SchemaGenerateTask extends MatchingTask {
             serviceParams.includeSourcePattern(path2files(srcDir), mIncludes);
             JamService jam = jamServiceFactory.createService(serviceParams);
             JClass[] classes = jam.getAllClasses();
-            SchemaGenerator generator = new SchemaGenerator(classes, destFile);
+            SchemaGenerator generator = new SchemaGenerator(classes, destFile, namespace, metaInfDir);
             generator.generate();
 
             log("...done.");

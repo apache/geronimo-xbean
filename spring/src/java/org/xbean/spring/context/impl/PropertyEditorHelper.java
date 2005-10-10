@@ -15,17 +15,23 @@
  * limitations under the License. 
  * 
  **/
-package org.xbean.spring.context;
+package org.xbean.spring.context.impl;
 
-import org.springframework.context.support.AbstractXmlApplicationContext;
+import javax.management.ObjectName;
+
+import java.beans.PropertyEditorManager;
+import java.net.URI;
 
 /**
+ * A helper method to register some custom editors
  * 
  * @version $Revision: 1.1 $
  */
-public class RestaurantUsingXBeanWithSimplerConfigTest extends RestaurantUsingSpringTest {
+public class PropertyEditorHelper {
 
-    protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/xbean/spring/context/restaurant-xbean.xml");
+    public static void registerCustomEditors() {
+        PropertyEditorManager.registerEditor(URI.class, URIEditor.class);
+        PropertyEditorManager.registerEditor(ObjectName.class, ObjectNameEditor.class);
     }
+
 }

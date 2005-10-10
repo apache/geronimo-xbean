@@ -83,6 +83,17 @@
       </properties>
     </dependency>
 
+    <!--  for the ObjectName support -->
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j-jmx</artifactId>
+      <version>2.1.1</version>
+      <properties>
+        <lib>true</lib>
+        <war.bundle>true</war.bundle>
+      </properties>
+    </dependency>
+
     <!--  for systest Ant task  -->
     <dependency>
       <groupId>annogen</groupId>
@@ -95,6 +106,12 @@
       <version>1.6.2</version>
     </dependency>
 
+    <!--  optional backport175 support -->
+    <dependency>
+      <id>backport175</id>
+      <version>1.0</version>
+    </dependency>
+    
     <!-- Unit Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>

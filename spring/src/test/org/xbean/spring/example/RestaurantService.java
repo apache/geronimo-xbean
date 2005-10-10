@@ -25,6 +25,9 @@ import java.util.List;
 /**
  * An owner POJO used for testing out nested properties
  * 
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/pizza" element="restaurant" 
+ *   description="A Restaurant thingy"
+ * 
  * @version $Revision: 1.1 $
  */
 public class RestaurantService {
