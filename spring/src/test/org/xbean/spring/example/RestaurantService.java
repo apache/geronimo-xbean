@@ -21,8 +21,6 @@ import java.net.URI;
 import java.util.List;
 import javax.xml.namespace.QName;
 
-import org.apache.xml.utils.QName;
-
 /**
  * An owner POJO used for testing out nested properties
  * 
