@@ -137,7 +137,9 @@ public class SchemaGenerator {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Schema for namespace: " + namespace + "</title>");
+        out.println("<link rel='stylesheet' href='style.css' type='text/css'>");
         out.println("<link rel='stylesheet' href='http://activemq.org/style.css' type='text/css'>");
+        out.println("<link rel='stylesheet' href='http://activemq.org/style-xb.css' type='text/css'>");
         out.println("</head>");
         out.println();
         out.println("<body>");
