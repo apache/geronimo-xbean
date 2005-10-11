@@ -35,6 +35,7 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.xbean.spring.context.FileSystemXmlApplicationContext;
+import org.xbean.spring.context.SpringApplicationContext;
 
 /**
  * SpringBootstrap is the main class used by a Spring based server.  This class uses the following strategies to determine
@@ -234,7 +235,7 @@ public class SpringBootstrap {
             System.setProperty("xbean.base.dir", baseDirectory.getAbsolutePath());
 
             // load the configuration file
-            BeanFactory factory;
+            SpringApplicationContext factory;
             File file = new File(baseDirectory.toURI().resolve(configurationFile));
             if (file.canRead()) {
                 try {
@@ -249,10 +250,18 @@ public class SpringBootstrap {
             }
 
             // get the main service from the configuration file
-            Main main = (Main) factory.getBean("Main");
-
+            String[] names = factory.getBeanNamesForType(Main.class);
+            Main main = null;
+            if (names.length == 0) {
+                System.err.println("No bean of type: " + Main.class.getName() + " found in the bootstrap.xml");
+                System.exit(10);
+            }
+            else {
+                main = (Main) factory.getBean(names[0]);
+            }
             return main;
-        } finally {
+        }
+        finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
     }
