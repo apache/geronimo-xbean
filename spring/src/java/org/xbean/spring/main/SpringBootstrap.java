@@ -253,12 +253,9 @@ public class SpringBootstrap {
             String[] names = factory.getBeanNamesForType(Main.class);
             Main main = null;
             if (names.length == 0) {
-                System.err.println("No bean of type: " + Main.class.getName() + " found in the bootstrap.xml");
-                System.exit(10);
+                throw new FatalBeanException("No bean of type: " + Main.class.getName() + " found in the bootstrap.xml", 10)
             }
-            else {
-                main = (Main) factory.getBean(names[0]);
-            }
+            main = (Main) factory.getBean(names[0]);
             return main;
         }
         finally {
