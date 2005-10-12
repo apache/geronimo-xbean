@@ -18,13 +18,13 @@
     <!-- the version of maven's project object model -->
     <modelVersion>4.0.0</modelVersion>
 
-    <name>GBean :: Kernel</name>
-    <artifactId>gbean-kernel</artifactId>
-    <groupId>gbean</groupId>
-    <version>1.0-alpha-1-SNAPSHOT</version>
+    <name>XBean :: Kernel</name>
+    <artifactId>xbean-kernel</artifactId>
+    <groupId>xbean</groupId>
+    <version>2.0-alpha-1-SNAPSHOT</version>
     <organization>
-        <name>GBean.org</name>
-        <url>http://gbean.org</url>
+        <name>XBean</name>
+        <url>http://xbean.org</url>
     </organization>
 
     <repositories>
@@ -37,10 +37,10 @@
     </repositories>
 
     <description>
-    GBean is a kernel architecture and server for ioc containers such as spring.
+    XBean is a kernel architecture and server for ioc containers such as spring.
     </description>
 
-    <url>http://www.gbean.org/</url>
+    <url>http://www.xbean.org/</url>
 
     <distributionManagement>
         <repository>
@@ -56,19 +56,19 @@
 
     <mailingLists>
         <mailingList>
-            <name>gbean developers</name>
-            <subscribe>mailto:dev-subscribe@gbean.org</subscribe>
-            <unsubscribe>mailto:dev-unsubscribe@gbean.org</unsubscribe>
+            <name>xbean developers</name>
+            <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
         </mailingList>
         <mailingList>
-            <name>gbean users</name>
-            <subscribe>mailto:user-subscribe@gbean.org</subscribe>
-            <unsubscribe>mailto:user-unsubscribe@gbean.org</unsubscribe>
+            <name>xbean users</name>
+            <subscribe>mailto:user-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
         </mailingList>
         <mailingList>
-            <name>gbean source control messages</name>
-            <subscribe>mailto:scm-subscribe@gbean.org</subscribe>
-            <unsubscribe>mailto:scm-unsubscribe@gbean.org</unsubscribe>
+            <name>xbean source control messages</name>
+            <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
         </mailingList>
     </mailingLists>
 

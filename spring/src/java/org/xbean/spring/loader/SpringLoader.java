@@ -20,11 +20,11 @@ import java.io.File;
 import java.util.List;
 import java.util.Collections;
 
-import org.gbean.kernel.Kernel;
-import org.gbean.kernel.ServiceFactory;
-import org.gbean.kernel.ServiceName;
-import org.gbean.kernel.StringServiceName;
-import org.gbean.server.loader.Loader;
+import org.xbean.kernel.Kernel;
+import org.xbean.kernel.ServiceFactory;
+import org.xbean.kernel.ServiceName;
+import org.xbean.kernel.StringServiceName;
+import org.xbean.server.loader.Loader;
 import org.xbean.spring.configuration.SpringConfigurationServiceFactory;
 import org.xbean.spring.context.FileSystemXmlApplicationContext;
 import org.xbean.spring.context.SpringApplicationContext;

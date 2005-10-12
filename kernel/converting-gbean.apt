@@ -1,12 +1,12 @@
  -----
- Converting gbean.org from m1 to m2
+ Converting xbean.org from m1 to m2
  -----
  Jason van Zyl
  -----
  
  What follows is a little description of the the process that I go through
  when converting an m1 project to an m2 project. In this example I'm going to
- use gbean.org, Dain Sundstrom's [yada yada yada] ...
+ use xbean.org, Dain Sundstrom's [yada yada yada] ...
  
  Usually when I start looking at converting a project from m1 to m2 I take a
  quick look at the directory structure because the standard layout we

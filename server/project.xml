@@ -18,43 +18,43 @@
     <!-- the version of maven's project object model -->
     <pomVersion>3</pomVersion>
 
-    <name>GBean :: Server</name>
-    <id>gbean-server</id>
-    <groupId>gbean</groupId>
-    <currentVersion>1.0-SNAPSHOT</currentVersion>
+    <name>XBean :: Server</name>
+    <id>xbean-server</id>
+    <groupId>xbean</groupId>
+    <currentVersion>2.0-SNAPSHOT</currentVersion>
     <organization>
-        <name>GBean.org</name>
-        <url>http://gbean.org</url>
+        <name>XBean.org</name>
+        <url>http://xbean.org</url>
     </organization>
 
-    <package>org.gbean</package>
+    <package>org.xbean</package>
 
-    <shortDescription>GBean: generic server components</shortDescription>
+    <shortDescription>XBean: generic server components</shortDescription>
 
     <description>
-        The GBean server module contains generic services useful in a server environment.
+        The XBean server module contains generic services useful in a server environment.
     </description>
 
-    <url>http://www.gbean.org/</url>
+    <url>http://www.xbean.org/</url>
 
-    <siteAddress>www.gbean.org</siteAddress>
-    <siteDirectory>/home/projects/gbean/public_html/maven</siteDirectory>
+    <siteAddress>www.xbean.org</siteAddress>
+    <siteDirectory>/home/projects/xbean/public_html/maven</siteDirectory>
 
     <mailingLists>
         <mailingList>
-            <name>gbean developers</name>
-            <subscribe>mailto:dev-subscribe@gbean.org</subscribe>
-            <unsubscribe>mailto:dev-unsubscribe@gbean.org</unsubscribe>
+            <name>xbean developers</name>
+            <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
         </mailingList>
         <mailingList>
-            <name>gbean users</name>
-            <subscribe>mailto:user-subscribe@gbean.org</subscribe>
-            <unsubscribe>mailto:user-unsubscribe@gbean.org</unsubscribe>
+            <name>xbean users</name>
+            <subscribe>mailto:user-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
         </mailingList>
         <mailingList>
-            <name>gbean source control messages</name>
-            <subscribe>mailto:scm-subscribe@gbean.org</subscribe>
-            <unsubscribe>mailto:scm-unsubscribe@gbean.org</unsubscribe>
+            <name>xbean source control messages</name>
+            <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
         </mailingList>
     </mailingLists>
 
@@ -76,9 +76,9 @@
             <type>test</type>
         </dependency>
         <dependency>
-            <groupId>gbean</groupId>
-            <artifactId>gbean-kernel</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>xbean</groupId>
+            <artifactId>xbean-kernel</artifactId>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>mx4j</groupId>

@@ -17,9 +17,9 @@
 package org.xbean.spring.main;
 
 import junit.framework.TestCase;
-import org.gbean.kernel.Kernel;
-import org.gbean.kernel.KernelFactory;
-import org.gbean.server.main.KernelMain;
+import org.xbean.kernel.Kernel;
+import org.xbean.kernel.KernelFactory;
+import org.xbean.server.main.KernelMain;
 
 /**
  * @author Dain Sundstrom

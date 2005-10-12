@@ -39,9 +39,9 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.FactoryBean;
-import org.gbean.server.annotation.AnnotationProvider;
-import org.gbean.server.annotation.DefaultConstructor;
-import org.gbean.server.annotation.ParameterNames;
+import org.xbean.server.annotation.AnnotationProvider;
+import org.xbean.server.annotation.DefaultConstructor;
+import org.xbean.server.annotation.ParameterNames;
 import org.xbean.spring.util.SpringVisitor;
 import org.xbean.spring.util.AbstractSpringVisitor;
 

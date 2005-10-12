@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.gbean.server.classloader.MultiParentClassLoader;
-import org.gbean.server.repository.Repository;
+import org.xbean.server.classloader.MultiParentClassLoader;
+import org.xbean.server.repository.Repository;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.w3c.dom.Document;

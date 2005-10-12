@@ -18,7 +18,7 @@
 <beans>
   <bean id="PropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
-  <bean name="Main" class="org.gbean.server.main.KernelMain">
+  <bean name="Main" class="org.xbean.server.main.KernelMain">
     <property name="kernel" ref="Kernel"/>
     <property name="services">
       <map>
@@ -28,20 +28,20 @@
       </map>
     </property>
     <property name="next">
-      <bean class="org.gbean.server.loader.LoadAllMain">
+      <bean class="org.xbean.server.loader.LoadAllMain">
         <property name="kernel" ref="Kernel"/>
       </bean>
     </property>
   </bean>
 
-  <bean name="KernelFactory" class="org.gbean.kernel.KernelFactory" factory-method="newInstance"/>
+  <bean name="KernelFactory" class="org.xbean.kernel.KernelFactory" factory-method="newInstance"/>
   <bean name="Kernel" factory-bean="KernelFactory" factory-method="createKernel">
-    <constructor-arg index="0" value="gbean"/>
+    <constructor-arg index="0" value="xbean"/>
   </bean>
 
-  <bean name="AnnotationProvider" class="org.gbean.server.annotation.Backport175AnnotationProvider"/>
+  <bean name="AnnotationProvider" class="org.xbean.server.annotation.Backport175AnnotationProvider"/>
 
-  <bean name="FileSystemRepository" class="org.gbean.server.repository.FileSystemRepository">
+  <bean name="FileSystemRepository" class="org.xbean.server.repository.FileSystemRepository">
     <property name="root" value="${xbean.base.dir}/repository"/>
   </bean>
 
@@ -71,7 +71,7 @@
               </bean>
               <bean class="org.xbean.spring.configuration.DefaultProperty">
                 <property name="name" value="serviceName"/>
-                <property name="type" value="org.gbean.kernel.ServiceName"/>
+                <property name="type" value="org.xbean.kernel.ServiceName"/>
                 <property name="value">
                   <bean class="org.xbean.spring.reference.ServiceNameReference" factory-method="createBeanDefinition"/>
                 </property>
@@ -85,7 +85,7 @@
               </bean>
               <bean class="org.xbean.spring.configuration.DefaultProperty">
                 <property name="name" value="kernel"/>
-                <property name="type" value="org.gbean.kernel.Kernel"/>
+                <property name="type" value="org.xbean.kernel.Kernel"/>
                 <property name="value">
                   <bean class="org.xbean.spring.reference.KernelReference" factory-method="createBeanDefinition"/>
                 </property>

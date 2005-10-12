@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.gbean.server.main.FatalStartupError;
-import org.gbean.server.main.Main;
+import org.xbean.server.main.FatalStartupError;
+import org.xbean.server.main.Main;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.xbean.spring.context.ClassPathXmlApplicationContext;
@@ -49,7 +49,7 @@ import org.xbean.spring.context.SpringApplicationContext;
  * load it from the classpath.
  *
  * SpringBootstrap expects the configuration to contain a service with the id "main" which is an implementation of
- * org.gbean.server.main.Main.
+ * org.xbean.server.main.Main.
  *
  * This class will set the system property xbean.base.dir to the directory containing the startup jar if the property
  * has not alredy been set (on the command line).
@@ -62,7 +62,7 @@ public class SpringBootstrap {
     private static final String XBEAN_BOOTSTRAP_MANIFEST = "XBean-Bootstrap";
     private static final String BOOTSTRAP_FLAG = "--bootstrap";
     private static final String DEFAULT_BOOTSTRAP = "META-INF/xbean-bootstrap.xml";
-    private static final List DEFAULT_PROPERTY_EDITOR_PATHS = Collections.singletonList("org.gbean.server.propertyeditor");
+    private static final List DEFAULT_PROPERTY_EDITOR_PATHS = Collections.singletonList("org.xbean.server.propertyeditor");
 
     private String configurationFile;
     private String[] mainArguments;
@@ -242,7 +242,7 @@ public class SpringBootstrap {
                     // configuration file is on the local file system
                     factory = new FileSystemXmlApplicationContext(file.toURL().toString());
                 } catch (MalformedURLException e) {
-                    throw new FatalBeanException("Error creating url for bootstrap file", e);
+                    throw new FatalStartupError("Error creating url for bootstrap file", e);
                 }
             } else {
                 // assume it is a classpath resource
@@ -253,7 +253,7 @@ public class SpringBootstrap {
             String[] names = factory.getBeanNamesForType(Main.class);
             Main main = null;
             if (names.length == 0) {
-                throw new FatalBeanException("No bean of type: " + Main.class.getName() + " found in the bootstrap.xml", 10)
+                throw new FatalStartupError("No bean of type: " + Main.class.getName() + " found in the bootstrap.xml", 10);
             }
             main = (Main) factory.getBean(names[0]);
             return main;

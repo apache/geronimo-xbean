@@ -22,9 +22,9 @@ import java.io.Serializable;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.FactoryBean;
-import org.gbean.kernel.Kernel;
-import org.gbean.kernel.ServiceContext;
-import org.gbean.kernel.ServiceContextThreadLocal;
+import org.xbean.kernel.Kernel;
+import org.xbean.kernel.ServiceContext;
+import org.xbean.kernel.ServiceContextThreadLocal;
 
 
 /**

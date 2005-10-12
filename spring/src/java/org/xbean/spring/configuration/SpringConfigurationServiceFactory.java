@@ -24,12 +24,12 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
 
-import org.gbean.kernel.AbstractServiceFactory;
-import org.gbean.kernel.ServiceCondition;
-import org.gbean.kernel.ServiceConditionContext;
-import org.gbean.kernel.ServiceContext;
-import org.gbean.kernel.ServiceFactory;
-import org.gbean.kernel.ServiceName;
+import org.xbean.kernel.AbstractServiceFactory;
+import org.xbean.kernel.ServiceCondition;
+import org.xbean.kernel.ServiceConditionContext;
+import org.xbean.kernel.ServiceContext;
+import org.xbean.kernel.ServiceFactory;
+import org.xbean.kernel.ServiceName;
 import org.xbean.spring.context.SpringApplicationContext;
 
 /**

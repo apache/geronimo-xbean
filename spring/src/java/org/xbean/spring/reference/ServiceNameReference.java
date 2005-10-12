@@ -19,9 +19,9 @@ package org.xbean.spring.reference;
 
 import java.io.Serializable;
 
-import org.gbean.kernel.ServiceContext;
-import org.gbean.kernel.ServiceContextThreadLocal;
-import org.gbean.kernel.ServiceName;
+import org.xbean.kernel.ServiceContext;
+import org.xbean.kernel.ServiceContextThreadLocal;
+import org.xbean.kernel.ServiceName;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.RootBeanDefinition;
