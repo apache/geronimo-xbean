@@ -40,8 +40,9 @@ import org.xbean.kernel.StringServiceName;
 import org.xbean.server.repository.FileSystemRepository;
 import org.xbean.server.spring.loader.SpringLoader;
 import org.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
-import org.xbean.server.spring.context.ClassLoaderXmlPreprocessor;
-import org.xbean.server.spring.context.ClassLoaderXmlPreprocessor;
+import org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
+import org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
+import org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
 import org.xbean.spring.context.SpringApplicationContext;
 
 /**

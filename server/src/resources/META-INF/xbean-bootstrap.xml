@@ -51,7 +51,7 @@
     <property name="baseDir" value="${xbean.base.dir}/conf"/>
     <property name="xmlPreprocessors">
       <list>
-        <bean class="org.xbean.server.spring.context.ClassLoaderXmlPreprocessor">
+        <bean class="org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor">
           <constructor-arg index="0" ref="FileSystemRepository"/>
         </bean>
       </list>
