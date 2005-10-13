@@ -1,0 +1,10 @@
+<project default="default"
+    xmlns:j="jelly:core"
+    xmlns:ant="jelly:ant"
+    >
+
+    <goal name="default">
+        <j:set var="goal" value="default" />
+        <attainGoal name="multiproject:goal"/>
+    </goal>
+</project>
