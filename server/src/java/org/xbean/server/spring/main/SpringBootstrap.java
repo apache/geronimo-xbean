@@ -31,8 +31,6 @@ import java.util.jar.Manifest;
 
 import org.xbean.server.main.FatalStartupError;
 import org.xbean.server.main.Main;
-import org.springframework.beans.FatalBeanException;
-import org.springframework.beans.factory.BeanFactory;
 import org.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.xbean.spring.context.FileSystemXmlApplicationContext;
 import org.xbean.spring.context.SpringApplicationContext;

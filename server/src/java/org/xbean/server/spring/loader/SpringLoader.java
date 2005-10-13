@@ -26,7 +26,6 @@ import org.xbean.kernel.ServiceName;
 import org.xbean.kernel.StringServiceName;
 import org.xbean.server.loader.Loader;
 import org.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
-import org.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
 import org.xbean.spring.context.FileSystemXmlApplicationContext;
 import org.xbean.spring.context.SpringApplicationContext;
 

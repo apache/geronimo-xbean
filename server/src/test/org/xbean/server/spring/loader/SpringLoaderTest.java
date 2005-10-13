@@ -16,17 +16,6 @@
  */
 package org.xbean.server.spring.loader;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collections;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-
 import junit.framework.TestCase;
 import net.sf.cglib.core.DefaultGeneratorStrategy;
 import net.sf.cglib.core.NamingPolicy;
@@ -38,12 +27,20 @@ import org.xbean.kernel.KernelFactory;
 import org.xbean.kernel.ServiceName;
 import org.xbean.kernel.StringServiceName;
 import org.xbean.server.repository.FileSystemRepository;
-import org.xbean.server.spring.loader.SpringLoader;
+import org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
 import org.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
-import org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
-import org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
-import org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
 import org.xbean.spring.context.SpringApplicationContext;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 /**
  * @author Dain Sundstrom

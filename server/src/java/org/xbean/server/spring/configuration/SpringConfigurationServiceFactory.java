@@ -31,7 +31,6 @@ import org.xbean.kernel.ServiceContext;
 import org.xbean.kernel.ServiceFactory;
 import org.xbean.kernel.ServiceName;
 import org.xbean.spring.context.SpringApplicationContext;
-import org.xbean.server.spring.configuration.SpringConfiguration;
 
 /**
  * SpringConfigurationServiceFactory is manages the creation and destruction of a SpringConfiguration.

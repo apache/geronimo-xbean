@@ -42,7 +42,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.xbean.server.annotation.AnnotationProvider;
 import org.xbean.server.annotation.DefaultConstructor;
 import org.xbean.server.annotation.ParameterNames;
-import org.xbean.server.spring.configuration.DefaultProperty;
 import org.xbean.spring.util.SpringVisitor;
 import org.xbean.spring.util.AbstractSpringVisitor;
 
