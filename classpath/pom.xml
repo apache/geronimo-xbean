@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+* Copyright 2005 the original author or authors.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+-->
+<project>
+    <!-- the version of maven's project object model -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>XBean :: ClassPath</name>
+    <artifactId>xbean-classpath</artifactId>
+    <groupId>xbean</groupId>
+    <version>2.0-alpha-1-SNAPSHOT</version>
+    <organization>
+        <name>XBean</name>
+        <url>http://xbean.org</url>
+    </organization>
+
+    <repositories>
+        <repository>
+            <id>openejb</id>
+            <name>OpenEJB Repo</name>
+            <url>http://www.openejb.org/maven</url>
+            <layout>legacy</layout>
+        </repository>
+    </repositories>
+
+    <url>http://www.xbean.org/</url>
+
+    <distributionManagement>
+        <repository>
+            <id>repo1</id>
+            <name>Maven Central Repository</name>
+            <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
+        </repository>
+        <site>
+            <id>website</id>
+            <url>scp://minotaur.apache.org/www/maven.apache.org/maven2/</url>
+        </site>
+    </distributionManagement>
+
+    <mailingLists>
+        <mailingList>
+            <name>xbean developers</name>
+            <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
+        </mailingList>
+        <mailingList>
+            <name>xbean users</name>
+            <subscribe>mailto:user-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
+        </mailingList>
+        <mailingList>
+            <name>xbean source control messages</name>
+            <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
+            <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
+        </mailingList>
+    </mailingLists>
+
+    <developers>
+        <developer>
+            <name>David Blevins</name>
+            <id>dblevins</id>
+            <email>dblevins@visi.com</email>
+            <roles>
+                <role>Dude</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <dependencies/>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.4</source>
+                    <target>1.4</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
