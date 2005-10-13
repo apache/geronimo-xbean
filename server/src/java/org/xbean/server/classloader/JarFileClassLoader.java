@@ -51,7 +51,7 @@ import java.util.jar.Manifest;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class JarFileClassLoader extends MultiParentClassLoader {
     private static final URL[] EMPTY_URLS = new URL[0];

@@ -30,7 +30,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * ServiceNameReference is a the ServiceName in the ServiceContextThreadLocal.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ServiceNameReference implements FactoryBean, Serializable {
     /**

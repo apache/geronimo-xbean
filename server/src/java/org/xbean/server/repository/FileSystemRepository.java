@@ -26,7 +26,7 @@ import java.net.URL;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class FileSystemRepository implements Repository {
     private File root;

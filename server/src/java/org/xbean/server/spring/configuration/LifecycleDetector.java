@@ -35,7 +35,7 @@ import org.xbean.spring.util.AbstractSpringVisitor;
  * on the bean definition based on the type of the bean class.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class LifecycleDetector implements BeanFactoryPostProcessor {
     private final Map lifecycleMap = new LinkedHashMap();

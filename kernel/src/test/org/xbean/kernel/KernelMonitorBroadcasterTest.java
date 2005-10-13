@@ -25,7 +25,7 @@ import org.xbean.kernel.standard.KernelMonitorBroadcaster;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class KernelMonitorBroadcasterTest extends TestCase {
     private static final ServiceMonitor SERVICE_MONITOR = new NullServiceMonitor();

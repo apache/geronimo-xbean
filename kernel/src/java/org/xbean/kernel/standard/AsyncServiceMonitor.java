@@ -25,7 +25,7 @@ import org.xbean.kernel.ServiceMonitor;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class AsyncServiceMonitor implements ServiceMonitor {
     private final ServiceMonitor delegate;

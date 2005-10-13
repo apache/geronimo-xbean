@@ -29,7 +29,7 @@ import java.net.URI;
 /**
  * @author James Strachan
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class RestaurantUsingXBeanTest extends RestaurantUsingSpringTest {
     private static final Log log = LogFactory.getLog(RestaurantUsingXBeanTest.class);

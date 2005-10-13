@@ -23,7 +23,7 @@ import org.w3c.dom.Document;
  * SpringXmlPreprocessor preprocesses the xml Document before it is passed to Spring for processing.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public interface SpringXmlPreprocessor {
     /**

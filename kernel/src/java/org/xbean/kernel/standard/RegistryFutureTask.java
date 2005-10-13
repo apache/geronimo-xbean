@@ -25,7 +25,7 @@ import org.xbean.kernel.StopStrategy;
  * RegistryFutureTask preforms service registration and unregistration in a FutureTask.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 class RegistryFutureTask extends FutureTask implements Comparable {
     private final long serviceId;

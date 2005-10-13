@@ -20,7 +20,7 @@ package org.xbean.server.spring.configuration;
  * DefaultProperty contains the default value assigned to a property with a specific name and type.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class DefaultProperty {
     private String name;

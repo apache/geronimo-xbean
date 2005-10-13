@@ -23,7 +23,7 @@ import java.net.URL;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class JarFileClassLoaderTest extends MultiParentClassLoaderTest {
     protected MultiParentClassLoader createClassLoader(String name, URL[] urls, ClassLoader[] parents) {

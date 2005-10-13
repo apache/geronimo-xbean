@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public interface AnnotationProvider {
     /**

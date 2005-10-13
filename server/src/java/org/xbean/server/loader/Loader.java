@@ -23,7 +23,7 @@ import org.xbean.kernel.Kernel;
  * Loaders load configurations into a Kernel.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public interface Loader {
     /**

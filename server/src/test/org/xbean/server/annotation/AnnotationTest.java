@@ -22,7 +22,7 @@ import junit.framework.TestCase;
  * Tests the annotation provider system.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class AnnotationTest extends TestCase {
     /**

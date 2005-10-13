@@ -31,7 +31,7 @@ import org.xbean.kernel.StaticServiceFactory;
  * and can optional hold the thread of execution until the kernel or virtual machine is destroyed.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class KernelMain implements Main {
     private static final String DEFAULT_KERNEL_NAME = "xbean";

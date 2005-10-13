@@ -39,7 +39,7 @@ import net.sf.cglib.proxy.NoOp;
  * Tests the MultiParentClassLoader including classloading and resource loading.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class MultiParentClassLoaderTest extends TestCase {
     private static final String CLASS_NAME = "TestClass";

@@ -32,7 +32,7 @@ import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
  * @author James Strachan
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class XmlWebApplicationContext extends org.springframework.web.context.support.XmlWebApplicationContext implements SpringApplicationContext {
     private final List xmlPreprocessors;

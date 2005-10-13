@@ -37,7 +37,7 @@ import org.xbean.spring.context.SpringApplicationContext;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class SpringLoader implements Loader {
     private Kernel kernel;

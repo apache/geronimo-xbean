@@ -34,7 +34,7 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
  * Default do nothing implementation of SpringVisitor.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public abstract class AbstractSpringVisitor implements SpringVisitor {
     public void visitBeanFactory(ConfigurableListableBeanFactory beanRegistry, Object data) throws BeansException {

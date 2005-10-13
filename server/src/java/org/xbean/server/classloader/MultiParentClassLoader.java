@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class MultiParentClassLoader extends NamedClassLoader {
     private final ClassLoader[] parents;

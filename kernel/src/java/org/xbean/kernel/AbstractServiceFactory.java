@@ -25,7 +25,7 @@ import java.util.HashSet;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public abstract class AbstractServiceFactory implements ServiceFactory {
     private boolean enabled = true;

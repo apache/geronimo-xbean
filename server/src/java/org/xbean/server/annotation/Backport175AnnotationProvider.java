@@ -28,7 +28,7 @@ import org.codehaus.backport175.reader.Annotations;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class Backport175AnnotationProvider implements AnnotationProvider {
     private static final Annotation[][] NO_PARAMETER_ANNOTATIONS = new Annotation[0][0];

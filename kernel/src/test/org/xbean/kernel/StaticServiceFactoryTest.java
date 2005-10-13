@@ -25,7 +25,7 @@ import junit.framework.TestCase;
  * Tests the StaticServiceFactory.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class StaticServiceFactoryTest extends TestCase {
     private static final Object SERVICE = new TreeSet();

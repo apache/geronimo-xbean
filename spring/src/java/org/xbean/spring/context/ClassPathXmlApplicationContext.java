@@ -33,7 +33,7 @@ import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
  * @author James Strachan
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ClassPathXmlApplicationContext extends org.springframework.context.support.ClassPathXmlApplicationContext implements SpringApplicationContext {
     private final List xmlPreprocessors;

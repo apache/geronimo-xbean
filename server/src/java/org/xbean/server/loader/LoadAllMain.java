@@ -28,7 +28,7 @@ import org.xbean.kernel.ServiceName;
  * LoadAllMain loads all configurations specified in the arguments passed to main.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class LoadAllMain implements Main {
     private Kernel kernel;

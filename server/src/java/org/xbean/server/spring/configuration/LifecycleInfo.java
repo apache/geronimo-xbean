@@ -20,7 +20,7 @@ package org.xbean.server.spring.configuration;
  * LifecycleInfo defines the init and destroy method names for a lifecycle interface.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class LifecycleInfo {
     private Class type;

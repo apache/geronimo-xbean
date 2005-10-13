@@ -53,7 +53,7 @@ import org.xbean.kernel.InvalidServiceTypeException;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ServiceManager implements Comparable {
     /**

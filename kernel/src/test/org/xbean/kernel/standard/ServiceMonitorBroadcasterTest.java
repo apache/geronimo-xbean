@@ -37,7 +37,7 @@ import org.xbean.kernel.StringServiceName;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ServiceMonitorBroadcasterTest extends TestCase {
     private static final StandardKernel KERNEL = new StandardKernel("test");

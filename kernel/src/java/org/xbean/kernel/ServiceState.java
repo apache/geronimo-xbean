@@ -24,7 +24,7 @@ import java.io.Serializable;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public final class ServiceState implements Serializable {
     private static final long serialVersionUID = -2629672602273580572L;

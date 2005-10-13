@@ -24,7 +24,7 @@ import junit.framework.TestCase;
  * Tests that the ServiceState constants are consistent.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ServiceStateTest extends TestCase {
     /**

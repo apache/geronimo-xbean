@@ -25,7 +25,7 @@ import java.net.URISyntaxException;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class URIEditor extends PropertyEditorSupport {
     /**

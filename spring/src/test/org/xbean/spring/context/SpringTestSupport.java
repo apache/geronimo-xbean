@@ -28,7 +28,7 @@ import junit.framework.TestCase;
  * 
  * @author James Strachan
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public abstract class SpringTestSupport extends TestCase {
     protected transient Log log = LogFactory.getLog(getClass());

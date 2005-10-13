@@ -25,7 +25,7 @@ import org.xbean.server.spring.main.SpringBootstrap;
 /**
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class SpringBootstrapTest extends TestCase {
     private SpringBootstrap springBootstrap;

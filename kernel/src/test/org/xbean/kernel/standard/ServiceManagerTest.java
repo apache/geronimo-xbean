@@ -57,7 +57,7 @@ import org.xbean.kernel.UnsatisfiedConditionsException;
  * Test ServiceManager.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ServiceManagerTest extends TestCase {
     private static final Object SERVICE = new Object();

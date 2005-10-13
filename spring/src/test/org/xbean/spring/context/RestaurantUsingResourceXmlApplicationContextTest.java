@@ -23,7 +23,7 @@ import org.springframework.core.io.ClassPathResource;
 /**
  * @author James Strachan
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class RestaurantUsingResourceXmlApplicationContextTest extends RestaurantUsingSpringTest {
 

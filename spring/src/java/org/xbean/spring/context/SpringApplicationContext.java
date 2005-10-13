@@ -44,7 +44,7 @@ import org.springframework.core.io.ResourceLoader;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public interface SpringApplicationContext extends ConfigurableApplicationContext, DisposableBean, ResourceLoader{
     /**

@@ -20,7 +20,7 @@ package org.xbean.server.main;
  * Indicates that a fatal error occured while starting the server.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class FatalStartupError extends Error {
     /**

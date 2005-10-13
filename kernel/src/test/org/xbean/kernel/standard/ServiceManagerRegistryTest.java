@@ -57,7 +57,7 @@ import org.xbean.kernel.NullServiceMonitor;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ServiceManagerRegistryTest extends TestCase {
     private static final int TIMEOUT_DURATION = 5;

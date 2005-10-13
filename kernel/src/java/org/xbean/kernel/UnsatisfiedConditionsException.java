@@ -25,7 +25,7 @@ import java.util.Set;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class UnsatisfiedConditionsException extends Exception {
     private final ServiceName serviceName;

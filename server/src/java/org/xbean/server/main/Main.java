@@ -21,7 +21,7 @@ package org.xbean.server.main;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public interface Main {
     /**

@@ -21,7 +21,7 @@ package org.xbean.kernel;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class KernelAlreadyExistsException extends RuntimeException {
     private final String name;

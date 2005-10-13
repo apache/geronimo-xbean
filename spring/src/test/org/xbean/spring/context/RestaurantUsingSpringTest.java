@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * @author James Strachan
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class RestaurantUsingSpringTest extends SpringTestSupport {
 

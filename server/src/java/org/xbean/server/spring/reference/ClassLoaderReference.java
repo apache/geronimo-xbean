@@ -29,7 +29,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * ClassLoaderReference is a the class loader in the ServiceContextThreadLocal.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ClassLoaderReference implements FactoryBean, Serializable {
     /**

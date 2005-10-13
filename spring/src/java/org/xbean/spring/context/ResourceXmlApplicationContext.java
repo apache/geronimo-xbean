@@ -35,7 +35,7 @@ import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
  * @author James Strachan
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext implements SpringApplicationContext {
     private final List xmlPreprocessors;

@@ -37,7 +37,7 @@ import org.w3c.dom.Text;
  * the class loader to the application context and xml reader, and removes the classpath element from document.
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
     private final Repository repository;

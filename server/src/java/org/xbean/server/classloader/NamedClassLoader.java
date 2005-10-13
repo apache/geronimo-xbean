@@ -28,7 +28,7 @@ import java.util.Arrays;
  *
  * @author Dain Sundstrom
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
 public class NamedClassLoader extends URLClassLoader implements DestroyableClassLoader {
     private final String name;
