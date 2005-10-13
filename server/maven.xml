@@ -15,43 +15,34 @@
 *  limitations under the License.
 -->
 <project default="default"
-    xmlns:j="jelly:core"
-    xmlns:ant="jelly:ant"
-    >
+  xmlns:j="jelly:core"
+  xmlns:ant="jelly:ant"
+  >
 
-    <goal name="default">
-        <attainGoal name="jar:install"/>
-    </goal>
+  <goal name="default">
+    <attainGoal name="jar:install"/>
+  </goal>
 
-    <goal name="build">
-        <attainGoal name="default"/>
-    </goal>
+  <goal name="build">
+    <attainGoal name="default"/>
+  </goal>
 
-    <goal name="rebuild">
-        <attainGoal name="clean"/>
-        <attainGoal name="build"/>
-    </goal>
+  <goal name="rebuild">
+    <attainGoal name="clean"/>
+    <attainGoal name="build"/>
+  </goal>
 
-    <postGoal name="test:compile">
-        <taskdef name="annotationc"
-            classname="org.codehaus.backport175.compiler.task.AnnotationCTask">
-            <classpath>
-                <pathelement location="${maven.repo.local}/backport175/jars/backport175-1.0.jar"/>
-            </classpath>
-        </taskdef>
+  <postGoal name="test:compile">
+    <taskdef name="annotationc"
+      classname="org.codehaus.backport175.compiler.task.AnnotationCTask">
+      <classpath>
+        <pathelement location="${maven.repo.local}/backport175/jars/backport175-1.0.jar"/>
+      </classpath>
+    </taskdef>
 
-        <annotationc
-            verbose="true"
-            >
-<!--            destdir="${basedir}/target/test-classes"-->
-<!--            properties="${basedir}/src/test/annotation.properties"-->
-<!--            copytodest="**/*.dtd"-->
-
-            <src path="${basedir}/src/test"/>
-            <classpath path="${basedir}/target/test-classes"/>
-<!--            <fileset dir="other">-->
-<!--                <include name="**/BAZ.java"/>-->
-<!--            </fileset>-->
-        </annotationc>
-    </postGoal>
+    <annotationc verbose="true">
+      <src path="${basedir}/src/test"/>
+      <classpath path="${basedir}/target/test-classes"/>
+    </annotationc>
+  </postGoal>
 </project>

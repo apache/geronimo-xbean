@@ -64,12 +64,6 @@
       <artifactId>backport-util-concurrent</artifactId>
       <version>2.0_01_pd</version>
     </dependency>
-    <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib-nodep</artifactId>
-      <version>2.1_2</version>
-      <type>test</type>
-    </dependency>
   </dependencies>
 
   <build>

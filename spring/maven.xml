@@ -17,37 +17,37 @@
 <project default="default" xmlns:j="jelly:core" xmlns:ant="jelly:ant">
 
   <preGoal name="test:compile">
-    <attainGoal name="xbean:generate" />
+    <attainGoal name="xbean:generate"/>
   </preGoal>
 
   <goal name="default">
-    <attainGoal name="jar:install" />
+    <attainGoal name="jar:install"/>
   </goal>
 
   <goal name="build">
-    <attainGoal name="default" />
+    <attainGoal name="default"/>
   </goal>
 
   <goal name="rebuild">
-    <attainGoal name="clean" />
-    <attainGoal name="build" />
+    <attainGoal name="clean"/>
+    <attainGoal name="build"/>
   </goal>
 
 
   <goal name="xbean:generate" description="Generates the XBean XSD, documentation and META-INF/services files." prereqs="setclasspath">
     <taskdef name="xsdGenerate" classname="org.xbean.spring.task.SchemaGenerateTask">
-      <classpath refid="test.classpath" />
+      <classpath refid="test.classpath"/>
     </taskdef>
-    <xsdGenerate destFile="target/restaurant.xsd" namespace="http://xbean.org/schemas/pizza" 
+    <xsdGenerate destFile="target/restaurant.xsd" namespace="http://xbean.org/schemas/pizza"
       classpathref="test.classpath" srcdir="src/test"/>
   </goal>
 
   <goal name="setclasspath" prereqs="java:compile">
     <path id="test.classpath">
-      <pathelement path="${maven.build.dest}" />
-      <pathelement path="target/classes" />
-      <pathelement path="target/test-classes" />
-      <path refid="maven.dependency.classpath" />
+      <pathelement path="${maven.build.dest}"/>
+      <pathelement path="target/classes"/>
+      <pathelement path="target/test-classes"/>
+      <path refid="maven.dependency.classpath"/>
     </path>
   </goal>
 </project>

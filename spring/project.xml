@@ -64,30 +64,22 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>1.0.3</version>
-      <url>http://jakarta.apache.org/commons/logging/</url>
     </dependency>
 
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring</artifactId>
       <version>1.2.4</version>
-      <url>http://www.springframework.org</url>
     </dependency>
 
-    <!-- Unit Test Dependencies -->
+    <!-- for the QName support -->
     <dependency>
-        <groupId>backport175</groupId>
-        <artifactId>backport175</artifactId>
-        <version>1.0</version>
-    </dependency>
-
-    <!--  for the QName support -->
-    <dependency>
-      <id>stax+api</id>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
       <version>1.0</version>
     </dependency>
 
-    <!--  for the ObjectName support -->
+    <!-- for the ObjectName support -->
     <dependency>
       <groupId>mx4j</groupId>
       <artifactId>mx4j-jmx</artifactId>
@@ -106,26 +98,7 @@
       <version>1.6.2</version>
     </dependency>
 
-    <!--  optional backport175 support -->
-    <dependency>
-      <id>backport175</id>
-      <version>1.0</version>
-    </dependency>
-    
     <!-- Unit Test Dependencies -->
-    <dependency>
-        <groupId>backport-util-concurrent</groupId>
-        <artifactId>backport-util-concurrent</artifactId>
-        <version>2.0_01_pd</version>
-    </dependency>
-
-    <dependency>
-        <groupId>cglib</groupId>
-        <artifactId>cglib-nodep</artifactId>
-        <version>2.1_2</version>
-        <type>test</type>
-    </dependency>
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
