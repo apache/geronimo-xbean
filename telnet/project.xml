@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+* Copyright 2005 the original author or authors.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+-->
+<project>
+  <!-- the version of maven's project object model -->
+  <pomVersion>3</pomVersion>
+
+  <name>XBean :: Telnet</name>
+  <id>xbean-telnet</id>
+  <groupId>xbean</groupId>
+  <currentVersion>2.0-SNAPSHOT</currentVersion>
+  <organization>
+    <name>XBean.org</name>
+    <url>http://xbean.org</url>
+  </organization>
+
+  <package>org.xbean</package>
+
+  <shortDescription>XBean: Telnet protocol and shell library</shortDescription>
+
+  <description>
+     Telnet protocol and shell library
+  </description>
+
+  <url>http://www.xbean.org/</url>
+
+  <siteAddress>www.xbean.org</siteAddress>
+  <siteDirectory>/home/projects/xbean/public_html/maven</siteDirectory>
+
+  <mailingLists>
+    <mailingList>
+      <name>xbean developers</name>
+      <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
+      <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
+    </mailingList>
+    <mailingList>
+      <name>xbean users</name>
+      <subscribe>mailto:user-subscribe@xbean.org</subscribe>
+      <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
+    </mailingList>
+    <mailingList>
+      <name>xbean source control messages</name>
+      <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
+      <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
+    </mailingList>
+  </mailingLists>
+
+  <dependencies>
+    <dependency>
+      <groupId>groovy</groupId>
+      <artifactId>groovy</artifactId>
+      <version>1.0-jsr-03</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/java</sourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+    <unitTest>
+      <includes>
+        <include>**/*Test.java</include>
+      </includes>
+    </unitTest>
+  </build>
+
+  <reports>
+    <report>maven-jxr-plugin</report>
+    <report>maven-javadoc-plugin</report>
+    <report>maven-junit-report-plugin</report>
+  </reports>
+
+</project>
+
