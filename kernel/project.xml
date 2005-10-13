@@ -15,90 +15,90 @@
 *  limitations under the License.
 -->
 <project>
-    <!-- the version of maven's project object model -->
-    <pomVersion>3</pomVersion>
+  <!-- the version of maven's project object model -->
+  <pomVersion>3</pomVersion>
 
-    <name>XBean :: Kernel</name>
-    <id>xbean-kernel</id>
-    <groupId>xbean</groupId>
-    <currentVersion>2.0-SNAPSHOT</currentVersion>
-    <organization>
-        <name>XBean.org</name>
-        <url>http://xbean.org</url>
-    </organization>
+  <name>XBean :: Kernel</name>
+  <id>xbean-kernel</id>
+  <groupId>xbean</groupId>
+  <currentVersion>2.0-SNAPSHOT</currentVersion>
+  <organization>
+    <name>XBean.org</name>
+    <url>http://xbean.org</url>
+  </organization>
 
-    <package>org.xbean</package>
+  <package>org.xbean</package>
 
-    <shortDescription>XBean: kernel for containers</shortDescription>
+  <shortDescription>XBean: kernel for containers</shortDescription>
 
-    <description>
+  <description>
         XBean is a kernel architecture and server for ioc containers such as spring.
-    </description>
+  </description>
 
-    <url>http://www.xbean.org/</url>
+  <url>http://www.xbean.org/</url>
 
-    <siteAddress>www.xbean.org</siteAddress>
-    <siteDirectory>/home/projects/xbean/public_html/maven</siteDirectory>
+  <siteAddress>www.xbean.org</siteAddress>
+  <siteDirectory>/home/projects/xbean/public_html/maven</siteDirectory>
 
-    <mailingLists>
-        <mailingList>
-            <name>xbean developers</name>
-            <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
-            <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
-        </mailingList>
-        <mailingList>
-            <name>xbean users</name>
-            <subscribe>mailto:user-subscribe@xbean.org</subscribe>
-            <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
-        </mailingList>
-        <mailingList>
-            <name>xbean source control messages</name>
-            <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
-            <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
-        </mailingList>
-    </mailingLists>
+  <mailingLists>
+    <mailingList>
+      <name>xbean developers</name>
+      <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
+      <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
+    </mailingList>
+    <mailingList>
+      <name>xbean users</name>
+      <subscribe>mailto:user-subscribe@xbean.org</subscribe>
+      <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
+    </mailingList>
+    <mailingList>
+      <name>xbean source control messages</name>
+      <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
+      <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
+    </mailingList>
+  </mailingLists>
 
-    <dependencies>
-        <dependency>
-            <groupId>backport-util-concurrent</groupId>
-            <artifactId>backport-util-concurrent</artifactId>
-            <version>2.0_01_pd</version>
-        </dependency>
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <version>2.1_2</version>
-            <type>test</type>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>backport-util-concurrent</groupId>
+      <artifactId>backport-util-concurrent</artifactId>
+      <version>2.0_01_pd</version>
+    </dependency>
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib-nodep</artifactId>
+      <version>2.1_2</version>
+      <type>test</type>
+    </dependency>
+  </dependencies>
 
-    <build>
-        <sourceDirectory>src/java</sourceDirectory>
-        <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
-        <unitTest>
-            <includes>
-                <include>**/*Test.java</include>
-            </includes>
-        </unitTest>
-    </build>
+  <build>
+    <sourceDirectory>src/java</sourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+    <unitTest>
+      <includes>
+        <include>**/*Test.java</include>
+      </includes>
+    </unitTest>
+  </build>
 
-    <reports>
-        <!-- <report>maven-license-plugin</report> -->
-        <!-- <report>maven-checkstyle-plugin</report>-->
-        <!-- <report>maven-pmd-plugin</report> -->
-        <!-- <report>maven-simian-plugin</report> -->
-        <!-- <report>maven-jdepend-plugin</report> -->
-        <!-- <report>maven-changelog-plugin</report> -->
-        <!-- <report>maven-statcvs-plugin</report> -->
-        <!-- <report>maven-file-activity-plugin</report> -->
-        <!-- <report>maven-developer-activity-plugin</report> -->
-        <report>maven-jxr-plugin</report>
-        <report>maven-javadoc-plugin</report>
-        <report>maven-junit-report-plugin</report>
-        <!-- <report>maven-faq-plugin</report> -->
-        <!-- <report>maven-clover-plugin</report>-->
-        <!-- <report>maven-changes-plugin</report>-->
-    </reports>
+  <reports>
+    <!-- <report>maven-license-plugin</report> -->
+    <!-- <report>maven-checkstyle-plugin</report>-->
+    <!-- <report>maven-pmd-plugin</report> -->
+    <!-- <report>maven-simian-plugin</report> -->
+    <!-- <report>maven-jdepend-plugin</report> -->
+    <!-- <report>maven-changelog-plugin</report> -->
+    <!-- <report>maven-statcvs-plugin</report> -->
+    <!-- <report>maven-file-activity-plugin</report> -->
+    <!-- <report>maven-developer-activity-plugin</report> -->
+    <report>maven-jxr-plugin</report>
+    <report>maven-javadoc-plugin</report>
+    <report>maven-junit-report-plugin</report>
+    <!-- <report>maven-faq-plugin</report> -->
+    <!-- <report>maven-clover-plugin</report>-->
+    <!-- <report>maven-changes-plugin</report>-->
+  </reports>
 
 </project>
 
