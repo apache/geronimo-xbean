@@ -46,57 +46,57 @@
   </bean>
 
 
-  <bean name="SpringLoader" class="org.xbean.spring.loader.SpringLoader">
+  <bean name="SpringLoader" class="org.xbean.server.spring.loader.SpringLoader">
     <property name="kernel" ref="Kernel"/>
     <property name="baseDir" value="${xbean.base.dir}/conf"/>
     <property name="xmlPreprocessors">
       <list>
-        <bean class="org.xbean.spring.context.ClassLoaderXmlPreprocessor">
+        <bean class="org.xbean.server.spring.context.ClassLoaderXmlPreprocessor">
           <constructor-arg index="0" ref="FileSystemRepository"/>
         </bean>
       </list>
     </property>
     <property name="beanFactoryPostProcessors">
       <list>
-        <bean class="org.xbean.spring.configuration.NamedConstructorArgs">
+        <bean class="org.xbean.server.spring.configuration.NamedConstructorArgs">
           <property name="annotationProvider" ref="AnnotationProvider"/>
           <property name="defaultValues">
             <list>
-              <bean class="org.xbean.spring.configuration.DefaultProperty">
+              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
                 <property name="name" value="serviceName"/>
                 <property name="type" value="java.lang.String"/>
                 <property name="value">
-                  <bean class="org.xbean.spring.reference.ServiceNameStringReference" factory-method="createBeanDefinition"/>
+                  <bean class="org.xbean.server.spring.reference.ServiceNameStringReference" factory-method="createBeanDefinition"/>
                 </property>
               </bean>
-              <bean class="org.xbean.spring.configuration.DefaultProperty">
+              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
                 <property name="name" value="serviceName"/>
                 <property name="type" value="org.xbean.kernel.ServiceName"/>
                 <property name="value">
-                  <bean class="org.xbean.spring.reference.ServiceNameReference" factory-method="createBeanDefinition"/>
+                  <bean class="org.xbean.server.spring.reference.ServiceNameReference" factory-method="createBeanDefinition"/>
                 </property>
               </bean>
-              <bean class="org.xbean.spring.configuration.DefaultProperty">
+              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
                 <property name="name" value="classLoader"/>
                 <property name="type" value="java.lang.ClassLoader"/>
                 <property name="value">
-                  <bean class="org.xbean.spring.reference.ClassLoaderReference" factory-method="createBeanDefinition"/>
+                  <bean class="org.xbean.server.spring.reference.ClassLoaderReference" factory-method="createBeanDefinition"/>
                 </property>
               </bean>
-              <bean class="org.xbean.spring.configuration.DefaultProperty">
+              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
                 <property name="name" value="kernel"/>
                 <property name="type" value="org.xbean.kernel.Kernel"/>
                 <property name="value">
-                  <bean class="org.xbean.spring.reference.KernelReference" factory-method="createBeanDefinition"/>
+                  <bean class="org.xbean.server.spring.reference.KernelReference" factory-method="createBeanDefinition"/>
                 </property>
               </bean>
             </list>
           </property>
         </bean>
-<!--        <bean class="org.xbean.spring.configuration.LifecycleDetector">-->
+<!--        <bean class="org.xbean.server.spring.configuration.LifecycleDetector">-->
 <!--          <property name="lifecycleInterfaces">-->
 <!--            <list>-->
-<!--              <bean class="org.xbean.spring.configuration.LifecycleInfo">-->
+<!--              <bean class="org.xbean.server.spring.configuration.LifecycleInfo">-->
 <!--                <property name="type" value="example.SimpleLifecycle"/>-->
 <!--                <property name="initMethodName" value="start"/>-->
 <!--                <property name="destroyMethodName" value="stop"/>-->

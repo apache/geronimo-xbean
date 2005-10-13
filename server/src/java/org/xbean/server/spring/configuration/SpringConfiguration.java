@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.configuration;
+package org.xbean.server.spring.configuration;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ import org.xbean.kernel.StaticServiceFactory;
 import org.xbean.kernel.StringServiceName;
 import org.springframework.beans.BeansException;
 import org.xbean.spring.context.SpringApplicationContext;
-import org.xbean.spring.loader.SpringLoader;
+import org.xbean.server.spring.loader.SpringLoader;
 
 /**
  * SpringConfiguration that registers and unregisters services that have been defined in a SpringApplicationContext.
@@ -58,9 +58,10 @@ public class SpringConfiguration {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(classLoader);
 
+        // read the configuration file from source
+        applicationContext.refresh();
+
         try {
-            // register the configuration file from source
-            applicationContext.refresh();
 
             // build a map from bean name to service name
             Map serviceNameIndex = buildServiceNameIndex(applicationContext);
@@ -86,9 +87,6 @@ public class SpringConfiguration {
                 kernel.registerService(serviceName, serviceFactory, classLoader);
             }
 
-        } catch (BeansException e) {
-            applicationContext.close();
-            throw e;
         } catch (ServiceAlreadyExistsException e) {
             destroy();
             throw e;

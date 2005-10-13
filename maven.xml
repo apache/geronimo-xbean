@@ -7,6 +7,14 @@
         <j:set var="goal" value="default" />
         <attainGoal name="multiproject:goal"/>
     </goal>
+    <goal name="clean">
+        <j:set var="goal" value="clean" />
+        <attainGoal name="multiproject:goal"/>
+    </goal>
+    <goal name="rebuild">
+        <j:set var="goal" value="rebuild" />
+        <attainGoal name="multiproject:goal"/>
+    </goal>
     <goal name="idea">
         <attainGoal name="idea:multiproject"/>
     </goal>

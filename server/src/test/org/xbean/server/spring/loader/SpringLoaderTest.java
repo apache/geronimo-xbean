@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.loader;
+package org.xbean.server.spring.loader;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,8 +38,10 @@ import org.xbean.kernel.KernelFactory;
 import org.xbean.kernel.ServiceName;
 import org.xbean.kernel.StringServiceName;
 import org.xbean.server.repository.FileSystemRepository;
-import org.xbean.spring.configuration.SpringConfigurationServiceFactory;
-import org.xbean.spring.context.ClassLoaderXmlPreprocessor;
+import org.xbean.server.spring.loader.SpringLoader;
+import org.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
+import org.xbean.server.spring.context.ClassLoaderXmlPreprocessor;
+import org.xbean.server.spring.context.ClassLoaderXmlPreprocessor;
 import org.xbean.spring.context.SpringApplicationContext;
 
 /**
@@ -57,7 +59,7 @@ public class SpringLoaderTest extends TestCase {
         Kernel kernel = KernelFactory.newInstance().createKernel("test");
 
         try {
-            File baseDir = new File("src/test/org/xbean/spring/loader/").getAbsoluteFile();
+            File baseDir = new File("src/test/org/xbean/server/spring/loader/").getAbsoluteFile();
             System.setProperty("xbean.base.dir", baseDir.getAbsolutePath());
 
             FileSystemRepository repository = new FileSystemRepository(new File(".").getAbsoluteFile());
@@ -84,7 +86,7 @@ public class SpringLoaderTest extends TestCase {
         Kernel kernel = KernelFactory.newInstance().createKernel("test");
 
         try {
-            File baseDir = new File("src/test/org/xbean/spring/loader/").getAbsoluteFile();
+            File baseDir = new File("src/test/org/xbean/server/spring/loader/").getAbsoluteFile();
             System.setProperty("xbean.base.dir", baseDir.getAbsolutePath());
 
             FileSystemRepository repository = new FileSystemRepository(new File(".").getAbsoluteFile());

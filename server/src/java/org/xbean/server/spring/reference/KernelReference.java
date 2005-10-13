@@ -15,35 +15,36 @@
  *  limitations under the License.
  */
 
-package org.xbean.spring.reference;
+package org.xbean.server.spring.reference;
 
 import java.io.Serializable;
 
+import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.FactoryBean;
+import org.xbean.kernel.Kernel;
 import org.xbean.kernel.ServiceContext;
 import org.xbean.kernel.ServiceContextThreadLocal;
-import org.xbean.kernel.ServiceName;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.support.RootBeanDefinition;
+
 
 /**
- * ServiceNameReference is a the ServiceName in the ServiceContextThreadLocal.
+ * KernelReference is a the kernel in the ServiceContextThreadLocal. 
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ServiceNameReference implements FactoryBean, Serializable {
+public class KernelReference implements FactoryBean, Serializable {
     /**
-     * Creates a bean definition for ServiceNameReference.
-     * @return a bean definition for ServiceNameReference
+     * Creates a bean definition for KernelReference.
+     * @return a bean definition for KernelReference
      */
     public static BeanDefinitionHolder createBeanDefinition() {
-        RootBeanDefinition beanDefinition = new RootBeanDefinition(ServiceNameReference.class, 0);
-        return new BeanDefinitionHolder(beanDefinition, ServiceNameReference.class.getName());
+        RootBeanDefinition beanDefinition = new RootBeanDefinition(KernelReference.class, 0);
+        return new BeanDefinitionHolder(beanDefinition, KernelReference.class.getName());
     }
 
     public final Class getObjectType() {
-        return ServiceName.class;
+        return Kernel.class;
     }
 
     public synchronized final Object getObject() {
@@ -51,7 +52,7 @@ public class ServiceNameReference implements FactoryBean, Serializable {
         if (serviceContext == null) {
             throw new IllegalStateException("Service context has not been set");
         }
-        return serviceContext.getServiceName();
+        return serviceContext.getKernel();
     }
 
     public boolean isSingleton() {

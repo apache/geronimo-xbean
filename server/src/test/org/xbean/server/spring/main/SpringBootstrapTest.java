@@ -14,12 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.main;
+package org.xbean.server.spring.main;
 
 import junit.framework.TestCase;
 import org.xbean.kernel.Kernel;
 import org.xbean.kernel.KernelFactory;
 import org.xbean.server.main.KernelMain;
+import org.xbean.server.spring.main.SpringBootstrap;
 
 /**
  * @author Dain Sundstrom

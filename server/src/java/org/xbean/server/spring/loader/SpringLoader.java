@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.loader;
+package org.xbean.server.spring.loader;
 
 import java.io.File;
 import java.util.List;
@@ -25,7 +25,8 @@ import org.xbean.kernel.ServiceFactory;
 import org.xbean.kernel.ServiceName;
 import org.xbean.kernel.StringServiceName;
 import org.xbean.server.loader.Loader;
-import org.xbean.spring.configuration.SpringConfigurationServiceFactory;
+import org.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
+import org.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
 import org.xbean.spring.context.FileSystemXmlApplicationContext;
 import org.xbean.spring.context.SpringApplicationContext;
 

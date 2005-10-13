@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.configuration;
+package org.xbean.server.spring.configuration;
 
 /**
  * DefaultProperty contains the default value assigned to a property with a specific name and type.

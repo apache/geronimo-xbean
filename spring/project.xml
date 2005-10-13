@@ -68,18 +68,6 @@
     </dependency>
 
     <dependency>
-        <groupId>xbean</groupId>
-        <artifactId>xbean-kernel</artifactId>
-        <version>2.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-        <groupId>xbean</groupId>
-        <artifactId>xbean-server</artifactId>
-        <version>2.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring</artifactId>
       <version>1.2.4</version>
@@ -97,10 +85,6 @@
     <dependency>
       <id>stax+api</id>
       <version>1.0</version>
-      <properties>
-        <lib>true</lib>
-        <war.bundle>true</war.bundle>
-      </properties>
     </dependency>
 
     <!--  for the ObjectName support -->
@@ -108,10 +92,6 @@
       <groupId>mx4j</groupId>
       <artifactId>mx4j-jmx</artifactId>
       <version>2.1.1</version>
-      <properties>
-        <lib>true</lib>
-        <war.bundle>true</war.bundle>
-      </properties>
     </dependency>
 
     <!--  for systest Ant task  -->

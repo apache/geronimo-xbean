@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.xbean.spring.reference;
+package org.xbean.server.spring.reference;
 
 import java.io.Serializable;
 
@@ -26,23 +26,23 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 
 /**
- * ClassLoaderReference is a the class loader in the ServiceContextThreadLocal.
+ * ServiceNameStringReference is a the ServiceName as a string in the ServiceContextThreadLocal.
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class ClassLoaderReference implements FactoryBean, Serializable {
+public class ServiceNameStringReference implements FactoryBean, Serializable {
     /**
-     * Creates a bean definition for ServiceContextThreadLocal.
-     * @return a bean definition for ServiceContextThreadLocal
+     * Creates a bean definition for ServiceNameStringReference.
+     * @return a bean definition for ServiceNameStringReference
      */
     public static BeanDefinitionHolder createBeanDefinition() {
-        RootBeanDefinition beanDefinition = new RootBeanDefinition(ClassLoaderReference.class, 0);
-        return new BeanDefinitionHolder(beanDefinition, ClassLoaderReference.class.getName());
+        RootBeanDefinition beanDefinition = new RootBeanDefinition(ServiceNameStringReference.class, 0);
+        return new BeanDefinitionHolder(beanDefinition, ServiceNameStringReference.class.getName());
     }
 
     public final Class getObjectType() {
-        return ClassLoader.class;
+        return String.class;
     }
 
     public synchronized final Object getObject() {
@@ -50,7 +50,7 @@ public class ClassLoaderReference implements FactoryBean, Serializable {
         if (serviceContext == null) {
             throw new IllegalStateException("Service context has not been set");
         }
-        return serviceContext.getClassLoader();
+        return serviceContext.getServiceName().toString();
     }
 
     public boolean isSingleton() {

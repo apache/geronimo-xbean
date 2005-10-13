@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.configuration;
+package org.xbean.server.spring.configuration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +42,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.xbean.server.annotation.AnnotationProvider;
 import org.xbean.server.annotation.DefaultConstructor;
 import org.xbean.server.annotation.ParameterNames;
+import org.xbean.server.spring.configuration.DefaultProperty;
 import org.xbean.spring.util.SpringVisitor;
 import org.xbean.spring.util.AbstractSpringVisitor;
 

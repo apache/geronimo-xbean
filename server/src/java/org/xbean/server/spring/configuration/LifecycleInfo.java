@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.configuration;
+package org.xbean.server.spring.configuration;
 
 /**
  * LifecycleInfo defines the init and destroy method names for a lifecycle interface.

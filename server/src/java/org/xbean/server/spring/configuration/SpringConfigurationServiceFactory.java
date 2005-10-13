@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.configuration;
+package org.xbean.server.spring.configuration;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,6 +31,7 @@ import org.xbean.kernel.ServiceContext;
 import org.xbean.kernel.ServiceFactory;
 import org.xbean.kernel.ServiceName;
 import org.xbean.spring.context.SpringApplicationContext;
+import org.xbean.server.spring.configuration.SpringConfiguration;
 
 /**
  * SpringConfigurationServiceFactory is manages the creation and destruction of a SpringConfiguration.

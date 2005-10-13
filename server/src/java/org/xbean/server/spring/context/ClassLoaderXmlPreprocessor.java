@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.xbean.spring.context;
+package org.xbean.server.spring.context;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,6 +23,8 @@ import java.util.ListIterator;
 
 import org.xbean.server.classloader.MultiParentClassLoader;
 import org.xbean.server.repository.Repository;
+import org.xbean.spring.context.SpringXmlPreprocessor;
+import org.xbean.spring.context.SpringApplicationContext;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.w3c.dom.Document;
