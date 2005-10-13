@@ -7,4 +7,7 @@
         <j:set var="goal" value="default" />
         <attainGoal name="multiproject:goal"/>
     </goal>
+    <goal name="idea">
+        <attainGoal name="idea:multiproject"/>
+    </goal>
 </project>
