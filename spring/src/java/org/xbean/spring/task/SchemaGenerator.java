@@ -24,7 +24,9 @@ import org.codehaus.jam.JAnnotation;
 import org.codehaus.jam.JAnnotationValue;
 import org.codehaus.jam.JClass;
 import org.codehaus.jam.JComment;
+import org.codehaus.jam.JConstructor;
 import org.codehaus.jam.JMethod;
+import org.codehaus.jam.JParameter;
 import org.codehaus.jam.JProperty;
 import org.xbean.spring.context.impl.NamespaceHelper;
 import org.xbean.spring.context.impl.PropertyEditorHelper;
@@ -114,7 +116,41 @@ public class SchemaGenerator {
         for (Iterator iter = elements.iterator(); iter.hasNext();) {
             SchemaElement element = (SchemaElement) iter.next();
             out.println(element.getLocalName() + " = " + element.getType().getQualifiedName());
+            
+            generatePropertiesFileConstructors(out, namespace, element);
         }
+    }
+
+    protected void generatePropertiesFileConstructors(PrintWriter out, String namespace, SchemaElement element) {
+        JClass type = element.getType();
+        JConstructor[] constructors = type.getConstructors();
+        for (int i = 0; i < constructors.length; i++) {
+            JConstructor constructor = constructors[i];
+            generatePropertiesFileConstructor(out, namespace, element, constructor);
+        }
+    }
+
+    protected void generatePropertiesFileConstructor(PrintWriter out, String namespace, SchemaElement element, JConstructor constructor) {
+        JParameter[] parameters = constructor.getParameters();
+        if (parameters.length == 0) {
+            return;
+        }
+        out.print(element.getType().getQualifiedName());
+        out.print("(");
+        for (int i = 0; i < parameters.length; i++) {
+            JParameter parameter = parameters[i];
+            if (i > 0) {
+                out.print(",");
+            }
+            out.print(parameter.getType().getQualifiedName());
+        }
+        out.print(").parameterNames =");
+        for (int i = 0; i < parameters.length; i++) {
+            JParameter parameter = parameters[i];
+                out.print(" ");
+            out.print(parameter.getSimpleName());
+        }
+        out.println();
     }
 
     // Documentation generation

@@ -17,6 +17,8 @@
 package org.xbean.spring.example;
 
 /**
+ * @org.xbean.XBean 
+ * 
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
