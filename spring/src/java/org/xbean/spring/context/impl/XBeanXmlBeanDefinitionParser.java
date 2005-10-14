@@ -85,6 +85,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
     private Set reservedElementNames = new HashSet(Arrays.asList(RESERVED_ELEMENT_NAMES));
     private Set reservedBeanAttributeNames = new HashSet(Arrays.asList(RESERVED_BEAN_ATTRIBUTE_NAMES));
+    protected final NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs();
 
     /**
      * Configures the XmlBeanDefinitionReader to work nicely with extensible XML
@@ -122,6 +123,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 addNestedPropertyElements(definition, metadata, className, element);
                 addInlinedPropertiesFile(definition, metadata, className, element);
                 coerceNamespaceAwarePropertyValues(definition, element);
+                namedConstructorArgs.processParameters(definition, metadata);
                 return definition;
             }
         }

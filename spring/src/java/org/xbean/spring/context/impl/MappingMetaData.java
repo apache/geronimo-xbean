@@ -18,6 +18,10 @@
 package org.xbean.spring.context.impl;
 
 import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.lang.reflect.Constructor;
 
 /**
  * A helper class which understands how to map an XML namespaced element to
@@ -96,5 +100,37 @@ public class MappingMetaData {
      */
     public String getNestedProperty(String elementName, String childElementName) {
         return properties.getProperty(elementName + "." + childElementName);
+    }
+
+    public boolean isDefaultConstructor(Constructor constructor) {
+        String property = properties.getProperty(constructorToPropertyName(constructor) + ".default");
+        if (property != null) {
+            return Boolean.valueOf(property).booleanValue();
+        }
+        return false;
+    }
+
+    public String[] getParameterNames(Constructor constructor) {
+        String property = properties.getProperty(constructorToPropertyName(constructor) + ".parameterNames");
+        if (property != null) {
+            ArrayList names = Collections.list(new StringTokenizer(property, ", "));
+            return (String[]) names.toArray(new String[0]);
+        }
+        return null;
+    }
+
+    public static String constructorToPropertyName(Constructor constructor) {
+        StringBuffer buf = new StringBuffer();
+        buf.append(constructor.getName()).append("(");
+        Class[] parameterTypes = constructor.getParameterTypes();
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Class parameterType = parameterTypes[i];
+            buf.append(parameterType.getName());
+            if (i < parameterTypes.length - 1) {
+                buf.append(",");
+            }
+        }
+        buf.append(")");
+        return buf.toString();
     }
 }

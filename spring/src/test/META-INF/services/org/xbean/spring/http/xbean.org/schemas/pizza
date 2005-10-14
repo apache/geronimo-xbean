@@ -6,12 +6,17 @@ package = org.xbean.spring.example
 # Mapping of XML Element localNames to classes 
 pizza = org.xbean.spring.example.PizzaService
 restaurant = org.xbean.spring.example.RestaurantService
+salad = org.xbean.spring.example.SaladService
 
 # Mapping of XML Attributes to property names
 pizza.myTopping = topping
+salad.addCroutons = crouton
 
 # Mapping of nested bean properties
 restaurant.dinnerMenu.list = dinnerMenu
 restaurant.favourite = favourite
+
+# Mapping of constructor argument names
+org.xbean.spring.example.SaladService(java.lang.String,java.lang.String,boolean).parameterNames=dressing size crouton
 
 # END SNIPPET: config
