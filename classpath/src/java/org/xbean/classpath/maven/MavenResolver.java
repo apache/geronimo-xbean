@@ -16,12 +16,6 @@
  */
 package org.xbean.classpath.maven;
 
-import org.apache.maven.artifact.factory.DefaultArtifactFactory;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.Artifact;
-
-import java.util.Set;
-import java.util.HashSet;
 import java.net.URL;
 
 /**
@@ -32,14 +26,14 @@ import java.net.URL;
  * @since 1.0
  */
 public class MavenResolver {
-    private final ArtifactFactory artifactFactory;
-    private final Set artifacts = new HashSet();
+//    private final ArtifactFactory artifactFactory;
+//    private final Set artifacts = new HashSet();
 
     /**
      * Creates a new resolver.
      */
     public MavenResolver() {
-        artifactFactory = new DefaultArtifactFactory();
+//        artifactFactory = new DefaultArtifactFactory();
     }
 
     /**
@@ -60,8 +54,8 @@ public class MavenResolver {
      * @param type the type of the artifact
      */
     public void addArtifact(String groupId, String artifactId, String version, String type) {
-        Artifact artifact = artifactFactory.createArtifact( groupId, artifactId, version, "runtime", type );
-        artifacts.add(artifact);
+//        Artifact artifact = artifactFactory.createArtifact( groupId, artifactId, version, "runtime", type );
+//        artifacts.add(artifact);
     }
 
     /**
