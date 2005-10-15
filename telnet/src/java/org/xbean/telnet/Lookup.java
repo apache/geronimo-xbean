@@ -82,9 +82,9 @@ public class Lookup extends Command {
 
     public void list(String name, InputStream in, PrintStream out) throws IOException {
         try {
-            NamingEnumeration enum = null;
+            NamingEnumeration names = null;
             try {
-                enum = ctx.list(name);
+                names = ctx.list(name);
             } catch (NameNotFoundException e) {
                 out.print("lookup: ");
                 out.print(name);
@@ -95,11 +95,11 @@ public class Lookup extends Command {
                 e.printStackTrace(new PrintStream(out));
                 return;
             }
-            if (enum == null) {
+            if (names == null) {
                 return;
             }
-            while (enum.hasMore()) {
-                NameClassPair entry = (NameClassPair) enum.next();
+            while (names.hasMore()) {
+                NameClassPair entry = (NameClassPair) names.next();
                 out.println(entry.getName());
             }
         } catch (Exception e) {
