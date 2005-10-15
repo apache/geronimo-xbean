@@ -63,6 +63,10 @@ import java.util.Set;
  */
 public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser {
 
+    static {
+	PropertyEditorHelper.registerCustomEditors();
+    }
+
     private static final Log log = LogFactory.getLog(XBeanXmlBeanDefinitionParser.class);
 
     /**
