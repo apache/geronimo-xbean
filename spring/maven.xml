@@ -16,9 +16,9 @@
 -->
 <project default="default" xmlns:j="jelly:core" xmlns:ant="jelly:ant">
 
-  <preGoal name="test:compile">
+  <postGoal name="test:compile">
     <attainGoal name="xbean:generate"/>
-  </preGoal>
+  </postGoal>
 
   <goal name="default">
     <attainGoal name="jar:install"/>
