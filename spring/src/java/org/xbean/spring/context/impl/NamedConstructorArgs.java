@@ -21,12 +21,12 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -88,7 +88,12 @@ public class NamedConstructorArgs {
     }
 
     public void processParameters(BeanDefinitionHolder definitionHolder, MappingMetaData metadata) throws BeansException {
-        BeanDefinition beanDefinition = definitionHolder.getBeanDefinition();
+        // this only works if we have an abstsract bean definition
+        if (!(definitionHolder.getBeanDefinition() instanceof AbstractBeanDefinition)) {
+            return;
+        }
+
+        AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition) definitionHolder.getBeanDefinition();
         ConstructorArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
 
         // if this bean already has constructor arguments defined, don't mess with them
@@ -97,15 +102,15 @@ public class NamedConstructorArgs {
         }
 
         // try to get a list of constructor arg names to use
-        ConstructorInfo constructorInfo = selectConstructor(beanDefinition, metadata);
-        if (constructorInfo == null) {
+        ConstructionInfo constructionInfo = selectConstructionMethod(beanDefinition, metadata);
+        if (constructionInfo == null) {
             return;
         }
 
         // remove each named property and add an indexed constructor arg
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
-        String[] parameterNames = constructorInfo.parameterNames;
-        Class[] parameterTypes = constructorInfo.constructor.getParameterTypes();
+        String[] parameterNames = constructionInfo.parameterNames;
+        Class[] parameterTypes = constructionInfo.parameterTypes;
         for (int i = 0; i < parameterNames.length; i++) {
             String parameterName = parameterNames[i];
             Class parameterType = parameterTypes[i];
@@ -133,8 +138,8 @@ public class NamedConstructorArgs {
         // todo set any usable default values on the bean definition
     }
 
-    private ConstructorInfo selectConstructor(BeanDefinition beanDefinition, MappingMetaData metadata) {
-        Class beanType = ((AbstractBeanDefinition) beanDefinition).getBeanClass();
+    private ConstructionInfo selectConstructionMethod(AbstractBeanDefinition beanDefinition, MappingMetaData metadata) {
+        Class beanClass = beanDefinition.getBeanClass();
 
         // get a set containing the names of the defined properties
         Set definedProperties = new HashSet();
@@ -143,8 +148,52 @@ public class NamedConstructorArgs {
             definedProperties.add(values[i].getName());
         }
 
+        // first check for a factory method
+        if (beanDefinition.getFactoryMethodName() != null) {
+            return selectFactory(beanClass, beanDefinition, metadata, definedProperties);
+        } else {
+            return selectConstructor(beanClass, metadata, definedProperties);
+        }
+    }
+
+    private ConstructionInfo selectFactory(Class beanClass, AbstractBeanDefinition beanDefinition, MappingMetaData metadata, Set definedProperties) {
+        String factoryMethodName = beanDefinition.getFactoryMethodName();
+
+        // get the factory methods sorted by longest arg length first
+        Method[] methods = beanClass.getMethods();
+        List factoryMethods = new ArrayList(methods.length);
+        for (int i = 0; i < methods.length; i++) {
+            Method method = methods[i];
+            if (method.getName().equals(factoryMethodName)) {
+                factoryMethods.add(method);
+            }
+        }
+
+        Collections.sort(factoryMethods, new ArgLengthComparator());
+
+        // if a factory method has been annotated as the default constructor we always use that constructor
+        for (Iterator iterator = factoryMethods.iterator(); iterator.hasNext();) {
+            Method factoryMethod = (Method) iterator.next();
+
+            if (metadata.isDefaultFactoryMethod(beanClass, factoryMethod)) {
+                return new ConstructionInfo(beanClass, factoryMethod, metadata);
+            }
+        }
+
+        // try to find a constructor for which we have all of the properties defined
+        for (Iterator iterator = factoryMethods.iterator(); iterator.hasNext();) {
+            Method factoryMethod = (Method) iterator.next();
+            ConstructionInfo constructionInfo = new ConstructionInfo(beanClass, factoryMethod, metadata);
+            if (isUsableConstructor(constructionInfo, definedProperties)) {
+                return constructionInfo;
+            }
+        }
+        return null;
+    }
+
+    private ConstructionInfo selectConstructor(Class beanClass, MappingMetaData metadata, Set definedProperties) {
         // get the constructors sorted by longest arg length first
-        List constructors = new ArrayList(Arrays.asList(beanType.getConstructors()));
+        List constructors = new ArrayList(Arrays.asList(beanClass.getConstructors()));
         Collections.sort(constructors, new ArgLengthComparator());
 
         // if a constructor has been annotated as the default constructor we always use that constructor
@@ -152,29 +201,29 @@ public class NamedConstructorArgs {
             Constructor constructor = (Constructor) iterator.next();
 
             if (metadata.isDefaultConstructor(constructor)) {
-                return new ConstructorInfo(constructor, metadata);
+                return new ConstructionInfo(constructor, metadata);
             }
         }
 
         // try to find a constructor for which we have all of the properties defined
         for (Iterator iterator = constructors.iterator(); iterator.hasNext();) {
             Constructor constructor = (Constructor) iterator.next();
-            ConstructorInfo constructorInfo = new ConstructorInfo(constructor, metadata);
-            if (isUsableConstructor(constructorInfo, definedProperties)) {
-                return constructorInfo;
+            ConstructionInfo constructionInfo = new ConstructionInfo(constructor, metadata);
+            if (isUsableConstructor(constructionInfo, definedProperties)) {
+                return constructionInfo;
             }
         }
         return null;
     }
 
-    private boolean isUsableConstructor(ConstructorInfo constructorInfo, Set definedProperties) {
+    private boolean isUsableConstructor(ConstructionInfo constructionInfo, Set definedProperties) {
         // if we don't have parameter names this is not the constructor we are looking for
-        String[] parameterNames = constructorInfo.parameterNames;
+        String[] parameterNames = constructionInfo.parameterNames;
         if (parameterNames == null) {
             return false;
         }
 
-        Class[] parameterTypes = constructorInfo.constructor.getParameterTypes();
+        Class[] parameterTypes = constructionInfo.parameterTypes;
         for (int i = 0; i < parameterNames.length; i++) {
             String parameterName = parameterNames[i];
             Class parameterType = parameterTypes[i];
@@ -188,19 +237,37 @@ public class NamedConstructorArgs {
         return true;
     }
 
-    private class ConstructorInfo {
-        private final Constructor constructor;
+    private class ConstructionInfo {
+        private final Class[] parameterTypes;
         private final String[] parameterNames;
 
-        public ConstructorInfo(Constructor constructor, MappingMetaData metadata) {
-            this.constructor = constructor;
+        public ConstructionInfo(Constructor constructor, MappingMetaData metadata) {
+            this.parameterTypes = constructor.getParameterTypes();
             String[] names = metadata.getParameterNames(constructor);
 
             // verify that we have enough parameter names
-            int expectedParameterCount = constructor.getParameterTypes().length;
+            int expectedParameterCount = parameterTypes.length;
             if (names != null && names.length != expectedParameterCount) {
                 throw new FatalBeanException("Excpected " + expectedParameterCount + " parameter names for constructor but only got " +
                         names.length + ": " + constructor.toString());
+            }
+            if (expectedParameterCount == 0) {
+                names = new String[0];
+            }
+
+            this.parameterNames = names;
+        }
+
+        public ConstructionInfo(Class beanClass, Method factoryMethod, MappingMetaData metadata) {
+            this.parameterTypes = factoryMethod.getParameterTypes();
+
+            String[] names = metadata.getParameterNames(beanClass, factoryMethod);
+
+            // verify that we have enough parameter names
+            int expectedParameterCount = parameterTypes.length;
+            if (names != null && names.length != expectedParameterCount) {
+                throw new FatalBeanException("Excpected " + expectedParameterCount + " parameter names for factory method but only got " +
+                        names.length + ": " + factoryMethod.toString());
             }
             if (expectedParameterCount == 0) {
                 names = new String[0];
@@ -212,9 +279,15 @@ public class NamedConstructorArgs {
 
     private static class ArgLengthComparator implements Comparator {
         public int compare(Object o1, Object o2) {
-            Constructor constructor1 = (Constructor) o1;
-            Constructor constructor2 = (Constructor) o2;
-            return constructor2.getParameterTypes().length - constructor1.getParameterTypes().length;
+            return getArgLength(o2) - getArgLength(o1);
+        }
+
+        private int getArgLength(Object object) {
+            if (object instanceof Method) {
+                return ((Method) object).getParameterTypes().length;
+            } else {
+                return ((Constructor) object).getParameterTypes().length;
+            }
         }
     }
 

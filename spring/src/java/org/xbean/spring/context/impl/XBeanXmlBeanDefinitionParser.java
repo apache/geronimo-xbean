@@ -123,6 +123,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 addNestedPropertyElements(definition, metadata, className, element);
                 addInlinedPropertiesFile(definition, metadata, className, element);
                 coerceNamespaceAwarePropertyValues(definition, element);
+                declareLifecycleMethods(definition, metadata, element);
                 namedConstructorArgs.processParameters(definition, metadata);
                 return definition;
             }
@@ -304,6 +305,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         }
     }
 
+
     protected BeanInfo getBeanInfo(String className) throws BeanDefinitionStoreException {
         BeanInfo info = null;
         Class type = null;
@@ -443,6 +445,22 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
     protected boolean isEmpty(String uri) {
         return uri == null || uri.length() == 0;
+    }
+
+    protected void declareLifecycleMethods(BeanDefinitionHolder definitionHolder, MappingMetaData metaData, Element element) {
+        BeanDefinition definition = definitionHolder.getBeanDefinition();
+        if (definition instanceof AbstractBeanDefinition) {
+            AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition) definition;
+            if (beanDefinition.getInitMethodName() == null) {
+                beanDefinition.setInitMethodName(metaData.getInitMethodName(element.getLocalName()));
+            }
+            if (beanDefinition.getDestroyMethodName() == null) {
+                beanDefinition.setDestroyMethodName(metaData.getDestroyMethodName(element.getLocalName()));
+            }
+            if (beanDefinition.getFactoryMethodName() == null) {
+                beanDefinition.setFactoryMethodName(metaData.getFactoryMethodName(element.getLocalName()));
+            }
+        }
     }
 
     // -------------------------------------------------------------------------

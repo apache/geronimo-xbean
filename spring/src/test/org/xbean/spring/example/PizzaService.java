@@ -38,7 +38,7 @@ public class PizzaService {
     private String cheese;
     private int size;
     private double price;
-    
+
     public void makePizza() {
         log.info("Making a pizza with topping: " + topping + " cheese: " + cheese + " with size: " + size);
     }
@@ -74,7 +74,7 @@ public class PizzaService {
     public void setTopping(String topping) {
         this.topping = topping;
     }
-    
+
 }
 // END SNIPPET: bean
 

@@ -17,23 +17,28 @@
 package org.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.xbean.spring.example.SaladService;
+import org.xbean.spring.example.SoupService;
 
 /**
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class SaladUsingSpringTest extends SpringTestSupport {
-    public void testSalad() throws Exception {
-        SaladService salad = (SaladService) getBean("saladService");
+public class SoupUsingSpringTest extends SpringTestSupport {
+    private static final long time = System.currentTimeMillis();
 
-        assertEquals("dressing", "Cesar", salad.getDressing());
-        assertEquals("size", "Small", salad.getSize());
-        assertEquals("crouton", true, salad.isCrouton());
+    public void testSoup() throws Exception {
+        SoupService soup = (SoupService) getBean("soupService");
+
+        assertEquals("type", "French Onion", soup.getType());
+        assertTrue(soup.getCreateTime() >= time);
+        assertTrue(soup.exists());
+
+        context.close();
+        assertFalse(soup.exists());
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/xbean/spring/context/salad-normal.xml");
+        return new ClassPathXmlApplicationContext("org/xbean/spring/context/soup-normal.xml");
     }
 }

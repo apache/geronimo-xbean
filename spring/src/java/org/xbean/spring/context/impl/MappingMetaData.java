@@ -22,6 +22,7 @@ import java.util.StringTokenizer;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 /**
  * A helper class which understands how to map an XML namespaced element to
@@ -110,8 +111,25 @@ public class MappingMetaData {
         return false;
     }
 
+    public boolean isDefaultFactoryMethod(Class beanClass, Method factoryMethod) {
+        String property = properties.getProperty(methodToPropertyName(beanClass, factoryMethod) + ".default");
+        if (property != null) {
+            return Boolean.valueOf(property).booleanValue();
+        }
+        return false;
+    }
+
     public String[] getParameterNames(Constructor constructor) {
         String property = properties.getProperty(constructorToPropertyName(constructor) + ".parameterNames");
+        if (property != null) {
+            ArrayList names = Collections.list(new StringTokenizer(property, ", "));
+            return (String[]) names.toArray(new String[0]);
+        }
+        return null;
+    }
+
+    public String[] getParameterNames(Class beanClass, Method factoryMethod) {
+        String property = properties.getProperty(methodToPropertyName(beanClass, factoryMethod) + ".parameterNames");
         if (property != null) {
             ArrayList names = Collections.list(new StringTokenizer(property, ", "));
             return (String[]) names.toArray(new String[0]);
@@ -132,5 +150,33 @@ public class MappingMetaData {
         }
         buf.append(")");
         return buf.toString();
+    }
+
+    public static String methodToPropertyName(Class beanClass, Method method) {
+        StringBuffer buf = new StringBuffer();
+        buf.append(beanClass.getName()).append(".");
+        buf.append(method.getName()).append("(");
+        Class[] parameterTypes = method.getParameterTypes();
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Class parameterType = parameterTypes[i];
+            buf.append(parameterType.getName());
+            if (i < parameterTypes.length - 1) {
+                buf.append(",");
+            }
+        }
+        buf.append(")");
+        return buf.toString();
+    }
+
+    public String getInitMethodName(String elementName) {
+        return properties.getProperty(elementName + ".initMethod");
+    }
+
+    public String getDestroyMethodName(String elementName) {
+        return properties.getProperty(elementName + ".destroyMethod");
+    }
+
+    public String getFactoryMethodName(String elementName) {
+        return properties.getProperty(elementName + ".factoryMethod");
     }
 }

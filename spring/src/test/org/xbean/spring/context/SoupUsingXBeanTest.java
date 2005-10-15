@@ -24,10 +24,10 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
  * @version $Id$
  * @since 2.0
  */
-public class SaladUsingXBeanTest extends SaladUsingSpringTest {
+public class SoupUsingXBeanTest extends SoupUsingSpringTest {
 
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/xbean/spring/context/salad-xbean.xml");
+        return new ClassPathXmlApplicationContext("org/xbean/spring/context/soup-xbean.xml");
     }
 
 }
