@@ -60,6 +60,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.0.3</version>
+    </dependency>
+    <dependency>
       <groupId>backport175</groupId>
       <artifactId>backport175</artifactId>
       <version>1.0</version>
