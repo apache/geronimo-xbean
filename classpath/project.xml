@@ -59,6 +59,12 @@
   </mailingLists>
 
   <dependencies>
+    <dependency>
+      <groupId>emma</groupId>
+      <artifactId>maven-emma-plugin</artifactId>
+      <version>0.6</version>
+      <type>plugin</type>
+    </dependency>
 <!--    <dependency>-->
 <!--      <groupId>maven</groupId>-->
 <!--      <artifactId>maven-embedder</artifactId>-->
