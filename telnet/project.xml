@@ -64,6 +64,12 @@
       <artifactId>groovy</artifactId>
       <version>1.0-jsr-03</version>
     </dependency>
+    <dependency>
+      <groupId>emma</groupId>
+      <artifactId>maven-emma-plugin</artifactId>
+      <version>0.6</version>
+      <type>plugin</type>
+    </dependency>
   </dependencies>
 
   <build>
