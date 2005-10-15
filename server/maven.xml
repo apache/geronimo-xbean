@@ -42,7 +42,7 @@
 
     <annotationc verbose="true">
       <src path="${basedir}/src/test"/>
-      <classpath path="${basedir}/target/test-classes"/>
+      <classpath path="${maven.test.dest}"/>
     </annotationc>
   </postGoal>
 </project>
