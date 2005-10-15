@@ -220,7 +220,7 @@ public class MultiParentClassLoaderTest extends TestCase {
     }
 
     /**
-     * Test getResources returns an empty enumeration when attempt is made to loade a non-existant resource. 
+     * Test getResources returns an empty enumeration when attempt is made to loade a non-existant resource.
      * @throws Exception if a problem occurs
      */
     public void testGetNonExistantResources() throws Exception {
@@ -342,7 +342,6 @@ public class MultiParentClassLoaderTest extends TestCase {
         super.tearDown();
         for (int i = 0; i < files.length; i++) {
             files[i].delete();
-            assertFileNotExists(files[i]);
         }
     }
 
