@@ -125,6 +125,12 @@
     <unitTest>
       <resources>
         <resource>
+          <directory>target/generated</directory>
+          <includes>
+            <include>META-INF/**/*</include>
+          </includes>
+        </resource>
+        <resource>
           <directory>src/test</directory>
           <includes>
             <include>META-INF/**/*</include>

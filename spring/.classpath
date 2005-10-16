@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="target/generated"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="var" path="MAVEN_REPO/junit/jars/junit-3.8.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-1.2.4.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/commons-logging/jars/commons-logging-1.0.3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-1.2.4.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/stax/jars/stax-api-1.0.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/mx4j/jars/mx4j-jmx-2.1.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/annogen/jars/annogen-0.1.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/ant/jars/ant-1.6.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
