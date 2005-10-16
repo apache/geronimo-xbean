@@ -22,7 +22,6 @@
     <property name="kernel" ref="Kernel"/>
     <property name="services">
       <map>
-        <entry key="AnnotationProvider" value-ref="AnnotationProvider"/>
         <entry key="FileSystemRepository" value-ref="FileSystemRepository"/>
         <entry key="SpringLoader" value-ref="SpringLoader"/>
       </map>
@@ -39,8 +38,6 @@
     <constructor-arg index="0" value="xbean"/>
   </bean>
 
-  <bean name="AnnotationProvider" class="org.xbean.server.annotation.Backport175AnnotationProvider"/>
-
   <bean name="FileSystemRepository" class="org.xbean.server.repository.FileSystemRepository">
     <property name="root" value="${xbean.base.dir}/repository"/>
   </bean>
@@ -54,56 +51,6 @@
         <bean class="org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor">
           <constructor-arg index="0" ref="FileSystemRepository"/>
         </bean>
-      </list>
-    </property>
-    <property name="beanFactoryPostProcessors">
-      <list>
-        <bean class="org.xbean.server.spring.configuration.NamedConstructorArgs">
-          <property name="annotationProvider" ref="AnnotationProvider"/>
-          <property name="defaultValues">
-            <list>
-              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
-                <property name="name" value="serviceName"/>
-                <property name="type" value="java.lang.String"/>
-                <property name="value">
-                  <bean class="org.xbean.server.spring.reference.ServiceNameStringReference" factory-method="createBeanDefinition"/>
-                </property>
-              </bean>
-              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
-                <property name="name" value="serviceName"/>
-                <property name="type" value="org.xbean.kernel.ServiceName"/>
-                <property name="value">
-                  <bean class="org.xbean.server.spring.reference.ServiceNameReference" factory-method="createBeanDefinition"/>
-                </property>
-              </bean>
-              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
-                <property name="name" value="classLoader"/>
-                <property name="type" value="java.lang.ClassLoader"/>
-                <property name="value">
-                  <bean class="org.xbean.server.spring.reference.ClassLoaderReference" factory-method="createBeanDefinition"/>
-                </property>
-              </bean>
-              <bean class="org.xbean.server.spring.configuration.DefaultProperty">
-                <property name="name" value="kernel"/>
-                <property name="type" value="org.xbean.kernel.Kernel"/>
-                <property name="value">
-                  <bean class="org.xbean.server.spring.reference.KernelReference" factory-method="createBeanDefinition"/>
-                </property>
-              </bean>
-            </list>
-          </property>
-        </bean>
-<!--        <bean class="org.xbean.server.spring.configuration.LifecycleDetector">-->
-<!--          <property name="lifecycleInterfaces">-->
-<!--            <list>-->
-<!--              <bean class="org.xbean.server.spring.configuration.LifecycleInfo">-->
-<!--                <property name="type" value="example.SimpleLifecycle"/>-->
-<!--                <property name="initMethodName" value="start"/>-->
-<!--                <property name="destroyMethodName" value="stop"/>-->
-<!--              </bean>-->
-<!--            </list>-->
-<!--          </property>-->
-<!--        </bean>-->
       </list>
     </property>
   </bean>
