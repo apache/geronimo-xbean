@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<beans xmlns:b="http://xbean.org/schemas/pizza" xmlns:s="http://xbean.org/schemas/spring/1.0">
+
+  <b:beer s:id="beerService" id="123" name="Stella"/>
+
+</beans>
+<!-- END SNIPPET: xml -->
+

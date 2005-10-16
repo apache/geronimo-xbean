@@ -67,6 +67,9 @@ public class PizzaService {
         this.size = size;
     }
 
+    /**
+     * @org.xbean.Alias value="myTopping"
+     */
     public String getTopping() {
         return topping;
     }

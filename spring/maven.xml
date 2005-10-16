@@ -39,7 +39,11 @@
       <classpath refid="test.classpath"/>
     </taskdef>
     <xsdGenerate destFile="target/restaurant.xsd" namespace="http://xbean.org/schemas/pizza"
-      classpathref="test.classpath" srcdir="src/test"/>
+      classpathref="test.classpath" srcdir="src/test" metaInfDir="target/generated/"/>
+      
+      <copy todir="target/test-classes">
+      	<fileset dir="target/generated"/>
+      </copy>
   </goal>
 
   <goal name="setclasspath" prereqs="java:compile">

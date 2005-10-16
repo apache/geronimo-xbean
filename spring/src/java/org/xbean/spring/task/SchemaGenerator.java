@@ -118,6 +118,7 @@ public class SchemaGenerator {
             out.println(element.getLocalName() + " = " + element.getType().getQualifiedName());
             
             generatePropertiesFileConstructors(out, namespace, element);
+            generatePropertiesFilePropertyAliases(out, namespace, element);
         }
     }
 
@@ -129,7 +130,7 @@ public class SchemaGenerator {
             generatePropertiesFileConstructor(out, namespace, element, constructor);
         }
     }
-
+    
     protected void generatePropertiesFileConstructor(PrintWriter out, String namespace, SchemaElement element, JConstructor constructor) {
         JParameter[] parameters = constructor.getParameters();
         if (parameters.length == 0) {
@@ -147,10 +148,29 @@ public class SchemaGenerator {
         out.print(").parameterNames =");
         for (int i = 0; i < parameters.length; i++) {
             JParameter parameter = parameters[i];
-                out.print(" ");
+            out.print(" ");
             out.print(parameter.getSimpleName());
         }
         out.println();
+    }
+    
+    protected void generatePropertiesFilePropertyAliases(PrintWriter out, String namespace, SchemaElement element) {
+        JClass type = element.getType();
+        JProperty[] properties = type.getProperties();
+        for (int i = 0; i < properties.length; i++) {
+            generatePropertiesFilePropertyAlias(out, namespace, element, properties[i]);
+        }
+    }
+
+    protected void generatePropertiesFilePropertyAlias(PrintWriter out, String namespace, SchemaElement element, JProperty property) {
+        JAnnotation annotation = property.getAnnotation("org.xbean.Alias");
+        if (annotation != null) {
+            String text = getStringValue(annotation, "value");
+            if (text != null) {
+                String name = decapitalise(property.getSimpleName());
+                out.println(element.getLocalName() + "." + text + " = " +name);
+            }
+        }
     }
 
     // Documentation generation
@@ -421,7 +441,7 @@ public class SchemaGenerator {
     protected String getPropertyXmlName(JAnnotatedElement element) {
         String answer = element.getSimpleName();
         if (answer.length() > 0) {
-            answer = answer.substring(0, 1).toLowerCase() + answer.substring(1);
+            answer = decapitalise(answer);
         }
 
         // lets strip off the trailing Bean for *FactoryBean types by default
@@ -429,6 +449,10 @@ public class SchemaGenerator {
             answer = answer.substring(0, answer.length() - 4);
         }
         return answer;
+    }
+
+    protected String decapitalise(String answer) {
+        return answer.substring(0, 1).toLowerCase() + answer.substring(1);
     }
 
     protected String getDescription(JClass type) {
