@@ -17,12 +17,12 @@
  **/
 package org.xbean.spring.context.impl;
 
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.Collections;
-import java.util.ArrayList;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * A helper class which understands how to map an XML namespaced element to

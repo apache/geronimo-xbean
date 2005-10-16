@@ -19,6 +19,8 @@ package org.xbean.spring.context.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -28,8 +30,6 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyValue;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -50,10 +50,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -376,11 +373,9 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
             for (int i = 0; i < descriptors.length; i++) {
                 PropertyDescriptor descriptor = descriptors[i];
-                if (descriptor.getWriteMethod() != null) {
-                    String name = descriptor.getName();
-                    if (name.equals(localName)) {
-                        return descriptor;
-                    }
+                String name = descriptor.getName();
+                if (name.equals(localName)) {
+                    return descriptor;
                 }
             }
         }

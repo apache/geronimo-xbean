@@ -27,11 +27,21 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * NamedConstructorArgs is a BeanFactoryPostProcessor that converts property declarations into indexed constructor args
- * based on the the constructor parameter names annotation.  This process first selctes a constructor and then fills in
+ * based on the the constructor parameter names annotation.  This process first selects a constructor and then fills in
  * the constructor arguments from the properties defined in the bean definition.  If a property is not defined in the
  * bean definition, first the defaultValues map is checked for a value and if a value is not present a Java default
  * value is provided for the constructor argument (e.g. numbers are assigned 0 and objects are assigned null).

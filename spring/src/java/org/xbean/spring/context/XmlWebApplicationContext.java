@@ -17,13 +17,13 @@
  **/
 package org.xbean.spring.context;
 
-import java.util.List;
-import java.util.Collections;
-import java.io.IOException;
-
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An XBean version of the regular Spring class to provide improved XML

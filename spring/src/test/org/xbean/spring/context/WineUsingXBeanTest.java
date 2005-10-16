@@ -15,35 +15,19 @@
  * limitations under the License. 
  * 
  **/
-package org.xbean.spring.example;
+package org.xbean.spring.context;
+
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
- * A drop of nice
- * 
- * @org.xbean.XBean element="wine"
- * 
  * @author James Strachan
  * @version $Id$
  * @since 2.0
  */
+public class WineUsingXBeanTest extends WineUsingSpringTest {
 
-// START SNIPPET: bean
-public class WineService {
-    private String id;
-    private String name;
-
-    public WineService(String id, String name) {
-        this.id = id;
-        this.name = name;
+    protected AbstractXmlApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("org/xbean/spring/context/wine-xbean.xml");
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
 }
-// END SNIPPET: bean
-

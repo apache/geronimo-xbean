@@ -17,9 +17,10 @@
  **/
 package org.xbean.spring.example;
 
+import javax.xml.namespace.QName;
+
 import java.net.URI;
 import java.util.List;
-import javax.xml.namespace.QName;
 
 /**
  * An owner POJO used for testing out nested properties

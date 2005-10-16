@@ -16,26 +16,12 @@
  */
 package org.xbean.spring.context;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Locale;
-import java.io.IOException;
-
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.context.MessageSourceResolvable;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.BeansException;
-import org.springframework.core.io.Resource;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
+
+import java.util.List;
 
 /**
  * SpringApplicationContext is an interface that defines the actual interface exposed by the application contexts

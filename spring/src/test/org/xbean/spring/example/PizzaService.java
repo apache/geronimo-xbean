@@ -68,7 +68,7 @@ public class PizzaService {
     }
 
     /**
-     * @org.xbean.Alias value="myTopping"
+     * @org.xbean.Property alias="myTopping"
      */
     public String getTopping() {
         return topping;
