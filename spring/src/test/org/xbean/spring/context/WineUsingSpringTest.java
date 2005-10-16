@@ -17,23 +17,23 @@
 package org.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.xbean.spring.example.BeerService;
+import org.xbean.spring.example.WineService;
 
 /**
  * @author James Strachan
  * @version $Id$
  * @since 1.0
  */
-public class BeerUsingSpringTest extends SpringTestSupport {
+public class WineUsingSpringTest extends SpringTestSupport {
     
-    public void testBeer() throws Exception {
-        BeerService soup = (BeerService) getBean("beerService");
+    public void testWine() throws Exception {
+        WineService soup = (WineService) getBean("wineService");
 
-        assertEquals("name", "Stella", soup.getName());
-        assertEquals("id", "123", soup.getId());
+        assertEquals("name", "Amarone", soup.getName());
+        assertEquals("id", "wineService", soup.getId());
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/xbean/spring/context/beer-normal.xml");
+        return new ClassPathXmlApplicationContext("org/xbean/spring/context/wine-normal.xml");
     }
 }

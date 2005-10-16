@@ -16,9 +16,6 @@
  */
 package org.xbean.spring.context.impl;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.ResourceEntityResolver;
@@ -26,8 +23,11 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.w3c.dom.Document;
-import org.xbean.spring.context.SpringXmlPreprocessor;
 import org.xbean.spring.context.SpringApplicationContext;
+import org.xbean.spring.context.SpringXmlPreprocessor;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * XBeanXmlBeanDefinitionReader extends XmlBeanDefinitionReader adds support for SpringXMLPreprocessors which can

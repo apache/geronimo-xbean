@@ -16,17 +16,17 @@
  */
 package org.xbean.spring.util;
 
-import java.util.Collection;
-import java.util.Map;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Walks a spring bean factory tree.

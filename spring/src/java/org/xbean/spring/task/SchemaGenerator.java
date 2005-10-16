@@ -51,6 +51,7 @@ import java.util.Map;
  */
 public class SchemaGenerator {
     public static final String XBEAN_ANNOTATION = "org.xbean.XBean";
+    public static final String PROPERTY_ANNOTATION = "org.xbean.Property";
 
     private static final Log log = LogFactory.getLog(SchemaGenerator.class);
 
@@ -163,9 +164,9 @@ public class SchemaGenerator {
     }
 
     protected void generatePropertiesFilePropertyAlias(PrintWriter out, String namespace, SchemaElement element, JProperty property) {
-        JAnnotation annotation = property.getAnnotation("org.xbean.Alias");
+        JAnnotation annotation = property.getAnnotation(PROPERTY_ANNOTATION);
         if (annotation != null) {
-            String text = getStringValue(annotation, "value");
+            String text = getStringValue(annotation, "alias");
             if (text != null) {
                 String name = decapitalise(property.getSimpleName());
                 out.println(element.getLocalName() + "." + text + " = " +name);

@@ -16,14 +16,14 @@
  */
 package org.xbean.spring.context.impl;
 
-import junit.framework.TestCase;
-
-import java.util.Properties;
-import java.util.Arrays;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
-import java.net.URLClassLoader;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.Properties;
+
+import junit.framework.TestCase;
 
 /**
  * @author Dain Sundstrom

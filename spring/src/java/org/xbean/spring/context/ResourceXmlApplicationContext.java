@@ -17,16 +17,16 @@
  **/
 package org.xbean.spring.context;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.core.io.Resource;
 import org.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An XBean version of a regular Spring ApplicationContext which takes a
