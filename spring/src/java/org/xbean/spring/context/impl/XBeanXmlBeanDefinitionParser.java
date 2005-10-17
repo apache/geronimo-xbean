@@ -202,13 +202,21 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String localName = attribute.getName();
         String value = attribute.getValue();
         if (value != null) {
+            boolean reference = false;
             if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
-                String ref = value.substring(BEAN_REFERENCE_PREFIX.length());
+                value = value.substring(BEAN_REFERENCE_PREFIX.length());
+
+                // we could be an escaped string
+                if (!value.startsWith(BEAN_REFERENCE_PREFIX)) {
+                    reference = true;
+                }
+            }
+            if (reference) {
                 // TOOD handle custom reference types like local or queries etc
                 String propertyName = metadata.getPropertyName(getLocalName(element), localName);
                 if (propertyName != null) {
                     definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName,
-                            new RuntimeBeanReference(ref));
+                            new RuntimeBeanReference(value));
                 }
             }
             else {

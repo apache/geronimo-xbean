@@ -18,12 +18,22 @@
 package org.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.xbean.spring.example.PizzaService;
 
 /**
  *
  * @version $Revision: 1.1 $
  */
 public class PizzaUsingXBeanWinBeanRefTest extends PizzaUsingSpringTest {
+    
+    public void testPizza() throws Exception {
+        PizzaService pizza = (PizzaService) getBean("pizzaService");
+        pizza.makePizza();
+
+        assertEquals("topping", "Salami", pizza.getTopping());
+        assertEquals("cheese", "#Edam", pizza.getCheese());
+        assertEquals("size", 17, pizza.getSize());
+    }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/xbean/spring/context/pizza-xbean-bean-ref.xml");
