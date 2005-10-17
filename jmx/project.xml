@@ -80,11 +80,13 @@
       <version>2.1_2</version>
       <type>test</type>
     </dependency>
+      <!--
     <dependency>
         <groupId>concurrent</groupId>
         <artifactId>concurrent</artifactId>
         <version>1.3.4</version>
     </dependency>
+      -->
     <dependency>
       <groupId>mx4j</groupId>
       <artifactId>mx4j</artifactId>
@@ -122,6 +124,14 @@
     </resources>
     <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
     <unitTest>
+         <resources>
+            <resource>
+               <directory>src/test</directory>
+               <includes>
+                  <include>**/*.xml</include>
+               </includes>
+            </resource>
+         </resources>
       <includes>
         <include>**/*Test.java</include>
       </includes>

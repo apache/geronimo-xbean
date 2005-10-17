@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:jmx="http://xbean.org/schemas/jmx">
+
+   <bean id="jmxService" class="org.xbean.jmx.JMXService" />
+
+   <jmx:export id="jmxExporter"><!-- mbeanserver-ref=""> -->
+      <jmx:mbean bean-ref="jmxService" />
+   </jmx:export>
+
+</beans>

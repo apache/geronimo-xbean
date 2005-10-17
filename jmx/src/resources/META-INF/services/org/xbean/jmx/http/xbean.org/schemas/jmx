@@ -1,0 +1,21 @@
+# the default package that POJOs are in
+package = org.xbean.jmx
+
+# Mapping of XML Element localNames to classes
+export = org.xbean.jmx.MBeanExporter
+mbean = org.xbean.jmx.MBean
+listen = org.xbean.jmx.EventAdapter
+
+# Mapping of XML Attributes to property names
+listen.initMethod = start
+listen.destroyMethod = stop
+listen.listener = targetClassName
+listen.add-method = addMethodName
+listen.remove-method = removeMethodName
+
+mbean.objectname = objectName
+mbean.mbean = mBeanClass
+
+export.initMethod = start
+export.destroyMethod = stop
+export.mbeanserver = mBeanServer;
