@@ -18,6 +18,7 @@
 package org.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.xbean.spring.example.PizzaService;
 
 /**
  * @author James Strachan
