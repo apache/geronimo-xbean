@@ -78,7 +78,7 @@ public class MappingMetaData {
      * @return the property name to use or null if the attribute is not a valid property
      */
     public String getPropertyName(String elementName, String attributeName) {
-        return properties.getProperty(elementName + "." + attributeName, attributeName);
+        return properties.getProperty(elementName + ".alias." + attributeName, attributeName);
     }
 
     /**
@@ -89,7 +89,7 @@ public class MappingMetaData {
      * @return the property name if available or null if it is not applicable
      */
     public String getNestedListProperty(String elementName, String childElementName) {
-        return properties.getProperty(elementName + "." + childElementName + ".list");
+        return properties.getProperty(elementName + ".list." + childElementName);
     }
     
     /**
@@ -100,7 +100,7 @@ public class MappingMetaData {
      * @return the property name if available or null if it is not applicable
      */
     public String getNestedProperty(String elementName, String childElementName) {
-        return properties.getProperty(elementName + "." + childElementName);
+        return properties.getProperty(elementName + ".alias." + childElementName);
     }
 
     public boolean isDefaultConstructor(Constructor constructor) {
@@ -178,5 +178,9 @@ public class MappingMetaData {
 
     public String getFactoryMethodName(String elementName) {
         return properties.getProperty(elementName + ".factoryMethod");
+    }
+
+    public String getContentProperty(String elementName) {
+        return properties.getProperty(elementName + ".contentProperty");
     }
 }

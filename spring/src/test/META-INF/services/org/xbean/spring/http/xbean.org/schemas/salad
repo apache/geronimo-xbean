@@ -7,7 +7,7 @@ package = org.xbean.spring.example
 salad = org.xbean.spring.example.SaladService
 
 # Mapping of XML Attributes to property names
-salad.addCroutons = crouton
+salad.alias.addCroutons = crouton
 
 # Mapping of constructor argument names
 org.xbean.spring.example.SaladService(java.lang.String,java.lang.String,boolean).parameterNames=dressing size crouton
