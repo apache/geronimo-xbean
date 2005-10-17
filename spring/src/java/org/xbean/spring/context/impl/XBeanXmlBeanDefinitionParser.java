@@ -128,8 +128,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 addSpringAttributeValues(className, element);
                 BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
                 addAttributeProperties(definition, metadata, className, original);
+                addContentProperty(definition, metadata, element);
                 addNestedPropertyElements(definition, metadata, className, element);
-                addInlinedPropertiesFile(definition, metadata, className, element);
                 coerceNamespaceAwarePropertyValues(definition, element);
                 declareLifecycleMethods(definition, metadata, element);
                 namedConstructorArgs.processParameters(definition, metadata);
@@ -195,12 +195,47 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 }
             }
         }
+
+    }
+
+    protected void addContentProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element) {
+        String name = metadata.getContentProperty(getLocalName(element));
+        if (name != null) {
+            String value = getElementText(element);
+            addAttributeProperty(definition, metadata, element, name, value);
+        }
+        else {
+            // lets stry parse a nested properties file
+            NodeList childNodes = element.getChildNodes();
+            if (childNodes.getLength() == 1 && childNodes.item(0) instanceof Text) {
+                Text text = (Text) childNodes.item(0);
+                ByteArrayInputStream in = new ByteArrayInputStream(text.getData().getBytes());
+                Properties properties = new Properties();
+                try {
+                    properties.load(in);
+                }
+                catch (IOException e) {
+                    return;
+                }
+                Enumeration enumeration = properties.propertyNames();
+                while (enumeration.hasMoreElements()) {
+                    name = (String) enumeration.nextElement();
+                    Object value = properties.getProperty(name);
+                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(name, value);
+                }
+            }
+        }
     }
 
     protected void addAttributeProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
             Attr attribute) {
         String localName = attribute.getName();
         String value = attribute.getValue();
+        addAttributeProperty(definition, metadata, element, localName, value);
+    }
+
+    protected void addAttributeProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
+            String localName, String value) {
         if (value != null) {
             boolean reference = false;
             if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
@@ -292,33 +327,6 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             return parseNestedPropertyViaIntrospection(metadata, className, element, descriptor);
         }
         return null;
-    }
-
-    /**
-     * Parses a Properties file from the text node inside an element and adds
-     * the contents as properties of this bean. Only valid for elements
-     * containing a single text node and no sub-elements
-     */
-    protected void addInlinedPropertiesFile(BeanDefinitionHolder definition, MappingMetaData metadata,
-            String className, Element element) {
-        NodeList childNodes = element.getChildNodes();
-        if (childNodes.getLength() == 1 && childNodes.item(0) instanceof Text) {
-            Text text = (Text) childNodes.item(0);
-            ByteArrayInputStream in = new ByteArrayInputStream(text.getData().getBytes());
-            Properties properties = new Properties();
-            try {
-                properties.load(in);
-            }
-            catch (IOException e) {
-                return;
-            }
-            Enumeration enumeration = properties.propertyNames();
-            while (enumeration.hasMoreElements()) {
-                String name = (String) enumeration.nextElement();
-                Object value = properties.getProperty(name);
-                definition.getBeanDefinition().getPropertyValues().addPropertyValue(name, value);
-            }
-        }
     }
 
     /**
@@ -462,7 +470,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         InputStream in = loadResource(uri);
         if (in == null) {
             if (namespaceURI != null && namespaceURI.length() > 0) {
-                in = loadResource(NamespaceHelper.createDiscoveryPathName(namespaceURI));
+                uri = NamespaceHelper.createDiscoveryPathName(namespaceURI);
+                in = loadResource(uri);
             }
         }
 
@@ -586,5 +595,20 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             }
         }
         return super.parsePropertySubElement(element, beanName);
+    }
+
+    /**
+     * Returns the text of the element
+     */
+    protected String getElementText(Element element) {
+        StringBuffer buffer = new StringBuffer();
+        NodeList nodeList = element.getChildNodes();
+        for (int i = 0, size = nodeList.getLength(); i < size; i++) {
+            Node node = nodeList.item(i);
+            if (node.getNodeType() == Node.TEXT_NODE) {
+                buffer.append(node.getNodeValue());
+            }
+        }
+        return buffer.toString();
     }
 }

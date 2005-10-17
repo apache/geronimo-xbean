@@ -118,8 +118,19 @@ public class SchemaGenerator {
             SchemaElement element = (SchemaElement) iter.next();
             out.println(element.getLocalName() + " = " + element.getType().getQualifiedName());
             
+            generatePropertiesFileContent(out, namespace, element);
             generatePropertiesFileConstructors(out, namespace, element);
             generatePropertiesFilePropertyAliases(out, namespace, element);
+        }
+    }
+
+    protected void generatePropertiesFileContent(PrintWriter out, String namespace, SchemaElement element) {
+        JAnnotation annotation = element.getType().getAnnotation(XBEAN_ANNOTATION);
+        if (annotation != null) {
+            String value = getStringValue(annotation, "contentProperty");
+            if (value != null) {
+                out.println(element.getLocalName() + ".contentProperty = " + value);
+            }
         }
     }
 
@@ -169,7 +180,7 @@ public class SchemaGenerator {
             String text = getStringValue(annotation, "alias");
             if (text != null) {
                 String name = decapitalise(property.getSimpleName());
-                out.println(element.getLocalName() + "." + text + " = " +name);
+                out.println(element.getLocalName() + ".alias." + text + " = " +name);
             }
         }
     }
