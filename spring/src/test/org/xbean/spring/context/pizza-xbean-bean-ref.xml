@@ -8,7 +8,7 @@
     </constructor-arg>
   </bean>
 
-  <p:pizza id="pizzaService" myTopping-ref="topping" cheese="Edam" size="17"/>
+  <p:pizza id="pizzaService" myTopping="#topping" cheese="Edam" size="17"/>
   
 </beans>
 <!-- END SNIPPET: xml -->

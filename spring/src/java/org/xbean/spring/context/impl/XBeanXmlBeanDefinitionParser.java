@@ -87,7 +87,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
     private static final String JAVA_PACKAGE_PREFIX = "java://";
 
-    private static final String BEAN_REFERENCE_SUFFIX = "-ref";
+    private static final String BEAN_REFERENCE_PREFIX = "#";
 
     private Set reservedElementNames = new HashSet(Arrays.asList(RESERVED_ELEMENT_NAMES));
     private Set reservedBeanAttributeNames = new HashSet(Arrays.asList(RESERVED_BEAN_ATTRIBUTE_NAMES));
@@ -202,12 +202,13 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String localName = attribute.getName();
         String value = attribute.getValue();
         if (value != null) {
-            if (localName.endsWith(BEAN_REFERENCE_SUFFIX)) {
-                localName = localName.substring(0, localName.length() - BEAN_REFERENCE_SUFFIX.length());
+            if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
+                String ref = value.substring(BEAN_REFERENCE_PREFIX.length());
+                // TOOD handle custom reference types like local or queries etc
                 String propertyName = metadata.getPropertyName(getLocalName(element), localName);
                 if (propertyName != null) {
                     definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName,
-                            new RuntimeBeanReference(value));
+                            new RuntimeBeanReference(ref));
                 }
             }
             else {
