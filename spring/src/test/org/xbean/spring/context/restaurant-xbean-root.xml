@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<restaurant id="restaurant" xmlns="http://xbean.org/schemas/restaurant" xmlns:foo="http://acme.com" serviceName="foo:xyz" uri="http://cheese.com">
+    <dinnerMenu>
+      <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
+      <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
+    </dinnerMenu>
+
+    <lunchMenu>
+      <pizza myTopping="Chicken" cheese="Brie" size="17"/>
+    </lunchMenu>
+
+    <favourite>
+      <pizza myTopping="Salami" cheese="Edam" size="17"/>
+    </favourite>
+</restaurant>
+<!-- END SNIPPET: xml -->
