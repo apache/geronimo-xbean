@@ -23,6 +23,8 @@ import org.xbean.spring.example.RestaurantService;
 
 import java.util.List;
 
+import javax.xml.namespace.QName;
+
 /**
  * @author James Strachan
  * @version $Id$
@@ -33,6 +35,9 @@ public class RestaurantUsingSpringTest extends SpringTestSupport {
     public void testPizza() throws Exception {
         RestaurantService restaurant = (RestaurantService) getBean("restaurant");
 
+        QName service = restaurant.getServiceName();
+        assertEquals(new QName("http://acme.com", "xyz"), service);
+        
         // dinners (1-many using list)
         List dinners = restaurant.getDinnerMenu();
         assertNotNull("dinners is null!", dinners);

@@ -8,7 +8,7 @@ pizza = org.xbean.spring.example.PizzaService
 restaurant = org.xbean.spring.example.RestaurantService
 
 # Mapping of XML Attributes to property names
-pizza.myTopping = topping
+pizza.alias.myTopping = topping
 
 # Mapping of nested bean properties
 restaurant.dinnerMenu.list = dinnerMenu

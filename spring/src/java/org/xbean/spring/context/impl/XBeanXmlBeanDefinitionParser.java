@@ -37,6 +37,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xbean.spring.context.impl.MappingMetaData;
+import org.xbean.spring.context.impl.NamedConstructorArgs;
+import org.xbean.spring.context.impl.NamespaceHelper;
+import org.xbean.spring.context.impl.PropertyEditorHelper;
+import org.xbean.spring.context.impl.QNameHelper;
 
 import javax.xml.namespace.QName;
 
@@ -548,40 +553,58 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     // -------------------------------------------------------------------------
     protected int parseBeanDefinitions(Element root) throws BeanDefinitionStoreException {
         int beanDefinitionCount = 0;
-        NodeList nl = root.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node node = nl.item(i);
-            if (node instanceof Element) {
-                Element ele = (Element) node;
-                if (IMPORT_ELEMENT.equals(node.getNodeName())) {
-                    importBeanDefinitionResource(ele);
-                }
-                else if (ALIAS_ELEMENT.equals(node.getNodeName())) {
-                    String name = ele.getAttribute(NAME_ATTRIBUTE);
-                    String alias = ele.getAttribute(ALIAS_ATTRIBUTE);
-                    getBeanDefinitionReader().getBeanFactory().registerAlias(name, alias);
-                }
-                else if (BEAN_ELEMENT.equals(node.getNodeName())) {
-                    beanDefinitionCount++;
-                    BeanDefinitionHolder bdHolder = parseBeanDefinitionElement(ele, false);
-                    BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader()
-                            .getBeanFactory());
-                }
-                else {
-                    BeanDefinitionHolder bdHolder = parseBeanFromExtensionElement(ele);
-                    if (bdHolder != null) {
+        if (isEmpty(root.getNamespaceURI()) || root.getLocalName().equals("beans")) {
+            NodeList nl = root.getChildNodes();
+            for (int i = 0; i < nl.getLength(); i++) {
+                Node node = nl.item(i);
+                if (node instanceof Element) {
+                    Element ele = (Element) node;
+                    if (IMPORT_ELEMENT.equals(node.getNodeName())) {
+                        importBeanDefinitionResource(ele);
+                    }
+                    else if (ALIAS_ELEMENT.equals(node.getNodeName())) {
+                        String name = ele.getAttribute(NAME_ATTRIBUTE);
+                        String alias = ele.getAttribute(ALIAS_ATTRIBUTE);
+                        getBeanDefinitionReader().getBeanFactory().registerAlias(name, alias);
+                    }
+                    else if (BEAN_ELEMENT.equals(node.getNodeName())) {
                         beanDefinitionCount++;
+                        BeanDefinitionHolder bdHolder = parseBeanDefinitionElement(ele, false);
                         BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader()
                                 .getBeanFactory());
                     }
                     else {
-                        log.debug("Ignoring unknown element namespace: " + ele.getNamespaceURI() + " localName: "
-                                + ele.getLocalName());
+                        BeanDefinitionHolder bdHolder = parseBeanFromExtensionElement(ele);
+                        if (bdHolder != null) {
+                            beanDefinitionCount++;
+                            BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader()
+                                    .getBeanFactory());
+                        }
+                        else {
+                            log.debug("Ignoring unknown element namespace: " + ele.getNamespaceURI() + " localName: "
+                                    + ele.getLocalName());
+                        }
                     }
                 }
             }
+        } else {
+            BeanDefinitionHolder bdHolder = parseBeanFromExtensionElement(root);
+            if (bdHolder != null) {
+                beanDefinitionCount++;
+                BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getBeanDefinitionReader()
+                        .getBeanFactory());
+            }
+            else {
+                log.debug("Ignoring unknown element namespace: " + root.getNamespaceURI() + " localName: " + root.getLocalName());
+            }
         }
         return beanDefinitionCount;
+    }
+
+    protected BeanDefinitionHolder parseBeanDefinitionElement(Element ele, boolean isInnerBean) throws BeanDefinitionStoreException {
+        BeanDefinitionHolder bdh = super.parseBeanDefinitionElement(ele, isInnerBean);
+        coerceNamespaceAwarePropertyValues(bdh, ele);
+        return bdh;
     }
 
     protected Object parsePropertySubElement(Element element, String beanName) throws BeanDefinitionStoreException {

@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
-<beans>
+<beans xmlns:foo="http://acme.com">
 
   <!--  tests using nested beans -->
 
   <bean id="restaurant"
     class="org.xbean.spring.example.RestaurantService">
-    <property name="serviceName">
-      <bean class="javax.xml.namespace.QName">
-        <constructor-arg value="http://acme.com"/>
-        <constructor-arg value="xyz"/>
-      </bean>
-    </property>
+    <property name="serviceName" value="foo:xyz"/>
     <property name="favourite">
       <bean class="org.xbean.spring.example.PizzaService">
         <property name="topping" value="Salami" />
