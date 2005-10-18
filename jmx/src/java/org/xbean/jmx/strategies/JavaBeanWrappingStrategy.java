@@ -16,6 +16,7 @@
  */
 package org.xbean.jmx.strategies;
 
+import org.xbean.jmx.JMXException;
 import org.xbean.jmx.JMXWrappingStrategy;
 import org.xbean.jmx.config.JMXServiceConfig;
 
@@ -25,7 +26,7 @@ import org.xbean.jmx.config.JMXServiceConfig;
  */
 public class JavaBeanWrappingStrategy implements JMXWrappingStrategy {
 
-    public Object wrapService(Object service, JMXServiceConfig config) {
+    public Object wrapService(Object service, JMXServiceConfig config) throws JMXException {
         return null;  //TODO: change body of implemented methods use File | Settings | File Templates.
     }
 
