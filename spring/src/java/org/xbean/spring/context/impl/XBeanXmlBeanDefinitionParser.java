@@ -513,6 +513,14 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * the class loader which loaded us
      */
     protected Class loadClass(String name) throws ClassNotFoundException {
+        ClassLoader beanClassLoader = getBeanDefinitionReader().getBeanClassLoader();
+        if (beanClassLoader != null) {
+            try {
+                return beanClassLoader.loadClass(name);
+            }
+            catch (ClassNotFoundException e) {
+            }
+        }
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         if (contextClassLoader != null) {
             try {
