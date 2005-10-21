@@ -32,4 +32,17 @@
     <attainGoal name="build"/>
   </goal>
 
+  <postGoal name="java:compile">
+    <taskdef name="annotationc"
+      classname="org.codehaus.backport175.compiler.task.AnnotationCTask">
+      <classpath>
+        <pathelement location="${maven.repo.local}/backport175/jars/backport175-1.0.jar"/>
+      </classpath>
+    </taskdef>
+
+    <annotationc verbose="true">
+      <src path="${basedir}/src/java"/>
+      <classpath path="${maven.build.dest}"/>
+    </annotationc>
+  </postGoal>
 </project>

@@ -35,6 +35,10 @@ import org.w3c.dom.Text;
 /**
  * ClassLoaderXmlPreprocessor extracts a ClassLoader definition from the xml document, builds a class loader, assigns
  * the class loader to the application context and xml reader, and removes the classpath element from document.
+ *
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/server" element="class-loader-xml-preprocessor"
+ *     description="Extracts a ClassLoader definition from the xml document."
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0

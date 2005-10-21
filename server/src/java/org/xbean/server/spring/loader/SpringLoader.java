@@ -35,6 +35,9 @@ import org.xbean.spring.context.SpringApplicationContext;
  * FileSystemXmlApplicationContext so custom XML extensions are available.  This loader also support the specification
  * of SpringXmlPreprocessors and BeanFactoryPostProcessors to apply to the configuration.
  *
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/server" element="spring-loader"
+ *     description="Loads Spring xml configurations into a Kernel"
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0
