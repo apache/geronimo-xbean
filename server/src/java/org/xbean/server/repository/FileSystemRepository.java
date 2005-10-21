@@ -24,6 +24,9 @@ import java.net.URL;
 /**
  * FileSystemRepository maps resource ids to a directory on the local file system.
  *
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/server" element="file-system-repository" 
+ *     description="Maps resource ids to a directory on the local file system."
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0

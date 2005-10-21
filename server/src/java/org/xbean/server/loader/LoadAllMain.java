@@ -26,6 +26,10 @@ import org.xbean.kernel.ServiceName;
 
 /**
  * LoadAllMain loads all configurations specified in the arguments passed to main.
+ *
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/server" element="load-all-main"
+ *     description="Loads all configurations specified in the arguments passed to main"
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0

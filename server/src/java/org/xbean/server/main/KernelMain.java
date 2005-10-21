@@ -29,6 +29,10 @@ import org.xbean.kernel.StaticServiceFactory;
 /**
  * KernelMain is the standard entry point class used for a server.  It will initalize a kernel with a set of services
  * and can optional hold the thread of execution until the kernel or virtual machine is destroyed.
+ *
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/server" element="kernel-main" 
+ *     description="Standard entry point for a kernel based server."
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0

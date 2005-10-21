@@ -37,14 +37,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.xbean.spring.context.impl.MappingMetaData;
-import org.xbean.spring.context.impl.NamedConstructorArgs;
-import org.xbean.spring.context.impl.NamespaceHelper;
-import org.xbean.spring.context.impl.PropertyEditorHelper;
-import org.xbean.spring.context.impl.QNameHelper;
 
 import javax.xml.namespace.QName;
-
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -369,6 +363,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     }
 
     protected BeanInfo getBeanInfo(String className) throws BeanDefinitionStoreException {
+        if (className == null) {
+            return null;
+        }
+
         BeanInfo info = null;
         Class type = null;
         try {

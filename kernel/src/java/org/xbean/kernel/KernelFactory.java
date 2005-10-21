@@ -33,6 +33,9 @@ import org.xbean.kernel.standard.StandardKernelFactory;
  * Kernel kernel = KernelFactory.newInstance().createKernel(name);
  * </pre></blockquote>
  *
+ * @org.xbean.XBean namespace="http://xbean.org/schemas/kernel" element="load-all-main"
+ *     description="Creates kernels"
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0

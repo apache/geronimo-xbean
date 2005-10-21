@@ -15,43 +15,31 @@
 *  limitations under the License.
 -->
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
-<beans>
+<beans xmlns:s="http://xbean.org/schemas/server" >
   <bean id="PropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
-  <bean name="Main" class="org.xbean.server.main.KernelMain">
-    <property name="kernel" ref="Kernel"/>
-    <property name="services">
+  <s:kernel-main name="Main" kernel="#Kernel">
+    <s:services>
       <map>
         <entry key="FileSystemRepository" value-ref="FileSystemRepository"/>
         <entry key="SpringLoader" value-ref="SpringLoader"/>
       </map>
-    </property>
-    <property name="next">
-      <bean class="org.xbean.server.loader.LoadAllMain">
-        <property name="kernel" ref="Kernel"/>
-      </bean>
-    </property>
-  </bean>
+    </s:services>
+    <s:next>
+      <s:load-all-main kernel="#Kernel"/>
+    </s:next>
+  </s:kernel-main>
 
   <bean name="KernelFactory" class="org.xbean.kernel.KernelFactory" factory-method="newInstance"/>
   <bean name="Kernel" factory-bean="KernelFactory" factory-method="createKernel">
     <constructor-arg index="0" value="xbean"/>
   </bean>
 
-  <bean name="FileSystemRepository" class="org.xbean.server.repository.FileSystemRepository">
-    <property name="root" value="${xbean.base.dir}/repository"/>
-  </bean>
+  <s:file-system-repository id="FileSystemRepository" root="${xbean.base.dir}/repository"/>
 
-
-  <bean name="SpringLoader" class="org.xbean.server.spring.loader.SpringLoader">
-    <property name="kernel" ref="Kernel"/>
-    <property name="baseDir" value="${xbean.base.dir}/conf"/>
-    <property name="xmlPreprocessors">
-      <list>
-        <bean class="org.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor">
-          <constructor-arg index="0" ref="FileSystemRepository"/>
-        </bean>
-      </list>
-    </property>
-  </bean>
+  <s:spring-loader id="SpringLoader" kernel="#Kernel" baseDir="${xbean.base.dir}/conf">
+    <s:xmlPreprocessors>
+        <s:class-loader-xml-preprocessor repository="#FileSystemRepository"/>
+    </s:xmlPreprocessors>
+  </s:spring-loader>
 </beans>
