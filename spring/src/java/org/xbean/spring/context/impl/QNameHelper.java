@@ -19,10 +19,15 @@ package org.xbean.spring.context.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import javax.xml.namespace.QName;
+
+import java.beans.PropertyDescriptor;
 
 /**
  * 
@@ -68,5 +73,25 @@ public class QNameHelper {
             }
         }
         return answer;
+    }
+
+    public static void coerceQNamePropertyValues(QNameReflectionParams params) {
+        coerceNamespaceAwarePropertyValues(params.getBeanDefinition(), params.getElement(), params.getDescriptors(), params.getIndex());
+    }
+    
+    public static void coerceNamespaceAwarePropertyValues(AbstractBeanDefinition bd, Element element, PropertyDescriptor[] descriptors, int i) {
+        PropertyDescriptor descriptor = descriptors[i];
+        if (descriptor.getPropertyType().isAssignableFrom(QName.class)) {
+            String name = descriptor.getName();
+            MutablePropertyValues propertyValues = bd.getPropertyValues();
+            PropertyValue propertyValue = propertyValues.getPropertyValue(name);
+            if (propertyValue != null) {
+                Object value = propertyValue.getValue();
+                if (value instanceof String) {
+                    propertyValues.removePropertyValue(propertyValue);
+                    propertyValues.addPropertyValue(name, createQName(element, (String) value));
+                }
+            }
+        }
     }
 }

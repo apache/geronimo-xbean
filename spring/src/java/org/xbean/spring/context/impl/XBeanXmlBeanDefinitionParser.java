@@ -19,8 +19,6 @@ package org.xbean.spring.context.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -38,7 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import javax.xml.namespace.QName;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -91,6 +88,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     private Set reservedElementNames = new HashSet(Arrays.asList(RESERVED_ELEMENT_NAMES));
     private Set reservedBeanAttributeNames = new HashSet(Arrays.asList(RESERVED_BEAN_ATTRIBUTE_NAMES));
     protected final NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs();
+
+    private boolean qnameIsOnClassPath;
+
+    private boolean initQNameOnClassPath;
 
     /**
      * Configures the XmlBeanDefinitionReader to work nicely with extensible XML
@@ -336,30 +337,26 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      */
     protected void coerceNamespaceAwarePropertyValues(BeanDefinitionHolder definitionHolder, Element element) {
         BeanDefinition definition = definitionHolder.getBeanDefinition();
-        if (definition instanceof AbstractBeanDefinition) {
+        if (definition instanceof AbstractBeanDefinition && isQnameIsOnClassPath()) {
             AbstractBeanDefinition bd = (AbstractBeanDefinition) definition;
             // lets check for any QName types
             BeanInfo beanInfo = getBeanInfo(bd.getBeanClassName());
             if (beanInfo != null) {
                 PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
                 for (int i = 0; i < descriptors.length; i++) {
-                    PropertyDescriptor descriptor = descriptors[i];
-                    if (descriptor.getWriteMethod() != null
-                            && descriptor.getPropertyType().isAssignableFrom(QName.class)) {
-                        String name = descriptor.getName();
-                        MutablePropertyValues propertyValues = bd.getPropertyValues();
-                        PropertyValue propertyValue = propertyValues.getPropertyValue(name);
-                        if (propertyValue != null) {
-                            Object value = propertyValue.getValue();
-                            if (value instanceof String) {
-                                propertyValues.removePropertyValue(propertyValue);
-                                propertyValues.addPropertyValue(name, QNameHelper.createQName(element, (String) value));
-                            }
-                        }
-                    }
+                    QNameReflectionHelper.coerceNamespaceAwarePropertyValues(bd, element, descriptors, i);
                 }
             }
         }
+    }
+
+
+    protected boolean isQnameIsOnClassPath() {
+        if (initQNameOnClassPath == false) {
+            qnameIsOnClassPath = PropertyEditorHelper.loadClass("javax.xml.namespace.QName") != null;
+            initQNameOnClassPath = true;
+        }
+        return qnameIsOnClassPath;
     }
 
     protected BeanInfo getBeanInfo(String className) throws BeanDefinitionStoreException {
