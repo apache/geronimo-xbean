@@ -17,10 +17,10 @@
  **/
 package org.xbean.spring.context.impl;
 
-import javax.management.ObjectName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.beans.PropertyEditorManager;
-import java.net.URI;
 
 /**
  * A helper method to register some custom editors
@@ -28,10 +28,37 @@ import java.net.URI;
  * @version $Revision: 1.1 $
  */
 public class PropertyEditorHelper {
+    private static final Log log = LogFactory.getLog(PropertyEditorHelper.class);
 
     public static void registerCustomEditors() {
-        PropertyEditorManager.registerEditor(URI.class, URIEditor.class);
-        PropertyEditorManager.registerEditor(ObjectName.class, ObjectNameEditor.class);
+        registerEditor("java.net.URI", "org.xbean.spring.context.impl.URIEditor");
+        registerEditor("javax.management.ObjectName", "org.xbean.spring.context.impl.ObjectNameEditor");
+    }
+
+    protected static void registerEditor(String typeName, String editorName) {
+        Class type = loadClass(typeName);
+        Class editor = loadClass(editorName);
+        if (type != null && editor != null) {
+            PropertyEditorManager.registerEditor(type, editor);
+        }
+    }
+
+    public static Class loadClass(String name) {
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (contextClassLoader != null) {
+            try {
+                return contextClassLoader.loadClass(name);
+            }
+            catch (ClassNotFoundException e) {
+            }
+        }
+        try {
+            return PropertyEditorHelper.class.getClassLoader().loadClass(name);
+        }
+        catch (ClassNotFoundException e) {
+            log.debug("Could not find class: " + name + " on the classpath");
+            return null;
+        }
     }
 
 }
