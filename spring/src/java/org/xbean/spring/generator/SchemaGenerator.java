@@ -27,8 +27,10 @@ import java.util.Set;
 public class SchemaGenerator {
     private final MappingLoader mappingLoader;
     private final GeneratorPlugin[] plugins;
+    private final LogFacade log;
 
-    public SchemaGenerator(MappingLoader mappingLoader, GeneratorPlugin[] plugins) {
+    public SchemaGenerator(LogFacade log, MappingLoader mappingLoader, GeneratorPlugin[] plugins) {
+        this.log = log;
         this.mappingLoader = mappingLoader;
         this.plugins = plugins;
     }
@@ -36,7 +38,7 @@ public class SchemaGenerator {
     public void generate() throws IOException {
         Set namespaces = mappingLoader.loadNamespaces();
         if (namespaces.isEmpty()) {
-            System.out.println("Warning: no namespaces found!");
+            log.log("Warning: no namespaces found!");
         }
 
         for (Iterator iterator = namespaces.iterator(); iterator.hasNext();) {

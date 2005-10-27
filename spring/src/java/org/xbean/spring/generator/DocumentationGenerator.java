@@ -32,9 +32,11 @@ import java.util.Set;
  */
 public class DocumentationGenerator implements GeneratorPlugin {
     private final File destFile;
+    private final LogFacade log;
 
-    public DocumentationGenerator(File destFile) {
+    public DocumentationGenerator(LogFacade log, File destFile) {
         this.destFile = destFile;
+        this.log = log;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
@@ -42,7 +44,7 @@ public class DocumentationGenerator implements GeneratorPlugin {
 
         // TODO can only handle 1 schema document so far...
         File file = new File(destFile.getParentFile(), destFile.getName() + ".html");
-        System.out.println("Generating HTML documentation file: " + file + " for namespace: " + namespace);
+        log.log("Generating HTML documentation file: " + file + " for namespace: " + namespace);
         PrintWriter out = new PrintWriter(new FileWriter(file));
         try {
             generateDocumentation(out, namespace, namespaceMapping.getElements(), namespaceMapping.getRootElement());

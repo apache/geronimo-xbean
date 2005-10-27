@@ -15,7 +15,7 @@ import java.util.Set;
  *
  * @version $Revision$
  */
-public class MappingGeneratorTask extends MatchingTask {
+public class MappingGeneratorTask extends MatchingTask implements LogFacade {
     private String namespace;
     private Path srcDir = null;
     private Path toolpath = null;
@@ -109,9 +109,9 @@ public class MappingGeneratorTask extends MatchingTask {
                     includes);
 
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(metaInfDir),
-                new DocumentationGenerator(destFile),
-                new XsdGenerator(destFile)
+                new XmlMetadataGenerator(this, metaInfDir),
+                new DocumentationGenerator(this, destFile),
+                new XsdGenerator(this, destFile)
             };
 
             // load the mappings

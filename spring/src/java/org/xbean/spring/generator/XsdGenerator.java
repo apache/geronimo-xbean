@@ -29,15 +29,17 @@ import java.util.Iterator;
  */
 public class XsdGenerator implements GeneratorPlugin {
     private final File destFile;
+    private final LogFacade log;
 
-    public XsdGenerator(File destFile) {
+    public XsdGenerator(LogFacade log, File destFile) {
         this.destFile = destFile;
+        this.log = log;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
         // TODO can only handle 1 schema document so far...
         File file = destFile;
-        System.out.println("Generating XSD file: " + file + " for namespace: " + namespaceMapping.getNamespace());
+        log.log("Generating XSD file: " + file + " for namespace: " + namespaceMapping.getNamespace());
         PrintWriter out = new PrintWriter(new FileWriter(file));
         try {
             generateSchema(out, namespaceMapping);
@@ -95,8 +97,11 @@ public class XsdGenerator implements GeneratorPlugin {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
             if (Utils.isSimpleType(attributeMapping)) {
                 generateElementMappingSimpleProperty(out, attributeMapping);
+            } else {
+                generateElementMappingComplexPropertyAsRef(out, attributeMapping);
             }
         }
+        out.println("      <xs:anyAttribute namespace='##other' processContents='lax'></xs:anyAttribute>");
         out.println("    </xs:complexType>");
         out.println("  </xs:element>");
         out.println();
@@ -104,6 +109,10 @@ public class XsdGenerator implements GeneratorPlugin {
 
     private void generateElementMappingSimpleProperty(PrintWriter out, AttributeMapping attributeMapping) {
         out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='" + Utils.getXsdType(attributeMapping) + "'/>");
+    }
+
+    private void generateElementMappingComplexPropertyAsRef(PrintWriter out, AttributeMapping attributeMapping) {
+        out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='xs:string'/>");
     }
 
     private void generateElementMappingComplexProperty(PrintWriter out, NamespaceMapping namespaceMapping, AttributeMapping attributeMapping) {
