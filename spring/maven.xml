@@ -35,7 +35,7 @@
 
 
   <goal name="xbean:generate" description="Generates the XBean XSD, documentation and META-INF/services files." prereqs="setclasspath">
-    <taskdef name="xsdGenerate" classname="org.xbean.spring.task.SchemaGenerateTask">
+    <taskdef name="xsdGenerate" classname="org.xbean.spring.generator.MappingGeneratorTask">
       <classpath refid="test.classpath"/>
     </taskdef>
     <xsdGenerate destFile="target/restaurant.xsd" namespace="http://xbean.org/schemas/pizza"
