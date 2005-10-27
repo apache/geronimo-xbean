@@ -33,13 +33,11 @@ import java.util.Set;
  */
 public class XmlMetadataGenerator implements GeneratorPlugin {
     private final String metaInfDir;
+    private final LogFacade log;
 
-    public XmlMetadataGenerator() {
-        metaInfDir = "target/classes/";
-    }
-
-    public XmlMetadataGenerator(String metaInfDir) {
+    public XmlMetadataGenerator(LogFacade log, String metaInfDir) {
         this.metaInfDir = metaInfDir;
+        this.log = log;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
@@ -50,7 +48,7 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
 
         File file = new File(metaInfDir + NamespaceHelper.createDiscoveryPathName(namespace));
         file.getParentFile().mkdirs();
-        System.out.println("Generating META-INF properties file: " + file + " for namespace: " + namespace);
+        log.log("Generating META-INF properties file: " + file + " for namespace: " + namespace);
         PrintWriter out = new PrintWriter(new FileWriter(file));
         try {
             generatePropertiesFile(out, namespaceMapping.getElements());
