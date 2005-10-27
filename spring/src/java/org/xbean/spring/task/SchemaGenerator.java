@@ -526,7 +526,7 @@ public class SchemaGenerator {
         String typeName = property.getType().getQualifiedName();
         String answer = (String) xsdTypeMap.get(typeName);
         if (answer == null) {
-            answer = "xsd:string";
+            answer = "xs:string";
         }
         return answer;
     }
