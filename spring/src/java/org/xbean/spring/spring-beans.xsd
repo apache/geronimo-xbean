@@ -41,7 +41,7 @@
   The document root. A document can contain bean definitions only,
   imports only, or a mixture of both (typically with imports first).
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.xbean.org/xsd/spring" xmlns:spring="http://www.xbean.org/xsd/spring">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://xbean.org/schemas/spring/1.0" xmlns:spring="http://xbean.org/schemas/spring/1.0">
   <xs:element name="beans">
     <xs:complexType>
       <xs:sequence>
@@ -50,7 +50,7 @@
           <xs:element ref="spring:import"/>
           <xs:element ref="spring:alias"/>
           <xs:element ref="spring:bean"/>
-          <xs:any namespace="##other"/>
+          <xs:any namespace="##other" processContents="lax"/>
         </xs:choice>
       </xs:sequence>
       <xs:attribute name="default-lazy-init" default="false">
@@ -370,7 +370,7 @@
           <xs:element ref="spring:set"/>
           <xs:element ref="spring:map"/>
           <xs:element ref="spring:props"/>
-          <xs:any namespace="##other"/>
+          <xs:any namespace="##other" processContents="lax"/>
         </xs:choice>
       </xs:sequence>
       <xs:attribute name="index"/>
@@ -412,7 +412,7 @@
           <xs:element ref="spring:set"/>
           <xs:element ref="spring:map"/>
           <xs:element ref="spring:props"/>
-          <xs:any namespace="##other"/>
+          <xs:any namespace="##other" processContents="lax"/>
         </xs:choice>
       </xs:sequence>
       <xs:attribute name="name" use="required"/>
@@ -581,7 +581,7 @@
         <xs:element ref="spring:set"/>
         <xs:element ref="spring:map"/>
         <xs:element ref="spring:props"/>
-        <xs:any namespace="##other"/>
+        <xs:any namespace="##other" processContents="lax"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
@@ -602,7 +602,7 @@
         <xs:element ref="spring:set"/>
         <xs:element ref="spring:map"/>
         <xs:element ref="spring:props"/>
-        <xs:any namespace="##other"/>
+        <xs:any namespace="##other" processContents="lax"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
@@ -635,7 +635,7 @@
           <xs:element ref="spring:set"/>
           <xs:element ref="spring:map"/>
           <xs:element ref="spring:props"/>
-          <xs:any namespace="##other"/>
+          <xs:any namespace="##other" processContents="lax"/>
         </xs:choice>
       </xs:sequence>
       <xs:attribute name="key"/>
@@ -664,7 +664,7 @@
         <xs:element ref="spring:set"/>
         <xs:element ref="spring:map"/>
         <xs:element ref="spring:props"/>
-        <xs:any namespace="##other"/>
+        <xs:any namespace="##other" processContents="lax"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
