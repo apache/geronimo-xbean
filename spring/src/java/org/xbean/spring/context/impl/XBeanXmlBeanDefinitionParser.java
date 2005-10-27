@@ -432,15 +432,14 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 String uri = childElement.getNamespaceURI();
                 String localName = childElement.getLocalName();
 
-                if (!isEmpty(uri) || !reservedElementNames.contains(localName)) {
+                if (uri == null || uri.equals(SPRING_SCHEMA)) {
+                    if (BEAN_ELEMENT.equals(localName)) {
+                        return parseBeanDefinitionElement(childElement, true);
+                    }
+                } else {
                     Object value = parseBeanFromExtensionElement(childElement);
                     if (value != null) {
                         return value;
-                    }
-                }
-                else if (isEmpty(uri)) {
-                    if (BEAN_ELEMENT.equals(localName)) {
-                        return parseBeanDefinitionElement(childElement, true);
                     }
                 }
             }
