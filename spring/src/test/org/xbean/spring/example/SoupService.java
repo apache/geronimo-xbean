@@ -27,12 +27,15 @@ import org.apache.commons.logging.LogFactory;
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0
- */
+ */              
 
 // START SNIPPET: bean
 public class SoupService {
     private static final Log log = LogFactory.getLog(SoupService.class);
 
+    /**
+     * @org.xbean.FactoryMethod
+     */
     public static SoupService newSoup(String type) {
         return new SoupService(type, System.currentTimeMillis());
     }
@@ -46,11 +49,17 @@ public class SoupService {
         this.createTime = createTime;
     }
 
+    /**
+     * @org.xbean.InitMethod
+     */
     public void make() {
         log.info("Making " + type + "soup");
         exists = true;
     }
 
+    /**
+     * @org.xbean.DestroyMethod
+     */
     public void eat() {
         log.info("Mummmm " + type + "soup is yummie!");
         exists = false;
