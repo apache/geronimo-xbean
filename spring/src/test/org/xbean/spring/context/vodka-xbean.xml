@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<beans xmlns:b="http://xbean.org/schemas/pizza">
+
+  <b:vodka id="vodkaService">
+    <b:name>Grey Goose</b:name>
+    <b:vodkaClass>org.xbean.spring.example.VodkaService</b:vodkaClass>
+  </b:vodka>
+
+</beans>
+<!-- END SNIPPET: xml -->
+
