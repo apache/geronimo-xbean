@@ -202,7 +202,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String name = metadata.getContentProperty(getLocalName(element));
         if (name != null) {
             String value = getElementText(element);
-            addAttributeProperty(definition, metadata, element, name, value);
+            addProperty(definition, metadata, element, name, value);
         }
         else {
             // lets stry parse a nested properties file
@@ -231,10 +231,13 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             Attr attribute) {
         String localName = attribute.getName();
         String value = attribute.getValue();
-        addAttributeProperty(definition, metadata, element, localName, value);
+        addProperty(definition, metadata, element, localName, value);
     }
 
-    protected void addAttributeProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
+    /**
+     * Add a property onto the current BeanDefinition.
+     */
+    protected void addProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
             String localName, String value) {
         if (value != null) {
             boolean reference = false;
@@ -293,6 +296,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                     // inner tags being the contents of the list
                     // * the child element maps to a <property> tag and is the
                     // bean tag too
+                    // * the child element maps to a <property> tag and is a simple
+                    // type (String, Class, int, etc).
                     Object value = null;
                     String propertyName = metadata.getNestedListProperty(getLocalName(element), localName);
                     if (propertyName != null) {
@@ -309,8 +314,21 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                         value = tryParseNestedPropertyViaIntrospection(metadata, className, childElement);
                         propertyName = localName;
                     }
+                    
                     if (value != null) {
                         definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
+                    }
+                    else
+                    {
+                        /**
+                         * In this case ther is no nested property, so just do a normal
+                         * addProperty like we do with attributes.
+                         */
+                        String text = getElementText(childElement);
+
+                        if (text != null) {
+                            addProperty(definition, metadata, element, localName, text);
+                        }
                     }
                 }
             }
