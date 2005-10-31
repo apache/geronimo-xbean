@@ -69,6 +69,9 @@ public class SoupService {
         return exists;
     }
 
+    /**
+     * What type of soup would you like?
+     */
     public String getType() {
         return type;
     }

@@ -21,6 +21,9 @@ import java.beans.PropertyEditorManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * @author Dain Sundstrom
@@ -41,18 +44,20 @@ public final class Utils {
         return value.substring(0, 1).toLowerCase() + value.substring(1);
     }
 
-    public static boolean isSimpleType(AttributeMapping attributeMapping) {
-        if (attributeMapping.isPrimitive()) {
+    public static boolean isSimpleType(Type type) {
+        if (type.isPrimitive()) {
             return true;
         }
-        String type = attributeMapping.getType();
-        if (type.equals("javax.xml.namespace.QName")) {
-            return true;
-        }
-        if (attributeMapping.isArray()) {
+        if (type.isCollection()) {
             return false;
         }
-        return hasPropertyEditor(type);
+
+        String name = type.getName();
+        if (name.equals("java.lang.Class") ||
+                name.equals("javax.xml.namespace.QName")) {
+            return true;
+        }
+        return hasPropertyEditor(name);
     }
 
     private static boolean hasPropertyEditor(String type) {
@@ -83,9 +88,9 @@ public final class Utils {
         return Utils.class.getClassLoader().loadClass(name);
     }
 
-    public static String getXsdType(AttributeMapping attributeMapping) {
-        String typeName = attributeMapping.getType();
-        String xsdType = (String) XSD_TYPES.get(typeName);
+    public static String getXsdType(Type type) {
+        String name = type.getName();
+        String xsdType = (String) XSD_TYPES.get(name);
         if (xsdType == null) {
             xsdType = "xsd:string";
         }
@@ -116,5 +121,17 @@ public final class Utils {
         map.put(java.sql.Date.class.getName(), "xs:date");
         map.put("javax.xml.namespace.QName", "xs:QName");
         XSD_TYPES = Collections.unmodifiableMap(map);
+    }
+
+    public static List findImplementationsOf(NamespaceMapping namespaceMapping, Type type) {
+        List elements = new ArrayList();
+        String nestedTypeName = type.getName();
+        for (Iterator iter = namespaceMapping.getElements().iterator(); iter.hasNext();) {
+            ElementMapping element = (ElementMapping) iter.next();
+            if (nestedTypeName.equals(element.getClassName())) {
+                elements.add(element);
+            }
+        }
+        return elements;
     }
 }

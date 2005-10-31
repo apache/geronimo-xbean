@@ -65,11 +65,6 @@
       <version>1.0.3</version>
     </dependency>
     <dependency>
-      <groupId>backport175</groupId>
-      <artifactId>backport175</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
       <groupId>backport-util-concurrent</groupId>
       <artifactId>backport-util-concurrent</artifactId>
       <version>2.0_01_pd</version>
@@ -106,11 +101,25 @@
       <artifactId>xbean-spring</artifactId>
       <version>2.0-SNAPSHOT</version>
     </dependency>
+
+    <!-- Test coverage tool -->    
     <dependency>
       <groupId>emma</groupId>
       <artifactId>maven-emma-plugin</artifactId>
       <version>0.6</version>
       <type>plugin</type>
+    </dependency>
+
+    <!-- XBean metadata generator -->
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.6.2</version>
+    </dependency>
+    <dependency>
+      <groupId>qdox</groupId>
+      <artifactId>qdox</artifactId>
+      <version>1.5</version>
     </dependency>
   </dependencies>
 

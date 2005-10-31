@@ -25,27 +25,20 @@ public class AttributeMapping implements Comparable {
     private final String attributeName;
     private final String propertyName;
     private final String description;
-    private final String type;
-    private final boolean primitive;
-    private final boolean array;
-    private final String arrayType;
-    private final boolean list;
+    private final Type type;
     private final String value;
     private final boolean fixed;
     private final boolean required;
 
-    public AttributeMapping(String attributeName, String propertyName, String description, String type, boolean primitive, boolean array, String arrayType, boolean list, String value, boolean fixed, boolean required) {
+    public AttributeMapping(String attributeName, String propertyName, String description, Type type, String value, boolean fixed, boolean required) {
         if (attributeName == null) throw new NullPointerException("attributeName");
         if (propertyName == null) throw new NullPointerException("propertyName");
         if (type == null) throw new NullPointerException("type");
         this.attributeName = attributeName;
         this.propertyName = propertyName;
+        if (description == null) description = "";
         this.description = description;
         this.type = type;
-        this.primitive = primitive;
-        this.array = array;
-        this.arrayType = arrayType;
-        this.list = list;
         this.value = value;
         this.fixed = fixed;
         this.required = required;
@@ -63,24 +56,8 @@ public class AttributeMapping implements Comparable {
         return description;
     }
 
-    public String getType() {
+    public Type getType() {
         return type;
-    }
-
-    public boolean isPrimitive() {
-        return primitive;
-    }
-
-    public boolean isArray() {
-        return array;
-    }
-
-    public String getArrayType() {
-        return arrayType;
-    }
-
-    public boolean isList() {
-        return list;
     }
 
     public String getValue() {

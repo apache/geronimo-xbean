@@ -40,6 +40,9 @@ public class RestaurantService {
     private QName serviceName;
     private URI uri;
 
+    /**
+     * @org.xbean.Property nestedType="org.xbean.spring.example.PizzaService"
+     */
     public List getDinnerMenu() {
         return dinnerMenu;
     }

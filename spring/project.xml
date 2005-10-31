@@ -86,12 +86,7 @@
       <version>2.1.1</version>
     </dependency>
 
-    <!--  for systest Ant task  -->
-    <dependency>
-      <groupId>annogen</groupId>
-      <artifactId>annogen</artifactId>
-      <version>0.1.0</version>
-    </dependency>
+    <!-- XBean metadata generator -->
     <dependency>
       <groupId>ant</groupId>
       <artifactId>ant</artifactId>
@@ -110,6 +105,7 @@
       <version>3.8.1</version>
     </dependency>
 
+    <!-- Test coverage tool -->
     <dependency>
       <groupId>emma</groupId>
       <artifactId>maven-emma-plugin</artifactId>

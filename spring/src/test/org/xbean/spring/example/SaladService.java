@@ -17,6 +17,7 @@
 package org.xbean.spring.example;
 
 /**
+ * Basic salad.
  * @org.xbean.XBean 
  * 
  * @author Dain Sundstrom
@@ -36,14 +37,24 @@ public class SaladService {
         this.crouton = crouton;
     }
 
+    /**
+     * Dressing What type of dressing do you want?
+     */
     public String getDressing() {
         return dressing;
     }
 
+    /**
+     * What size do you want?
+     */
     public String getSize() {
         return size;
     }
 
+    /**
+     * Do you want crutons on that?
+     * @org.xbean.Property alias="addCroutons"
+     */
     public boolean isCrouton() {
         return crouton;
     }

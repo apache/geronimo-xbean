@@ -21,6 +21,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * @author Dain Sundstrom
@@ -78,7 +80,7 @@ public class XsdGenerator implements GeneratorPlugin {
         int complexCount = 0;
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-            if (!Utils.isSimpleType(attributeMapping)) {
+            if (!Utils.isSimpleType(attributeMapping.getType())) {
                 complexCount++;
             }
         }
@@ -86,7 +88,7 @@ public class XsdGenerator implements GeneratorPlugin {
             out.println("      <xs:sequence>");
             for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
                 AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-                if (!Utils.isSimpleType(attributeMapping)) {
+                if (!Utils.isSimpleType(attributeMapping.getType())) {
                     generateElementMappingComplexProperty(out, namespaceMapping, attributeMapping);
                 }
             }
@@ -95,20 +97,20 @@ public class XsdGenerator implements GeneratorPlugin {
 
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-            if (Utils.isSimpleType(attributeMapping)) {
+            if (Utils.isSimpleType(attributeMapping.getType())) {
                 generateElementMappingSimpleProperty(out, attributeMapping);
-            } else {
+            } else if (!attributeMapping.getType().isCollection()) {
                 generateElementMappingComplexPropertyAsRef(out, attributeMapping);
             }
         }
-        out.println("      <xs:anyAttribute namespace='##other' processContents='lax'></xs:anyAttribute>");
+        out.println("      <xs:anyAttribute namespace='##other' processContents='lax'/>");
         out.println("    </xs:complexType>");
         out.println("  </xs:element>");
         out.println();
     }
 
     private void generateElementMappingSimpleProperty(PrintWriter out, AttributeMapping attributeMapping) {
-        out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='" + Utils.getXsdType(attributeMapping) + "'/>");
+        out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='" + Utils.getXsdType(attributeMapping.getType()) + "'/>");
     }
 
     private void generateElementMappingComplexPropertyAsRef(PrintWriter out, AttributeMapping attributeMapping) {
@@ -116,25 +118,29 @@ public class XsdGenerator implements GeneratorPlugin {
     }
 
     private void generateElementMappingComplexProperty(PrintWriter out, NamespaceMapping namespaceMapping, AttributeMapping attributeMapping) {
-        out.println("      <xs:element name='" + attributeMapping.getAttributeName() + "' minOccurs='0' maxOccurs='1'>");
-        // Check if this is an array of known elements
-        boolean found = false;
-        if (attributeMapping.isArray()) {
-            for (Iterator iter = namespaceMapping.getElements().iterator(); iter.hasNext();) {
-                ElementMapping elem = (ElementMapping) iter.next();
-                if (elem.getClassName().equals(attributeMapping.getArrayType())) {
-                    out.println("        <xs:complexType><xs:sequence minOccurs='0' maxOccurs='unbounded'><xs:element ref='tns:" + elem.getElementName() + "'/></xs:sequence></xs:complexType>");
-                    found = true;
-                    break;
-                }
+        Type type = attributeMapping.getType();
+        List types;
+        if (type.isCollection()) {
+            types = Utils.findImplementationsOf(namespaceMapping, type.getNestedType());
+        } else {
+            types = Utils.findImplementationsOf(namespaceMapping, type);
+        }
+        types = Collections.EMPTY_LIST;
+        String maxOccurs = type.isCollection() ? "unbounded" : "1";
+
+        out.println("        <xs:element name='" + attributeMapping.getAttributeName() + "' minOccurs='0' maxOccurs='1'>");
+        out.println("          <xs:complexType>");
+        if (types.isEmpty()) {
+            out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any/></xs:sequence>");
+        } else {
+            out.println("            <xs:choice minOccurs='0' maxOccurs='" + maxOccurs + "'>");
+            for (Iterator iterator = types.iterator(); iterator.hasNext();) {
+                ElementMapping element = (ElementMapping) iterator.next();
+                out.println("              <xs:element ref='tns:" + element.getElementName() + "'/>");
             }
-
+            out.println("            </xs:choice>");
         }
-        // Else, use an xs:any to allow extension
-        if (!found) {
-            out.println("        <xs:complexType><xs:sequence><xs:any/></xs:sequence></xs:complexType>");
-        }
-        out.println("      </xs:element>");
+        out.println("          </xs:complexType>");
+        out.println("        </xs:element>");
     }
-
 }
