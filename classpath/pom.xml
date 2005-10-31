@@ -15,84 +15,13 @@
 *  limitations under the License.
 -->
 <project>
-    <!-- the version of maven's project object model -->
-    <modelVersion>4.0.0</modelVersion>
-
-    <name>XBean :: ClassPath</name>
-    <artifactId>xbean-classpath</artifactId>
-    <groupId>xbean</groupId>
-    <version>2.0-alpha-1-SNAPSHOT</version>
-    <organization>
-        <name>XBean</name>
-        <url>http://xbean.org</url>
-    </organization>
-
-    <repositories>
-        <repository>
-            <id>openejb</id>
-            <name>OpenEJB Repo</name>
-            <url>http://www.openejb.org/maven</url>
-            <layout>legacy</layout>
-        </repository>
-    </repositories>
-
-    <url>http://www.xbean.org/</url>
-
-    <distributionManagement>
-        <repository>
-            <id>repo1</id>
-            <name>Maven Central Repository</name>
-            <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
-        </repository>
-        <site>
-            <id>website</id>
-            <url>scp://minotaur.apache.org/www/maven.apache.org/maven2/</url>
-        </site>
-    </distributionManagement>
-
-    <mailingLists>
-        <mailingList>
-            <name>xbean developers</name>
-            <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
-            <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
-        </mailingList>
-        <mailingList>
-            <name>xbean users</name>
-            <subscribe>mailto:user-subscribe@xbean.org</subscribe>
-            <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
-        </mailingList>
-        <mailingList>
-            <name>xbean source control messages</name>
-            <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
-            <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
-        </mailingList>
-    </mailingLists>
-
-    <developers>
-        <developer>
-            <name>David Blevins</name>
-            <id>dblevins</id>
-            <email>dblevins@visi.com</email>
-            <roles>
-                <role>Dude</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <dependencies/>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.4</source>
-                    <target>1.4</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
+  <parent>
+    <groupId>org.xbean</groupId>
+    <artifactId>xbean</artifactId>
+    <version>2.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>xbean-classpath</artifactId>
+  <name>XBean :: ClassPath</name>
 </project>
 
