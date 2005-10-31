@@ -111,7 +111,7 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         out.print("(");
         for (Iterator iterator = args.iterator(); iterator.hasNext();) {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-            out.print(attributeMapping.getType());
+            out.print(attributeMapping.getType().getName());
             if (iterator.hasNext()) {
                 out.print(",");
             }

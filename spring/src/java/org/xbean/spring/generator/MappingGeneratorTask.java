@@ -3,33 +3,35 @@ package org.xbean.spring.generator;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.types.Path;
-import org.apache.tools.ant.types.Reference;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.StringTokenizer;
+import java.beans.PropertyEditorManager;
 
 /**
- * An Ant task for executing Gram scripts, which are Groovy scripts executed on
- * the JAM context.
+ * An Ant task for executing generating mapping metadata.
  *
  * @version $Revision$
  */
 public class MappingGeneratorTask extends MatchingTask implements LogFacade {
     private String namespace;
-    private Path srcDir = null;
-    private Path toolpath = null;
-    private Path classpath = null;
-    private String includes = "**/*.java";
-    private File destFile = new File("target/classes/activemq.xsd");
+    private Path srcDir;
+    private File destFile = new File("target/classes/schema.xsd");
     private String metaInfDir = "target/classes/";
+    private String propertyEditorPaths = "org.xbean.spring.context.impl";
 
     public File getDestFile() {
         return destFile;
     }
 
-    public void setDestFile(File scenariosFile) {
-        this.destFile = scenariosFile;
+    public void setDestFile(File destFile) {
+        this.destFile = destFile;
     }
 
     public String getMetaInfDir() {
@@ -48,46 +50,20 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
         this.namespace = namespace;
     }
 
+    public Path getSrcDir() {
+        return srcDir;
+    }
+
     public void setSrcDir(Path srcDir) {
         this.srcDir = srcDir;
     }
 
-    public void setToolpath(Path path) {
-        if (toolpath == null) {
-            toolpath = path;
-        } else {
-            toolpath.append(path);
-        }
+    public String getPropertyEditorPaths() {
+        return propertyEditorPaths;
     }
 
-    public void setToolpathRef(Reference r) {
-        createToolpath().setRefid(r);
-    }
-
-    public Path createToolpath() {
-        if (toolpath == null) {
-            toolpath = new Path(getProject());
-        }
-        return toolpath.createPath();
-    }
-
-    public void setClasspath(Path path) {
-        if (classpath == null) {
-            classpath = path;
-        } else {
-            classpath.append(path);
-        }
-    }
-
-    public void setClasspathRef(Reference r) {
-        createClasspath().setRefid(r);
-    }
-
-    public Path createClasspath() {
-        if (classpath == null) {
-            classpath = new Path(getProject());
-        }
-        return classpath.createPath();
+    public void setPropertyEditorPaths(String propertyEditorPaths) {
+        this.propertyEditorPaths = propertyEditorPaths;
     }
 
     public void execute() throws BuildException {
@@ -101,12 +77,17 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
             throw new BuildException("'destFile' must be specified");
         }
 
+        if (propertyEditorPaths != null) {
+            List editorSearchPath = new LinkedList(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
+            StringTokenizer paths = new StringTokenizer(propertyEditorPaths, " ,");
+            editorSearchPath.addAll(Collections.list(paths));
+            PropertyEditorManager.setEditorSearchPath((String[]) editorSearchPath.toArray(new String[editorSearchPath.size()]));
+        }
+
+        ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         try {
-            MappingLoader mappingLoader = new JamMappingLoader(namespace,
-                    getFiles(toolpath),
-                    getFiles(classpath),
-                    getFiles(srcDir),
-                    includes);
+            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, getFiles(srcDir));
 
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
                 new XmlMetadataGenerator(this, metaInfDir),
@@ -132,6 +113,8 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
             log("...done.");
         } catch (Exception e) {
             throw new BuildException(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldCL);
         }
     }
 

@@ -52,11 +52,9 @@ public class QdoxMappingLoader implements MappingLoader {
     public static final String FACTORY_METHOD_ANNOTATION = "org.xbean.FactoryMethod";
 
     private static final Log log = LogFactory.getLog(QdoxMappingLoader.class);
-    private String defaultNamespace;
-    private File[] srcDirs;
-
-    public QdoxMappingLoader() {
-    }
+    private final String defaultNamespace;
+    private final File[] srcDirs;
+    private Type listType;
 
     public QdoxMappingLoader(String defaultNamespace, File[] srcDirs) {
         this.defaultNamespace = defaultNamespace;
@@ -67,16 +65,8 @@ public class QdoxMappingLoader implements MappingLoader {
         return defaultNamespace;
     }
 
-    public void setDefaultNamespace(String defaultNamespace) {
-        this.defaultNamespace = defaultNamespace;
-    }
-
     public File[] getSrcDirs() {
         return srcDirs;
-    }
-
-    public void setSrcDirs(File[] srcDirs) {
-        this.srcDirs = srcDirs;
     }
 
     public Set loadNamespaces() throws IOException {
@@ -95,6 +85,7 @@ public class QdoxMappingLoader implements MappingLoader {
             builder.addSourceTree(sourceDirectory);
         }
 
+        listType = builder.getClassByName("java.util.List").asType();
         Set namespaces = loadNamespaces(builder);
         return namespaces;
     }
@@ -143,7 +134,7 @@ public class QdoxMappingLoader implements MappingLoader {
         for (int i = 0; i < javaSources.length; i++) {
             JavaClass javaClass = javaSources[i].getClasses()[0];
 
-            ElementMapping element = loadElement(builder, javaClass);
+            ElementMapping element = loadElement(javaClass);
             if (element != null && !javaClass.isAbstract()) {
                 elements.add(element);
             } else {
@@ -153,17 +144,21 @@ public class QdoxMappingLoader implements MappingLoader {
         return elements;
     }
 
-    private ElementMapping loadElement(JavaDocBuilder builder, JavaClass javaClass) {
-        DocletTag tag = javaClass.getTagByName(XBEAN_ANNOTATION);
-        if (tag == null) {
+    private ElementMapping loadElement(JavaClass javaClass) {
+        DocletTag xbeanTag = javaClass.getTagByName(XBEAN_ANNOTATION);
+        if (xbeanTag == null) {
             return null;
         }
 
-        String element = getElementName(javaClass, tag);
-        String description = getProperty(tag, "description");
-        String namespace = getProperty(tag, "namespace", defaultNamespace);
-        boolean root = getBooleanProperty(tag, "rootElement");
-        String contentProperty = getProperty(tag, "contentProperty");
+        String element = getElementName(javaClass, xbeanTag);
+        String description = getProperty(xbeanTag, "description");
+        if (description == null) {
+            description = javaClass.getComment();
+
+        }
+        String namespace = getProperty(xbeanTag, "namespace", defaultNamespace);
+        boolean root = getBooleanProperty(xbeanTag, "rootElement");
+        String contentProperty = getProperty(xbeanTag, "contentProperty");
 
         Set attributes = new HashSet();
         Map attributesByPropertyName = new HashMap();
@@ -171,10 +166,13 @@ public class QdoxMappingLoader implements MappingLoader {
         for (int i = 0; i < beanProperties.length; i++) {
             BeanProperty beanProperty = beanProperties[i];
 
-            AttributeMapping attributeMapping = loadAttribute(builder, beanProperty);
-            if (attributeMapping != null) {
-                attributes.add(attributeMapping);
-                attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
+            // we only care about properties with a setter
+            if (beanProperty.getMutator() != null) {
+                AttributeMapping attributeMapping = loadAttribute(beanProperty, "");
+                if (attributeMapping != null) {
+                    attributes.add(attributeMapping);
+                    attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
+                }
             }
         }
 
@@ -197,7 +195,6 @@ public class QdoxMappingLoader implements MappingLoader {
             }
         }
 
-        Type listType = builder.getClassByName("java.util.List").asType();
         List constructorArgs = new ArrayList();
         for (int i = 0; i < methods.length; i++) {
             JavaMethod method = methods[i];
@@ -206,27 +203,19 @@ public class QdoxMappingLoader implements MappingLoader {
                 List args = new ArrayList(parameters.length);
                 for (int j = 0; j < parameters.length; j++) {
                     JavaParameter parameter = parameters[j];
-                    String parameterName = parameter.getName();
                     String parameterType = parameter.getType().toString();
-                    AttributeMapping attributeMapping = (AttributeMapping) attributesByPropertyName.get(parameterName);
-                    if (attributeMapping != null && parameterType.equals(attributeMapping.getType())) {
-                        // todo this is a bad bean... what should we do?
-                    }
+                    AttributeMapping attributeMapping = (AttributeMapping) attributesByPropertyName.get(parameter.getName());
                     if (attributeMapping == null) {
-                        boolean list = parameter.getType().isA(listType);
-                        attributeMapping = new AttributeMapping(parameterName,
-                                parameterName,
-                                null,
-                                parameterType,
-                                primitives.contains(parameterType),
-                                parameter.getType().isArray(),
-                                parameter.getType().getValue(),
-                                list,
-                                null,
-                                false,
-                                false);
+                        attributeMapping = loadParameter(parameter);
+
                         attributes.add(attributeMapping);
-                        attributesByPropertyName.put(parameterName, attributeMapping);
+                        attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
+                    }
+                    if (!parameterType.equals(attributeMapping.getType().getName())) {
+                        throw new InvalidModelException("Type mismatch:" +
+                                " The construction method " + toMethodLocator(parameter.getParentMethod()) +
+                                " declared parameter " + parameter.getName() + " as a " + parameterType +
+                                " but the bean property type is " + attributeMapping.getType().getName());
                     }
                     args.add(attributeMapping);
                 }
@@ -247,18 +236,6 @@ public class QdoxMappingLoader implements MappingLoader {
                 constructorArgs);
     }
 
-    private boolean isValidConstructor(String factoryMethod, JavaMethod method, JavaParameter[] parameters) {
-        if (!method.isPublic() || parameters.length == 0) {
-            return false;
-        }
-
-        if (factoryMethod == null) {
-            return method.isConstructor();
-        } else {
-            return method.getName().equals(factoryMethod);
-        }
-    }
-
     private String getElementName(JavaClass javaClass, DocletTag tag) {
         String elementName = getProperty(tag, "element");
         if (elementName == null) {
@@ -276,32 +253,125 @@ public class QdoxMappingLoader implements MappingLoader {
         return elementName;
     }
 
-    private AttributeMapping loadAttribute(JavaDocBuilder builder, BeanProperty beanProperty) {
-        Type listType = builder.getClassByName("java.util.List").asType();
-        AttributeMapping attributeMapping = null;
-        JavaMethod accessor = beanProperty.getAccessor();
-        DocletTag propertyTag = accessor.getTagByName(PROPERTY_ANNOTATION);
-        boolean hidden = getBooleanProperty(propertyTag, "hidden");
-        if (!hidden) {
-            String attribute = getProperty(propertyTag, "alias", beanProperty.getName());
-            String attributeDescription = getProperty(propertyTag, "description");
-            String defaultValue = getProperty(propertyTag, "default");
-            boolean fixed = getBooleanProperty(propertyTag, "fixed");
-            boolean required = getBooleanProperty(propertyTag, "required");
-            boolean list = beanProperty.getType().isA(listType);
-            attributeMapping = new AttributeMapping(attribute,
-                    beanProperty.getName(),
-                    attributeDescription,
-                    beanProperty.getType().toString(),
-                    primitives.contains(beanProperty.getType().toString()),
-                    beanProperty.getType().isArray(),
-                    beanProperty.getType().getValue(),
-                    list,
-                    defaultValue,
-                    fixed,
-                    required);
+    private AttributeMapping loadAttribute(BeanProperty beanProperty, String defaultDescription) {
+        DocletTag propertyTag = getPropertyTag(beanProperty);
+
+        if (getBooleanProperty(propertyTag, "hidden")) {
+            return null;
         }
-        return attributeMapping;
+
+        String attribute = getProperty(propertyTag, "alias", beanProperty.getName());
+        String attributeDescription = getAttributeDescription(beanProperty, propertyTag, defaultDescription);
+        String defaultValue = getProperty(propertyTag, "default");
+        boolean fixed = getBooleanProperty(propertyTag, "fixed");
+        boolean required = getBooleanProperty(propertyTag, "required");
+        String nestedType = getProperty(propertyTag, "nestedType");
+
+        return new AttributeMapping(attribute,
+                beanProperty.getName(),
+                attributeDescription,
+                toMappingType(beanProperty.getType(), nestedType),
+                defaultValue,
+                fixed,
+                required);
+    }
+
+    private static DocletTag getPropertyTag(BeanProperty beanProperty) {
+        JavaMethod accessor = beanProperty.getAccessor();
+        if (accessor != null) {
+            DocletTag propertyTag = accessor.getTagByName(PROPERTY_ANNOTATION);
+            if (propertyTag != null) {
+                return propertyTag;
+            }
+        }
+        JavaMethod mutator = beanProperty.getMutator();
+        if (mutator != null) {
+            DocletTag propertyTag = mutator.getTagByName(PROPERTY_ANNOTATION);
+            if (propertyTag != null) {
+                return propertyTag;
+            }
+        }
+        return null;
+    }
+
+    private String getAttributeDescription(BeanProperty beanProperty, DocletTag propertyTag, String defaultDescription) {
+        String description = getProperty(propertyTag, "description");
+        if (description != null && description.trim().length() > 0) {
+            return description.trim();
+        }
+
+        JavaMethod accessor = beanProperty.getAccessor();
+        if (accessor != null) {
+            description = accessor.getComment();
+            if (description != null && description.trim().length() > 0) {
+                return description.trim();
+            }
+        }
+
+        JavaMethod mutator = beanProperty.getMutator();
+        if (mutator != null) {
+            description = mutator.getComment();
+            if (description != null && description.trim().length() > 0) {
+                return description.trim();
+            }
+        }
+        return defaultDescription;
+    }
+
+    private AttributeMapping loadParameter(JavaParameter parameter) {
+        String parameterName = parameter.getName();
+        String parameterDescription = getParameterDescription(parameter);
+
+        // first attempt to load the attribute from the java beans accessor methods
+        JavaClass javaClass = parameter.getParentMethod().getParentClass();
+        BeanProperty beanProperty = javaClass.getBeanProperty(parameterName);
+        if (beanProperty != null) {
+            AttributeMapping attributeMapping = loadAttribute(beanProperty, parameterDescription);
+            // if the attribute mapping is null, the property was tagged as hidden and this is an error
+            if (attributeMapping == null) {
+                throw new InvalidModelException("Hidden property usage: " +
+                        "The construction method " + toMethodLocator(parameter.getParentMethod()) +
+                        " can not use a hidded property " + parameterName);
+            }
+            return attributeMapping;
+        }
+
+        // create an attribute solely based on the parameter information
+        return new AttributeMapping(parameterName,
+                parameterName,
+                parameterDescription,
+                toMappingType(parameter.getType(), null),
+                null,
+                false,
+                false);
+    }
+
+    private String getParameterDescription(JavaParameter parameter) {
+        String parameterName = parameter.getName();
+        DocletTag[] tags = parameter.getParentMethod().getTagsByName("param");
+        for (int k = 0; k < tags.length; k++) {
+            DocletTag tag = tags[k];
+            if (tag.getParameters()[0].equals(parameterName)) {
+                String parameterDescription = tag.getValue().trim();
+                if (parameterDescription.startsWith(parameterName)) {
+                    parameterDescription = parameterDescription.substring(parameterName.length()).trim();
+                }
+                return parameterDescription;
+            }
+        }
+        return null;
+    }
+
+    private boolean isValidConstructor(String factoryMethod, JavaMethod method, JavaParameter[] parameters) {
+        if (!method.isPublic() || parameters.length == 0) {
+            return false;
+        }
+
+        if (factoryMethod == null) {
+            return method.isConstructor();
+        } else {
+            return method.getName().equals(factoryMethod);
+        }
     }
 
     private static String getProperty(DocletTag propertyTag, String propertyName) {
@@ -330,18 +400,34 @@ public class QdoxMappingLoader implements MappingLoader {
         return false;
     }
 
-    private static final Set primitives;
+    private org.xbean.spring.generator.Type toMappingType(Type type, String nestedType) {
+        if (type.isArray()) {
+            return org.xbean.spring.generator.Type.newArrayType(type.getValue(), type.getDimensions());
+        } else if (type.isA(listType)) {
+            if (nestedType == null) nestedType = "java.lang.Object";
+            return org.xbean.spring.generator.Type.newCollectionType(type.getValue(),
+                    org.xbean.spring.generator.Type.newSimpleType(nestedType));
+        } else {
+            return org.xbean.spring.generator.Type.newSimpleType(type.getValue());
+        }
+    }
 
-    static {
-        Set set = new HashSet();
-        set.add("boolean");
-        set.add("byte");
-        set.add("char");
-        set.add("short");
-        set.add("int");
-        set.add("long");
-        set.add("float");
-        set.add("double");
-        primitives = Collections.unmodifiableSet(set);
+    private static String toMethodLocator(JavaMethod method) {
+        StringBuffer buf = new StringBuffer();
+        buf.append(method.getParentClass().getFullyQualifiedName());
+        if (!method.isConstructor()) {
+            buf.append(".").append(method.getName());
+        }
+        buf.append("(");
+        JavaParameter[] parameters = method.getParameters();
+        for (int i = 0; i < parameters.length; i++) {
+            JavaParameter parameter = parameters[i];
+            if (i > 0) {
+                buf.append(", ");
+            }
+            buf.append(parameter.getName());
+        }
+        buf.append(") : ").append(method.getLineNumber());
+        return buf.toString();
     }
 }

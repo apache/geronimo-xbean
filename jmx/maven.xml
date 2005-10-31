@@ -19,6 +19,11 @@
   xmlns:ant="jelly:ant"
   >
 
+  <postGoal name="java:compile">
+    <!-- todo enable this when services have been tagged -->
+    <attainGoal name="xbean:generate"/>
+  </postGoal>
+
   <goal name="default">
     <attainGoal name="jar:install"/>
   </goal>
@@ -32,17 +37,21 @@
     <attainGoal name="build"/>
   </goal>
 
-  <postGoal name="java:compile">
-    <taskdef name="annotationc"
-      classname="org.codehaus.backport175.compiler.task.AnnotationCTask">
+  <goal name="xbean:generate" description="Generates the XBean XSD, documentation and META-INF/services files.">
+    <taskdef name="mapping" classname="org.xbean.spring.generator.MappingGeneratorTask">
       <classpath>
-        <pathelement location="${maven.repo.local}/backport175/jars/backport175-1.0.jar"/>
+        <pathelement path="${maven.build.dest}"/>
+        <path refid="maven.dependency.classpath"/>
       </classpath>
     </taskdef>
 
-    <annotationc verbose="true">
-      <src path="${basedir}/src/java"/>
-      <classpath path="${maven.build.dest}"/>
-    </annotationc>
-  </postGoal>
+    <mapping destFile="target/jmx.xsd"
+      namespace="http://xbean.org/schemas/jmx"
+      srcdir="src/java"
+      metaInfDir="${basedir}/target/generated/"/>
+
+    <copy todir="${basedir}/target/classes">
+      <fileset dir="${basedir}/target/generated"/>
+    </copy>
+  </goal>
 </project>

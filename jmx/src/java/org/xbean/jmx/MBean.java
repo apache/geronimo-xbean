@@ -1,32 +1,46 @@
 package org.xbean.jmx;
 
 /**
- * $Rev$
+ * @org.xbean.XBean element="mbean"
  */
-public class MBean
-{
-   private Object bean;
-   private String objectName;
-   private Class mbeanClass;
-   private EventAdapter eventAdapter;
+public class MBean {
+    private Object bean;
+    private String objectName;
+    private Class mbeanClass;
+    private EventAdapter eventAdapter;
 
-   public void setBean(Object bean)
-   {
-      this.bean = bean;
-   }
+    public Object getBean() {
+        return bean;
+    }
 
-   public void setObjectName(String objectName)
-   {
-      this.objectName = objectName;
-   }
+    public void setBean(Object bean) {
+        this.bean = bean;
+    }
 
-   public void setMBeanClass(Class mbeanClass)
-   {
-      this.mbeanClass = mbeanClass;
-   }
+    public String getObjectName() {
+        return objectName;
+    }
 
-   public void setEventAdapter(EventAdapter eventAdapter)
-   {
-      this.eventAdapter = eventAdapter;
-   }
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
+
+    /**
+     * @org.xbean.Property alias="mbean"
+     */
+    public Class getMBeanClass() {
+        return mbeanClass;
+    }
+
+    public void setMBeanClass(Class mbeanClass) {
+        this.mbeanClass = mbeanClass;
+    }
+
+    public EventAdapter getEventAdapter() {
+        return eventAdapter;
+    }
+
+    public void setEventAdapter(EventAdapter eventAdapter) {
+        this.eventAdapter = eventAdapter;
+    }
 }

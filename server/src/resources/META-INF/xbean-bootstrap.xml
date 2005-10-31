@@ -19,12 +19,12 @@
   <bean id="PropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
   <s:kernel-main name="Main" kernel="#Kernel">
-    <s:services>
+    <property name="services">
       <map>
         <entry key="FileSystemRepository" value-ref="FileSystemRepository"/>
         <entry key="SpringLoader" value-ref="SpringLoader"/>
       </map>
-    </s:services>
+    </property>
     <s:next>
       <s:load-all-main kernel="#Kernel"/>
     </s:next>

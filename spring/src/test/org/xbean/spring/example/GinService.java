@@ -18,6 +18,7 @@
 package org.xbean.spring.example;
 
 /**
+ * Gin is made from the distillation of white grain spirit and juniper berries.
  * @org.xbean.XBean element="gin" contentProperty="name"
  *
  * @version $Revision: 1.1 $
