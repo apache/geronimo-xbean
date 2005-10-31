@@ -21,13 +21,24 @@
     <version>2.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>xbean-kernel</artifactId>
-  <name>XBean :: Kernel</name>
+  <artifactId>xbean-classpath</artifactId>
+  <name>XBean :: JMX</name>
   <dependencies>
     <dependency>
-        <groupId>backport-util-concurrent</groupId>
-        <artifactId>backport-util-concurrent</artifactId>
-        <version>2.0_01_pd</version>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xbean</groupId>
+      <artifactId>xbean-kernel</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xbean</groupId>
+      <artifactId>xbean-spring</artifactId>
     </dependency>
   </dependencies>
 </project>

@@ -4,10 +4,7 @@ package org.xbean.classpath;
  * @version $Revision$ $Date$
  */
 
-import junit.framework.*;
-import org.xbean.classpath.SystemClassPath;
-
-import java.net.URL;
+import junit.framework.TestCase;
 
 public class SystemClassPathTest extends TestCase {
 

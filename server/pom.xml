@@ -21,13 +21,20 @@
     <version>2.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>xbean-kernel</artifactId>
-  <name>XBean :: Kernel</name>
+  <artifactId>xbean-server</artifactId>
+  <name>XBean :: Server</name>
   <dependencies>
     <dependency>
-        <groupId>backport-util-concurrent</groupId>
-        <artifactId>backport-util-concurrent</artifactId>
-        <version>2.0_01_pd</version>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xbean</groupId>
+      <artifactId>xbean-kernel</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xbean</groupId>
+      <artifactId>xbean-spring</artifactId>
     </dependency>
   </dependencies>
 </project>
