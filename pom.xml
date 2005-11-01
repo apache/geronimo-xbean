@@ -179,18 +179,18 @@
 
   <distributionManagement>
     <repository>
-      <id>repo1</id>
-      <name>Maven Central Repository</name>
-      <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
+      <id>xbean-repo</id>
+      <name>XBean Central Repository</name>
+      <url>scpexe://xbean.org/home/projects/xbean/m2-repository</url>
     </repository>
     <snapshotRepository>
-      <id>snapshots</id>
-      <name>Maven Central Development Repository</name>
-      <url>scp://repo1.maven.org/home/projects/maven/repository-staging/snapshots/maven2</url>
+      <id>xbean-snapshots</id>
+      <name>XBean Central Development Repository</name>
+      <url>scpexe://xbean.org/home/projects/xbean/m2-repository</url>
     </snapshotRepository>
     <site>
-      <id>website</id>
-      <url>scp://www.xbean.org/home/projects/xbean/public_html/maven/</url>
+      <id>xbean-website</id>
+      <url>scpexe://xbean.org/home/projects/xbean/public_html/maven/</url>
     </site>
   </distributionManagement>
 
@@ -206,7 +206,32 @@
   </modules>
 
   <build>
-    <sourceDirectory>src/java</sourceDirectory>
-    <testSourceDirectory>src/test</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <artifactId>maven-one-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>install-maven-one-repository</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-ssh-external</artifactId>
+         <version>1.0-alpha-5</version>
+      </extension>
+    </extensions>
   </build>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>snapshots</id>
+      <name>Maven Central Plugins Development Repository</name>
+      <url>http://snapshots.maven.codehaus.org/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>

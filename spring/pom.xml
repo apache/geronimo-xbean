@@ -69,7 +69,7 @@
 
                 <mapping destFile="target/restaurant.xsd"
                   namespace="http://xbean.org/schemas/pizza"
-                  srcdir="src/test"
+                  srcdir="src/test/java"
                   metaInfDir="${basedir}/target/generated/"/>
 
                 <copy todir="${basedir}/target/test-classes">
@@ -85,28 +85,6 @@
         </executions>
       </plugin>
     </plugins>
-
-    <resources>
-      <resource>
-        <directory>src/resources</directory>
-      </resource>
-    </resources>
-
-    <testResources>
-      <testResource>
-        <directory>target/generated</directory>
-        <includes>
-          <include>META-INF/**/*</include>
-        </includes>
-      </testResource>
-      <testResource>
-        <directory>src/test</directory>
-        <includes>
-          <include>META-INF/**/*</include>
-          <include>**/*.x*</include>
-        </includes>
-      </testResource>
-    </testResources>
   </build>
 </project>
 
