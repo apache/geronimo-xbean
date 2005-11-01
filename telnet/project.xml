@@ -20,7 +20,7 @@
 
   <name>XBean :: Telnet</name>
   <id>xbean-telnet</id>
-  <groupId>xbean</groupId>
+  <groupId>org.xbean</groupId>
   <currentVersion>2.0-SNAPSHOT</currentVersion>
   <organization>
     <name>XBean.org</name>
