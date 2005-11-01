@@ -22,12 +22,15 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.ManagedList;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import javax.xml.namespace.QName;
 
 import java.beans.PropertyDescriptor;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * 
@@ -90,6 +93,27 @@ public class QNameHelper {
                 if (value instanceof String) {
                     propertyValues.removePropertyValue(propertyValue);
                     propertyValues.addPropertyValue(name, createQName(element, (String) value));
+                }
+            }
+        } else if (descriptor.getPropertyType().isAssignableFrom(QName[].class)) {
+            String name = descriptor.getName();
+            MutablePropertyValues propertyValues = bd.getPropertyValues();
+            PropertyValue propertyValue = propertyValues.getPropertyValue(name);
+            if (propertyValue != null) {
+                Object value = propertyValue.getValue();
+                if (value instanceof List) {
+                    List values = (List) value;
+                    List newValues = new ManagedList();
+                    for (Iterator iter = values.iterator(); iter.hasNext();) {
+                        Object v = iter.next();
+                        if (v instanceof String) {
+                            newValues.add(createQName(element, (String) v));
+                        } else {
+                            newValues.add(v);
+                        }
+                    }
+                    propertyValues.removePropertyValue(propertyValue);
+                    propertyValues.addPropertyValue(name, newValues);
                 }
             }
         }
