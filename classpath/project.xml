@@ -20,7 +20,7 @@
 
   <name>XBean :: ClassPath</name>
   <id>xbean-classpath</id>
-  <groupId>xbean</groupId>
+  <groupId>org.xbean</groupId>
   <currentVersion>2.0-SNAPSHOT</currentVersion>
   <organization>
     <name>XBean.org</name>
