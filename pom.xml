@@ -132,8 +132,8 @@
       </dependency>
       <dependency>
         <groupId>groovy</groupId>
-        <artifactId>groovy</artifactId>
-        <version>1.0-jsr-03</version>
+        <artifactId>groovy-1.0-jsr</artifactId>
+        <version>03</version>
       </dependency>
       <dependency>
         <groupId>mx4j</groupId>
@@ -200,21 +200,13 @@
     <module>kernel</module>
     <module>server</module>
     <module>spring</module>
-    <module>telnet</module>
+    <!-- disabled until the maven 2 pom for groovy is fixed -->
+    <!-- see http://jira.codehaus.org/browse/MEV-163 for more info -->
+    <!-- <module>telnet</module> -->
   </modules>
 
   <build>
     <sourceDirectory>src/java</sourceDirectory>
     <testSourceDirectory>src/test</testSourceDirectory>
-<!--    <plugins>-->
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-compiler-plugin</artifactId>-->
-<!--        <configuration>-->
-<!--          <source>1.4</source>-->
-<!--          <target>1.4</target>-->
-<!--        </configuration>-->
-<!--      </plugin>-->
-<!--    </plugins>-->
-  </build>  
+  </build>
 </project>

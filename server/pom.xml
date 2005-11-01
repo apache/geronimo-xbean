@@ -25,6 +25,11 @@
   <name>XBean :: Server</name>
   <dependencies>
     <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib-nodep</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
     </dependency>
@@ -37,5 +42,61 @@
       <artifactId>xbean-spring</artifactId>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <configuration>
+              <tasks>
+                <taskdef name="mapping" classname="org.xbean.spring.generator.MappingGeneratorTask">
+                  <classpath>
+                    <pathelement path="${basedir}/target/classes"/>
+                    <path refid="maven.dependency.classpath"/>
+                  </classpath>
+                </taskdef>
+
+                <mapping destFile="target/jmx.xsd"
+                  namespace="http://xbean.org/schemas/jmx"
+                  srcdir="src/java"
+                  metaInfDir="${basedir}/target/generated/"/>
+
+                <copy todir="${basedir}/target/classes">
+                  <fileset dir="${basedir}/target/generated"/>
+                </copy>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+    <resources>
+      <resource>
+        <directory>src/resources</directory>
+      </resource>
+    </resources>
+
+    <testResources>
+      <testResource>
+        <directory>target/generated</directory>
+        <includes>
+          <include>META-INF/**/*</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <directory>src/test</directory>
+        <includes>
+          <include>META-INF/**/*</include>
+          <include>**/*.x*</include>
+        </includes>
+      </testResource>
+    </testResources>
+  </build>
 </project>
 

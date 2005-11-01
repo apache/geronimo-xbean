@@ -24,8 +24,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Arrays;
-import java.util.StringTokenizer;
-import java.util.Collections;
 import java.beans.PropertyEditorManager;
 
 /**
@@ -37,7 +35,8 @@ public class ModelTest extends TestCase {
     private static final String DEFAULT_NAMESPACE = "http://xbean.org/test";
 
     public void testQdox() throws Exception{
-        QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE, new File[] { new File("src/test")});
+        String basedir = System.getProperties().getProperty("basedir", ".");
+        QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE, new File[] { new File(basedir, "/src/test")});
         Set namespaces = mappingLoader.loadNamespaces();
         validateModel(namespaces);
     }

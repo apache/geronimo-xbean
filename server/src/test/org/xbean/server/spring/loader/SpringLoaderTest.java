@@ -48,6 +48,7 @@ import java.util.jar.JarOutputStream;
  * @since 2.0
  */
 public class SpringLoaderTest extends TestCase {
+    private static final String basedir = System.getProperties().getProperty("basedir", ".");
     private static final String CLASS_NAME = "TestClass";
     private static final String ENTRY_NAME = "foo";
     private static final String ENTRY_VALUE = "bar";
@@ -57,16 +58,16 @@ public class SpringLoaderTest extends TestCase {
         Kernel kernel = KernelFactory.newInstance().createKernel("test");
 
         try {
-            File baseDir = new File("src/test/org/xbean/server/spring/loader/").getAbsoluteFile();
-            System.setProperty("xbean.base.dir", baseDir.getAbsolutePath());
+            File xbeanDir = new File(basedir, "src/test/org/xbean/server/spring/loader/").getAbsoluteFile();
+            System.setProperty("xbean.base.dir", xbeanDir.getAbsolutePath());
 
-            FileSystemRepository repository = new FileSystemRepository(new File(".").getAbsoluteFile());
+            FileSystemRepository repository = new FileSystemRepository(new File(basedir).getAbsoluteFile());
             ClassLoaderXmlPreprocessor classLoaderXmlPreprocessor = new ClassLoaderXmlPreprocessor(repository);
             List xmlPreprocessors = Collections.singletonList(classLoaderXmlPreprocessor);
 
             SpringLoader springLoader = new SpringLoader();
             springLoader.setKernel(kernel);
-            springLoader.setBaseDir(baseDir);
+            springLoader.setBaseDir(xbeanDir);
             springLoader.setXmlPreprocessors(xmlPreprocessors);
             ServiceName configurationName = springLoader.load("classpath-xbean");
 
@@ -84,16 +85,16 @@ public class SpringLoaderTest extends TestCase {
         Kernel kernel = KernelFactory.newInstance().createKernel("test");
 
         try {
-            File baseDir = new File("src/test/org/xbean/server/spring/loader/").getAbsoluteFile();
-            System.setProperty("xbean.base.dir", baseDir.getAbsolutePath());
+            File xbeanDir = new File(basedir, "src/test/org/xbean/server/spring/loader/").getAbsoluteFile();
+            System.setProperty("xbean.base.dir", xbeanDir.getAbsolutePath());
 
-            FileSystemRepository repository = new FileSystemRepository(new File(".").getAbsoluteFile());
+            FileSystemRepository repository = new FileSystemRepository(new File(basedir).getAbsoluteFile());
             ClassLoaderXmlPreprocessor classLoaderXmlPreprocessor = new ClassLoaderXmlPreprocessor(repository);
             List xmlPreprocessors = Collections.singletonList(classLoaderXmlPreprocessor);
 
             SpringLoader springLoader = new SpringLoader();
             springLoader.setKernel(kernel);
-            springLoader.setBaseDir(baseDir);
+            springLoader.setBaseDir(xbeanDir);
             springLoader.setXmlPreprocessors(xmlPreprocessors);
             ServiceName configurationName = springLoader.load("classpath-xbean");
             SpringConfigurationServiceFactory serviceFactory = (SpringConfigurationServiceFactory) kernel.getServiceFactory(configurationName);
@@ -135,7 +136,7 @@ public class SpringLoaderTest extends TestCase {
     }
 
     private static File createJarFile() throws IOException {
-        File file = new File("target/SpringLoaderTest.jar");
+        File file = new File(basedir, "target/SpringLoaderTest.jar");
 
         FileOutputStream out = new FileOutputStream(file);
         JarOutputStream jarOut = new JarOutputStream(out);

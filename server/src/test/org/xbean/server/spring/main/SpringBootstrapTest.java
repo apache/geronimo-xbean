@@ -20,7 +20,6 @@ import junit.framework.TestCase;
 import org.xbean.kernel.Kernel;
 import org.xbean.kernel.KernelFactory;
 import org.xbean.server.main.KernelMain;
-import org.xbean.server.spring.main.SpringBootstrap;
 
 /**
  * @author Dain Sundstrom
@@ -28,17 +27,18 @@ import org.xbean.server.spring.main.SpringBootstrap;
  * @since 2.0
  */
 public class SpringBootstrapTest extends TestCase {
+    private static final String basedir = System.getProperties().getProperty("basedir", ".");
     private SpringBootstrap springBootstrap;
 
     public void testClasspathBootstrap() throws Exception{
         springBootstrap.setConfigurationFile("META-INF/xbean-bootstrap.xml");
-        springBootstrap.setServerBaseDirectory(".");
+        springBootstrap.setServerBaseDirectory(basedir);
         assertBootable(springBootstrap);
     }
 
     public void testFileBootstrap() throws Exception{
-        springBootstrap.setConfigurationFile("src/resources/META-INF/xbean-bootstrap.xml");
-        springBootstrap.setServerBaseDirectory(".");
+        springBootstrap.setConfigurationFile(basedir + "/src/resources/META-INF/xbean-bootstrap.xml");
+        springBootstrap.setServerBaseDirectory(basedir);
         assertBootable(springBootstrap);
     }
 
