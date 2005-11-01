@@ -49,5 +49,64 @@
       <artifactId>stax-api</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <configuration>
+              <tasks>
+                <taskdef name="mapping" classname="org.xbean.spring.generator.MappingGeneratorTask">
+                  <classpath>
+                    <pathelement path="${basedir}/target/classes"/>
+                    <pathelement path="${basedir}/target/test-classes"/>
+                    <path refid="maven.dependency.classpath"/>
+                  </classpath>
+                </taskdef>
+
+                <mapping destFile="target/restaurant.xsd"
+                  namespace="http://xbean.org/schemas/pizza"
+                  srcdir="src/test"
+                  metaInfDir="${basedir}/target/generated/"/>
+
+                <copy todir="${basedir}/target/test-classes">
+                  <fileset dir="${basedir}/target/generated"/>
+                </copy>
+
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+    <resources>
+      <resource>
+        <directory>src/resources</directory>
+      </resource>
+    </resources>
+
+    <testResources>
+      <testResource>
+        <directory>target/generated</directory>
+        <includes>
+          <include>META-INF/**/*</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <directory>src/test</directory>
+        <includes>
+          <include>META-INF/**/*</include>
+          <include>**/*.x*</include>
+        </includes>
+      </testResource>
+    </testResources>
+  </build>
 </project>
 

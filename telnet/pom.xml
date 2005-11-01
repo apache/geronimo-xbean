@@ -23,5 +23,11 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>xbean-telnet</artifactId>
   <name>XBean :: Telnet</name>
+  <dependencies>
+    <dependency>
+      <groupId>groovy</groupId>
+      <artifactId>groovy-1.0-jsr</artifactId>
+    </dependency>
+  </dependencies>
 </project>
 
