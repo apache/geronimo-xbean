@@ -29,11 +29,11 @@
       <artifactId>commons-logging</artifactId>
     </dependency>
     <dependency>
-      <groupId>xbean</groupId>
+      <groupId>org.xbean</groupId>
       <artifactId>xbean-kernel</artifactId>
     </dependency>
     <dependency>
-      <groupId>xbean</groupId>
+      <groupId>org.xbean</groupId>
       <artifactId>xbean-spring</artifactId>
     </dependency>
   </dependencies>
