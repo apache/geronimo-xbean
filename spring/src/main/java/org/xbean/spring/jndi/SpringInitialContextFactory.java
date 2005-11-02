@@ -84,7 +84,7 @@ public class SpringInitialContextFactory implements InitialContextFactory {
         Context answer = (Context) context.getBean("jndi");
         if (answer == null) {
             log.warn("No JNDI context available in JNDI resource: " + resource);
-            answer = new ReadOnlyContext(environment, new ConcurrentHashMap());
+            answer = new DefaultContext(environment, new ConcurrentHashMap());
         }
         return answer;
     }
