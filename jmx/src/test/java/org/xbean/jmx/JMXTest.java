@@ -3,6 +3,8 @@ package org.xbean.jmx;
 import junit.framework.TestCase;
 import org.xbean.spring.context.ClassPathXmlApplicationContext;
 
+import java.util.List;
+
 /**
  * $Rev$
  */
@@ -15,6 +17,12 @@ public class JMXTest extends TestCase {
 
             Object jmxExporter = context.getBean("jmxExporter");
             assertNotNull(jmxExporter);
+            assertTrue(jmxExporter instanceof MBeanExporter);
+            List mbeans = ((MBeanExporter) jmxExporter).getMBeans();
+            assertNotNull(mbeans);
+            assertEquals(2, mbeans.size());
+            assertSame(jmxService, mbeans.get(0));
+            assertSame(jmxService, mbeans.get(1));
         } finally {
             context.destroy();
         }
