@@ -23,6 +23,24 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>xbean-kernel</artifactId>
   <name>XBean :: Kernel</name>
+  <build>
+    <plugins>
+
+      <!-- plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>java.rmi.server.RMIClassLoaderSpi</name>
+              <value>org.xbean.rmi.RMIClassLoaderSpiImpl</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin -->
+
+    </plugins>
+  </build>
+  
   <dependencies>
     <dependency>
         <groupId>backport-util-concurrent</groupId>
