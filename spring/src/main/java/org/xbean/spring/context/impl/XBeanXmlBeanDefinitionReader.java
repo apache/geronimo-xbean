@@ -43,7 +43,7 @@ public class XBeanXmlBeanDefinitionReader extends XmlBeanDefinitionReader {
     private final List xmlPreprocessors;
 
     /**
-     * Creates a XBeanXmlBeanDefinitionReader for the specified applcationContext and beanFactory which will apply
+     * Creates a XBeanXmlBeanDefinitionReader for the specified applicationContext and beanFactory which will apply
      * the xmlPreprocessors before passing the DOM to Spring for processing.
      * @param applicationContext the application context for which the bean definitons will be loaded
      * @param beanFactory the beanFactory that services will be loaded
