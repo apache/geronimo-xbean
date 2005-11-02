@@ -181,12 +181,12 @@
     <repository>
       <id>xbean-repo</id>
       <name>XBean Central Repository</name>
-      <url>scpexe://xbean.org/home/projects/xbean/m2-repository</url>
+      <url>scpexe://xbean.org/home/projects/xbean/dist-m2</url>
     </repository>
     <snapshotRepository>
       <id>xbean-snapshots</id>
       <name>XBean Central Development Repository</name>
-      <url>scpexe://xbean.org/home/projects/xbean/m2-repository</url>
+      <url>scpexe://xbean.org/home/projects/xbean/dist-m2</url>
     </snapshotRepository>
     <site>
       <id>xbean-website</id>
@@ -211,8 +211,12 @@
         <artifactId>maven-one-plugin</artifactId>
         <executions>
           <execution>
+            <configuration>
+              <remoteRepositoryUrl>scpexe://xbean.org/dist</remoteRepositoryUrl>
+            </configuration>
             <goals>
               <goal>install-maven-one-repository</goal>
+              <goal>deploy-maven-one-repository</goal>
             </goals>
           </execution>
         </executions>
@@ -221,8 +225,8 @@
     <extensions>
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
-         <artifactId>wagon-ssh-external</artifactId>
-         <version>1.0-alpha-5</version>
+        <artifactId>wagon-ssh-external</artifactId>
+        <version>1.0-alpha-5</version>
       </extension>
     </extensions>
   </build>
