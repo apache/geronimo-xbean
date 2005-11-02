@@ -70,6 +70,10 @@
                   namespace="http://xbean.org/schemas/jmx"
                   srcdir="src/main/java"
                   metaInfDir="${basedir}/target/generated/"/>
+
+                <copy todir="${basedir}/target/classes">
+                  <fileset dir="${basedir}/target/generated"/>
+                </copy>
               </tasks>
             </configuration>
             <goals>

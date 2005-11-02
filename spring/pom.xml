@@ -83,6 +83,10 @@
                   namespace="http://xbean.org/schemas/pizza"
                   srcdir="src/test/java"
                   metaInfDir="${basedir}/target/test-generated/"/>
+
+                <copy todir="${basedir}/target/test-classes">
+                  <fileset dir="${basedir}/target/test-generated"/>
+                </copy>
               </tasks>
             </configuration>
             <goals>
