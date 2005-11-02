@@ -55,6 +55,14 @@
   </dependencies>
 
   <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <testResource>
+        <directory>target/test-generated</directory>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -74,12 +82,7 @@
                 <mapping destFile="target/restaurant.xsd"
                   namespace="http://xbean.org/schemas/pizza"
                   srcdir="src/test/java"
-                  metaInfDir="${basedir}/target/generated/"/>
-
-                <copy todir="${basedir}/target/test-classes">
-                  <fileset dir="${basedir}/target/generated"/>
-                </copy>
-
+                  metaInfDir="${basedir}/target/test-generated/"/>
               </tasks>
             </configuration>
             <goals>
