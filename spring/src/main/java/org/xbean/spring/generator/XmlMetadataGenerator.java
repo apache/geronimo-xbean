@@ -16,8 +16,6 @@
  */
 package org.xbean.spring.generator;
 
-import org.xbean.spring.context.impl.NamespaceHelper;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,6 +23,9 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.xbean.spring.context.impl.NamespaceHelper;
+
 
 /**
  * @author Dain Sundstrom
@@ -131,7 +132,11 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             String propertyName = attributeMapping.getPropertyName();
             String attributeName = attributeMapping.getAttributeName();
             if (!propertyName.equals(attributeName)) {
-                out.println(element.getElementName() + ".alias." + attributeName + " = " + propertyName);
+                if (List.class.getName().equals(attributeMapping.getType().getName())) {
+                    out.println(element.getElementName() + ".list." + attributeName + " = " + propertyName);
+                } else {
+                    out.println(element.getElementName() + ".alias." + attributeName + " = " + propertyName);
+                }
             }
         }
     }
