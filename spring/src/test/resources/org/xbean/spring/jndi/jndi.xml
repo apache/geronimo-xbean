@@ -4,7 +4,7 @@
   <bean id="jndi" class="org.xbean.spring.jndi.DefaultContext" singleton="true">
     <property name="entries">
       <map>
-        <entry key="restaurant">
+        <entry key="test/restaurant">
         
 		  <restaurant id="restaurant" xmlns="http://xbean.org/schemas/pizza" xmlns:foo="http://acme.com" serviceName="foo:xyz" uri="http://cheese.com">
 		    <dinnerMenu>
