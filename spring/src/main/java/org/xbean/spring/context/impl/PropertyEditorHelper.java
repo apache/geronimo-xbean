@@ -51,12 +51,18 @@ public class PropertyEditorHelper {
             }
             catch (ClassNotFoundException e) {
             }
+            catch (NoClassDefFoundError e) {
+            }
         }
         try {
             return PropertyEditorHelper.class.getClassLoader().loadClass(name);
         }
         catch (ClassNotFoundException e) {
             log.debug("Could not find class: " + name + " on the classpath");
+            return null;
+        }
+        catch (NoClassDefFoundError e) {
+            log.debug("Could not load class: " + name + " on the classpath. " + e.getMessage());
             return null;
         }
     }
