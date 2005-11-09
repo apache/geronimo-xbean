@@ -75,6 +75,7 @@
       <roles>
         <role>Commiter</role>
         <role>Despot</role>
+        <role>Release Boy</role>
       </roles>
       <timezone>-8</timezone>
     </developer>
