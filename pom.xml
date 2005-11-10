@@ -187,7 +187,7 @@
     <snapshotRepository>
       <id>xbean-snapshots</id>
       <name>XBean Central Development Repository</name>
-      <url>scpexe://xbean.org/home/projects/xbean/dist-m2</url>
+      <url>scpexe://xbean.org/home/projects/xbean/dist-m2-snapshot</url>
     </snapshotRepository>
     <site>
       <id>xbean-website</id>
