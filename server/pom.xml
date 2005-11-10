@@ -1,28 +1,50 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!--
-* Copyright 2005 the original author or authors.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
--->
 <project>
   <parent>
-    <groupId>org.xbean</groupId>
     <artifactId>xbean</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <groupId>org.xbean</groupId>
+    <version>2.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>xbean-server</artifactId>
   <name>XBean :: Server</name>
+  <version>2.0</version>
+  <build>
+    <resources>
+      <resource>
+        <directory>target/generated</directory>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <taskdef classname="org.xbean.spring.generator.MappingGeneratorTask" name="mapping">
+                  <classpath>
+                    <pathelement path="${basedir}/target/classes"></pathelement>
+                    <path refid="maven.dependency.classpath"></path>
+                  </classpath>
+                </taskdef>
+                <mapping namespace="http://xbean.org/schemas/jmx" srcdir="src/main/java" destFile="target/jmx.xsd" metaInfDir="${basedir}/target/generated/"></mapping>
+                <copy todir="${basedir}/target/classes">
+                  <fileset dir="${basedir}/target/generated"></fileset>
+                </copy>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>cglib</groupId>
@@ -42,47 +64,4 @@
       <artifactId>xbean-spring</artifactId>
     </dependency>
   </dependencies>
-  <build>
-    <resources>
-      <resource>
-        <directory>target/generated</directory>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <configuration>
-              <tasks>
-                <taskdef name="mapping" classname="org.xbean.spring.generator.MappingGeneratorTask">
-                  <classpath>
-                    <pathelement path="${basedir}/target/classes"/>
-                    <path refid="maven.dependency.classpath"/>
-                  </classpath>
-                </taskdef>
-
-                <mapping destFile="target/jmx.xsd"
-                  namespace="http://xbean.org/schemas/jmx"
-                  srcdir="src/main/java"
-                  metaInfDir="${basedir}/target/generated/"/>
-
-                <copy todir="${basedir}/target/classes">
-                  <fileset dir="${basedir}/target/generated"/>
-                </copy>
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>
-

@@ -1,46 +1,26 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!--
-* Copyright 2005 the original author or authors.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
--->
 <project>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.xbean</groupId>
   <artifactId>xbean</artifactId>
   <packaging>pom</packaging>
   <name>XBean</name>
-  <version>2.0-SNAPSHOT</version>
+  <version>2.0</version>
   <description>XBean is a plugin based server archtecutre.</description>
   <url>http://xbean.org</url>
-
   <issueManagement>
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/XB</url>
   </issueManagement>
-
   <ciManagement>
     <system>continuum</system>
     <notifiers>
       <notifier>
-        <type>mail</type>
-        <sendOnError/>
-        <sendOnFailure/>
+        <sendOnError>false</sendOnError>
+        <sendOnFailure>false</sendOnFailure>
         <address>dev@xbean.org</address>
       </notifier>
     </notifiers>
   </ciManagement>
-
   <mailingLists>
     <mailingList>
       <name>xbean developers</name>
@@ -58,7 +38,6 @@
       <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
     </mailingList>
   </mailingLists>
-
   <developers>
     <developer>
       <id>adc</id>
@@ -89,7 +68,6 @@
       <timezone>-8</timezone>
     </developer>
   </developers>
-
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -97,18 +75,72 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
   <scm>
-    <connection>scm:svn:https://svn.codehaus.org/xbean/trunk/</connection>
-    <developerConnection>scm:svn:https://${maven.username}@svn.codehaus.org/xbean/trunk/</developerConnection>
-    <url>https://svn.codehaus.org/xbean/trunk/</url>
+    <connection>scm:svn:https://svn.codehaus.org/xbean/tags/xbean-2.0/</connection>
+    <developerConnection>scm:svn:https://${maven.username}@svn.codehaus.org/xbean/tags/xbean-2.0/</developerConnection>
+    <url>https://svn.codehaus.org/xbean/tags/xbean-2.0/</url>
   </scm>
-
   <organization>
     <name>XBean</name>
     <url>http://xbean.org/</url>
   </organization>
-
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh-external</artifactId>
+        <version>1.0-alpha-5</version>
+      </extension>
+    </extensions>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <tagBase>https://svn.codehaus.org/xbean/tags</tagBase>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-one-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>install-maven-one-repository</goal>
+              <goal>deploy-maven-one-repository</goal>
+            </goals>
+            <configuration>
+              <remoteRepositoryUrl>scpexe://xbean.org/dist</remoteRepositoryUrl>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <modules>
+    <module>classpath</module>
+    <module>jmx</module>
+    <module>kernel</module>
+    <module>server</module>
+    <module>spring</module>
+  </modules>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>snapshots</id>
+      <name>Maven Central Plugins Development Repository</name>
+      <url>http://snapshots.maven.codehaus.org/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -168,16 +200,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
   <distributionManagement>
     <repository>
       <id>xbean-repo</id>
@@ -194,59 +216,4 @@
       <url>scpexe://xbean.org/home/projects/xbean/public_html/maven/</url>
     </site>
   </distributionManagement>
-
-  <modules>
-    <module>classpath</module>
-    <module>jmx</module>
-    <module>kernel</module>
-    <module>server</module>
-    <module>spring</module>
-    <!-- disabled until the maven 2 pom for groovy is fixed -->
-    <!-- see http://jira.codehaus.org/browse/MEV-163 for more info -->
-    <!-- <module>telnet</module> -->
-  </modules>
-
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-release-plugin</artifactId>
-          <configuration>
-            <tagBase>https://svn.codehaus.org/xbean/tags</tagBase>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-    <plugins>
-      <plugin>
-        <artifactId>maven-one-plugin</artifactId>
-        <executions>
-          <execution>
-            <configuration>
-              <remoteRepositoryUrl>scpexe://xbean.org/dist</remoteRepositoryUrl>
-            </configuration>
-            <goals>
-              <goal>install-maven-one-repository</goal>
-              <goal>deploy-maven-one-repository</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-ssh-external</artifactId>
-        <version>1.0-alpha-5</version>
-      </extension>
-    </extensions>
-  </build>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>snapshots</id>
-      <name>Maven Central Plugins Development Repository</name>
-      <url>http://snapshots.maven.codehaus.org/maven2</url>
-    </pluginRepository>
-  </pluginRepositories>
 </project>
