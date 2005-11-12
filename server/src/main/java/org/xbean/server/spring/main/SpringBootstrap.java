@@ -236,8 +236,8 @@ public class SpringBootstrap {
             SpringApplicationContext factory;
             File file = new File(configurationFile);
             if (!file.isAbsolute()) {
-                file = new File(baseDirectory.toURI().resolve(configurationFile));
-            }   
+                file = new File(baseDirectory, configurationFile);
+            }
             if (file.canRead()) {
                 try {
                     // configuration file is on the local file system
