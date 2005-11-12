@@ -36,8 +36,14 @@ public class SpringBootstrapTest extends TestCase {
         assertBootable(springBootstrap);
     }
 
-    public void testFileBootstrap() throws Exception{
+    public void testFileBootstrapWithAbsoluteConfigPath() throws Exception {
         springBootstrap.setConfigurationFile(basedir + "/src/main/resources/META-INF/xbean-bootstrap.xml");
+        springBootstrap.setServerBaseDirectory(basedir);
+        assertBootable(springBootstrap);
+    }
+
+    public void testFileBootstrapWithRelativeConfigPath() throws Exception {
+        springBootstrap.setConfigurationFile("/src/main/resources/META-INF/xbean-bootstrap.xml");
         springBootstrap.setServerBaseDirectory(basedir);
         assertBootable(springBootstrap);
     }
