@@ -234,7 +234,10 @@ public class SpringBootstrap {
 
             // load the configuration file
             SpringApplicationContext factory;
-            File file = new File(baseDirectory.toURI().resolve(configurationFile));
+            File file = new File(configurationFile);
+            if (!file.isAbsolute()) {
+                file = new File(baseDirectory.toURI().resolve(configurationFile));
+            }   
             if (file.canRead()) {
                 try {
                     // configuration file is on the local file system
