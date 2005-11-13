@@ -84,6 +84,10 @@ public class QNameHelper {
     
     public static void coerceNamespaceAwarePropertyValues(AbstractBeanDefinition bd, Element element, PropertyDescriptor[] descriptors, int i) {
         PropertyDescriptor descriptor = descriptors[i];
+        // When the property is an indexed property, the getPropertyType can return null.
+        if (descriptor.getPropertyType() == null) {
+            return;
+        }
         if (descriptor.getPropertyType().isAssignableFrom(QName.class)) {
             String name = descriptor.getName();
             MutablePropertyValues propertyValues = bd.getPropertyValues();
