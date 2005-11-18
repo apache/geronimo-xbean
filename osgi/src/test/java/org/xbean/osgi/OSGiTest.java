@@ -66,36 +66,36 @@ public class OSGiTest extends TestCase {
         BundleClassLoader bundleClassLoader;
         Class clazz = null;
 
-        project = mavenBundleManager.loadProject("org.apache.geronimo.specs", "geronimo-spec-servlet", "2.4-rc4");
+        project = mavenBundleManager.loadProject("springframework", "spring", "1.2.4");
         bundle = mavenBundleManager.installBundle(project);
         bundleClassLoader = new BundleClassLoader(bundle);
 
-        clazz = bundle.loadClass("javax.servlet.http.HttpServlet");
+        clazz = bundle.loadClass("org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser");
         assertNotNull(clazz);
 
-        clazz = bundleClassLoader.loadClass("javax.servlet.http.HttpServlet");
+        clazz = bundleClassLoader.loadClass("org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser");
         assertNotNull(clazz);
 
         assertSame(bundle, mavenBundleManager.installBundle(project));
 
-        project = new Project("org.apache.geronimo.specs",
-                "geronimo-spec-jsp",
-                "2.0-rc4",
+        project = new Project("org.xbean",
+                "xbean-spring",
+                "2.1-SNAPSHOT",
                 "jar",
-                Collections.singleton(new Dependency("org.apache.geronimo.specs", "geronimo-spec-servlet", "2.4-rc4", "jar")));
+                Collections.singleton(new Dependency("springframework", "spring", "1.2.4", "jar")));
         bundle = mavenBundleManager.installBundle(project);
         bundleClassLoader = new BundleClassLoader(bundle);
 
-        clazz = bundle.loadClass("javax.servlet.http.HttpServlet");
+        clazz = bundle.loadClass("org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser");
         assertNotNull(clazz);
 
-        clazz = bundleClassLoader.loadClass("javax.servlet.http.HttpServlet");
+        clazz = bundleClassLoader.loadClass("org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser");
         assertNotNull(clazz);
 
-        clazz = bundle.loadClass("javax.servlet.jsp.HttpJspPage");
+        clazz = bundle.loadClass("org.xbean.spring.context.impl.XBeanXmlBeanDefinitionParser");
         assertNotNull(clazz);
 
-        clazz = bundleClassLoader.loadClass("javax.servlet.jsp.HttpJspPage");
+        clazz = bundleClassLoader.loadClass("org.xbean.spring.context.impl.XBeanXmlBeanDefinitionParser");
         assertNotNull(clazz);
 
         assertSame(bundle, mavenBundleManager.installBundle(project));
