@@ -52,7 +52,7 @@ public class OSGiTest extends TestCase {
         osgi = new OSGi(adaptor);
         osgi.launch();
         bundleContext = osgi.getBundleContext();
-        mavenBundleManager = new MavenBundleManager(bundleContext, new File("/Users/dain/.m2/repository/"));
+        mavenBundleManager = new MavenBundleManager(bundleContext, new File(System.getProperty("user.home"), ".m2/repository"));
     }
 
     protected void tearDown() throws Exception {
