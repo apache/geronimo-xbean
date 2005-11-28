@@ -100,5 +100,6 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
         // assign the class loader to the xml reader and the application context
         reader.setBeanClassLoader(classLoader);
         applicationContext.setClassLoader(classLoader);
+        Thread.currentThread().setContextClassLoader(classLoader);
     }
 }
