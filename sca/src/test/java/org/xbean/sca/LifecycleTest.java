@@ -24,7 +24,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *
  * @version $Revision$
  */
-public class ScaLifecycleTest extends SpringTestSupport {
+public class LifecycleTest extends SpringTestSupport {
 
     private static int initCounter;
     private static int destroyCounter;

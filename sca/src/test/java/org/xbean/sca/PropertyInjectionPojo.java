@@ -17,22 +17,32 @@
  **/
 package org.xbean.sca;
 
-import org.osoa.sca.annotations.Destroy;
-import org.osoa.sca.annotations.Init;
+import org.osoa.sca.annotations.ComponentName;
 
 /**
- *
+ * 
  * @version $Revision$
  */
-public class LifecyclePojo {
+public class PropertyInjectionPojo {
 
-    @Init
-    public void start() throws Exception {
-        LifecycleTest.onInitCalled();
+    private String sessionID;
+    private String componenetName;
+
+    public String getComponenetName() {
+        return componenetName;
     }
-    
-    @Destroy
-    public void stop() throws Exception {
-        LifecycleTest.onDestroyCalled();
+
+    @ComponentName
+    public void setComponenetName(String componenetName) {
+        this.componenetName = componenetName;
     }
+
+    public String getSessionID() {
+        return sessionID;
+    }
+
+    public void setSessionID(String sessionID) {
+        this.sessionID = sessionID;
+    }
+
 }
