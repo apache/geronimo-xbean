@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns:jmx="http://xbean.org/schemas/jmx">
 
-    <bean id="jmxService" class="org.xbean.jmx.JMXService">
-        <property name="attr1" value="32"/>
-        <property name="attr2" value="64"/>
-    </bean>
+    <bean id="jmxService1" class="org.xbean.jmx.JMXService"/>
+    <bean id="jmxService2" class="org.xbean.jmx.JMXService"/>
 
     <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
         <property name="defaultDomain" value="org.xbean"/>
@@ -12,7 +10,9 @@
 
     <jmx:export id="jmxExporter" mbeanserver="#mbeanServer">
         <jmx:mbeans>
-            <jmx:mbean bean="#jmxService" objectname=":type=JMXService"/>
+            <jmx:mbean bean="#jmxService1" objectname=":type=JMXService1,id=1"/>
+            <jmx:mbean bean="#jmxService1" objectname=":type=JMXService1,id=2"/>
+            <jmx:mbean bean="#jmxService2" objectname=":type=JMXService2,id=1"/>
         </jmx:mbeans>
     </jmx:export>
 

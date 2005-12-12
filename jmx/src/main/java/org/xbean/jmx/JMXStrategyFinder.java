@@ -54,13 +54,17 @@ public class JMXStrategyFinder {
                 }
                 result = (JMXWrappingStrategy) clazz.newInstance();
             }
-        } catch (ClassNotFoundException doNothing) {
+        }
+        catch (ClassNotFoundException doNothing) {
             throw new JMXServiceException(doNothing);
-        } catch (IOException doNothing) {
+        }
+        catch (IOException doNothing) {
             throw new JMXServiceException(doNothing);
-        } catch (InstantiationException doNothing) {
+        }
+        catch (InstantiationException doNothing) {
             throw new JMXServiceException(doNothing);
-        } catch (IllegalAccessException doNothing) {
+        }
+        catch (IllegalAccessException doNothing) {
             throw new JMXServiceException(doNothing);
         }
         return result;
@@ -74,7 +78,8 @@ public class JMXStrategyFinder {
         }
         try {
             return Thread.currentThread().getContextClassLoader().loadClass(className);
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
             return JMXStrategyFinder.class.getClassLoader().loadClass(className);
         }
     }
@@ -96,10 +101,12 @@ public class JMXStrategyFinder {
             Properties properties = new Properties();
             properties.load(reader);
             return properties;
-        } finally {
+        }
+        finally {
             try {
                 reader.close();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
             }
         }
     }
