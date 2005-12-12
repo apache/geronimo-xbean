@@ -17,22 +17,23 @@
  **/
 package org.xbean.sca;
 
-import org.osoa.sca.annotations.Destroy;
-import org.osoa.sca.annotations.Init;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  *
  * @version $Revision$
  */
-public class LifecyclePojo {
+public class FieldInjectionTest extends SpringTestSupport {
 
-    @Init
-    public void start() throws Exception {
-        LifecycleTest.onInitCalled();
+
+    public void testComponentName() throws Exception {
+        FieldInjectionPojo pojo = (FieldInjectionPojo) getBean("injection");
+        assertEquals("componentName", "injection", pojo.getComponenetName());
     }
     
-    @Destroy
-    public void stop() throws Exception {
-        LifecycleTest.onDestroyCalled();
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("org/xbean/sca/field-injection.xml");
     }
+
 }

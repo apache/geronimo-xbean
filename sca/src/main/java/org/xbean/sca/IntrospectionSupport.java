@@ -61,6 +61,9 @@ public abstract class IntrospectionSupport {
 
     protected void setField(Object bean, Field field, Object value) {
         try {
+            if (! field.isAccessible()) {
+                field.setAccessible(true);
+            }
             field.set(bean, value);
         }
         catch (Exception e) {
