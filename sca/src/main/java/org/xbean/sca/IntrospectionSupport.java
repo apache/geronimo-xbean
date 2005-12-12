@@ -39,13 +39,13 @@ public abstract class IntrospectionSupport {
 
     protected static final Object[] EMPTY_ARGUMENTS = {};
 
-    protected BeanInfo getBeanInfo(Object bean) {
+    protected BeanInfo getBeanInfo(Class type) {
         BeanInfo beanInfo;
         try {
-            beanInfo = Introspector.getBeanInfo(bean.getClass());
+            beanInfo = Introspector.getBeanInfo(type);
         }
         catch (IntrospectionException e) {
-            throw new BeanInitializationException("Failed to introspect: " + bean + ". Reason: " + e, e);
+            throw new BeanInitializationException("Failed to introspect: " + type.getName() + ". Reason: " + e, e);
         }
         return beanInfo;
     }

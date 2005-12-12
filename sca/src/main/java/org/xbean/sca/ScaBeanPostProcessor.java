@@ -77,7 +77,8 @@ public class ScaBeanPostProcessor extends IntrospectionSupport implements Destru
     // Implementation methods
     // -------------------------------------------------------------------------
     protected void postProcessBeanDefinition(ConfigurableListableBeanFactory beanFactory, String beanName, BeanDefinition definition) throws BeansException {
-        BeanInfo beanInfo = getBeanInfo(beanFactory.getType(beanName));
+        Class type = beanFactory.getType(beanName);
+        BeanInfo beanInfo = getBeanInfo(type);
         PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
         for (int i = 0; i < descriptors.length; i++) {
             PropertyDescriptor descriptor = descriptors[i];
@@ -92,29 +93,33 @@ public class ScaBeanPostProcessor extends IntrospectionSupport implements Destru
             // maybe add this to XBean code generator...
 
             Property property = method.getAnnotation(Property.class);
-            if (property.required()) {
-                // TODO use property.name()?
-                String propertyName = descriptor.getName();
-                MutablePropertyValues propertyValues = definition.getPropertyValues();
-                if (!propertyValues.contains(propertyName)) {
-                    throw new BeanInitializationException("Mandatory property: " + propertyName + " not specified");
+            if (property != null) {
+                if (property.required()) {
+                    // TODO use property.name()?
+                    String propertyName = descriptor.getName();
+                    MutablePropertyValues propertyValues = definition.getPropertyValues();
+                    if (!propertyValues.contains(propertyName)) {
+                        throw new BeanInitializationException("Mandatory property: " + propertyName + " not specified on bean: " + beanName);
+                    }
                 }
             }
 
             Reference reference = method.getAnnotation(Reference.class);
-            if (reference.required()) {
-                // TODO use reference.name()?
-                String propertyName = descriptor.getName();
-                MutablePropertyValues propertyValues = definition.getPropertyValues();
-                if (!propertyValues.contains(propertyName)) {
-                    throw new BeanInitializationException("Mandatory reference: " + propertyName + " not specified");
+            if (reference != null) {
+                if (reference.required()) {
+                    // TODO use reference.name()?
+                    String propertyName = descriptor.getName();
+                    MutablePropertyValues propertyValues = definition.getPropertyValues();
+                    if (!propertyValues.contains(propertyName)) {
+                        throw new BeanInitializationException("Mandatory reference: " + propertyName + " not specified on bean: " + beanName);
+                    }
                 }
             }
         }
     }
 
     protected void processProperties(Object bean, String beanName) throws BeansException {
-        BeanInfo beanInfo = getBeanInfo(bean);
+        BeanInfo beanInfo = getBeanInfo(bean.getClass());
         PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
         for (int i = 0; i < descriptors.length; i++) {
             PropertyDescriptor descriptor = descriptors[i];
