@@ -16,22 +16,13 @@
  */
 package org.xbean.jmx;
 
+import javax.management.MBeanInfo;
+import javax.management.ObjectName;
+
+
 /**
  * @version $Revision: $ $Date: $
  */
-public class JMXException extends RuntimeException {
-    public JMXException() {
-    }
-
-    public JMXException(String message) {
-        super(message);
-    }
-
-    public JMXException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public JMXException(Throwable cause) {
-        super(cause);
-    }
+public interface MBeanInfoGenerator {
+    public MBeanInfo createMBeanInfo(Object bean, ObjectName objectName);
 }

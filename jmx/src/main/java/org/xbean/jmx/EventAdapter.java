@@ -1,24 +1,48 @@
+/**
+ *
+ * Copyright 2005 (C) The original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.xbean.jmx;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import javax.management.Notification;
+
 
 /**
+ * @version $Revision: $ $Date: $
  * @org.xbean.XBean element="listen"
  */
 public class EventAdapter {
-    private Object source;
-    private Class targetClass;
+    private Object bean;
+    private Class listenerClass;
     private String addMethodName;
     private String removeMethodName;
     private Object listener;
 
-    public void setSource(Object source) {
-        this.source = source;
+    public void setBean(Object bean) {
+        this.bean = bean;
     }
 
-    public void setTargetClass(Class targetClass) {
-        this.targetClass = targetClass;
+    /**
+     * @org.xbean.Property alias="listener"
+     */
+    public void setListenerClass(Class listenerClass) {
+        this.listenerClass = listenerClass;
     }
 
     public void setAddMethodName(String addMethodName) {
@@ -29,54 +53,76 @@ public class EventAdapter {
         this.removeMethodName = removeMethodName;
     }
 
-    /**
-     * @org.xbean.InitMethod
-     */
-    public void start() {
+    public void bindListener(Object mbeanAdapter) {
+        listener = Proxy.newProxyInstance(listenerClass.getClassLoader(), new Class[]{listenerClass}, new EventInvocationHandler(mbeanAdapter));
+        String methodName = addMethodName;
+        if (methodName == null) methodName = "add" + getSimpleClassName(listenerClass);
         try {
-            listener = targetClass.newInstance();
-            Class[] interfaces = targetClass.getInterfaces();
-            boolean found = false;
-            for (int i = 0; i < interfaces.length; ++i) {
-                try {
-                    Method addMethod = source.getClass().getMethod(addMethodName, new Class[]{interfaces[i]});
-                    addMethod.invoke(source, new Object[]{listener});
-                    found = true;
-                    break;
-                } catch (NoSuchMethodException ignored) {
-                }
-            }
-            if (!found) throw new JMXException("Could not find " + addMethodName + " in class " + targetClass.getName());
-        } catch (InstantiationException x) {
+            Method addMethod = bean.getClass().getMethod(methodName, new Class[]{listenerClass});
+            addMethod.invoke(bean, new Object[]{listener});
+        }
+        catch (NoSuchMethodException x) {
             throw new JMXException(x);
-        } catch (IllegalAccessException x) {
+        }
+        catch (IllegalAccessException x) {
             throw new JMXException(x);
-        } catch (InvocationTargetException x) {
+        }
+        catch (InvocationTargetException x) {
             throw new JMXException(x.getCause());
         }
     }
 
-    /**
-     * @org.xbean.DestroyMethod
-     */
-    public void stop() {
+    public void unbindListener() {
+        String methodName = removeMethodName;
+        if (methodName == null) methodName = "remove" + getSimpleClassName(listenerClass);
         try {
-            Class[] interfaces = targetClass.getInterfaces();
-            boolean found = false;
-            for (int i = 0; i < interfaces.length; ++i) {
-                try {
-                    Method removeMethod = source.getClass().getMethod(removeMethodName, new Class[]{interfaces[i]});
-                    removeMethod.invoke(source, new Object[]{listener});
-                    found = true;
-                    break;
-                } catch (NoSuchMethodException ignored) {
-                }
-            }
-            if (!found) throw new JMXException("Could not find " + removeMethodName + " in class " + targetClass.getName());
-        } catch (IllegalAccessException x) {
+            Method addMethod = bean.getClass().getMethod(methodName, new Class[]{listenerClass});
+            addMethod.invoke(bean, new Object[]{listener});
+        }
+        catch (NoSuchMethodException x) {
             throw new JMXException(x);
-        } catch (InvocationTargetException x) {
+        }
+        catch (IllegalAccessException x) {
+            throw new JMXException(x);
+        }
+        catch (InvocationTargetException x) {
             throw new JMXException(x.getCause());
+        }
+    }
+
+    private String getSimpleClassName(Class cls) {
+        String name = cls.getName();
+        return name.substring(name.lastIndexOf('.') + 1);
+    }
+
+    private static class EventInvocationHandler implements InvocationHandler {
+        private final Object emitter;
+
+        public EventInvocationHandler(Object emitter) {
+            this.emitter = emitter;
+        }
+
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getDeclaringClass() == Object.class) return method.invoke(this, args);
+
+            Object event = args[0];
+            Notification notification = new Notification(event.getClass().getName(), emitter, 0, System.currentTimeMillis());
+            notification.setUserData(event);
+
+            try {
+                Method send = emitter.getClass().getMethod("sendNotification", new Class[]{Notification.class});
+                send.invoke(emitter, new Object[]{notification});
+                return null;
+            }
+            catch (NoSuchMethodException x) {
+                throw new JMXException(x);
+            }
+            catch (IllegalAccessException x) {
+                throw new JMXException(x);
+            }
+            catch (InvocationTargetException x) {
+                throw new JMXException(x.getCause());
+            }
         }
     }
 }
