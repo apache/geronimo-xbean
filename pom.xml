@@ -159,6 +159,10 @@
       <name>LiveTribe Repository</name>
       <url>http://repo.livetribe.org/maven2-snapshot</url>
     </repository>
+    <repository>
+      <id>codehaus</id>
+      <url>http://dist.codehaus.org/</url>
+    </repository>
   </repositories>
   
   <pluginRepositories>
@@ -249,6 +253,11 @@
         <groupId>org.xbean</groupId>
         <artifactId>xbean-spring</artifactId>
         <version>${version}</version>
+      </dependency>
+      <dependency>
+        <groupId>lingo</groupId>
+        <artifactId>sca-api</artifactId>
+        <version>SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
