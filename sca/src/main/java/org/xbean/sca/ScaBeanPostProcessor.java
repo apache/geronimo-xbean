@@ -17,7 +17,6 @@
  **/
 package org.xbean.sca;
 
-import org.osoa.sca.ModuleContext;
 import org.osoa.sca.annotations.ComponentMetaData;
 import org.osoa.sca.annotations.ComponentName;
 import org.osoa.sca.annotations.Context;
@@ -26,7 +25,6 @@ import org.osoa.sca.annotations.Init;
 import org.osoa.sca.annotations.Property;
 import org.osoa.sca.annotations.Reference;
 import org.osoa.sca.annotations.SessionID;
-import org.osoa.sca.model.Component;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -34,6 +32,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
+import org.xbean.sca.impl.DefaultScaAdapter;
 
 import java.beans.BeanInfo;
 import java.beans.PropertyDescriptor;
@@ -47,6 +46,15 @@ import java.util.List;
  * @version $Revision$
  */
 public class ScaBeanPostProcessor extends IntrospectionSupport implements DestructionAwareBeanPostProcessor, BeanFactoryPostProcessor {
+
+    private ScaAdapter scaAdapter;
+
+    public ScaBeanPostProcessor() {
+    }
+
+    public ScaBeanPostProcessor(ScaAdapter scaAdapter) {
+        this.scaAdapter = scaAdapter;
+    }
 
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         return bean;
@@ -72,6 +80,20 @@ public class ScaBeanPostProcessor extends IntrospectionSupport implements Destru
             BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
             postProcessBeanDefinition(beanFactory, beanName, beanDefinition);
         }
+    }
+
+    // Properties
+    // -------------------------------------------------------------------------
+
+    public ScaAdapter getScaAdapter() {
+        if (scaAdapter == null) {
+            scaAdapter = createScaAdapter();
+        }
+        return scaAdapter;
+    }
+
+    public void setScaAdapter(ScaAdapter scaAdapter) {
+        this.scaAdapter = scaAdapter;
     }
 
     // Implementation methods
@@ -135,15 +157,15 @@ public class ScaBeanPostProcessor extends IntrospectionSupport implements Destru
                 invokeMethod(bean, method, arguments);
             }
             if (hasAnnotation(method, ComponentMetaData.class)) {
-                Object[] arguments = new Object[] { getComponentMetaData(bean, beanName) };
+                Object[] arguments = new Object[] { getScaAdapter().getComponentMetaData(bean, beanName) };
                 invokeMethod(bean, method, arguments);
             }
             if (hasAnnotation(method, Context.class)) {
-                Object[] arguments = new Object[] { getComponentContext(bean, beanName) };
+                Object[] arguments = new Object[] { getScaAdapter().getComponentContext(bean, beanName) };
                 invokeMethod(bean, method, arguments);
             }
             if (hasAnnotation(method, SessionID.class)) {
-                Object[] arguments = new Object[] { getBeanSessionID(bean, beanName) };
+                Object[] arguments = new Object[] { getScaAdapter().getBeanSessionID(bean, beanName) };
                 invokeMethod(bean, method, arguments);
             }
         }
@@ -171,27 +193,19 @@ public class ScaBeanPostProcessor extends IntrospectionSupport implements Destru
             setField(bean, field, beanName);
         }
         if (hasAnnotation(field, ComponentMetaData.class)) {
-            setField(bean, field, getComponentMetaData(bean, beanName));
+            setField(bean, field, getScaAdapter().getComponentMetaData(bean, beanName));
         }
         if (hasAnnotation(field, Context.class)) {
-            setField(bean, field, getComponentContext(bean, beanName));
+            setField(bean, field, getScaAdapter().getComponentContext(bean, beanName));
         }
         if (hasAnnotation(field, SessionID.class)) {
-            setField(bean, field, getBeanSessionID(bean, beanName));
+            setField(bean, field, getScaAdapter().getBeanSessionID(bean, beanName));
         }
 
     }
 
-    protected Component getComponentMetaData(Object bean, String beanName) {
-        throw new RuntimeException("TODO: Not Implemented yet");
-    }
-
-    protected ModuleContext getComponentContext(Object bean, String beanName) {
-        throw new RuntimeException("TODO: Not Implemented yet");
-    }
-
-    protected Object getBeanSessionID(Object bean, String beanName) throws BeansException {
-        throw new RuntimeException("TODO: Not Implemented yet");
+    protected ScaAdapter createScaAdapter() {
+        return new DefaultScaAdapter();
     }
 
 }
