@@ -26,6 +26,8 @@ import org.osgi.framework.Bundle;
 
 import java.io.File;
 import java.util.Collections;
+import java.net.URLDecoder;
+
 
 /**
  * @author Dain Sundstrom
@@ -40,12 +42,14 @@ public class OSGiTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+
         System.setProperty("osgi.clean", "true");
 
         File osgiDir = new File(basedir, "target/osgi");
         osgiDir.mkdirs();
         System.setProperty("osgi.configuration.area", osgiDir.getAbsolutePath());
         System.setProperty("osgi.install.area", osgiDir.getAbsolutePath());
+        System.setProperty("osgi.framework", URLDecoder.decode(EclipseAdaptor.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm(), "UTF-8"));
         LocationManager.initializeLocations();
 
         FrameworkAdaptor adaptor = new EclipseAdaptor(null);
@@ -79,10 +83,10 @@ public class OSGiTest extends TestCase {
         assertSame(bundle, mavenBundleManager.installBundle(project));
 
         project = new Project("org.xbean",
-                "xbean-spring",
-                "2.1-SNAPSHOT",
-                "jar",
-                Collections.singleton(new Dependency("springframework", "spring", "1.2.4", "jar")));
+                              "xbean-spring",
+                              "2.1-SNAPSHOT",
+                              "jar",
+                              Collections.singleton(new Dependency("springframework", "spring", "1.2.4", "jar")));
         bundle = mavenBundleManager.installBundle(project);
         bundleClassLoader = new BundleClassLoader(bundle);
 
