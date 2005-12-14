@@ -32,7 +32,7 @@
                   <classpath>
                     <pathelement path="${basedir}/target/classes"></pathelement>
                     <pathelement path="${basedir}/target/test-classes"></pathelement>
-                    <path refid="maven.dependency.classpath"></path>
+                    <path refid="maven.runtime.classpath"></path>
                   </classpath>
                 </taskdef>
                 <mapping namespace="http://xbean.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/"></mapping>
