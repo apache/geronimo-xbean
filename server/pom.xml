@@ -31,7 +31,7 @@
                 <taskdef classname="org.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                   <classpath>
                     <pathelement path="${basedir}/target/classes"></pathelement>
-                    <path refid="maven.dependency.classpath"></path>
+                    <path refid="maven.runtime.classpath"></path>
                   </classpath>
                 </taskdef>
                 <mapping namespace="http://xbean.org/schemas/jmx" srcdir="src/main/java" destFile="target/jmx.xsd" metaInfDir="${basedir}/target/generated/"></mapping>
