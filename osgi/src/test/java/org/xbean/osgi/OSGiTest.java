@@ -70,7 +70,7 @@ public class OSGiTest extends TestCase {
         BundleClassLoader bundleClassLoader;
         Class clazz = null;
 
-        project = mavenBundleManager.loadProject("springframework", "spring", "1.2.4");
+        project = mavenBundleManager.loadProject("org.springframework", "spring", "1.2.4");
         bundle = mavenBundleManager.installBundle(project);
         bundleClassLoader = new BundleClassLoader(bundle);
 
@@ -86,7 +86,7 @@ public class OSGiTest extends TestCase {
                               "xbean-spring",
                               "2.1-SNAPSHOT",
                               "jar",
-                              Collections.singleton(new Dependency("springframework", "spring", "1.2.4", "jar")));
+                              Collections.singleton(new Dependency("org.springframework", "spring", "1.2.4", "jar")));
         bundle = mavenBundleManager.installBundle(project);
         bundleClassLoader = new BundleClassLoader(bundle);
 
