@@ -7,6 +7,7 @@
   <version>2.1</version>
   <description>XBean is a plugin based server archtecutre.</description>
   <url>http://xbean.org</url>
+
   <issueManagement>
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/XB</url>
