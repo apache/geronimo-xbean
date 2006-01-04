@@ -135,7 +135,9 @@
   
   <modules>
     <module>classpath</module>
+    <!--
     <module>jmx</module>
+    -->
     <module>kernel</module>
     <module>osgi</module>
     <module>server</module>
