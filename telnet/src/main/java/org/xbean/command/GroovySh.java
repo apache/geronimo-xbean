@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xbean.telnet;
+package org.xbean.command;
 
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -25,12 +25,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 
-public class GroovySh extends Command {
+public class GroovySh implements Command {
     public static void register() {
-        Command.register("groovysh", GroovySh.class);
+        CommandRegistry.register("groovysh", GroovySh.class);
     }
 
-    public void exec(String[] args, InputStream in, PrintStream out) throws IOException {
+    public int main(String[] args, InputStream in, PrintStream out) {
         GroovyShell shell = new GroovyShell();
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String version = InvokerHelper.getVersion();
@@ -44,7 +44,14 @@ public class GroovySh extends Command {
             StringBuffer buffer = new StringBuffer();
             while (true) {
                 out.print("groovy> ");
-                String line = reader.readLine();
+                String line;
+                try {
+                    line = reader.readLine();
+                } catch (IOException e) {
+                    out.println("Caught: " + e);
+                    e.printStackTrace();
+                    return -1;
+                }
                 if (line != null) {
                     buffer.append(line);
                     buffer.append('\n');
@@ -65,5 +72,6 @@ public class GroovySh extends Command {
                 e.printStackTrace();
             }
         }
+        return 0;
     }
 }

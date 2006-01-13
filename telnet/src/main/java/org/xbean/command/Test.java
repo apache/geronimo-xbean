@@ -14,27 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xbean.telnet;
+package org.xbean.command;
 
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
 
-public class Help extends Command {
-    public static void register() {
-        Command.register("help", Help.class);
+/**
+ * @author <a href="mailto:david.blevins@visi.com">David Blevins</a>
+ */
+public class Test implements Command {
+    
+    public static void _DONT_register() {
+        CommandRegistry.register("test", Test.class);
     }
 
-    public void exec(String[] args, InputStream in, PrintStream out) throws IOException {
-        HashMap hash = Command.commands;
-        Set set = hash.keySet();
-        Iterator cmds = set.iterator();
-        while (cmds.hasNext()) {
-            out.print(" " + cmds.next());
-            out.println("");
+    public int main(String[] args, InputStream in, PrintStream out) {
+        try {
+            InputStream file = new FileInputStream("print.txt");
+            int b = file.read();
+            while (b != -1) {
+                out.write(b);
+                b = file.read();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
         }
+        return 0;
     }
 }

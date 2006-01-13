@@ -1,13 +1,15 @@
 package org.xbean.telnet;
 
-import junit.framework.*;
-import org.xbean.telnet.TelnetShell;
-
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+
+import junit.framework.TestCase;
+
+import org.xbean.command.Command;
+import org.xbean.command.CommandRegistry;
+import org.xbean.terminal.telnet.TelnetShell;
 
 public class TelnetShellTest extends TestCase {
 
@@ -24,13 +26,14 @@ public class TelnetShellTest extends TestCase {
         System.out.println(new String(out.toByteArray()));
     }
 
-    public static class TestCommand extends Command {
+    public static class TestCommand implements Command {
         public static void register() {
-            Command.register("test", TestCommand.class);
+            CommandRegistry.register("test", TestCommand.class);
         }
-        public void exec(String[] args, InputStream in, PrintStream out) throws IOException {
+        public int main(String[] args, InputStream in, PrintStream out) {
             out.print(args[0].length());
             out.print(args[1].length());
+            return 0;
         }
     }
 }
