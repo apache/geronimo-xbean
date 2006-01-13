@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xbean.telnet;
+package org.xbean.command;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.Properties;
 
-public class Version extends Command {
+public class Version implements Command {
+    
     public static void register() {
-        Command.register("version", Version.class);
+        CommandRegistry.register("version", Version.class);
     }
 
-    public void exec(String[] args, InputStream in, PrintStream out) throws IOException {
+    public int main(String[] args, InputStream in, PrintStream out) {
         /*
          * Output startup message
          */
@@ -44,5 +43,6 @@ public class Version extends Command {
         out.print("-");
         out.println(versionInfo.getProperty("time"));
         out.println(versionInfo.getProperty("url"));
+        return 0;
     }
 }

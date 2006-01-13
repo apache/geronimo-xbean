@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xbean.telnet;
+package org.xbean.terminal.telnet;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
+
+import org.xbean.command.CommandShell;
 
 public class TelnetShell {
 
@@ -54,8 +56,8 @@ public class TelnetShell {
             // TODO:1: Login
             //...need a security service first
 
-            TextConsole shell = new TextConsole(serverName);
-            shell.exec(telnetIn, telnetOut);
+            CommandShell shell = new CommandShell(serverName);
+            shell.main(new String[]{}, telnetIn, telnetOut);
 
         } catch (Throwable t) {
             // TODO: log this

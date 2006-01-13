@@ -14,31 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xbean.telnet;
+package org.xbean.command;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.Map;
 
-public class Command {
+public class CommandRegistry {
+    
     protected static final HashMap commands = new HashMap();
 
     static {
         loadCommandList();
     }
 
-    protected static final Command unknownCommand = new Command();
+    protected static final CommandRegistry unknownCommand = new CommandRegistry();
 
-    protected static void register(String name, Command cmd) {
+    public static Map getCommandMap() {
+        HashMap rc = new HashMap();
+        for (Iterator iter = commands.keySet().iterator(); iter.hasNext();) {
+            String name = (String) iter.next();
+            Command command = getCommand(name);
+            rc.put(name, command);
+        }
+        return rc;
+    }
+
+    public static void register(String name, Command cmd) {
         commands.put(name, cmd);
     }
 
-    protected static void register(String name, Class cmd) {
+    public static void register(String name, Class cmd) {
         commands.put(name, cmd);
     }
 
@@ -51,10 +57,6 @@ public class Command {
         return (Command) cmd;
     }
 
-    // - Public methods - //
-    public void exec(String[] args, InputStream in, PrintStream out) throws IOException {
-        out.println("not implemented");
-    }
 
     // - Protected methods - //
     protected static Command loadCommand(Class commandClass) {

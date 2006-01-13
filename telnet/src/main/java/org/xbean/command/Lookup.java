@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xbean.telnet;
+package org.xbean.command;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 
-public class Lookup extends Command {
+public class Lookup implements Command {
 
     private final javax.naming.Context ctx;
 
@@ -40,7 +40,7 @@ public class Lookup extends Command {
     public static void register() {
         try {
             Lookup cmd = new Lookup();
-            Command.register("lookup", cmd);
+            CommandRegistry.register("lookup", cmd);
         } catch (Exception e) {
         }
     }
@@ -48,7 +48,7 @@ public class Lookup extends Command {
     private static String PWD = "";
 
     // execute jndi lookups
-    public void exec(String[] args, InputStream in, PrintStream out) throws IOException {
+    public int main(String[] args, InputStream in, PrintStream out) {
         try {
             String name = "";
             if (args == null || args.length == 0) {
@@ -63,20 +63,23 @@ public class Lookup extends Command {
                 out.print("lookup: ");
                 out.print(name);
                 out.println(": No such object or subcontext");
-                return;
+                return -1;
             } catch (Throwable e) {
                 out.print("lookup: error: ");
                 e.printStackTrace(new PrintStream(out));
-                return;
+                return -1;
             }
             if (obj instanceof Context) {
                 list(name, in, out);
-                return;
+                return 0;
             }
             // TODO:1: Output the different data types differently
             out.println("" + obj);
+            return 0;
+            
         } catch (Exception e) {
             e.printStackTrace(new PrintStream(out));
+            return -2;
         }
     }
 

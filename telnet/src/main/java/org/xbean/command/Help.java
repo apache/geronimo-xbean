@@ -14,18 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xbean.telnet;
+package org.xbean.command;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-public class Exit extends Command {
+public class Help implements Command {
     public static void register() {
-        Command.register("exit", Exit.class);
+        CommandRegistry.register("help", Help.class);
     }
 
-    public void exec(String[] args, InputStream in, PrintStream out) throws IOException {
-        throw new UnsupportedOperationException();
+    public int main(String[] args, InputStream in, PrintStream out) {
+        Map hash = CommandRegistry.getCommandMap();;
+        Set set = hash.keySet();
+        Iterator cmds = set.iterator();
+        while (cmds.hasNext()) {
+            out.print(" " + cmds.next());
+            out.println("");
+        }
+        return 0;
     }
 }
