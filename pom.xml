@@ -104,7 +104,9 @@
     </pluginManagement>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-one-plugin</artifactId>
+        <version>1.0-SNAPSHOT</version>
         <executions>
           <execution>
             <goals>
