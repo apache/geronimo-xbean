@@ -176,11 +176,13 @@ public class QdoxMappingLoader implements MappingLoader {
                     attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
                 }
                 JavaMethod acc = beanProperty.getAccessor();
-                DocletTag mapTag = acc.getTagByName(MAP_ANNOTATION);
-                if (mapTag != null) {
-                    MapMapping mm = new MapMapping(mapTag.getNamedParameter("entryName"), 
-                            mapTag.getNamedParameter("keyName"));
-                    mapsByPropertyName.put(beanProperty.getName(), mm);
+                if (acc != null) {
+                    DocletTag mapTag = acc.getTagByName(MAP_ANNOTATION);
+                    if (mapTag != null) {
+                        MapMapping mm = new MapMapping(mapTag.getNamedParameter("entryName"), 
+                                mapTag.getNamedParameter("keyName"));
+                        mapsByPropertyName.put(beanProperty.getName(), mm);
+                    }
                 }
             }
         }
