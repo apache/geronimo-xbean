@@ -183,4 +183,13 @@ public class MappingMetaData {
     public String getContentProperty(String elementName) {
         return properties.getProperty(elementName + ".contentProperty");
     }
+    
+    public String getMapEntryName(String elementName, String property) {
+        return properties.getProperty(elementName + "." + property + ".map.entryName");
+    }
+
+    public String getMapKeyName(String elementName, String property) {
+        System.out.println(elementName + "." + property + ".map.keyName");
+        return properties.getProperty(elementName + "." + property + ".map.keyName");
+    }
 }

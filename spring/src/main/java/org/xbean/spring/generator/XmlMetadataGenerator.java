@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.xbean.spring.context.impl.NamespaceHelper;
@@ -92,6 +93,14 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         String factoryMethod = element.getFactoryMethod();
         if (factoryMethod != null) {
             out.println(element.getElementName() + ".factoryMethod = " + factoryMethod);
+        }
+        
+        Map maps = element.getMapMappings();
+        for (Iterator itr = maps.entrySet().iterator(); itr.hasNext();) {
+            Map.Entry entry = (Map.Entry) itr.next();
+            MapMapping mm = (MapMapping) entry.getValue();
+            out.println(element.getElementName() + "." + entry.getKey() + ".map.entryName = " + mm.getEntryName());
+            out.println(element.getElementName() + "." + entry.getKey() + ".map.keyName = " + mm.getKeyName());
         }
     }
 

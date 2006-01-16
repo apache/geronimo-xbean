@@ -50,7 +50,8 @@ public class QdoxMappingLoader implements MappingLoader {
     public static final String INIT_METHOD_ANNOTATION = "org.xbean.InitMethod";
     public static final String DESTROY_METHOD_ANNOTATION = "org.xbean.DestroyMethod";
     public static final String FACTORY_METHOD_ANNOTATION = "org.xbean.FactoryMethod";
-
+    public static final String MAP_ANNOTATION = "org.xbean.Map";
+    
     private static final Log log = LogFactory.getLog(QdoxMappingLoader.class);
     private final String defaultNamespace;
     private final File[] srcDirs;
@@ -160,6 +161,7 @@ public class QdoxMappingLoader implements MappingLoader {
         boolean root = getBooleanProperty(xbeanTag, "rootElement");
         String contentProperty = getProperty(xbeanTag, "contentProperty");
 
+        Map mapsByPropertyName = new HashMap();
         Set attributes = new HashSet();
         Map attributesByPropertyName = new HashMap();
         BeanProperty[] beanProperties = javaClass.getBeanProperties();
@@ -172,6 +174,13 @@ public class QdoxMappingLoader implements MappingLoader {
                 if (attributeMapping != null) {
                     attributes.add(attributeMapping);
                     attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
+                }
+                JavaMethod acc = beanProperty.getAccessor();
+                DocletTag mapTag = acc.getTagByName(MAP_ANNOTATION);
+                if (mapTag != null) {
+                    MapMapping mm = new MapMapping(mapTag.getNamedParameter("entryName"), 
+                            mapTag.getNamedParameter("keyName"));
+                    mapsByPropertyName.put(beanProperty.getName(), mm);
                 }
             }
         }
@@ -192,6 +201,7 @@ public class QdoxMappingLoader implements MappingLoader {
                 if (method.getTagByName(FACTORY_METHOD_ANNOTATION) != null) {
                     factoryMethod = method.getName();
                 }
+                
             }
         }
 
@@ -233,7 +243,8 @@ public class QdoxMappingLoader implements MappingLoader {
                 factoryMethod,
                 contentProperty,
                 attributes,
-                constructorArgs);
+                constructorArgs,
+                mapsByPropertyName);
     }
 
     private String getElementName(JavaClass javaClass, DocletTag tag) {

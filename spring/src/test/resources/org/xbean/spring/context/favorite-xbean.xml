@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<beans xmlns:b="http://xbean.org/schemas/pizza" xmlns:s="http://xbean.org/schemas/spring/1.0">
+
+  <b:favorite s:id="favoriteService">
+    <favorites>
+      <favorite-item person="Dan">Grey Goose</favorite-item>
+    </favorites>
+  </b:favorite>
+
+</beans>
+<!-- END SNIPPET: xml -->
+

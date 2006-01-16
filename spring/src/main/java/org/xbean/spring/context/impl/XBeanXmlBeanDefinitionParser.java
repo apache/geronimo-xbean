@@ -17,6 +17,22 @@
  **/
 package org.xbean.spring.context.impl;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -35,20 +51,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * An enhanced XML parser capable of handling custom XML schemas.
@@ -239,33 +241,33 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      */
     protected void addProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
             String localName, String value) {
-        if (value != null) {
-            boolean reference = false;
-            if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
-                value = value.substring(BEAN_REFERENCE_PREFIX.length());
-
-                // we could be an escaped string
-                if (!value.startsWith(BEAN_REFERENCE_PREFIX)) {
-                    reference = true;
-                }
-            }
-            if (reference) {
-                // TOOD handle custom reference types like local or queries etc
-                String propertyName = metadata.getPropertyName(getLocalName(element), localName);
-                if (propertyName != null) {
-                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName,
-                            new RuntimeBeanReference(value));
-                }
-            }
-            else {
-                String propertyName = metadata.getPropertyName(getLocalName(element), localName);
-                if (propertyName != null) {
-                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
-                }
-            }
-        }
+        String propertyName = metadata.getPropertyName(getLocalName(element), localName);
+        if (propertyName != null)
+            definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, getValue(value));
     }
 
+    protected Object getValue(String value) {
+        if (value == null)  return null;
+        
+        boolean reference = false;
+        if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
+            value = value.substring(BEAN_REFERENCE_PREFIX.length());
+
+            // we could be an escaped string
+            if (!value.startsWith(BEAN_REFERENCE_PREFIX)) {
+                reference = true;
+            }
+        }
+        
+        if (reference) {
+            // TOOD handle custom reference types like local or queries etc
+            return new RuntimeBeanReference(value);
+        }
+        else {
+            return value;
+        }
+    }
+    
     protected String getLocalName(Element element) {
         String localName = element.getLocalName();
         if (localName == null) {
@@ -321,7 +323,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                     else
                     {
                         /**
-                         * In this case ther is no nested property, so just do a normal
+                         * In this case there is no nested property, so just do a normal
                          * addProperty like we do with attributes.
                          */
                         String text = getElementText(childElement);
@@ -423,7 +425,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected Object parseNestedPropertyViaIntrospection(MappingMetaData metadata, String className, Element element,
             PropertyDescriptor descriptor) {
         String name = descriptor.getName();
-        if (isCollection(descriptor.getPropertyType())) {
+        if (isMap(descriptor.getPropertyType())) {
+            return parseCustomMapElement(metadata, element, name);
+        }
+        else if (isCollection(descriptor.getPropertyType())) {
             return parseListElement(element, name);
         }
         else {
@@ -431,6 +436,54 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         }
     }
 
+    private Object parseCustomMapElement(MappingMetaData metadata, Element element, String name) {
+        Map map = new HashMap();
+        
+        Element parent = (Element) element.getParentNode();
+        String entryName = metadata.getMapEntryName(getLocalName(parent), name);
+        String keyName = metadata.getMapKeyName(getLocalName(parent), name);
+        
+        if (entryName == null) entryName = "property";
+        if (keyName == null) keyName = "key";
+        
+        // TODO : support further customizations
+        //String valueName = "value";
+        //boolean keyIsAttr = true;
+        //boolean valueIsAttr = false;
+        
+        NodeList nl = element.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                Element childElement = (Element) node;
+                
+                String localName = childElement.getLocalName();
+                String uri = childElement.getNamespaceURI();
+                if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
+                    continue;
+                }
+
+                // we could use namespaced attributes to differentiate real spring
+                // attributes from namespace-specific attributes
+                if (isEmpty(uri) && localName.equals(entryName)) {
+                    String key = childElement.getAttribute(keyName);
+                    if (key == null) throw new RuntimeException("No key defined for map " + entryName);
+                    
+                    Object keyValue = getValue(key);
+                    
+                    Object value = getValue(getElementText(childElement));
+
+                    map.put(keyValue, value);
+                }
+            }
+        }
+        return map;
+    }
+
+    protected boolean isMap(Class type) {
+        return Map.class.isAssignableFrom(type);
+    }
+    
     /**
      * Returns true if the given type is a collection type or an array
      */
