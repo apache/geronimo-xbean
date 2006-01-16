@@ -42,8 +42,9 @@ public class ElementMapping implements Comparable {
     private final Set attributes;
     private final Map attributesByName;
     private final List constructors;
-
-    public ElementMapping(String namespace, String elementName, String className, String description, boolean rootElement, String initMethod, String destroyMethod, String factoryMethod, String contentProperty, Set attributes, List constructors) {
+    private final Map maps;
+    
+    public ElementMapping(String namespace, String elementName, String className, String description, boolean rootElement, String initMethod, String destroyMethod, String factoryMethod, String contentProperty, Set attributes, List constructors, Map maps) {
         if (namespace == null) throw new NullPointerException("namespace");
         if (elementName == null) throw new NullPointerException("elementName");
         if (className == null) throw new NullPointerException("className");
@@ -61,7 +62,8 @@ public class ElementMapping implements Comparable {
         this.contentProperty = contentProperty;
         this.constructors = constructors;
         this.attributes = Collections.unmodifiableSet(new TreeSet(attributes));
-
+        this.maps = Collections.unmodifiableMap(maps);
+        
         Map attributesByName = new HashMap();
         for (Iterator iterator = attributes.iterator(); iterator.hasNext();) {
             AttributeMapping attribute = (AttributeMapping) iterator.next();
@@ -114,6 +116,14 @@ public class ElementMapping implements Comparable {
         return (AttributeMapping) attributesByName.get(attributeName);
     }
 
+    public Map getMapMappings() {
+        return maps;
+    }
+
+    public MapMapping getMapMapping(String name) {
+        return (MapMapping) maps.get(name);
+    }
+    
     public List getConstructors() {
         return constructors;
     }
