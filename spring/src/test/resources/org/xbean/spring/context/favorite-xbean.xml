@@ -3,9 +3,9 @@
 <beans xmlns:b="http://xbean.org/schemas/pizza" xmlns:s="http://xbean.org/schemas/spring/1.0">
 
   <b:favorite s:id="favoriteService">
-    <favorites>
-      <favorite-item person="Dan">Grey Goose</favorite-item>
-    </favorites>
+    <b:favorites>
+      <b:favorite-item person="Dan">Grey Goose</b:favorite-item>
+    </b:favorites>
   </b:favorite>
 
 </beans>

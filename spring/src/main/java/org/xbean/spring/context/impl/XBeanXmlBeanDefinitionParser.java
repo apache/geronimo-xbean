@@ -436,7 +436,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         }
     }
 
-    private Object parseCustomMapElement(MappingMetaData metadata, Element element, String name) {
+    protected Object parseCustomMapElement(MappingMetaData metadata, Element element, String name) {
         Map map = new HashMap();
         
         Element parent = (Element) element.getParentNode();
@@ -450,7 +450,6 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         //String valueName = "value";
         //boolean keyIsAttr = true;
         //boolean valueIsAttr = false;
-        
         NodeList nl = element.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
@@ -465,7 +464,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
                 // we could use namespaced attributes to differentiate real spring
                 // attributes from namespace-specific attributes
-                if (isEmpty(uri) && localName.equals(entryName)) {
+                if (!isEmpty(uri) && localName.equals(entryName)) {
                     String key = childElement.getAttribute(keyName);
                     if (key == null) throw new RuntimeException("No key defined for map " + entryName);
                     
