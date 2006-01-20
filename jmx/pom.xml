@@ -37,8 +37,7 @@
                                         <path refid="maven.runtime.classpath"></path>
                                     </classpath>
                                 </taskdef>
-                                <mapping namespace="http://xbean.org/schemas/jmx" srcdir="src/main/java"
-                                         destFile="target/jmx.xsd" metaInfDir="${basedir}/target/generated/"></mapping>
+                                <mapping namespace="http://xbean.org/schemas/jmx" srcdir="src/main/java" destFile="target/jmx.xsd" metaInfDir="${basedir}/target/generated/"></mapping>
                                 <copy todir="${basedir}/target/classes">
                                     <fileset dir="${basedir}/target/generated"></fileset>
                                 </copy>
@@ -70,12 +69,10 @@
         <dependency>
             <groupId>org.xbean</groupId>
             <artifactId>xbean-kernel</artifactId>
-            <version>2.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.xbean</groupId>
             <artifactId>xbean-spring</artifactId>
-            <version>2.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

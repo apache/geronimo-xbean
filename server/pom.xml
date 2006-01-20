@@ -58,12 +58,10 @@
     <dependency>
       <groupId>org.xbean</groupId>
       <artifactId>xbean-kernel</artifactId>
-      <version>2.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.xbean</groupId>
       <artifactId>xbean-spring</artifactId>
-      <version>2.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
