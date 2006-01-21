@@ -1,7 +1,7 @@
 <project>
   <parent>
     <artifactId>xbean</artifactId>
-    <groupId>org.xbean</groupId>
+    <groupId>org.apache.xbean</groupId>
     <version>2.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -28,14 +28,14 @@
             </goals>
             <configuration>
               <tasks>
-                <taskdef classname="org.xbean.spring.generator.MappingGeneratorTask" name="mapping">
+                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                   <classpath>
                     <pathelement path="${basedir}/target/classes"></pathelement>
                     <pathelement path="${basedir}/target/test-classes"></pathelement>
                     <path refid="maven.runtime.classpath"></path>
                   </classpath>
                 </taskdef>
-                <mapping namespace="http://xbean.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/"></mapping>
+                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/"></mapping>
                 <copy todir="${basedir}/target/test-classes">
                   <fileset dir="${basedir}/target/test-generated"></fileset>
                 </copy>

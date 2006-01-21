@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+
+  <bean id="pizzaService" class="org.apache.xbean.spring.example.PizzaService">
+    <property name="topping" value="Salami"/>
+    <property name="cheese" value="Edam"/>
+    <property name="size" value="17"/>
+  </bean>
+
+</beans>

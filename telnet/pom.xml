@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
-* Copyright 2005 the original author or authors.
+* Copyright 2005-2006 The Apache Software Foundation or its licensors, as applicable.
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 -->
 <project>
   <parent>
-    <groupId>org.xbean</groupId>
+    <groupId>org.apache.xbean</groupId>
     <artifactId>xbean</artifactId>
     <version>2.2-SNAPSHOT</version>
   </parent>

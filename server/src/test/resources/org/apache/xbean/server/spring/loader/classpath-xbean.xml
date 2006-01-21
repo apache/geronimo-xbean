@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<beans>
+  <classpath>
+    <location>target/SpringLoaderTest.jar</location>
+  </classpath>
+
+  <bean id="test" class="TestClass"/>
+
+  <bean name="FileSystemRepository" class="org.apache.xbean.server.repository.FileSystemRepository">
+    <property name="root" value="${xbean.base.dir}/repository"/>
+  </bean>
+</beans>
+<!-- END SNIPPET: xml -->

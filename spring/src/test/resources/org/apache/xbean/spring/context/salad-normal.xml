@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+
+  <bean id="saladService" class="org.apache.xbean.spring.example.SaladService">
+    <constructor-arg index="0" value="Cesar"/>
+    <constructor-arg index="1" value="Small"/>
+    <constructor-arg index="2" value="true"/>
+  </bean>
+
+</beans>

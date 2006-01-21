@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<beans xmlns:s="http://xbean.apache.org/schemas/soup">
+
+  <s:soup id="soupService" type="French Onion"/>
+
+</beans>
+<!-- END SNIPPET: xml -->
+
