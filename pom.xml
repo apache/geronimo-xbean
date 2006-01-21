@@ -1,6 +1,6 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.xbean</groupId>
+  <groupId>org.apache.xbean</groupId>
   <artifactId>xbean</artifactId>
   <packaging>pom</packaging>
   <name>XBean</name>
@@ -40,12 +40,12 @@
   </mailingLists>
   <developers>
     <developer>
-      <id>adc</id>
-      <name>Alan D. Cabrera</name>
+      <id>chirino</id>
+      <name>Hiram Chirino</name>
       <roles>
         <role>Commiter</role>
       </roles>
-      <timezone>-8</timezone>
+      <timezone>-5</timezone>
     </developer>
     <developer>
       <id>dain</id>
@@ -53,8 +53,6 @@
       <email>dain@iq80.com</email>
       <roles>
         <role>Commiter</role>
-        <role>Despot</role>
-        <role>Release Boy</role>
       </roles>
       <timezone>-8</timezone>
     </developer>
@@ -62,6 +60,30 @@
       <id>dblevins</id>
       <name>David Blevins</name>
       <email>dblevins@visi.com</email>
+      <roles>
+        <role>Commiter</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>jstrachan</id>
+      <name>James Strachan</name>
+      <roles>
+        <role>Commiter</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>jvanzyl</id>
+      <name>Jason van Zyl</name>
+      <roles>
+        <role>Commiter</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>maguro</id>
+      <name>Alan D. Cabrera</name>
       <roles>
         <role>Commiter</role>
       </roles>
@@ -127,8 +149,10 @@
     <module>jmx</module>
     <module>kernel</module>
     <module>osgi</module>
+    <!--module>sca</module-->
     <module>server</module>
     <module>spring</module>
+    <module>telnet</module>
   </modules>
   <repositories>
     <repository>
@@ -226,12 +250,12 @@
         <version>1.0</version>
       </dependency>
       <dependency>
-        <groupId>org.xbean</groupId>
+        <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-kernel</artifactId>
         <version>${version}</version>
       </dependency>
       <dependency>
-        <groupId>org.xbean</groupId>
+        <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring</artifactId>
         <version>${version}</version>
       </dependency>

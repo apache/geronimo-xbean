@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:jmx="http://xbean.apache.org/schemas/jmx">
+
+    <bean id="jmxService" class="org.apache.xbean.jmx.JMXService"/>
+
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="defaultDomain" value="org.apache.xbean"/>
+    </bean>
+
+    <jmx:export id="jmxExporter" mbeanserver="#mbeanServer">
+        <jmx:mbeans>
+            <jmx:mbean bean="#jmxService" objectname=":type=JMXService">
+                <jmx:listeners>
+                    <jmx:listen bean="#jmxService" listener="java.beans.PropertyChangeListener"/>
+                </jmx:listeners>
+            </jmx:mbean>
+        </jmx:mbeans>
+    </jmx:export>
+
+</beans>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-* Copyright 2005 the original author or authors.
+* Copyright 2005-2006 The Apache Software Foundation or its licensors, as applicable.
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 *  limitations under the License.
 -->
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
-<beans xmlns:s="http://xbean.org/schemas/server" >
+<beans xmlns:s="http://xbean.apache.org/schemas/server" >
   <bean id="PropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
   <s:kernel-main name="Main" kernel="#Kernel">
@@ -30,7 +30,7 @@
     </s:next>
   </s:kernel-main>
 
-  <bean name="KernelFactory" class="org.xbean.kernel.KernelFactory" factory-method="newInstance"/>
+  <bean name="KernelFactory" class="org.apache.xbean.kernel.KernelFactory" factory-method="newInstance"/>
   <bean name="Kernel" factory-bean="KernelFactory" factory-method="createKernel">
     <constructor-arg index="0" value="xbean"/>
   </bean>

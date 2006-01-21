@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- START SNIPPET: xml -->
-<beans xmlns:p="http://xbean.org/schemas/pizza">
-
-  <p:pizza id="pizzaService" myTopping="Salami" cheese="Edam" size="17"/>
-  
-</beans>
-<!-- END SNIPPET: xml -->
-
