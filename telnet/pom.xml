@@ -26,7 +26,7 @@
   <dependencies>
     <dependency>
       <groupId>groovy</groupId>
-      <artifactId>groovy-1.0-jsr</artifactId>
+      <artifactId>groovy</artifactId>
     </dependency>
   </dependencies>
 </project>

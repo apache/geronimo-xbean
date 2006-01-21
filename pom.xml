@@ -216,8 +216,8 @@
       </dependency>
       <dependency>
         <groupId>groovy</groupId>
-        <artifactId>groovy-1.0-jsr</artifactId>
-        <version>03</version>
+        <artifactId>groovy</artifactId>
+        <version>1.0-jsr-03</version>
       </dependency>
       <dependency>
         <groupId>org.livetribe</groupId>
