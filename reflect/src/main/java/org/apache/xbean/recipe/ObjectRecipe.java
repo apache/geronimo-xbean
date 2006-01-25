@@ -150,10 +150,7 @@ public class ObjectRecipe implements Recipe {
             Object propertyValue = entry.getValue();
             Method setter = findSetter(typeClass, propertyName, propertyValue);
             try {
-                if (propertyValue instanceof String) {
-                    String stringValue = (String) propertyValue;
-                    propertyValue = PropertyEditors.getValue(setter.getParameterTypes()[0], stringValue);
-                }
+                propertyValue = convert(setter.getParameterTypes()[0], propertyValue);
                 setter.invoke(instance, new Object[]{propertyValue});
             } catch (Exception e) {
                 throw new ConstructionException("Error setting property: " + setter);
@@ -171,13 +168,14 @@ public class ObjectRecipe implements Recipe {
             Object value;
             if (propertyValues.containsKey(name)) {
                 value = propertyValues.remove(name);
-                if (!isInstance(type, value)) {
-                    throw new ConstructionException("Invalid constructor parameter type: " +
+                if (!isInstance(type, value) && !isConvertable(type, value)) {
+                    throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +
                             "index=" + i + ", " +
                             "expected=" + ClassLoading.getClassName(type, true) + ", " +
                             "actual=" + ClassLoading.getClassName(value, true));
                 }
+                value = convert(type, value);
             } else {
                 value = getDefaultValue(type);
             }
@@ -186,6 +184,14 @@ public class ObjectRecipe implements Recipe {
             parameters[i] = value;
         }
         return parameters;
+    }
+
+    private static Object convert(Class type, Object value) {
+        if (value instanceof String) {
+            String stringValue = (String) value;
+            value = PropertyEditors.getValue(type, stringValue);
+        }
+        return value;
     }
 
     private static Object getDefaultValue(Class type) {
