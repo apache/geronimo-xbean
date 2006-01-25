@@ -30,9 +30,10 @@ public class Person {
     public Person() {
     }
 
-    public Person(String name, int age) {
+    public Person(String name, int age, URL homePage) {
         this.name = name;
         this.age = age;
+        this.homePage = homePage;
     }
 
     public String getName() {
@@ -61,5 +62,13 @@ public class Person {
 
     public String toString() {
         return super.toString()+ " (name=\""+name+"\", age=\""+age+"\", homePage=\""+homePage+"\")";
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof Person) {
+            Person that = (Person) obj;
+            return this.name.equals(that.name) && this.age == that.age && this.homePage.equals(that.homePage);
+        }
+        return false;
     }
 }
