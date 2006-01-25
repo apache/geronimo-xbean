@@ -149,6 +149,7 @@
     <module>jmx</module>
     <module>kernel</module>
     <module>osgi</module>
+    <module>reflect</module>
     <!--module>sca</module-->
     <module>server</module>
     <module>spring</module>
