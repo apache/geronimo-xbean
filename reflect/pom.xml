@@ -8,6 +8,17 @@
   <artifactId>xbean-reflect</artifactId>
   <name>XBean :: Reflect</name>
   <version>2.2-SNAPSHOT</version>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+	  <target>1.4</target>
+	</configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>mx4j</groupId>
