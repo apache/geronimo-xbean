@@ -16,6 +16,8 @@
  */
 package org.apache.xbean.recipe;
 
+import java.net.URL;
+
 /**
  * @version $Rev$ $Date$
  */
@@ -23,6 +25,7 @@ public class Person {
 
     private String name;
     private int age;
+    private URL homePage;
 
     public Person() {
     }
@@ -48,8 +51,15 @@ public class Person {
         this.age = age;
     }
 
+    public URL getHomePage() {
+        return homePage;
+    }
+
+    public void setHomePage(URL homePage) {
+        this.homePage = homePage;
+    }
 
     public String toString() {
-        return super.toString()+ " (name=\""+name+"\", age=\""+age+"\")";
+        return super.toString()+ " (name=\""+name+"\", age=\""+age+"\", homePage=\""+homePage+"\")";
     }
 }
