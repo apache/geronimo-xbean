@@ -36,6 +36,14 @@ public class Person {
         this.homePage = homePage;
     }
 
+    public static Person newInstance(){
+        return new Person();
+    }
+
+    public static Person newInstance(String name, int age, URL homePage){
+        return new Person(name, age, homePage);        
+    }
+
     public String getName() {
         return name;
     }
@@ -61,7 +69,7 @@ public class Person {
     }
 
     public String toString() {
-        return super.toString()+ " (name=\""+name+"\", age=\""+age+"\", homePage=\""+homePage+"\")";
+        return super.toString() + " (name=\"" + name + "\", age=\"" + age + "\", homePage=\"" + homePage + "\")";
     }
 
     public boolean equals(Object obj) {
