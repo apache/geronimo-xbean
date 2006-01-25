@@ -1,0 +1,18 @@
+<project>
+  <parent>
+    <artifactId>xbean</artifactId>
+    <groupId>org.apache.xbean</groupId>
+    <version>2.2-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>xbean-reflect</artifactId>
+  <name>XBean :: Reflect</name>
+  <version>2.2-SNAPSHOT</version>
+  <dependencies>
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+  </dependencies>
+</project>
