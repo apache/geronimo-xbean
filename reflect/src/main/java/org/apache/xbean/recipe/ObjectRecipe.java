@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 
 import org.apache.xbean.ClassLoading;
+import org.apache.xbean.propertyeditor.PropertyEditors;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
@@ -149,6 +150,10 @@ public class ObjectRecipe implements Recipe {
             Object propertyValue = entry.getValue();
             Method setter = findSetter(typeClass, propertyName, propertyValue);
             try {
+                if (propertyValue instanceof String) {
+                    String stringValue = (String) propertyValue;
+                    propertyValue = PropertyEditors.getValue(setter.getParameterTypes()[0], stringValue);
+                }
                 setter.invoke(instance, new Object[]{propertyValue});
             } catch (Exception e) {
                 throw new ConstructionException("Error setting property: " + setter);
@@ -398,10 +403,11 @@ public class ObjectRecipe implements Recipe {
                     continue;
                 }
 
-                if (!isInstance(methodParameterType, propertyValue)) {
+
+                if (!isInstance(methodParameterType, propertyValue) && !isConvertable(methodParameterType, propertyValue)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
-                        missException = new ConstructionException(ClassLoading.getClassName(propertyValue, true) + " can not be assigned to " +
+                        missException = new ConstructionException(ClassLoading.getClassName(propertyValue, true) + " can not be assigned or converted to " +
                                 ClassLoading.getClassName(methodParameterType, true) + ": " + method);
                     }
                     continue;
@@ -419,6 +425,10 @@ public class ObjectRecipe implements Recipe {
             buffer.append(setterName).append("(").append(ClassLoading.getClassName(propertyValue, true)).append(")");
             throw new ConstructionException(buffer.toString());
         }
+    }
+
+    public static boolean isConvertable(Class methodParameterType, Object propertyValue) {
+        return (propertyValue instanceof String && PropertyEditors.canConvert(methodParameterType));
     }
 
     public static boolean isInstance(Class type, Object instance) {
