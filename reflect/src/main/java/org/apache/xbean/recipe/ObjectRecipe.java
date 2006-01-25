@@ -16,19 +16,19 @@
  */
 package org.apache.xbean.recipe;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
-
 import org.apache.xbean.ClassLoading;
 import org.apache.xbean.propertyeditor.PropertyEditors;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
@@ -41,23 +41,43 @@ public class ObjectRecipe implements Recipe {
     private final LinkedHashMap properties;
 
     public ObjectRecipe(Class type) {
-        this(type.getName(), null, null, null, null);
+        this(type.getName());
     }
 
     public ObjectRecipe(Class type, String factoryMethod) {
-        this(type.getName(), factoryMethod, null, null, null);
+        this(type.getName(), factoryMethod);
     }
 
     public ObjectRecipe(Class type, Map properties) {
-        this(type.getName(), null, null, null, properties);
+        this(type.getName(), properties);
     }
 
     public ObjectRecipe(Class type, String[] constructorArgNames, Class[] constructorArgTypes) {
-        this(type.getName(), null, constructorArgNames, constructorArgTypes, null);
+        this(type.getName(), constructorArgNames, constructorArgTypes);
     }
 
     public ObjectRecipe(Class type, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes) {
-        this(type.getName(), factoryMethod, constructorArgNames, constructorArgTypes, null);
+        this(type.getName(), factoryMethod, constructorArgNames, constructorArgTypes);
+    }
+
+    public ObjectRecipe(String typeName) {
+        this(typeName, null, null, null, null);
+    }
+
+    public ObjectRecipe(String typeName, String factoryMethod) {
+        this(typeName, factoryMethod, null, null, null);
+    }
+
+    public ObjectRecipe(String typeName, Map properties) {
+        this(typeName, null, null, null, properties);
+    }
+
+    public ObjectRecipe(String typeName, String[] constructorArgNames, Class[] constructorArgTypes) {
+        this(typeName, null, constructorArgNames, constructorArgTypes, null);
+    }
+
+    public ObjectRecipe(String typeName, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes) {
+        this(typeName, factoryMethod, constructorArgNames, constructorArgTypes, null);
     }
 
     public ObjectRecipe(String type, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes, Map properties) {
@@ -103,6 +123,11 @@ public class ObjectRecipe implements Recipe {
             Object value = entry.getValue();
             setProperty(name, value);
         }
+    }
+
+    public Object create() throws ConstructionException {
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        return create(contextClassLoader);
     }
 
     public Object create(ClassLoader classLoader) throws ConstructionException {
@@ -503,8 +528,8 @@ public class ObjectRecipe implements Recipe {
         for (int i = 0; i < expectedTypes.length; i++) {
             Class expectedType = expectedTypes[i];
             Class actualType = actualTypes[i];
-            if (!isAssignableFrom(expectedType,  actualType)) {
-                 return false;
+            if (!isAssignableFrom(expectedType, actualType)) {
+                return false;
             }
         }
         return true;
