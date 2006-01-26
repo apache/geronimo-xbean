@@ -162,11 +162,8 @@ public class ObjectRecipe implements Recipe {
             }
         }
 
-        // get the constructor parameters
-        Object[] parameters = extractConstructorArgs(propertyValues);
-
         // create the instance
-        Object instance = createInstance(typeClass, parameters);
+        Object instance = createInstance(typeClass, propertyValues);
 
         // set remaining properties
         for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
@@ -184,7 +181,7 @@ public class ObjectRecipe implements Recipe {
         return instance;
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues) {
+    private Object[] extractConstructorArgs(Map propertyValues, Class[] constructorArgTypes) {
         Object[] parameters = new Object[constructorArgNames.length];
         for (int i = 0; i < constructorArgNames.length; i++) {
             String name = constructorArgNames[i];
@@ -240,9 +237,12 @@ public class ObjectRecipe implements Recipe {
         return null;
     }
 
-    private Object createInstance(Class typeClass, Object[] parameters) {
+    private Object createInstance(Class typeClass, Map propertyValues) {
         if (factoryMethod != null) {
             Method method = selectFactory(typeClass);
+            // get the constructor parameters
+            Object[] parameters = extractConstructorArgs(propertyValues, method.getParameterTypes());
+
             try {
                 Object object = method.invoke(null, parameters);
                 return object;
@@ -258,6 +258,8 @@ public class ObjectRecipe implements Recipe {
             }
         } else {
             Constructor constructor = selectConstructor(typeClass);
+            // get the constructor parameters
+            Object[] parameters = extractConstructorArgs(propertyValues, constructor.getParameterTypes());
 
             try {
                 Object object = constructor.newInstance(parameters);
@@ -276,26 +278,40 @@ public class ObjectRecipe implements Recipe {
     }
 
     private Method selectFactory(Class typeClass) {
+        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
+            ArrayList matches = new ArrayList();
+
+            Method[] methods = typeClass.getMethods();
+            for (int i = 0; i < methods.length; i++) {
+                Method method = methods[i];
+                if (method.getName().equals(factoryMethod) && method.getParameterTypes().length == constructorArgNames.length) {
+                    try {
+                        checkFactory(method);
+                        matches.add(method);
+                    } catch (Exception dontCare) {
+                    }
+                }
+            }
+
+            if (matches.size() < 1) {
+                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid factory method: ");
+                buffer.append("public static Object ").append(factoryMethod);
+                buffer.append(toArgumentList(constructorArgNames));
+                throw new ConstructionException(buffer.toString());
+            } else if (matches.size() > 1) {
+                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid factory methods: ");
+                buffer.append("public static Object ").append(factoryMethod);
+                buffer.append(toArgumentList(constructorArgNames));
+                throw new ConstructionException(buffer.toString());
+            }
+
+            return (Method) matches.get(0);
+        }
+
         try {
             Method method = typeClass.getMethod(factoryMethod, constructorArgTypes);
 
-            if (!Modifier.isPublic(method.getModifiers())) {
-                // this will never occur since private methods are not returned from
-                // getMethod, but leave this here anyway, just to be safe
-                throw new ConstructionException("Factory method is not public: " + method);
-            }
-
-            if (!Modifier.isStatic(method.getModifiers())) {
-                throw new ConstructionException("Factory method is not static: " + method);
-            }
-
-            if (method.getReturnType().equals(Void.TYPE)) {
-                throw new ConstructionException("Factory method does not return anything: " + method);
-            }
-
-            if (method.getReturnType().isPrimitive()) {
-                throw new ConstructionException("Factory method returns a primitive type: " + method);
-            }
+            checkFactory(method);
 
             return method;
         } catch (NoSuchMethodException e) {
@@ -317,7 +333,53 @@ public class ObjectRecipe implements Recipe {
         }
     }
 
+    private void checkFactory(Method method) {
+        if (!Modifier.isPublic(method.getModifiers())) {
+            // this will never occur since private methods are not returned from
+            // getMethod, but leave this here anyway, just to be safe
+            throw new ConstructionException("Factory method is not public: " + method);
+        }
+
+        if (!Modifier.isStatic(method.getModifiers())) {
+            throw new ConstructionException("Factory method is not static: " + method);
+        }
+
+        if (method.getReturnType().equals(Void.TYPE)) {
+            throw new ConstructionException("Factory method does not return anything: " + method);
+        }
+
+        if (method.getReturnType().isPrimitive()) {
+            throw new ConstructionException("Factory method returns a primitive type: " + method);
+        }
+    }
+
     private Constructor selectConstructor(Class typeClass) {
+        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
+            ArrayList matches = new ArrayList();
+
+            Constructor[] constructors = typeClass.getConstructors();
+            for (int i = 0; i < constructors.length; i++) {
+                Constructor constructor = constructors[i];
+                if (constructor.getParameterTypes().length == constructorArgNames.length) {
+                    matches.add(constructor);
+                }
+            }
+
+            if (matches.size() < 1) {
+                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid constructor: ");
+                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+                buffer.append(toArgumentList(constructorArgNames));
+                throw new ConstructionException(buffer.toString());
+            } else if (matches.size() > 1) {
+                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid constructors: ");
+                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+                buffer.append(toArgumentList(constructorArgNames));
+                throw new ConstructionException(buffer.toString());
+            }
+
+            return (Constructor) matches.get(0);
+        }
+
         try {
             Constructor constructor = typeClass.getConstructor(constructorArgTypes);
 
@@ -354,6 +416,18 @@ public class ObjectRecipe implements Recipe {
             Class type = parameterTypes[i];
             if (i > 0) buffer.append(", ");
             buffer.append(ClassLoading.getClassName(type, true));
+        }
+        buffer.append(")");
+        return buffer.toString();
+    }
+
+    private String toArgumentList(String[] parameterNames) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("(");
+        for (int i = 0; i < parameterNames.length; i++) {
+            String parameterName = parameterNames[i];
+            if (i > 0) buffer.append(", ");
+            buffer.append('<').append(parameterName).append('>');
         }
         buffer.append(")");
         return buffer.toString();
