@@ -75,6 +75,15 @@ public class SpringBootstrap {
      */
     public static void main(String[] args) {
         SpringBootstrap springBootstrap = new SpringBootstrap();
+        main(args, springBootstrap);
+    }
+
+    /**
+     * Like the main(args) method but allows a configured bootstrap instance to be passed in.
+     * 
+     * @see #main(String[])
+     */
+    public static void main(String[] args, SpringBootstrap springBootstrap) {
         springBootstrap.initialize(args);
 
         try {
@@ -167,7 +176,9 @@ public class SpringBootstrap {
             this.mainArguments = new String[args.length - 2];
             System.arraycopy(args, 2, this.mainArguments, 0, args.length);
         } else {
-            configurationFile = DEFAULT_BOOTSTRAP;
+            if (configurationFile == null) {
+                configurationFile = DEFAULT_BOOTSTRAP;
+            }
             this.mainArguments = args;
         }
 
