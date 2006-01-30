@@ -14,32 +14,31 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 -->
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
-<beans xmlns:s="http://xbean.apache.org/schemas/server" >
-  <bean id="PropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+<beans xmlns:s="http://xbean.apache.org/schemas/server">
+  <bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
-  <s:kernel-main name="Main" kernel="#Kernel">
+  <s:kernel-main name="main" kernel="#kernel">
     <property name="services">
       <map>
-        <entry key="FileSystemRepository" value-ref="FileSystemRepository"/>
-        <entry key="SpringLoader" value-ref="SpringLoader"/>
+        <entry key="FileSystemRepository" value-ref="repository"/>
+        <entry key="SpringLoader" value-ref="springLoader"/>
       </map>
     </property>
     <s:next>
-      <s:load-all-main kernel="#Kernel"/>
+      <s:load-all-main kernel="#kernel"/>
     </s:next>
   </s:kernel-main>
 
-  <bean name="KernelFactory" class="org.apache.xbean.kernel.KernelFactory" factory-method="newInstance"/>
-  <bean name="Kernel" factory-bean="KernelFactory" factory-method="createKernel">
+  <bean name="kernelFactory" class="org.apache.xbean.kernel.KernelFactory" factory-method="newInstance"/>
+  <bean name="kernel" factory-bean="kernelFactory" factory-method="createKernel">
     <constructor-arg index="0" value="xbean"/>
   </bean>
 
-  <s:file-system-repository id="FileSystemRepository" root="${xbean.base.dir}/repository"/>
+  <s:file-system-repository id="repository" root="${xbean.base.dir}/repository"/>
 
-  <s:spring-loader id="SpringLoader" kernel="#Kernel" baseDir="${xbean.base.dir}/conf">
+  <s:spring-loader id="springLoader" kernel="#kernel" baseDir="${xbean.base.dir}/conf">
     <s:xmlPreprocessors>
-        <s:class-loader-xml-preprocessor repository="#FileSystemRepository"/>
+        <s:class-loader-xml-preprocessor repository="#repository"/>
     </s:xmlPreprocessors>
   </s:spring-loader>
 </beans>
