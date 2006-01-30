@@ -209,7 +209,7 @@ public class ObjectRecipe implements Recipe {
     }
 
     private static Object convert(Class type, Object value) {
-        if (value instanceof String) {
+        if (value instanceof String && (type != Object.class)) {
             String stringValue = (String) value;
             value = PropertyEditors.getValue(type, stringValue);
         }
