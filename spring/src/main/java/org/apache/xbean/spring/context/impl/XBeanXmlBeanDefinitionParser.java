@@ -541,6 +541,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             if (namespaceURI != null && namespaceURI.length() > 0) {
                 uri = NamespaceHelper.createDiscoveryPathName(namespaceURI);
                 in = loadResource(uri);
+                if (in == null) {
+                    uri = NamespaceHelper.createDiscoveryOldPathName(namespaceURI);
+                    in = loadResource(uri);
+                }
             }
         }
 

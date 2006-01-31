@@ -24,6 +24,7 @@ package org.apache.xbean.spring.context.impl;
  */
 public class NamespaceHelper {
     public static final String META_INF_PREFIX = "META-INF/services/org/apache/xbean/spring/";
+    public static final String OLD_META_INF_PREFIX = "META-INF/services/org/xbean/spring/";
 
     /**
      * Converts the namespace and localName into a valid path name we can use on
@@ -44,6 +45,15 @@ public class NamespaceHelper {
         // TODO proper encoding required
         // lets replace any dodgy characters
         return META_INF_PREFIX + uri.replaceAll("://", "/").replace(':', '/').replace(' ', '_');
+    }
+
+    /**
+     * Creates the old URI for backwards compatibility
+     */
+    public static String createDiscoveryOldPathName(String uri) {
+        // TODO proper encoding required
+        // lets replace any dodgy characters
+        return OLD_META_INF_PREFIX + uri.replaceAll("://", "/").replace(':', '/').replace(' ', '_');
     }
 
     public static boolean isEmpty(String uri) {
