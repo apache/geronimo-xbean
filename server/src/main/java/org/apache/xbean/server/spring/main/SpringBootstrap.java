@@ -190,8 +190,10 @@ public class SpringBootstrap {
                 JarURLConnection jarConnection = (JarURLConnection) url.openConnection();
                 url = jarConnection.getJarFileURL();
 
-                URI baseURI = new URI(url.toString()).resolve("..");
-                serverBaseDirectory = new File(baseURI).getAbsolutePath();
+                if (serverBaseDirectory == null) {
+                    URI baseURI = new URI(url.toString()).resolve("..");
+                    serverBaseDirectory = new File(baseURI).getAbsolutePath();
+                }
 
                 Manifest manifest;
                 manifest = jarConnection.getManifest();
@@ -206,8 +208,10 @@ public class SpringBootstrap {
                 return;
             }
         } else {
-            String dir = System.getProperty("xbean.base.dir", System.getProperty("user.dir"));
-            serverBaseDirectory = new File(dir).getAbsolutePath();
+            if (serverBaseDirectory == null) {
+                String dir = System.getProperty("xbean.base.dir", System.getProperty("user.dir"));
+                serverBaseDirectory = new File(dir).getAbsolutePath();
+            }
         }
     }
 
