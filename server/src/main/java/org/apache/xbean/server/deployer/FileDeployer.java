@@ -106,6 +106,14 @@ public class FileDeployer implements Runnable, InitializingBean {
         this.kernel = kernel;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     // Implementation methods
     // -------------------------------------------------------------------------
     protected void processDirectory(ClassLoader classLoader, String parentName, File directory) throws ServiceAlreadyExistsException,
@@ -165,7 +173,7 @@ public class FileDeployer implements Runnable, InitializingBean {
         }
         URL u[] = new URL[urls.size()];
         urls.toArray(u);
-        return new NamedClassLoader(name + ".ClassLoader", u, classLoader);
+        return new NamedClassLoader(name + ".ClassLoader", u, parentClassLoader);
     }
 
     protected boolean isClassLoaderDirectory(File file) {
