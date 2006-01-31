@@ -32,32 +32,49 @@ import java.lang.reflect.Method;
  */
 public class QNameReflectionHelper {
 
-    protected static Method method;
+    protected static Method coerceMethod;
+    protected static Method createMethod;
 
     public static void coerceNamespaceAwarePropertyValues(AbstractBeanDefinition beanDefinition, Element element,
             PropertyDescriptor[] descriptors, int index) {
         QNameReflectionParams params = new QNameReflectionParams(beanDefinition, element, descriptors, index);
-        if (method == null) {
-            method = createMethod();
+        if (coerceMethod == null) {
+            coerceMethod = findMethod("coerceQNamePropertyValues");
         }
-        if (method != null) {
+        if (coerceMethod != null) {
             try {
-                method.invoke(null, new Object[] { params });
+                coerceMethod.invoke(null, new Object[] { params });
             }
             catch (Exception e) {
-                throw new BeanDefinitionStoreException("Failed to invoke method: " + method + " via reflection: " + e,
+                throw new BeanDefinitionStoreException("Failed to invoke method: " + coerceMethod + " via reflection: " + e,
                         e);
             }
         }
     }
+    
+    public static Object createQName(Element element, String text) {
+        if (createMethod == null) {
+            createMethod = findMethod("createQName");
+        }
+        if (createMethod != null) {
+            try {
+                return createMethod.invoke(null, new Object[] { element, text });
+            }
+            catch (Exception e) {
+                throw new BeanDefinitionStoreException("Failed to invoke method: " + createMethod + " via reflection: " + e,
+                        e);
+            }
+        }
+        return null;
+    }
 
-    protected static Method createMethod() {
+    protected static Method findMethod(String name) {
         Class type = PropertyEditorHelper.loadClass("org.apache.xbean.spring.context.impl.QNameHelper");
         if (type != null) {
             Method[] methods = type.getMethods();
             for (int i = 0; i < methods.length; i++) {
                 Method method = methods[i];
-                if (method.getName().equals("coerceQNamePropertyValues")) {
+                if (method.getName().equals(name)) {
                     return method;
                 }
             }
