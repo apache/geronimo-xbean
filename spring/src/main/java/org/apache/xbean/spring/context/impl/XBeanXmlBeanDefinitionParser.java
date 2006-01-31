@@ -69,6 +69,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
     private static final Log log = LogFactory.getLog(XBeanXmlBeanDefinitionParser.class);
 
+    private static final String QNAME_ELEMENT = "qname";
+    
     /**
      * All the reserved Spring XML element names which cannot be overloaded by
      * an XML extension
@@ -76,7 +78,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected static final String[] RESERVED_ELEMENT_NAMES = { "beans", DESCRIPTION_ELEMENT, IMPORT_ELEMENT,
             ALIAS_ELEMENT, BEAN_ELEMENT, CONSTRUCTOR_ARG_ELEMENT, PROPERTY_ELEMENT, LOOKUP_METHOD_ELEMENT,
             REPLACED_METHOD_ELEMENT, ARG_TYPE_ELEMENT, REF_ELEMENT, IDREF_ELEMENT, VALUE_ELEMENT, NULL_ELEMENT,
-            LIST_ELEMENT, SET_ELEMENT, MAP_ELEMENT, ENTRY_ELEMENT, KEY_ELEMENT, PROPS_ELEMENT, PROP_ELEMENT };
+            LIST_ELEMENT, SET_ELEMENT, MAP_ELEMENT, ENTRY_ELEMENT, KEY_ELEMENT, PROPS_ELEMENT, PROP_ELEMENT,
+            QNAME_ELEMENT };
 
     protected static final String[] RESERVED_BEAN_ATTRIBUTE_NAMES = { ID_ATTRIBUTE, NAME_ATTRIBUTE, CLASS_ATTRIBUTE,
             PARENT_ATTRIBUTE, DEPENDS_ON_ATTRIBUTE, FACTORY_METHOD_ATTRIBUTE, FACTORY_BEAN_ATTRIBUTE,
@@ -713,7 +716,17 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 return answer;
             }
         }
+        if (QNAME_ELEMENT.equals(localName) && isQnameIsOnClassPath()) {
+            Object answer = parseQNameElement(element);
+            if (answer != null) {
+                return answer;
+            }
+        }
         return super.parsePropertySubElement(element, beanName);
+    }
+    
+    protected Object parseQNameElement(Element element) {
+        return QNameReflectionHelper.createQName(element, getElementText(element));
     }
 
     /**
