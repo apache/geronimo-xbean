@@ -54,6 +54,7 @@ public class FileDeployer implements Runnable, InitializingBean {
     private Kernel kernel;
     private ClassLoader classLoader;
     private boolean verbose;
+    private String[] jarDirectoryNames = { "lib", "classes" };
 
     public void afterPropertiesSet() throws Exception {
         if (classLoader == null) {
@@ -110,8 +111,25 @@ public class FileDeployer implements Runnable, InitializingBean {
         return verbose;
     }
 
+    /**
+     * Allows verbose logging to show what classpaths are being created
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public String[] getJarDirectoryNames() {
+        return jarDirectoryNames;
+    }
+
+    /**
+     * Sets the names of the directories to be treated as folders of jars or
+     * class loader files. Defaults to "lib", "classes". If you wish to disable
+     * the use of lib and classes as being special folders containing jars or
+     * config files then just set this property to null or an empty array.
+     */
+    public void setJarDirectoryNames(String[] jarDirectoryNames) {
+        this.jarDirectoryNames = jarDirectoryNames;
     }
 
     // Implementation methods
@@ -177,7 +195,15 @@ public class FileDeployer implements Runnable, InitializingBean {
     }
 
     protected boolean isClassLoaderDirectory(File file) {
-        return file.getName().equals("lib");
+        if (jarDirectoryNames != null) {
+            for (int i = 0; i < jarDirectoryNames.length; i++) {
+                String name = jarDirectoryNames[i];
+                if (file.getName().equalsIgnoreCase(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected void createServiceForFile(String name, File file, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException,
