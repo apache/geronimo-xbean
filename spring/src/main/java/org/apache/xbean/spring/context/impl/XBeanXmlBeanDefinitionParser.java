@@ -158,7 +158,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
      * Creates a clone of the element and its attribute (though not its content)
      */
     protected Element cloneElement(Element element) {
-        Element answer = element.getOwnerDocument().createElement(getLocalName(element));
+        Element answer = element.getOwnerDocument().createElementNS(element.getNamespaceURI(), element.getNodeName());
         NamedNodeMap attributes = element.getAttributes();
         for (int i = 0, size = attributes.getLength(); i < size; i++) {
             Attr attribute = (Attr) attributes.item(i);
@@ -174,17 +174,16 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected void addAttributeProperties(BeanDefinitionHolder definition, MappingMetaData metadata, String className,
             Element element) {
         NamedNodeMap attributes = element.getAttributes();
+        // First pass on attributes with no namespaces
         for (int i = 0, size = attributes.getLength(); i < size; i++) {
             Attr attribute = (Attr) attributes.item(i);
             String uri = attribute.getNamespaceURI();
             String localName = attribute.getLocalName();
-
+            // Skip namespaces
             if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
                 continue;
             }
-
-            // we could use namespaced attributes to differentiate real spring
-            // attributes from namespace-specific attributes
+            // Add attributes with no namespaces
             if (isEmpty(uri) && !localName.equals("class")) {
                 boolean addProperty = true;
                 if (reservedBeanAttributeNames.contains(localName)) {
@@ -197,7 +196,28 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 }
             }
         }
-
+        // Second pass on attributes with namespaces
+        for (int i = 0, size = attributes.getLength(); i < size; i++) {
+            Attr attribute = (Attr) attributes.item(i);
+            String uri = attribute.getNamespaceURI();
+            String localName = attribute.getLocalName();
+            // Skip namespaces
+            if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
+                continue;
+            }
+            // Add attributs with namespaces matching the element ns
+            if (!isEmpty(uri) && uri.equals(element.getNamespaceURI())) {
+                boolean addProperty = true;
+                if (reservedBeanAttributeNames.contains(localName)) {
+                    // should we allow the property to shine through?
+                    PropertyDescriptor descriptor = getPropertyDescriptor(className, localName);
+                    addProperty = descriptor != null;
+                }
+                if (addProperty) {
+                    addAttributeProperty(definition, metadata, element, attribute);
+                }
+            }
+        }
     }
 
     protected void addContentProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element) {
@@ -231,7 +251,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
     protected void addAttributeProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
             Attr attribute) {
-        String localName = attribute.getName();
+        String localName = attribute.getLocalName();
         String value = attribute.getValue();
         addProperty(definition, metadata, element, localName, value);
     }
