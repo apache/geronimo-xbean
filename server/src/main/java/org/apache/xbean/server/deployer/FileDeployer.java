@@ -25,10 +25,11 @@ import org.apache.xbean.kernel.ServiceRegistrationException;
 import org.apache.xbean.kernel.StringServiceName;
 import org.apache.xbean.server.classloader.NamedClassLoader;
 import org.apache.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
-import org.apache.xbean.spring.context.FileSystemXmlApplicationContext;
+import org.apache.xbean.spring.context.ResourceXmlApplicationContext;
 import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.FileSystemResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +66,7 @@ public class FileDeployer implements Runnable, InitializingBean {
         directory = directory.getAbsoluteFile();
         log.info("Starting to load components from: " + directory);
         System.out.println("Starting to load components from: " + directory);
-        
+
         // lets load the deployment
         processDirectory(classLoader, "", directory);
     }
@@ -140,21 +141,23 @@ public class FileDeployer implements Runnable, InitializingBean {
 
     protected ClassLoader createChildClassLoader(String name, File dir, ClassLoader parentClassLoader) throws MalformedURLException {
         List urls = new ArrayList();
-        try {
-            System.out.println("Adding to classpath: " + dir.getCanonicalPath());
-        }
-        catch (Exception e) {
+        if (verbose) {
+            try {
+                System.out.println("Adding to classpath: " + dir.getCanonicalPath());
+            }
+            catch (Exception e) {
+            }
         }
         File[] files = dir.listFiles();
         if (files != null) {
             for (int j = 0; j < files.length; j++) {
                 if (files[j].getName().endsWith(".zip") || files[j].getName().endsWith(".jar")) {
                     if (verbose) {
-                    try {
-                        System.out.println("Adding to classpath: " + name + " jar: " + files[j].getCanonicalPath());
-                    }
-                    catch (Exception e) {
-                    }
+                        try {
+                            System.out.println("Adding to classpath: " + name + " jar: " + files[j].getCanonicalPath());
+                        }
+                        catch (Exception e) {
+                        }
                     }
                     urls.add(files[j].toURL());
                 }
@@ -169,7 +172,8 @@ public class FileDeployer implements Runnable, InitializingBean {
         return file.getName().equals("lib");
     }
 
-    protected void createServiceForFile(String name, File file, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException, BeansException, IOException {
+    protected void createServiceForFile(String name, File file, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException,
+            BeansException, IOException {
         String fileName = file.getName();
         ServiceFactory serviceFactory = null;
         if (fileName.equalsIgnoreCase("spring.xml") || fileName.equalsIgnoreCase("xbean.xml")) {
@@ -179,16 +183,26 @@ public class FileDeployer implements Runnable, InitializingBean {
             log.info("Ignoring file: " + fileName + " in directory: " + file.getParent());
         }
         if (serviceFactory != null) {
-            log.info("Loading service: " + name + " from: " + file.getAbsolutePath());
+            log.info("Registering spring services service: " + name + " from: " + file.getAbsolutePath() + " into the Kernel");
             kernel.registerService(new StringServiceName(name), serviceFactory, classLoader);
         }
     }
 
     protected ServiceFactory createSpringService(String name, File file, ClassLoader classLoader) throws BeansException, IOException {
-        String configFile = file.getAbsolutePath();
-        System.out.println("Loading spring config file: " + configFile);
-        SpringApplicationContext applicationContext = new FileSystemXmlApplicationContext(configFile);
-        return new SpringConfigurationServiceFactory(applicationContext);
+        log.info("Loading spring config file: " + file);
+
+        // we have to set the context class loader while loading the spring file
+        // so we can auto-discover xbean configurations
+        // and perform introspection
+        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        try {
+            SpringApplicationContext applicationContext = new ResourceXmlApplicationContext(new FileSystemResource(file));
+            return new SpringConfigurationServiceFactory(applicationContext);
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        }
     }
 
     protected String getChildName(String parentName, File file) {
