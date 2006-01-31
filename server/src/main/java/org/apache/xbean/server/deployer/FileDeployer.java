@@ -66,7 +66,6 @@ public class FileDeployer implements Runnable, InitializingBean {
         }
         directory = directory.getAbsoluteFile();
         log.info("Starting to load components from: " + directory);
-        System.out.println("Starting to load components from: " + directory);
 
         // lets load the deployment
         processDirectory(classLoader, "", directory);
@@ -169,7 +168,7 @@ public class FileDeployer implements Runnable, InitializingBean {
         List urls = new ArrayList();
         if (verbose) {
             try {
-                System.out.println("Adding to classpath: " + dir.getCanonicalPath());
+                log.info("Adding to classpath: " + dir.getCanonicalPath());
             }
             catch (Exception e) {
             }
@@ -180,7 +179,7 @@ public class FileDeployer implements Runnable, InitializingBean {
                 if (files[j].getName().endsWith(".zip") || files[j].getName().endsWith(".jar")) {
                     if (verbose) {
                         try {
-                            System.out.println("Adding to classpath: " + name + " jar: " + files[j].getCanonicalPath());
+                            log.info("Adding to classpath: " + name + " jar: " + files[j].getCanonicalPath());
                         }
                         catch (Exception e) {
                         }
