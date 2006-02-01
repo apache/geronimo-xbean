@@ -20,6 +20,7 @@ package org.apache.xbean.spring.context;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.core.io.Resource;
 import org.apache.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
@@ -46,12 +47,9 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
      * @param resource the resource from which the configuration is loaded
      */
     public ResourceXmlApplicationContext(Resource resource) {
-        super();
-        this.xmlPreprocessors = Collections.EMPTY_LIST;
-        this.resource = resource;
-        refresh();
+        this(resource, Collections.EMPTY_LIST);
     }
-
+  
     /**
      * Creates a ResourceXmlApplicationContext which loads the configuration from the specified Resource.
      * @param resource the resource from which the configuration is loaded
@@ -59,6 +57,17 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
      */
     public ResourceXmlApplicationContext(Resource resource, List xmlPreprocessors) {
         super();
+        this.xmlPreprocessors = xmlPreprocessors;
+        this.resource = resource;
+        refresh();
+    }
+
+    public ResourceXmlApplicationContext(Resource resource, ApplicationContext parent) {
+        this(resource, Collections.EMPTY_LIST, parent);
+    }
+
+    public ResourceXmlApplicationContext(Resource resource,  List xmlPreprocessors, ApplicationContext parent) {
+        super(parent);
         this.xmlPreprocessors = xmlPreprocessors;
         this.resource = resource;
         refresh();
