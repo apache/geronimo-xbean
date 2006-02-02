@@ -35,13 +35,19 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.FileSystemResource;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * A service which auto-deploys services within a recursive file system.
@@ -227,30 +233,66 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
         }
 
         // lets create a new classloader...
+        Properties properties = new Properties();
+        Map fileMap = new LinkedHashMap();
+        Map directoryMap = new LinkedHashMap();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if (isClassLoaderDirectory(file)) {
                 classLoader = createChildClassLoader(parentName, file, classLoader);
                 log.debug("Created class loader: " + classLoader);
             }
+            else if (isXBeansPropertyFile(file)) {
+                properties.load(new FileInputStream(file));
+            }
+            else {
+                if (file.isDirectory()) {
+                    directoryMap.put(file.getName(), file);
+                }
+                else {
+                    fileMap.put(file.getName(), file);
+                }
+            }
         }
 
-        // now lets recurse through files or directories
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            
-            if (!isClassLoaderDirectory(file) && !file.isDirectory()) {
+        String[] names = getFileNameOrder(properties);
+
+        // Lets process the files first
+
+        // process ordered files first in order
+        for (int i = 0; i < names.length; i++) {
+            String orderName = names[i];
+            File file = (File) fileMap.remove(orderName);
+            if (file != null) {
                 String name = getChildName(parentName, file);
                 createServiceForFile(name, file, classLoader, parentContext);
             }
         }
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
 
-            if (!isClassLoaderDirectory(file) && file.isDirectory()) {
+        // now lets process whats left
+        for (Iterator iter = fileMap.values().iterator(); iter.hasNext();) {
+            File file = (File) iter.next();
+            String name = getChildName(parentName, file);
+            createServiceForFile(name, file, classLoader, parentContext);
+        }
+
+        // now lets process the child directories
+
+        // process ordered files first in order
+        for (int i = 0; i < names.length; i++) {
+            String orderName = names[i];
+            File file = (File) directoryMap.remove(orderName);
+            if (file != null) {
                 String name = getChildName(parentName, file);
                 processDirectory(name, classLoader, parentContext, file);
             }
+        }
+
+        // now lets process whats left
+        for (Iterator iter = directoryMap.values().iterator(); iter.hasNext();) {
+            File file = (File) iter.next();
+            String name = getChildName(parentName, file);
+            processDirectory(name, classLoader, parentContext, file);
         }
     }
 
@@ -347,6 +389,27 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
     protected boolean isSpringConfigFile(File file) {
         String fileName = file.getName();
         return fileName.equalsIgnoreCase("spring.xml") || fileName.equalsIgnoreCase("xbean.xml");
+    }
+
+    private boolean isXBeansPropertyFile(File file) {
+        String fileName = file.getName();
+        return fileName.equalsIgnoreCase("xbean.properties");
+    }
+
+    /**
+     * Extracts the file names from the properties file for the order in which
+     * things should be deployed
+     */
+    protected String[] getFileNameOrder(Properties properties) {
+        String order = properties.getProperty("order", "");
+        List list = new ArrayList();
+        StringTokenizer iter = new StringTokenizer(order, ",");
+        while (iter.hasMoreTokens()) {
+            list.add(iter.nextToken());
+        }
+        String[] answer = new String[list.size()];
+        list.toArray(answer);
+        return answer;
     }
 
     protected String getChildName(String parentName, File file) {
