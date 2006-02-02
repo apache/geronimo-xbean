@@ -388,7 +388,7 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
 
     protected boolean isSpringConfigFile(File file) {
         String fileName = file.getName();
-        return fileName.equalsIgnoreCase("spring.xml") || fileName.equalsIgnoreCase("xbean.xml");
+        return fileName.endsWith("spring.xml") || fileName.endsWith("xbean.xml");
     }
 
     private boolean isXBeansPropertyFile(File file) {
