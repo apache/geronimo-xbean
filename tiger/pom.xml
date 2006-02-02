@@ -1,0 +1,70 @@
+<project>
+  <parent>
+    <artifactId>xbean</artifactId>
+    <groupId>org.apache.xbean</groupId>
+    <version>2.2-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>xbean-tiger</artifactId>
+  <name>XBean :: Tiger</name>
+  <version>2.2-SNAPSHOT</version>
+  <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <testResource>
+        <directory>target/test-generated</directory>
+      </testResource>
+    </testResources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
+                  <classpath>
+                    <pathelement path="${basedir}/target/classes"></pathelement>
+                    <path refid="maven.runtime.classpath"></path>
+                  </classpath>
+                </taskdef>
+                <mapping namespace="http://xbean.apache.org/schemas/tiger" srcdir="src/main/java" destFile="target/tiger.xsd" metaInfDir="${basedir}/target/generated/"></mapping>
+                <copy todir="${basedir}/target/classes">
+                  <fileset dir="${basedir}/target/generated"></fileset>
+                </copy>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+  </dependencies>
+</project>
