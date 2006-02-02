@@ -6,7 +6,6 @@
     <property name="services">
       <map>
         <entry key="FileSystemRepository" value-ref="repository"/>
-        <entry key="SpringLoader" value-ref="springLoader"/>
       </map>
     </property>
     <s:next>
@@ -23,14 +22,12 @@
   <s:file-system-repository id="repository" root="${xbean.base.dir}/../components"/>
 -->
   <s:file-system-repository id="repository" root="src/test/repository"/>
-
-  <s:spring-loader id="springLoader" kernel="#kernel" baseDir="${xbean.base.dir}/conf">
-    <s:xmlPreprocessors>
-        <s:class-loader-xml-preprocessor repository="#repository"/>
-    </s:xmlPreprocessors>
-  </s:spring-loader>
   
   <!--  TODO use proper directory  -->
-  <s:deployer directory="src/test/repository" kernel="#kernel"/>
+  <s:deployer baseDir="src/test/repository" kernel="#kernel">
+     <s:xmlPreprocessors>
+        <s:class-loader-xml-preprocessor repository="#repository"/>
+    </s:xmlPreprocessors>
+  </s:deployer>
   
 </beans>

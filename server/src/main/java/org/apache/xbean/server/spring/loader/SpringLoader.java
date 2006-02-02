@@ -132,6 +132,8 @@ public class SpringLoader implements Loader {
                 new String[] {configLocation},
                 false,
                 xmlPreprocessors);
+        
+        // TODO - not adding the bean post processors
         applicationContext.setDisplayName(location);
 
         ClassLoader classLoader = applicationContext.getClassLoader();
