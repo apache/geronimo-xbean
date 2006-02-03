@@ -145,15 +145,15 @@
     </plugins>
   </build>
   <modules>
-    <module>classpath</module>
-    <module>jmx</module>
-    <module>kernel</module>
-    <module>osgi</module>
-    <module>reflect</module>
-    <!--module>sca</module-->
-    <module>server</module>
-    <module>spring</module>
-    <module>telnet</module>
+    <module>xbean-classpath</module>
+    <module>xbean-jmx</module>
+    <module>xbean-kernel</module>
+    <module>xbean-osgi</module>
+    <module>xbean-reflect</module>
+    <!--module>xbean-sca</module-->
+    <module>xbean-server</module>
+    <module>xbean-spring</module>
+    <module>xbean-telnet</module>
   </modules>
   <repositories>
     <repository>
