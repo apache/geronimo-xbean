@@ -91,7 +91,8 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
             }
 
             // create the classloader
-            classLoader = new MultiParentClassLoader(applicationContext.getDisplayName(), urls, getClass().getClassLoader());
+            ClassLoader parentLoader = getClassLoader(applicationContext);
+            classLoader = new MultiParentClassLoader(applicationContext.getDisplayName(), urls, parentLoader);
 
             // remove the classpath element so Spring doesn't get confused
             document.getDocumentElement().removeChild(classpathElement);
@@ -102,4 +103,16 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
         applicationContext.setClassLoader(classLoader);
         Thread.currentThread().setContextClassLoader(classLoader);
     }
+
+    private static ClassLoader getClassLoader(SpringApplicationContext applicationContext) {
+        ClassLoader classLoader = applicationContext.getClassLoader();
+        if (classLoader == null) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        }
+        if (classLoader == null) {
+            classLoader = SpringLoader.class.getClassLoader();
+        }
+        return classLoader;
+    }
+    
 }
