@@ -23,6 +23,7 @@ import java.util.ListIterator;
 
 import org.xbean.server.classloader.MultiParentClassLoader;
 import org.xbean.server.repository.Repository;
+import org.xbean.server.spring.loader.SpringLoader;
 import org.xbean.spring.context.SpringXmlPreprocessor;
 import org.xbean.spring.context.SpringApplicationContext;
 import org.springframework.beans.FatalBeanException;

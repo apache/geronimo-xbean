@@ -28,7 +28,6 @@ import org.xbean.kernel.ServiceNotFoundException;
 import org.xbean.kernel.ServiceRegistrationException;
 import org.xbean.kernel.StaticServiceFactory;
 import org.xbean.kernel.StringServiceName;
-import org.springframework.beans.BeansException;
 import org.xbean.spring.context.SpringApplicationContext;
 import org.xbean.server.spring.loader.SpringLoader;
 
