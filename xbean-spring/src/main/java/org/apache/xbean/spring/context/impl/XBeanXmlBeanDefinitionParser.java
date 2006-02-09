@@ -62,6 +62,7 @@ import org.w3c.dom.Text;
 public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser {
 
     public static final String SPRING_SCHEMA = "http://xbean.apache.org/schemas/spring/1.0";
+    public static final String SPRING_SCHEMA_COMPAT = "http://xbean.org/schemas/spring/1.0";
 
     static {
         PropertyEditorHelper.registerCustomEditors();
@@ -151,7 +152,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             String uri = attribute.getNamespaceURI();
             String localName = attribute.getLocalName();
 
-            if (uri != null && uri.equals(SPRING_SCHEMA)) {
+            if (uri != null && (uri.equals(SPRING_SCHEMA) || uri.equals(SPRING_SCHEMA_COMPAT))) {
                 element.setAttributeNS(null, localName, attribute.getNodeValue());
             }
         }
@@ -525,7 +526,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 String uri = childElement.getNamespaceURI();
                 String localName = childElement.getLocalName();
 
-                if (uri == null || uri.equals(SPRING_SCHEMA)) {
+                if (uri == null || uri.equals(SPRING_SCHEMA) || uri.equals(SPRING_SCHEMA_COMPAT)) {
                     if (BEAN_ELEMENT.equals(localName)) {
                         return parseBeanDefinitionElement(childElement, true);
                     }
