@@ -27,8 +27,12 @@ public class Person {
     private int age;
     private URL homePage;
 
-    public Person() {
-    }
+//    public Person() {
+//    }
+
+//    private Person(String name) {
+//        this.name = name;
+//    }
 
     public Person(String name, int age, URL homePage) {
         this.name = name;
@@ -36,21 +40,29 @@ public class Person {
         this.homePage = homePage;
     }
 
-    public static Person newInstance(){
-        return new Person();
-    }
+//    public static Person newInstance(){
+//        return new Person();
+//    }
 
     public static Person newInstance(String name, int age, URL homePage){
         return new Person(name, age, homePage);        
+    }
+
+    public static Person justName(String name){
+        return new Person(name, 0, null);
+    }
+
+    public static Person nameAndAge(String name, int age){
+        return new Person(name, age, null);
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+//    public void setName(String name) {
+//        this.name = name;
+//    }
 
     public int getAge() {
         return age;

@@ -17,6 +17,7 @@
 package org.apache.xbean.recipe;
 
 import org.apache.xbean.ClassLoading;
+import org.apache.xbean.util.ParameterNames;
 import org.apache.xbean.propertyeditor.PropertyEditors;
 
 import java.lang.reflect.Constructor;
@@ -29,6 +30,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Comparator;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
@@ -36,8 +41,6 @@ import java.util.Map;
 public class ObjectRecipe implements Recipe {
     private final String type;
     private final String factoryMethod;
-    private final String[] constructorArgNames;
-    private final Class[] constructorArgTypes;
     private final LinkedHashMap properties;
 
     public ObjectRecipe(Class type) {
@@ -83,16 +86,6 @@ public class ObjectRecipe implements Recipe {
     public ObjectRecipe(String type, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes, Map properties) {
         this.type = type;
         this.factoryMethod = factoryMethod;
-        if (constructorArgNames != null) {
-            this.constructorArgNames = constructorArgNames;
-        } else {
-            this.constructorArgNames = new String[0];
-        }
-        if (constructorArgTypes != null) {
-            this.constructorArgTypes = constructorArgTypes;
-        } else {
-            this.constructorArgTypes = new Class[0];
-        }
         if (properties != null) {
             this.properties = new LinkedHashMap(properties);
             setAllProperties(properties);
@@ -162,8 +155,30 @@ public class ObjectRecipe implements Recipe {
             }
         }
 
+        // determine which properties can be set via setters
+        Map setters = new HashMap();
+        Map closeMatch = new HashMap();
+        for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String name = (String) entry.getKey();
+            Object value = entry.getValue();
+            try {
+                Method setter = findSetter(typeClass, name, value);
+                setters.put(name, setter);
+            } catch (ConstructionException e) {
+                closeMatch.put(name, e);
+            }
+        }
+
+        Set requiredProperties = new HashSet(propertyValues.keySet());
+        requiredProperties.removeAll(setters.keySet());
+
+
         // create the instance
-        Object instance = createInstance(typeClass, propertyValues);
+        Object instance = createInstance(typeClass, requiredProperties, propertyValues);
+        if (instance == null) {
+            throw new ConstructionException("Unable to find a constructor with properties: " + requiredProperties);
+        }
 
         // set remaining properties
         for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
@@ -181,7 +196,7 @@ public class ObjectRecipe implements Recipe {
         return instance;
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues, Class[] constructorArgTypes) {
+    private Object[] extractConstructorArgs(Map propertyValues, String[] constructorArgNames, Class[] constructorArgTypes) {
         Object[] parameters = new Object[constructorArgNames.length];
         for (int i = 0; i < constructorArgNames.length; i++) {
             String name = constructorArgNames[i];
@@ -237,11 +252,30 @@ public class ObjectRecipe implements Recipe {
         return null;
     }
 
-    private Object createInstance(Class typeClass, Map propertyValues) {
+    private Object createInstance(Class typeClass, Set requiredProperties, Map propertyValues) {
         if (factoryMethod != null) {
-            Method method = selectFactory(typeClass);
+            Method method = null;
+            String[] parameterNames = null;
+
+            Method[] methods = typeClass.getMethods();
+            Arrays.sort(methods, ARGUMENT_LENGTH_COMPARATOR);
+            for (int i = 0; i < methods.length; i++) {
+                Method m = methods[i];
+                if (m.getName().equals(factoryMethod)) {
+                    String[] names = ParameterNames.get(m);
+                    if (names != null && Arrays.asList(names).containsAll(requiredProperties)) {
+                        method = m;
+                        parameterNames = names;
+                        break;
+                    }
+                }
+            }
+            if (method == null) {
+                return null;
+            }
+
             // get the constructor parameters
-            Object[] parameters = extractConstructorArgs(propertyValues, method.getParameterTypes());
+            Object[] parameters = extractConstructorArgs(propertyValues, parameterNames, method.getParameterTypes());
 
             try {
                 Object object = method.invoke(null, parameters);
@@ -257,9 +291,26 @@ public class ObjectRecipe implements Recipe {
                 throw new ConstructionException("Error invoking factory method: " + method, t);
             }
         } else {
-            Constructor constructor = selectConstructor(typeClass);
+            Constructor constructor = null;
+            String[] parameterNames = null;
+
+            Constructor[] constructors = typeClass.getConstructors();
+            Arrays.sort(constructors, ARGUMENT_LENGTH_COMPARATOR);
+            for (int i = 0; i < constructors.length; i++) {
+                Constructor c = constructors[i];
+                String[] names = ParameterNames.get(c);
+                if (names != null && Arrays.asList(names).containsAll(requiredProperties)) {
+                    constructor = c;
+                    parameterNames = names;
+                    break;
+                }
+            }
+            if (constructor == null) {
+                return null;
+            }
+
             // get the constructor parameters
-            Object[] parameters = extractConstructorArgs(propertyValues, constructor.getParameterTypes());
+            Object[] parameters = extractConstructorArgs(propertyValues, parameterNames, constructor.getParameterTypes());
 
             try {
                 Object object = constructor.newInstance(parameters);
@@ -277,161 +328,175 @@ public class ObjectRecipe implements Recipe {
         }
     }
 
-    private Method selectFactory(Class typeClass) {
-        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
-            ArrayList matches = new ArrayList();
-
-            Method[] methods = typeClass.getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                if (method.getName().equals(factoryMethod) && method.getParameterTypes().length == constructorArgNames.length) {
-                    try {
-                        checkFactory(method);
-                        matches.add(method);
-                    } catch (Exception dontCare) {
-                    }
-                }
-            }
-
-            if (matches.size() < 1) {
-                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid factory method: ");
-                buffer.append("public static Object ").append(factoryMethod);
-                buffer.append(toArgumentList(constructorArgNames));
-                throw new ConstructionException(buffer.toString());
-            } else if (matches.size() > 1) {
-                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid factory methods: ");
-                buffer.append("public static Object ").append(factoryMethod);
-                buffer.append(toArgumentList(constructorArgNames));
-                throw new ConstructionException(buffer.toString());
-            }
-
-            return (Method) matches.get(0);
+    private static final ArgumentLengthComparator ARGUMENT_LENGTH_COMPARATOR = new ArgumentLengthComparator();
+    private static class ArgumentLengthComparator implements Comparator {
+        public int compare(Object left, Object right) {
+            return getArgumentLength(left) - getArgumentLength(right);
         }
 
-        try {
-            Method method = typeClass.getMethod(factoryMethod, constructorArgTypes);
-
-            checkFactory(method);
-
-            return method;
-        } catch (NoSuchMethodException e) {
-            // try to find a matching private method
-            Method[] methods = typeClass.getDeclaredMethods();
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                if (method.getName().equals(factoryMethod) && isAssignableFrom(constructorArgTypes, method.getParameterTypes())) {
-                    if (!Modifier.isPublic(method.getModifiers())) {
-                        throw new ConstructionException("Factory method is not public: " + method);
-                    }
-                }
+        private int getArgumentLength(Object object) {
+            if (object instanceof Method) {
+                return ((Method)object).getParameterTypes().length;
+            } else {
+                return ((Constructor)object).getParameterTypes().length;
             }
-
-            StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
-            buffer.append("public static Object ").append(ClassLoading.getClassName(typeClass, true)).append(".");
-            buffer.append(factoryMethod).append(toParameterList(constructorArgTypes));
-            throw new ConstructionException(buffer.toString());
         }
     }
-
-    private void checkFactory(Method method) {
-        if (!Modifier.isPublic(method.getModifiers())) {
-            // this will never occur since private methods are not returned from
-            // getMethod, but leave this here anyway, just to be safe
-            throw new ConstructionException("Factory method is not public: " + method);
-        }
-
-        if (!Modifier.isStatic(method.getModifiers())) {
-            throw new ConstructionException("Factory method is not static: " + method);
-        }
-
-        if (method.getReturnType().equals(Void.TYPE)) {
-            throw new ConstructionException("Factory method does not return anything: " + method);
-        }
-
-        if (method.getReturnType().isPrimitive()) {
-            throw new ConstructionException("Factory method returns a primitive type: " + method);
-        }
-    }
-
-    private Constructor selectConstructor(Class typeClass) {
-        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
-            ArrayList matches = new ArrayList();
-
-            Constructor[] constructors = typeClass.getConstructors();
-            for (int i = 0; i < constructors.length; i++) {
-                Constructor constructor = constructors[i];
-                if (constructor.getParameterTypes().length == constructorArgNames.length) {
-                    matches.add(constructor);
-                }
-            }
-
-            if (matches.size() < 1) {
-                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid constructor: ");
-                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
-                buffer.append(toArgumentList(constructorArgNames));
-                throw new ConstructionException(buffer.toString());
-            } else if (matches.size() > 1) {
-                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid constructors: ");
-                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
-                buffer.append(toArgumentList(constructorArgNames));
-                throw new ConstructionException(buffer.toString());
-            }
-
-            return (Constructor) matches.get(0);
-        }
-
-        try {
-            Constructor constructor = typeClass.getConstructor(constructorArgTypes);
-
-            if (!Modifier.isPublic(constructor.getModifiers())) {
-                // this will never occur since private constructors are not returned from
-                // getConstructor, but leave this here anyway, just to be safe
-                throw new ConstructionException("Constructor is not public: " + constructor);
-            }
-
-            return constructor;
-        } catch (NoSuchMethodException e) {
-            // try to find a matching private method
-            Constructor[] constructors = typeClass.getDeclaredConstructors();
-            for (int i = 0; i < constructors.length; i++) {
-                Constructor constructor = constructors[i];
-                if (isAssignableFrom(constructorArgTypes, constructor.getParameterTypes())) {
-                    if (!Modifier.isPublic(constructor.getModifiers())) {
-                        throw new ConstructionException("Constructor is not public: " + constructor);
-                    }
-                }
-            }
-
-            StringBuffer buffer = new StringBuffer("Unable to find a valid constructor: ");
-            buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
-            buffer.append(toParameterList(constructorArgTypes));
-            throw new ConstructionException(buffer.toString());
-        }
-    }
-
-    private String toParameterList(Class[] parameterTypes) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("(");
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Class type = parameterTypes[i];
-            if (i > 0) buffer.append(", ");
-            buffer.append(ClassLoading.getClassName(type, true));
-        }
-        buffer.append(")");
-        return buffer.toString();
-    }
-
-    private String toArgumentList(String[] parameterNames) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("(");
-        for (int i = 0; i < parameterNames.length; i++) {
-            String parameterName = parameterNames[i];
-            if (i > 0) buffer.append(", ");
-            buffer.append('<').append(parameterName).append('>');
-        }
-        buffer.append(")");
-        return buffer.toString();
-    }
+//    private Method selectFactory(Class typeClass, Set requiredProperties, Map propertyValues) {
+//        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
+//            ArrayList matches = new ArrayList();
+//
+//            Method[] methods = typeClass.getMethods();
+//            for (int i = 0; i < methods.length; i++) {
+//                Method method = methods[i];
+//                if (method.getName().equals(factoryMethod) && method.getParameterTypes().length == constructorArgNames.length) {
+//                    try {
+//                        checkFactory(method);
+//                        matches.add(method);
+//                    } catch (Exception dontCare) {
+//                    }
+//                }
+//            }
+//
+//            if (matches.size() < 1) {
+//                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid factory method: ");
+//                buffer.append("public static Object ").append(factoryMethod);
+//                buffer.append(toArgumentList(constructorArgNames));
+//                throw new ConstructionException(buffer.toString());
+//            } else if (matches.size() > 1) {
+//                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid factory methods: ");
+//                buffer.append("public static Object ").append(factoryMethod);
+//                buffer.append(toArgumentList(constructorArgNames));
+//                throw new ConstructionException(buffer.toString());
+//            }
+//
+//            return (Method) matches.get(0);
+//        }
+//
+//        try {
+//            Method method = typeClass.getMethod(factoryMethod, constructorArgTypes);
+//
+//            checkFactory(method);
+//
+//            return method;
+//        } catch (NoSuchMethodException e) {
+//            // try to find a matching private method
+//            Method[] methods = typeClass.getDeclaredMethods();
+//            for (int i = 0; i < methods.length; i++) {
+//                Method method = methods[i];
+//                if (method.getName().equals(factoryMethod) && isAssignableFrom(constructorArgTypes, method.getParameterTypes())) {
+//                    if (!Modifier.isPublic(method.getModifiers())) {
+//                        throw new ConstructionException("Factory method is not public: " + method);
+//                    }
+//                }
+//            }
+//
+//            StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
+//            buffer.append("public static Object ").append(ClassLoading.getClassName(typeClass, true)).append(".");
+//            buffer.append(factoryMethod).append(toParameterList(constructorArgTypes));
+//            throw new ConstructionException(buffer.toString());
+//        }
+//    }
+//
+//    private void checkFactory(Method method) {
+//        if (!Modifier.isPublic(method.getModifiers())) {
+//            // this will never occur since private methods are not returned from
+//            // getMethod, but leave this here anyway, just to be safe
+//            throw new ConstructionException("Factory method is not public: " + method);
+//        }
+//
+//        if (!Modifier.isStatic(method.getModifiers())) {
+//            throw new ConstructionException("Factory method is not static: " + method);
+//        }
+//
+//        if (method.getReturnType().equals(Void.TYPE)) {
+//            throw new ConstructionException("Factory method does not return anything: " + method);
+//        }
+//
+//        if (method.getReturnType().isPrimitive()) {
+//            throw new ConstructionException("Factory method returns a primitive type: " + method);
+//        }
+//    }
+//
+//    private Constructor selectConstructor(Class typeClass, Set requiredProperties, Map propertyValues) {
+//        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
+//            ArrayList matches = new ArrayList();
+//
+//            Constructor[] constructors = typeClass.getConstructors();
+//            for (int i = 0; i < constructors.length; i++) {
+//                Constructor constructor = constructors[i];
+//                if (constructor.getParameterTypes().length == constructorArgNames.length) {
+//                    matches.add(constructor);
+//                }
+//            }
+//
+//            if (matches.size() < 1) {
+//                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid constructor: ");
+//                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+//                buffer.append(toArgumentList(constructorArgNames));
+//                throw new ConstructionException(buffer.toString());
+//            } else if (matches.size() > 1) {
+//                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid constructors: ");
+//                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+//                buffer.append(toArgumentList(constructorArgNames));
+//                throw new ConstructionException(buffer.toString());
+//            }
+//
+//            return (Constructor) matches.get(0);
+//        }
+//
+//        try {
+//            Constructor constructor = typeClass.getConstructor(constructorArgTypes);
+//
+//            if (!Modifier.isPublic(constructor.getModifiers())) {
+//                // this will never occur since private constructors are not returned from
+//                // getConstructor, but leave this here anyway, just to be safe
+//                throw new ConstructionException("Constructor is not public: " + constructor);
+//            }
+//
+//            return constructor;
+//        } catch (NoSuchMethodException e) {
+//            // try to find a matching private method
+//            Constructor[] constructors = typeClass.getDeclaredConstructors();
+//            for (int i = 0; i < constructors.length; i++) {
+//                Constructor constructor = constructors[i];
+//                if (isAssignableFrom(constructorArgTypes, constructor.getParameterTypes())) {
+//                    if (!Modifier.isPublic(constructor.getModifiers())) {
+//                        throw new ConstructionException("Constructor is not public: " + constructor);
+//                    }
+//                }
+//            }
+//
+//            StringBuffer buffer = new StringBuffer("Unable to find a valid constructor: ");
+//            buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+//            buffer.append(toParameterList(constructorArgTypes));
+//            throw new ConstructionException(buffer.toString());
+//        }
+//    }
+//
+//    private String toParameterList(Class[] parameterTypes) {
+//        StringBuffer buffer = new StringBuffer();
+//        buffer.append("(");
+//        for (int i = 0; i < parameterTypes.length; i++) {
+//            Class type = parameterTypes[i];
+//            if (i > 0) buffer.append(", ");
+//            buffer.append(ClassLoading.getClassName(type, true));
+//        }
+//        buffer.append(")");
+//        return buffer.toString();
+//    }
+//
+//    private String toArgumentList(String[] parameterNames) {
+//        StringBuffer buffer = new StringBuffer();
+//        buffer.append("(");
+//        for (int i = 0; i < parameterNames.length; i++) {
+//            String parameterName = parameterNames[i];
+//            if (i > 0) buffer.append(", ");
+//            buffer.append('<').append(parameterName).append('>');
+//        }
+//        buffer.append(")");
+//        return buffer.toString();
+//    }
 
     public static Method findSetter(Class typeClass, String propertyName, Object propertyValue) {
         if (propertyName == null) throw new NullPointerException("name is null");
