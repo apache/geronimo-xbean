@@ -53,8 +53,7 @@ import java.util.StringTokenizer;
  * A service which auto-deploys services within a recursive file system.
  * 
  * @org.apache.xbean.XBean namespace="http://xbean.apache.org/schemas/server"
- *                         element="deployer" description="Deploys services in a
- *                         file system"
+ *                         element="file-deployer" description="Deploys services in a file system"
  * @version $Revision$
  */
 public class FileDeployer implements Runnable, InitializingBean, ApplicationContextAware {
@@ -87,6 +86,8 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
 
         // lets load the deployment
         processDirectory("", classLoader, applicationContext, baseDir);
+
+        log.info("Loading completed");
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
