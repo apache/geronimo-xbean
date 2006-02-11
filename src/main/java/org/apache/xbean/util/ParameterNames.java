@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Label;
@@ -41,9 +44,9 @@ import org.objectweb.asm.commons.EmptyVisitor;
  */
 public final class ParameterNames {
     /**
-     * Gets the names of the method parameters or null if the class was compiles without debug symbols on.
-     * @param method the method for which the parameters should be retrieved
-     * @return the parameter names or null if the class was compiles without debug symbols on
+     * Gets the parameter names of the specified method or null if the class was compiled without debug symbols on.
+     * @param method the method for which the parameter names should be retrieved
+     * @return the parameter names or null if the class was compilesd without debug symbols on
      */
     public static String[] get(Method method) {
         try {
@@ -58,9 +61,9 @@ public final class ParameterNames {
     }
 
     /**
-     * Gets the names of the constructor parameters or null if the class was compiles without debug symbols on.
+     * Gets the parameter names of the specified constructor or null if the class was compiled without debug symbols on.
      * @param constructor the constructor for which the parameters should be retrieved
-     * @return the parameter names or null if the class was compiles without debug symbols on
+     * @return the parameter names or null if the class was compiled without debug symbols on
      */
     public static String[] get(Constructor constructor) {
         try {
@@ -69,6 +72,59 @@ public final class ParameterNames {
             ParameterNameDiscoveringVisitor visitor = new ParameterNameDiscoveringVisitor(constructor);
             reader.accept(visitor, false);
             return visitor.getParameterNames();
+        } catch (IOException ex) {
+        }
+        return null;
+    }
+
+    /**
+     * Gets the parameter names of all constructoror null if the class was compiled without debug symbols on.
+     * @param clazz the class for which the constructor parameter names should be retrieved
+     * @return a map from Constructor object to the parameter names or null if the class was compiled without debug symbols on
+     */
+    public static Map getAllConstructorParameters(Class clazz) {
+        // todo this should be done with a single pass though the class
+        try {
+            ClassReader reader = createClassReader(clazz);
+
+            HashMap nameMap = new HashMap();
+            Constructor[] constructors = clazz.getConstructors();
+            for (int i = 0; i < constructors.length; i++) {
+                Constructor constructor = constructors[i];
+                ParameterNameDiscoveringVisitor visitor = new ParameterNameDiscoveringVisitor(constructor);
+                reader.accept(visitor, false);
+                String[] parameterNames = visitor.getParameterNames();
+                nameMap.put(constructor, parameterNames);
+            }
+            return nameMap;
+        } catch (IOException ex) {
+        }
+        return null;
+    }
+
+    /**
+     * Gets the parameter names of all methods with the specified name or null if the class was compiled without debug symbols on.
+     * @param clazz the class for which the method parameter names should be retrieved
+     * @param methodName the of the method for which the parameters should be retrieved
+     * @return a map from Method object to the parameter names or null if the class was compiled without debug symbols on
+     */
+    public static Map getAllMethodParameters(Class clazz, String methodName) {
+        // todo this should be done with a single pass though the class
+        try {
+            ClassReader reader = createClassReader(clazz);
+
+            HashMap nameMap = new HashMap();
+            Method[] methods = clazz.getMethods();
+            for (int i = 0; i < methods.length; i++) {
+                Method method = methods[i];
+                if (method.getName().equals(methodName)) {
+                    ParameterNameDiscoveringVisitor visitor = new ParameterNameDiscoveringVisitor(method);
+                    reader.accept(visitor, false);
+                    String[] parameterNames = visitor.getParameterNames();
+                    nameMap.put(method, parameterNames);
+                }
+            }
+            return nameMap;
         } catch (IOException ex) {
         }
         return null;
@@ -93,20 +149,20 @@ public final class ParameterNames {
 
     private static class ParameterNameDiscoveringVisitor extends EmptyVisitor {
         private final String methodName;
-        private final boolean isConstructor;
+        private final boolean isStaticMethod;
         private final String[] parameterNames;
         private final String descriptor;
 
         public ParameterNameDiscoveringVisitor(Method method) {
             this.methodName = method.getName();
-            this.isConstructor = false;
+            this.isStaticMethod = Modifier.isStatic(method.getModifiers());
             this.parameterNames = new String[method.getParameterTypes().length];
             this.descriptor = Type.getMethodDescriptor(method);
         }
 
         public ParameterNameDiscoveringVisitor(Constructor constructor) {
             this.methodName = "<init>";
-            this.isConstructor = true;
+            this.isStaticMethod = false;
             this.parameterNames = new String[constructor.getParameterTypes().length];
 
             Type[] pTypes = new Type[constructor.getParameterTypes().length];
@@ -132,7 +188,7 @@ public final class ParameterNames {
             }
             return new EmptyVisitor() {
                 public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
-                    if (!isConstructor) {
+                    if (isStaticMethod) {
                         parameterNames[index] = name;
                     } else if (index > 0) {
                         parameterNames[(index -1)] = name;

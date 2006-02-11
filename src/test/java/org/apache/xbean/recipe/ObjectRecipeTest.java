@@ -27,12 +27,6 @@ public class ObjectRecipeTest extends TestCase {
         doTest(objectRecipe);
     }
 
-//    public void testConstructorWithImpliedTypes() throws Exception {
-//
-//        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, new String[]{"name", "age", "homePage"}, null);
-//        doTest(objectRecipe);
-//    }
-
     public void testFactoryMethod() throws Exception {
         ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance");
         doTest(objectRecipe);
@@ -42,12 +36,6 @@ public class ObjectRecipeTest extends TestCase {
         ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "nameAndAge");
         doTest(objectRecipe);
     }
-
-//    public void testFactoryMethodWithImpliedTypes() throws Exception {
-//
-//        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance", new String[]{"name", "age", "homePage"}, null);
-//        doTest(objectRecipe);
-//    }
 
     private void doTest(ObjectRecipe objectRecipe) throws Exception {
         Person expected = new Person("Joe", 21, new URL("http://www.acme.org"));

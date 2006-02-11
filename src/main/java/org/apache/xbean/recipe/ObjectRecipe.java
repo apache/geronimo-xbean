@@ -34,11 +34,15 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Comparator;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
  */
 public class ObjectRecipe implements Recipe {
+    // todo add instanceMethod
+    // todo life cycle methods
     private final String type;
     private final String factoryMethod;
     private final LinkedHashMap properties;
@@ -294,11 +298,14 @@ public class ObjectRecipe implements Recipe {
             Constructor constructor = null;
             String[] parameterNames = null;
 
-            Constructor[] constructors = typeClass.getConstructors();
-            Arrays.sort(constructors, ARGUMENT_LENGTH_COMPARATOR);
-            for (int i = 0; i < constructors.length; i++) {
-                Constructor c = constructors[i];
-                String[] names = ParameterNames.get(c);
+            Map map = ParameterNames.getAllConstructorParameters(typeClass);
+            SortedMap constructorArgs = new TreeMap(ARGUMENT_LENGTH_COMPARATOR);
+            constructorArgs.putAll(map);
+
+            for (Iterator iterator = constructorArgs.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Constructor c = (Constructor) entry.getKey();
+                String[] names = (String[]) entry.getValue();
                 if (names != null && Arrays.asList(names).containsAll(requiredProperties)) {
                     constructor = c;
                     parameterNames = names;
