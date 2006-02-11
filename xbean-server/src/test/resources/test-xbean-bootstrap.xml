@@ -24,10 +24,10 @@
   <s:file-system-repository id="repository" root="src/test/repository"/>
   
   <!--  TODO use proper directory  -->
-  <s:deployer baseDir="src/test/repository" kernel="#kernel">
+  <s:file-deployer baseDir="src/test/repository" kernel="#kernel">
      <s:xmlPreprocessors>
         <s:class-loader-xml-preprocessor repository="#repository"/>
     </s:xmlPreprocessors>
-  </s:deployer>
+  </s:file-deployer>
   
 </beans>
