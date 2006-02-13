@@ -29,29 +29,46 @@ public class PropertyTestService implements InitializingBean {
 
     private static final Log log = LogFactory.getLog(PropertyTestService.class);
     
-    private String dir;
+    private String baseDir;
+    private String currentDir;
     
     public void afterPropertiesSet() throws Exception {
-        log.info("Configured with dir: " + dir);
+        assertValidProperty("baseDir", baseDir);
+        assertValidProperty("currentDir", currentDir);
+        if (!currentDir.endsWith("testcase")) {
+            throw new IllegalArgumentException("The current directory should end with testcase but was: " + currentDir);
+        }
+    }
+
+    public String getBaseDir() {
+        return baseDir;
+    }
+
+    public void setBaseDir(String baseDir) {
+        this.baseDir = baseDir;
+    }
+
+    public String getCurrentDir() {
+        return currentDir;
+    }
+
+    public void setCurrentDir(String currentDir) {
+        this.currentDir = currentDir;
+    }
+
+
+    protected void assertValidProperty(String name, String value) {
+        log.info("Configured with " + name + ": " + value);
         
-        if (dir == null) {
-            throw new IllegalArgumentException("No dir property specified!");
+        if (value == null) {
+            throw new IllegalArgumentException("No " + name + " property specified!");
         }
-        if (dir.length() == 0) {
-            throw new IllegalArgumentException("Blank dir property specified!");
+        if (value.length() == 0) {
+            throw new IllegalArgumentException("Blank " + name + " property specified!");
         }
-        if (dir.startsWith("$")) {
-            throw new IllegalArgumentException("The dir property has not been expanded properly!: Its value is: " + dir);
+        if (value.startsWith("$")) {
+            throw new IllegalArgumentException("The " + name + " property has not been expanded properly!: Its value is: " + value);
         }
     }
 
-    public String getDir() {
-        return dir;
-    }
-
-    public void setDir(String dir) {
-        this.dir = dir;
-    }
-
-    
 }

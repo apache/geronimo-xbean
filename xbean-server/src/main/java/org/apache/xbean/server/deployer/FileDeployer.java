@@ -330,7 +330,8 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
             throws ServiceAlreadyExistsException, ServiceRegistrationException, BeansException, IOException {
         if (isSpringConfigFile(file)) {
             // make the current directory available to spring files
-            System.setProperty("xbean.current.dir", file.getAbsolutePath());
+            System.setProperty("xbean.current.file", file.getAbsolutePath());
+            System.setProperty("xbean.current.dir", file.getParent());
 
             // we have to set the context class loader while loading the spring
             // file
