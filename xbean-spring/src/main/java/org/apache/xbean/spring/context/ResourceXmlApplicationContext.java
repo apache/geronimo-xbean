@@ -18,6 +18,7 @@
 package org.apache.xbean.spring.context;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
@@ -27,6 +28,7 @@ import org.apache.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -67,9 +69,17 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
     }
 
     public ResourceXmlApplicationContext(Resource resource,  List xmlPreprocessors, ApplicationContext parent) {
+        this(resource, xmlPreprocessors, parent, Collections.EMPTY_LIST);
+    }
+    
+    public ResourceXmlApplicationContext(Resource resource,  List xmlPreprocessors, ApplicationContext parent, List beanPostProcessors) {
         super(parent);
         this.xmlPreprocessors = xmlPreprocessors;
         this.resource = resource;
+        for (Iterator iter = beanPostProcessors.iterator(); iter.hasNext();) {
+            BeanFactoryPostProcessor processor =  (BeanFactoryPostProcessor) iter.next();
+            addBeanFactoryPostProcessor(processor);
+        }
         refresh();
     }
 

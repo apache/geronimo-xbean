@@ -1,0 +1,7 @@
+<beans>
+  
+  <bean class="org.apache.xbean.server.deployer.PropertyTestService">
+  <property name="dir" value="${xbean.base.dir}"/>
+  </bean>
+
+</beans>

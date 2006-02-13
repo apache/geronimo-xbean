@@ -1,33 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans xmlns:s="http://xbean.apache.org/schemas/server">
-  <bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+  <bean id="propertyPlaceholderConfigurer"
+    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 
   <s:kernel-main name="main" kernel="#kernel" daemon="false">
     <property name="services">
       <map>
-        <entry key="FileSystemRepository" value-ref="repository"/>
+        <entry key="FileSystemRepository" value-ref="repository" />
       </map>
     </property>
     <s:next>
-      <s:load-all-main kernel="#kernel"/>
+      <s:load-all-main kernel="#kernel" />
     </s:next>
   </s:kernel-main>
 
-  <bean name="kernelFactory" class="org.apache.xbean.kernel.KernelFactory" factory-method="newInstance"/>
-  <bean name="kernel" factory-bean="kernelFactory" factory-method="createKernel">
-    <constructor-arg index="0" value="xbean"/>
+  <bean name="kernelFactory"
+    class="org.apache.xbean.kernel.KernelFactory"
+    factory-method="newInstance" />
+  <bean name="kernel" factory-bean="kernelFactory"
+    factory-method="createKernel">
+    <constructor-arg index="0" value="xbean" />
   </bean>
 
-<!--  TODO use proper directory
-  <s:file-system-repository id="repository" root="${xbean.base.dir}/../components"/>
--->
-  <s:file-system-repository id="repository" root="src/test/repository"/>
-  
+  <!--  TODO use proper directory
+    <s:file-system-repository id="repository" root="${xbean.base.dir}/../components"/>
+  -->
+  <s:file-system-repository id="repository" root="src/test/repository" />
+
   <!--  TODO use proper directory  -->
   <s:file-deployer baseDir="src/test/repository" kernel="#kernel">
-     <s:xmlPreprocessors>
-        <s:class-loader-xml-preprocessor repository="#repository"/>
+    <s:xmlPreprocessors>
+      <s:class-loader-xml-preprocessor repository="#repository" />
     </s:xmlPreprocessors>
+    <s:beanFactoryPostProcessors>
+      <bean
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+    </s:beanFactoryPostProcessors>
+
   </s:file-deployer>
-  
+
 </beans>
