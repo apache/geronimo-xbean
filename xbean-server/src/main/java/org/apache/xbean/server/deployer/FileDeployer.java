@@ -340,9 +340,8 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
             Thread.currentThread().setContextClassLoader(classLoader);
             log.debug("Loading file: " + file + " using classLoader: " + classLoader);
             try {
-                SpringApplicationContext applicationContext = new ResourceXmlApplicationContext(new FileSystemResource(file), xmlPreprocessors, parentContext);
+                SpringApplicationContext applicationContext = new ResourceXmlApplicationContext(new FileSystemResource(file), xmlPreprocessors, parentContext, beanFactoryPostProcessors);
                 applicationContext.setDisplayName(name);
-                addBeanPostProcessors(applicationContext);
 
                 ServiceFactory serviceFactory = new SpringConfigurationServiceFactory(applicationContext);
 
@@ -365,13 +364,6 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
             if (showIgnoredFiles) {
                 log.info("Ignoring file: " + file.getName() + " in directory: " + file.getParent());
             }
-        }
-    }
-
-    protected void addBeanPostProcessors(SpringApplicationContext applicationContext) {
-        for (Iterator iter = beanFactoryPostProcessors.iterator(); iter.hasNext();) {
-            BeanFactoryPostProcessor postProcessor = (BeanFactoryPostProcessor) iter.next();
-            applicationContext.addBeanFactoryPostProcessor(postProcessor);
         }
     }
 
