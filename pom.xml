@@ -146,7 +146,9 @@
   </build>
   <modules>
     <module>xbean-classpath</module>
+    <!-- cannot release due to snapshot dependency 
     <module>xbean-jmx</module>
+    -->
     <module>xbean-kernel</module>
     <module>xbean-osgi</module>
     <module>xbean-reflect</module>
