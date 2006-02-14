@@ -128,7 +128,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-one-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
         <executions>
           <execution>
             <goals>
@@ -155,6 +155,7 @@
     <module>xbean-spring</module>
     <module>xbean-telnet</module>
   </modules>
+
   <repositories>
     <repository>
       <snapshots />
@@ -174,6 +175,11 @@
     </repository>
   </repositories>
   <pluginRepositories>
+    <pluginRepository>
+      <id>codehaus-plugins</id>
+      <name>Maven Central Plugins Repository</name>
+      <url>http://test.maven.codehaus.org/maven2</url>
+    </pluginRepository>
     <pluginRepository>
       <id>snapshots</id>
       <name>Maven Central Plugins Development Repository</name>
