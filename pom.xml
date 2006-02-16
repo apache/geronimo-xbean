@@ -151,6 +151,7 @@
     <module>xbean-server</module>
     <module>xbean-spring</module>
     <module>xbean-telnet</module>
+    <module>xbean-tiger</module>
   </modules>
   <repositories>
     <repository>
