@@ -146,6 +146,7 @@
   <modules>
     <module>xbean-classpath</module>
     <module>xbean-kernel</module>
+    <module>xbean-jmx</module>
     <module>xbean-osgi</module>
     <module>xbean-reflect</module>
     <module>xbean-server</module>
