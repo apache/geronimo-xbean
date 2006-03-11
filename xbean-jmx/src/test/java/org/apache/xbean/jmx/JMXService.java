@@ -27,49 +27,49 @@ import java.util.List;
  */
 public class JMXService {
     private List listeners = new ArrayList();
-    private int attr1;
-    private Integer attr2;
-    private boolean dog;
+    private int intAttr;
+    private Integer integerAttr;
+    private boolean booleanAttr;
 
     public JMXService() {
     }
 
-    public JMXService(int attr1, Integer attr2, boolean dog) {
-        this.attr1 = attr1;
-        this.attr2 = attr2;
-        this.dog = dog;
+    public JMXService(int intAttr, Integer integerAttr, boolean booleanAttr) {
+        this.intAttr = intAttr;
+        this.integerAttr = integerAttr;
+        this.booleanAttr = booleanAttr;
     }
 
-    public int getAttr1() {
-        return attr1;
+    public int getIntAttr() {
+        return intAttr;
     }
 
-    public void setAttr1(int attr1) {
-        this.attr1 = attr1;
+    public void setIntAttr(int intAttr) {
+        this.intAttr = intAttr;
     }
 
-    public Integer getAttr2() {
-        return attr2;
+    public Integer getIntegerAttr() {
+        return integerAttr;
     }
 
-    public void setAttr2(Integer attr2) {
-        this.attr2 = attr2;
+    public void setIntegerAttr(Integer integerAttr) {
+        this.integerAttr = integerAttr;
     }
 
-    public boolean isDog() {
-        return dog;
+    public boolean isBooleanAttr() {
+        return booleanAttr;
     }
 
-    public void setDog(boolean dog) {
-        this.dog = dog;
+    public void setBooleanAttr(boolean booleanAttr) {
+        this.booleanAttr = booleanAttr;
     }
 
-    public String getFoo() {
+    public String getReadOnly() {
         return "BAR";
     }
 
-    public void setBar(String bar) {
-        if (!"FOO".equals(bar)) throw new IllegalArgumentException("Only FOO is accepted");
+    public void setWriteOnly(String value) {
+        if (!"FOO".equals(value)) throw new IllegalArgumentException("Only FOO is accepted");
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

@@ -52,31 +52,31 @@ public class JMXTest extends TestCase {
             ObjectName objectName = ObjectName.getInstance(":type=JMXService");
             assertTrue(mbeanServer.isRegistered(objectName));
 
-            assertEquals("BAR", mbeanServer.getAttribute(objectName, "foo"));
+            assertEquals("BAR", mbeanServer.getAttribute(objectName, "readOnly"));
             try {
-                mbeanServer.setAttribute(objectName, new Attribute("foo", "CDR"));
+                mbeanServer.setAttribute(objectName, new Attribute("readOnly", "CDR"));
                 fail("Should have thrown an AttributeNotFoundException");
             } catch (AttributeNotFoundException doNothing) {
             }
 
             // iniital value should have been set by spring
-            assertEquals(new Integer(32), mbeanServer.getAttribute(objectName, "attr1"));
-            mbeanServer.setAttribute(objectName, new Attribute("attr1", new Integer(5)));
-            assertEquals(new Integer(5), mbeanServer.getAttribute(objectName, "attr1"));
+            assertEquals(new Integer(32), mbeanServer.getAttribute(objectName, "intAttr"));
+            mbeanServer.setAttribute(objectName, new Attribute("intAttr", new Integer(5)));
+            assertEquals(new Integer(5), mbeanServer.getAttribute(objectName, "intAttr"));
 
             // iniital value should have been set by spring
-            assertEquals(new Integer(64), mbeanServer.getAttribute(objectName, "attr2"));
-            mbeanServer.setAttribute(objectName, new Attribute("attr2", new Integer(7)));
-            assertEquals(new Integer(7), mbeanServer.getAttribute(objectName, "attr2"));
+            assertEquals(new Integer(64), mbeanServer.getAttribute(objectName, "integerAttr"));
+            mbeanServer.setAttribute(objectName, new Attribute("integerAttr", new Integer(7)));
+            assertEquals(new Integer(7), mbeanServer.getAttribute(objectName, "integerAttr"));
 
-            mbeanServer.setAttribute(objectName, new Attribute("dog", Boolean.FALSE));
-            assertEquals(Boolean.FALSE, mbeanServer.getAttribute(objectName, "dog"));
-            mbeanServer.setAttribute(objectName, new Attribute("dog", Boolean.TRUE));
-            assertEquals(Boolean.TRUE, mbeanServer.getAttribute(objectName, "dog"));
+            mbeanServer.setAttribute(objectName, new Attribute("booleanAttr", Boolean.FALSE));
+            assertEquals(Boolean.FALSE, mbeanServer.getAttribute(objectName, "booleanAttr"));
+            mbeanServer.setAttribute(objectName, new Attribute("booleanAttr", Boolean.TRUE));
+            assertEquals(Boolean.TRUE, mbeanServer.getAttribute(objectName, "booleanAttr"));
 
-            mbeanServer.setAttribute(objectName, new Attribute("bar", "FOO"));
+            mbeanServer.setAttribute(objectName, new Attribute("writeOnly", "FOO"));
             try {
-                mbeanServer.getAttribute(objectName, "bar");
+                mbeanServer.getAttribute(objectName, "writeOnly");
                 fail("Should have thrown an AttributeNotFoundException");
             } catch (AttributeNotFoundException doNothing) {
             }
