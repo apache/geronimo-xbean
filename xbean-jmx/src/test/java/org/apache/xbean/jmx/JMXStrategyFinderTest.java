@@ -25,9 +25,7 @@ import junit.framework.TestCase;
 public class JMXStrategyFinderTest extends TestCase {
 
     public void testJavaBean() throws Exception {
-        JMXStrategyFinder finder = new JMXStrategyFinder("META-INF/org.apache.xbean.jmx.StrategyFinder/");
-
-        JMXWrappingStrategy strategy = finder.newInstance("javabean");
+        JMXWrappingStrategy strategy = JMXStrategyFinder.newInstance("javabean");
         assertNotNull(strategy);
     }
 }

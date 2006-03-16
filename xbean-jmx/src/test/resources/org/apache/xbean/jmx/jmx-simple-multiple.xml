@@ -10,9 +10,9 @@
 
     <jmx:export id="jmxExporter" mbeanserver="#mbeanServer">
         <jmx:mbeans>
-            <jmx:mbean bean="#jmxService1" objectname=":type=JMXService1,id=1"/>
-            <jmx:mbean bean="#jmxService1" objectname=":type=JMXService1,id=2"/>
-            <jmx:mbean bean="#jmxService2" objectname=":type=JMXService2,id=1"/>
+            <jmx:mbean bean="#jmxService1" objectname=":type=JMXService1,id=1" wrapStrategy="javabean"/>
+            <jmx:mbean bean="#jmxService1" objectname=":type=JMXService1,id=2" wrapStrategy="javabean"/>
+            <jmx:mbean bean="#jmxService2" objectname=":type=JMXService2,id=1" wrapStrategy="javabean"/>
         </jmx:mbeans>
     </jmx:export>
 

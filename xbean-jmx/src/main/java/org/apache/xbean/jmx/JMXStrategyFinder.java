@@ -29,12 +29,8 @@ import java.util.WeakHashMap;
 public class JMXStrategyFinder {
 
     private final static String PROPERTY_NAME = "org.apache.xbean.jmx.WrapperStrategyClass";
-    private final String path;
-    private final WeakHashMap classCache = new WeakHashMap();
-
-    public JMXStrategyFinder(String path) {
-        this.path = path;
-    }
+    private final static String PATH = "META-INF/org.apache.xbean.jmx.StrategyFinder/";
+    private final static WeakHashMap classCache = new WeakHashMap();
 
     /**
      * Creates a new instance of the given key
@@ -43,7 +39,10 @@ public class JMXStrategyFinder {
      *            containing the factory name
      * @return a newly created instance
      */
-    public JMXWrappingStrategy newInstance(String key) throws JMXServiceException {
+    public static JMXWrappingStrategy newInstance(String key) throws JMXServiceException {
+
+        if (key == null) key = "xbean.default";
+
         JMXWrappingStrategy result = null;
         try {
             synchronized (classCache) {
@@ -70,7 +69,7 @@ public class JMXStrategyFinder {
         return result;
     }
 
-    private Class loadClass(Properties properties) throws ClassNotFoundException, IOException {
+    private static Class loadClass(Properties properties) throws ClassNotFoundException, IOException {
 
         String className = properties.getProperty(PROPERTY_NAME);
         if (className == null) {
@@ -84,8 +83,8 @@ public class JMXStrategyFinder {
         }
     }
 
-    private Properties doFindServiceWrapperProperies(String key) throws IOException {
-        String uri = path + key;
+    private static Properties doFindServiceWrapperProperies(String key) throws IOException {
+        String uri = PATH + key;
 
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
         if (in == null) {

@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.jmx;
 
-import org.apache.xbean.jmx.config.JMXServiceConfig;
+import java.util.Properties;
 
 
 /**
@@ -28,11 +28,11 @@ public interface JMXWrappingStrategy {
      * @param service
      * @param config
      */
-    public Object wrapService(Object service, JMXServiceConfig config) throws JMXServiceException;
+    public Object wrapObject(Object service, Properties config) throws JMXServiceException;
 
     /**
      * @param service
      * @param config
      */
-    public void unwrapService(Object service, JMXServiceConfig config);
+    public void unwrapObject(Object service, Properties config);
 }

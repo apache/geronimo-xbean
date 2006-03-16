@@ -16,15 +16,16 @@
  */
 package org.apache.xbean.jmx;
 
+import javax.management.Attribute;
+import javax.management.AttributeNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.management.AttributeNotFoundException;
-import javax.management.Attribute;
 
 import junit.framework.TestCase;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.BeanCreationException;
 
 
 /**
@@ -113,8 +114,35 @@ public class JMXTest extends TestCase {
         }
     }
 
-    public void testCustomAssembler() throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("org/apache/xbean/jmx/jmx-custom-assembler.xml");
+    public void testDuplicate() {
+        try {
+            new ClassPathXmlApplicationContext("org/apache/xbean/jmx/jmx-duplicate.xml");
+            fail("Should have thrown an IllegalStateException");
+        } catch (BeanCreationException bce) {
+            assertTrue(bce.getCause().getClass().equals(IllegalStateException.class));
+        }
+    }
+
+    public void testCustomDuplicate() {
+        try {
+            new ClassPathXmlApplicationContext("org/apache/xbean/jmx/jmx-custom-duplicate.xml");
+            fail("Should have thrown an IllegalStateException");
+        } catch (BeanCreationException bce) {
+            assertTrue(bce.getCause().getClass().equals(IllegalStateException.class));
+        }
+    }
+
+    public void testDuplicateWrapper() {
+        try {
+            new ClassPathXmlApplicationContext("org/apache/xbean/jmx/jmx-duplicate-wrapper.xml");
+            fail("Should have thrown an IllegalStateException");
+        } catch (BeanCreationException bce) {
+            assertTrue(bce.getCause().getClass().equals(IllegalStateException.class));
+        }
+    }
+
+    public void testCustomWrapper() throws Exception {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("org/apache/xbean/jmx/jmx-custom-wrapper.xml");
         try {
             Object jmxService = context.getBean("jmxService");
             assertNotNull(jmxService);
@@ -128,7 +156,7 @@ public class JMXTest extends TestCase {
             ObjectName objectName = ObjectName.getInstance(":type=JMXService");
             assertTrue(mbeanServer.isRegistered(objectName));
             javax.management.MBeanInfo mbeanInfo = mbeanServer.getMBeanInfo(objectName);
-            assertEquals("dummy", mbeanInfo.getDescription());
+            assertEquals("Dummy Description", mbeanInfo.getDescription());
         }
         finally {
             context.destroy();
@@ -179,7 +207,7 @@ public class JMXTest extends TestCase {
 
             MBeanServer mbeanServer = jmxExporter.getMbeanServer();
             assertNotNull(mbeanServer);
-            
+
             ObjectName objectName = ObjectName.getInstance(":type=JMXService");
             assertTrue(mbeanServer.isRegistered(objectName));
 
