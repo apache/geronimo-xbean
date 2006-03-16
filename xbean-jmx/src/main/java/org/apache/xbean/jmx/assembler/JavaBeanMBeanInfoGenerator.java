@@ -6,8 +6,8 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ObjectName;
 
-import org.livetribe.jmx.MBeanUtils;
 import org.apache.xbean.jmx.MBeanInfoGenerator;
+import org.livetribe.jmx.MBeanUtils;
 
 
 /**

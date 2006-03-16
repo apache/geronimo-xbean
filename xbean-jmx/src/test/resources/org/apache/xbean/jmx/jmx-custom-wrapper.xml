@@ -8,9 +8,16 @@
     </bean>
 
     <jmx:export id="jmxExporter" mbeanserver="#mbeanServer">
-        <jmx:mbeaninfos>
-            <jmx:beanPairing beanClass="org.apache.xbean.jmx.JMXService" generatorClass="org.apache.xbean.jmx.DummyMBeanInfoGenerator"/>
-        </jmx:mbeaninfos>
+        <jmx:wrapStrategies>
+            <jmx:wrap beanClass="org.apache.xbean.jmx.JMXService" strategy="dummy">
+                <property name="config">
+                    <value>
+                        description=Dummy Description
+                    </value >
+                </property>
+             </jmx:wrap>
+        </jmx:wrapStrategies>
+
         <jmx:mbeans>
             <jmx:mbean bean="#jmxService" objectname=":type=JMXService"/>
         </jmx:mbeans>

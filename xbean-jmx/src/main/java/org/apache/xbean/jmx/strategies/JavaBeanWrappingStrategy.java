@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005-2006 The Apache Software Foundation or its licensors, as applicable.
+ * Copyright 2006 The Apache Software Foundation or its licensors, as applicable.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,18 @@
  */
 package org.apache.xbean.jmx.strategies;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanConstructorInfo;
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
+
 import org.apache.xbean.jmx.JMXException;
 import org.apache.xbean.jmx.JMXWrappingStrategy;
-import org.apache.xbean.jmx.config.JMXServiceConfig;
+import org.livetribe.jmx.DynamicMBeanAdapter;
+import org.livetribe.jmx.MBeanUtils;
 
 
 /**
@@ -26,11 +35,25 @@ import org.apache.xbean.jmx.config.JMXServiceConfig;
  */
 public class JavaBeanWrappingStrategy implements JMXWrappingStrategy {
 
-    public Object wrapService(Object service, JMXServiceConfig config) throws JMXException {
-        return null;  //TODO: change body of implemented methods use File | Settings | File Templates.
+    public final static String MBEAN_DESCRIPTION = "description";
+    public final static List mbeanInfos = new ArrayList();
+
+    public static List getMbeanInfos() {
+        return mbeanInfos;
     }
 
-    public void unwrapService(Object service, JMXServiceConfig config) {
-        //TODO: change body of implemented methods use File | Settings | File Templates.
+    public Object wrapObject(Object service, Properties config) throws JMXException {
+        return new DynamicMBeanAdapter(service, createMBeanInfo(service, config));
+    }
+
+    public void unwrapObject(Object service, Properties config) {
+    }
+
+    private MBeanInfo createMBeanInfo(Object service, Properties config) {
+        MBeanAttributeInfo[] attributes = MBeanUtils.getMBeanAttributeInfo(service);
+        MBeanConstructorInfo[] constructors = MBeanUtils.getMBeanConstructorInfo(service);
+        MBeanOperationInfo[] operations = MBeanUtils.getMBeanOperationInfo(service);
+
+        return new MBeanInfo(service.getClass().getName(), (String) config.get(MBEAN_DESCRIPTION), attributes, constructors, operations, null);
     }
 }

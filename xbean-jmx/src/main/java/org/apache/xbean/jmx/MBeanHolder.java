@@ -33,6 +33,7 @@ import org.livetribe.jmx.DynamicMBeanAdapter;
 public class MBeanHolder {
     private Object bean;
     private String objectName;
+    private String wrapStrategy;
     private Class mbeanClass;
     private List eventAdapters;
 
@@ -53,6 +54,14 @@ public class MBeanHolder {
 
     private String getObjectName() {
         return objectName;
+    }
+
+    public String getWrapStrategy() {
+        return wrapStrategy;
+    }
+
+    public void setWrapStrategy(String wrapStrategy) {
+        this.wrapStrategy = wrapStrategy;
     }
 
     public void setMbeanClass(Class mbeanClass) {

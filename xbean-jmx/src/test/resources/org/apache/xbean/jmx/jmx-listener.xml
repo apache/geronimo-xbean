@@ -9,7 +9,7 @@
 
     <jmx:export id="jmxExporter" mbeanserver="#mbeanServer">
         <jmx:mbeans>
-            <jmx:mbean bean="#jmxService" objectname=":type=JMXService">
+            <jmx:mbean bean="#jmxService" objectname=":type=JMXService" wrapStrategy="javabean">
                 <jmx:listeners>
                     <jmx:listen bean="#jmxService" listener="java.beans.PropertyChangeListener"/>
                 </jmx:listeners>

@@ -4,7 +4,7 @@
     <bean id="jmxService" class="org.apache.xbean.jmx.JMXService"/>
 
     <jmx:export><!-- mbeanserver=""> -->
-        <jmx:mbean bean="#jmxService"><!-- objectname="" mbean=""> -->
+        <jmx:mbean bean="#jmxService" wrapStrategy="javabean"><!-- objectname="" mbean=""> -->
             <jmx:listen source="#jmxService"
                         add-method="addPropertyChangeListener"
                         remove-method="removePropertyChangeListener"

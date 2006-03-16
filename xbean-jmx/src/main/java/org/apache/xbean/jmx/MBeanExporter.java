@@ -20,14 +20,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
-import javax.management.MBeanInfo;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-
-import org.apache.xbean.jmx.assembler.JavaBeanMBeanInfoGenerator;
 
 
 /**
@@ -38,10 +36,11 @@ import org.apache.xbean.jmx.assembler.JavaBeanMBeanInfoGenerator;
  */
 public class MBeanExporter {
     private MBeanServer mbeanServer;
-    private List mbeanInfos;
+    private List wrapStrategies;
     private List mbeans;
     private List connectors;
     private Map registeredMBeans = new HashMap();
+    private Map configuredClasses = new HashMap();
 
     /**
      * @org.apache.xbean.Property alias="mbeanserver"
@@ -55,14 +54,14 @@ public class MBeanExporter {
     }
 
     /**
-     * @org.apache.xbean.Property alias="mbeaninfos"
+     * @org.apache.xbean.Property alias="wrapStrategies"
      */
-    public void setMbeanInfos(List mbeanInfos) {
-        this.mbeanInfos = mbeanInfos;
+    public void setWrapStrategies(List wrapStrategies) {
+        this.wrapStrategies = wrapStrategies;
     }
 
-    public List getMbeanInfos() {
-        return mbeanInfos;
+    public List getWrapStrategies() {
+        return wrapStrategies;
     }
 
     /**
@@ -88,22 +87,43 @@ public class MBeanExporter {
      * @org.apache.xbean.InitMethod
      */
     public void start() {
+
+        List strategies = getWrapStrategies();
+
+        if (strategies != null) {
+            for (int i = 0; i < strategies.size(); i++) {
+                MBeanWrap wrap = (MBeanWrap) strategies.get(i);
+
+                if (configuredClasses.containsKey(wrap.getBeanClass()))
+                    throw new IllegalStateException(wrap.getBeanClass() + "configured multiple times in <wrapStrategies/>");
+
+                if (wrap.getConfig() == null) wrap.setConfig(new Properties());
+
+                configuredClasses.put(wrap.getBeanClass(), wrap);
+            }
+        }
+
         try {
             MBeanServer server = findMBeanServer();
             List mbeanElements = getMbeans();
             for (int i = 0; i < mbeanElements.size(); i++) {
                 MBeanHolder mbean = (MBeanHolder) mbeanElements.get(i);
+                MBeanWrap wrap = getWrapConfig(mbean);
 
                 ObjectName objectName = mbean.createObjectName();
-                MBeanInfo metadata = createMBeanInfo(mbean, objectName);
-                Object mbeanAdapter = mbean.createMBeanAdapter(metadata, objectName);
+                JMXWrappingStrategy strategy = JMXStrategyFinder.newInstance(wrap.getStrategy());
+                Object mbeanAdapter = strategy.wrapObject(mbean.getBean(), wrap.getConfig());
+
                 server.registerMBean(mbeanAdapter, objectName);
+
                 mbean.bindListeners(mbeanAdapter);
+
                 registeredMBeans.put(objectName, mbean);
             }
-        }
-        catch (JMException x) {
+        } catch (JMException x) {
             throw new JMXException(x);
+        } catch (JMXServiceException e) {
+            throw new JMXException(e);
         }
     }
 
@@ -134,23 +154,26 @@ public class MBeanExporter {
         throw new JMXException("Cannot find MBeanServer");
     }
 
-    private MBeanInfo createMBeanInfo(MBeanHolder mbean, ObjectName objectName) {
-        MBeanInfo metadata = null;
-        Class beanClass = mbean.getBean().getClass();
-        List infos = getMbeanInfos();
-        if (infos != null) {
-            while (metadata == null && beanClass != Object.class) {
-                for (int j = 0; j < infos.size(); j++) {
-                    BeanPairing beanPairing = (BeanPairing) infos.get(j);
-                    if (beanPairing.getBeanClass().isAssignableFrom(beanClass)) {
-                        metadata = beanPairing.createMBeanInfo(mbean.getBean(), objectName);
-                        return metadata;
-                    }
-                }
-                beanClass = beanClass.getSuperclass();
-            }
+    protected MBeanWrap getWrapConfig(MBeanHolder mbean) {
+        MBeanWrap result;
+
+        String className = mbean.getBean().getClass().getName();
+        String strategyName = mbean.getWrapStrategy();
+
+        result = (MBeanWrap) configuredClasses.get(className);
+        if (result != null) {
+            if (strategyName != null && !result.getStrategy().equals(strategyName))
+                throw new IllegalStateException(className + "configured with " + strategyName + " and " + result.getStrategy());
+        } else {
+            result = new MBeanWrap();
+
+            result.setBeanClass(className);
+            result.setStrategy(strategyName);
+            result.setConfig(new Properties());
+
+            configuredClasses.put(className, result);
         }
-        // No specialized assembler found, use a default one
-        return new JavaBeanMBeanInfoGenerator().createMBeanInfo(mbean.getBean(), objectName);
+
+        return result;
     }
 }

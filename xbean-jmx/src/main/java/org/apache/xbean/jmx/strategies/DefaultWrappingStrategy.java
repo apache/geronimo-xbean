@@ -14,31 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.jmx.config;
+package org.apache.xbean.jmx.strategies;
 
-import javax.management.ObjectName;
+import java.util.Properties;
+
+import org.apache.xbean.jmx.JMXException;
+import org.apache.xbean.jmx.JMXWrappingStrategy;
 
 
 /**
  * @version $Revision: $ $Date: $
  */
-public class JMXServiceConfig {
-    private String strategy;
-    private ObjectName objectName;
+public class DefaultWrappingStrategy implements JMXWrappingStrategy {
 
-    public String getStrategy() {
-        return strategy;
+    public Object wrapObject(Object service, Properties config) throws JMXException {
+        return service;
     }
 
-    public void setStrategy(String strategy) {
-        this.strategy = strategy;
-    }
-
-    public ObjectName getObjectName() {
-        return objectName;
-    }
-
-    public void setObjectName(ObjectName objectName) {
-        this.objectName = objectName;
+    public void unwrapObject(Object service, Properties config) {
     }
 }
