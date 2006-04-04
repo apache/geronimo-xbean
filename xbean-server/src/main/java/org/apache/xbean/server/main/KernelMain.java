@@ -195,6 +195,12 @@ public class KernelMain implements Main {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
     }
+    
+    public void destroy() {
+        if( kernel!=null ) {
+            kernel.destroy();
+        }
+    }
 
     private static class DestroyKernelThread extends Thread {
         private final Kernel kernel;
@@ -208,4 +214,5 @@ public class KernelMain implements Main {
             kernel.destroy();
         }
     }
+    
 }
