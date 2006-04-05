@@ -83,7 +83,7 @@ public class SpringConfigurationServiceFactory extends AbstractServiceFactory {
      * @return true
      */
     public boolean isRestartable() {
-        return true;
+        return false;
     }
 
     /**
@@ -127,6 +127,7 @@ public class SpringConfigurationServiceFactory extends AbstractServiceFactory {
             springConfiguration.destroy();
             springConfiguration = null;
         }
+        applicationContext.close();
     }
 
     private static class ConfigurationStopCondition implements ServiceCondition {

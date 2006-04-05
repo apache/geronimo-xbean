@@ -47,7 +47,7 @@ public class SpringConfiguration {
      * Creates a SpringConfiguration that registers and unregisters services that have been defined in a Spring ApplicationContext.
      * @param applicationContext the application context from which services are registered
      * @param kernel the kernel in which services are registered and unregistered
-     * @throws Exception if a problem occurs while registering the services fromt he application context
+     * @throws Exception if a problem occurs while registering the services from the application context
      */
     public SpringConfiguration(SpringApplicationContext applicationContext, Kernel kernel) throws Exception {
         this.applicationContext = applicationContext;
