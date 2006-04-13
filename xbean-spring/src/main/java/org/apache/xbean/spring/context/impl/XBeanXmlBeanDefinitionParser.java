@@ -24,6 +24,7 @@ import java.beans.PropertyDescriptor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -35,6 +36,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -266,8 +268,29 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected void addProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
             String localName, String value) {
         String propertyName = metadata.getPropertyName(getLocalName(element), localName);
-        if (propertyName != null)
-            definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, getValue(value));
+        if (propertyName != null) {
+            try {
+                addPropertyValueMethod.invoke(definition.getBeanDefinition().getPropertyValues(),
+                                              new Object[] { propertyName, getValue(value) });
+            } catch (Exception e) {
+                throw new RuntimeException("Error adding property definition", e);
+            }
+        }
+    }
+    
+    // Fix Spring 1.2.6 to 1.2.7 binary incompatibility.
+    // The addPropertyValueMethod has changed to return a
+    // value instead of void.
+    // So use reflectiom to handle both cases.
+    private static final Method addPropertyValueMethod;
+    static {
+        try {
+            addPropertyValueMethod = MutablePropertyValues.class.getMethod(
+                        "addPropertyValue",
+                        new Class[] { String.class, Object.class });
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to find MutablePropertyValues:addPropertyValue", e);
+        }
     }
 
     protected Object getValue(String value) {
