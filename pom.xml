@@ -98,9 +98,9 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:svn:https://svn.codehaus.org/xbean/trunk/</connection>
-    <developerConnection>scm:svn:https://${maven.username}@svn.codehaus.org/xbean/trunk/</developerConnection>
-    <url>https://svn.codehaus.org/xbean/trunk/</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk/</connection>
+    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
+    <url>http://svn.apache.org/repos/asf/geronimo/xbean/trunk/</url>
   </scm>
   <organization>
     <name>XBean</name>
