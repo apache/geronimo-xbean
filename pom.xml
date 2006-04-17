@@ -154,6 +154,7 @@
     <module>xbean-telnet</module>
     <module>xbean-tiger</module>
   </modules>
+<!--
   <repositories>
     <repository>
       <snapshots />
@@ -184,6 +185,7 @@
       <url>http://snapshots.maven.codehaus.org/maven2</url>
     </pluginRepository>
   </pluginRepositories>
+-->
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
