@@ -142,9 +142,12 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 declareLifecycleMethods(definition, metadata, element);
                 namedConstructorArgs.processParameters(definition, metadata);
                 return definition;
+            } else {
+                throw new BeanDefinitionStoreException("Unrecognized xbean element mapping: " + localName + " in namespace " + uri);
             }
+        } else {
+            throw new BeanDefinitionStoreException("Unrecognized xbean namespace mapping: " + uri);
         }
-        return null;
     }
 
     protected void addSpringAttributeValues(String className, Element element) {
@@ -734,7 +737,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String uri = element.getNamespaceURI();
         String localName = getLocalName(element);
 
-        if (!isEmpty(uri) || !reservedElementNames.contains(localName)) {
+        if ((!isEmpty(uri) && !(uri.equals(SPRING_SCHEMA) || uri.equals(SPRING_SCHEMA_COMPAT)))
+                || !reservedElementNames.contains(localName)) {
             Object answer = parseBeanFromExtensionElement(element);
             if (answer != null) {
                 return answer;
