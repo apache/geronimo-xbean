@@ -37,6 +37,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -121,6 +123,39 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     /**
      * Parses the non-standard XML element as a Spring bean definition
      */
+    protected BeanDefinitionHolder parseBeanFromExtensionElement(Element element, String parentClass, String property) {
+        String uri = element.getNamespaceURI();
+        String localName = getLocalName(element);
+
+        MappingMetaData metadata = findNamespaceProperties(uri, localName);
+        if (metadata != null) {
+            // lets see if we configured the localName to a bean class
+            String className = getPropertyDescriptor(parentClass, property).getPropertyType().getName();
+            if (className != null) {
+                return parseBeanFromExtensionElement(element, metadata, className);
+            }
+        }
+        return null;
+    }
+
+    private BeanDefinitionHolder parseBeanFromExtensionElement(Element element, MappingMetaData metadata, String className) {
+        Element original = cloneElement(element);
+        // lets assume the class name == the package name plus the
+        element.setAttributeNS(null, "class", className);
+        addSpringAttributeValues(className, element);
+        BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
+        addAttributeProperties(definition, metadata, className, original);
+        addContentProperty(definition, metadata, element);
+        addNestedPropertyElements(definition, metadata, className, element);
+        coerceNamespaceAwarePropertyValues(definition, element);
+        declareLifecycleMethods(definition, metadata, element);
+        namedConstructorArgs.processParameters(definition, metadata);
+        return definition;
+    }
+    
+    /**
+     * Parses the non-standard XML element as a Spring bean definition
+     */
     protected BeanDefinitionHolder parseBeanFromExtensionElement(Element element) {
         String uri = element.getNamespaceURI();
         String localName = getLocalName(element);
@@ -130,18 +165,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             // lets see if we configured the localName to a bean class
             String className = metadata.getClassName(localName);
             if (className != null) {
-                Element original = cloneElement(element);
-                // lets assume the class name == the package name plus the
-                element.setAttributeNS(null, "class", className);
-                addSpringAttributeValues(className, element);
-                BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
-                addAttributeProperties(definition, metadata, className, original);
-                addContentProperty(definition, metadata, element);
-                addNestedPropertyElements(definition, metadata, className, element);
-                coerceNamespaceAwarePropertyValues(definition, element);
-                declareLifecycleMethods(definition, metadata, element);
-                namedConstructorArgs.processParameters(definition, metadata);
-                return definition;
+                return parseBeanFromExtensionElement(element, metadata, className);
             } else {
                 throw new BeanDefinitionStoreException("Unrecognized xbean element mapping: " + localName + " in namespace " + uri);
             }
@@ -333,6 +357,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected void addNestedPropertyElements(BeanDefinitionHolder definition, MappingMetaData metadata,
             String className, Element element) {
         NodeList nl = element.getChildNodes();
+
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
             if (node instanceof Element) {
@@ -356,12 +381,33 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                         value = parseListElement(childElement, propertyName);
                     }
                     else {
-                        propertyName = metadata.getNestedProperty(getLocalName(element), localName);
+                        propertyName = metadata.getFlatCollectionProperty(getLocalName(element), localName);
                         if (propertyName != null) {
-                            // lets find the first child bean that parses fine
-                            value = parseChildExtensionBean(childElement);
+                            Object def = parseBeanFromExtensionElement(childElement);
+                            PropertyValue pv = definition.getBeanDefinition().getPropertyValues().getPropertyValue(propertyName);
+                            if (pv != null) {
+                                Collection l = (Collection) pv.getValue();
+                                l.add(def);
+                                continue;
+                            } else {
+                                ManagedList l = new ManagedList();
+                                l.add(def);
+                                value = l;
+                            }
+                        } else {
+                            propertyName = metadata.getNestedProperty(getLocalName(element), localName);
+                            if (propertyName != null) {
+                                // lets find the first child bean that parses fine
+                                value = parseChildExtensionBean(childElement);
+                            }
                         }
                     }
+                    
+                    if (propertyName == null && metadata.isFlatProperty(getLocalName(element), localName)) {
+                       value = parseBeanFromExtensionElement(childElement, className, localName);
+                       propertyName = localName;
+                    }
+                    
                     if (propertyName == null) {
                         value = tryParseNestedPropertyViaIntrospection(metadata, className, childElement);
                         propertyName = localName;

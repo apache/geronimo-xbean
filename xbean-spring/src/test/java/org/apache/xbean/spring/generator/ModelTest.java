@@ -16,15 +16,16 @@
  */
 package org.apache.xbean.spring.generator;
 
-import junit.framework.TestCase;
-
-import java.io.File;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Arrays;
 import java.beans.PropertyEditorManager;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import junit.framework.TestCase;
 
 /**
  * @author Dain Sundstrom
@@ -65,6 +66,13 @@ public class ModelTest extends TestCase {
         assertNotNull(beerId);
         AttributeMapping beerName = beer.getAttribute("name");
         assertNotNull(beerName);
+        
+        ElementMapping recipeService = defaultNamespace.getElement("recipe-service");
+        assertNotNull(recipeService);
+        
+        Map flatCollections = recipeService.getFlatCollections();
+        assertNotNull(flatCollections);
+        assertEquals(1, flatCollections.size());
     }
 
     public void testPropertyEditor() {

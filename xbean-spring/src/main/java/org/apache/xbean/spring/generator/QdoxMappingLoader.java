@@ -16,17 +16,6 @@
  */
 package org.apache.xbean.spring.generator;
 
-import com.thoughtworks.qdox.JavaDocBuilder;
-import com.thoughtworks.qdox.model.BeanProperty;
-import com.thoughtworks.qdox.model.DocletTag;
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaMethod;
-import com.thoughtworks.qdox.model.JavaParameter;
-import com.thoughtworks.qdox.model.JavaSource;
-import com.thoughtworks.qdox.model.Type;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,6 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.thoughtworks.qdox.JavaDocBuilder;
+import com.thoughtworks.qdox.model.BeanProperty;
+import com.thoughtworks.qdox.model.DocletTag;
+import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaMethod;
+import com.thoughtworks.qdox.model.JavaParameter;
+import com.thoughtworks.qdox.model.JavaSource;
+import com.thoughtworks.qdox.model.Type;
 
 /**
  * @author Dain Sundstrom
@@ -51,6 +52,9 @@ public class QdoxMappingLoader implements MappingLoader {
     public static final String DESTROY_METHOD_ANNOTATION = "org.apache.xbean.DestroyMethod";
     public static final String FACTORY_METHOD_ANNOTATION = "org.apache.xbean.FactoryMethod";
     public static final String MAP_ANNOTATION = "org.apache.xbean.Map";
+    public static final String FLAT_PROPERTY_ANNOTATION = "org.apache.xbean.Flat";
+    public static final String FLAT_COLLECTION_ANNOTATION = "org.apache.xbean.FlatCollection";
+    public static final String ELEMENT_ANNOTATION = "org.apache.xbean.Element";
     
     private static final Log log = LogFactory.getLog(QdoxMappingLoader.class);
     private final String defaultNamespace;
@@ -162,6 +166,8 @@ public class QdoxMappingLoader implements MappingLoader {
         String contentProperty = getProperty(xbeanTag, "contentProperty");
 
         Map mapsByPropertyName = new HashMap();
+        List flatProperties = new ArrayList();
+        Map flatCollections = new HashMap();
         Set attributes = new HashSet();
         Map attributesByPropertyName = new HashMap();
         BeanProperty[] beanProperties = javaClass.getBeanProperties();
@@ -182,6 +188,19 @@ public class QdoxMappingLoader implements MappingLoader {
                         MapMapping mm = new MapMapping(mapTag.getNamedParameter("entryName"), 
                                 mapTag.getNamedParameter("keyName"));
                         mapsByPropertyName.put(beanProperty.getName(), mm);
+                    }
+                    
+                    DocletTag flatColTag = acc.getTagByName(FLAT_COLLECTION_ANNOTATION);
+                    if (flatColTag != null) {
+                        String childName = flatColTag.getNamedParameter("childElement");
+                        if (childName == null)
+                            throw new InvalidModelException("Flat collections must specify the childElement attribute.");
+                        flatCollections.put(beanProperty.getName(), childName);
+                    }
+                    
+                    DocletTag flatPropTag = acc.getTagByName(FLAT_PROPERTY_ANNOTATION);
+                    if (flatPropTag != null) {
+                        flatProperties.add(beanProperty.getName());
                     }
                 }
             }
@@ -246,7 +265,9 @@ public class QdoxMappingLoader implements MappingLoader {
                 contentProperty,
                 attributes,
                 constructorArgs,
-                mapsByPropertyName);
+                flatProperties,
+                mapsByPropertyName,
+                flatCollections);
     }
 
     private String getElementName(JavaClass javaClass, DocletTag tag) {

@@ -95,12 +95,24 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             out.println(element.getElementName() + ".factoryMethod = " + factoryMethod);
         }
         
+        List flatProperties = element.getFlatProperties();
+        for (Iterator itr = flatProperties.iterator(); itr.hasNext();) {
+            out.println(element.getElementName() + "." + itr.next() + ".flat");
+        }
+
         Map maps = element.getMapMappings();
         for (Iterator itr = maps.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
             MapMapping mm = (MapMapping) entry.getValue();
             out.println(element.getElementName() + "." + entry.getKey() + ".map.entryName = " + mm.getEntryName());
             out.println(element.getElementName() + "." + entry.getKey() + ".map.keyName = " + mm.getKeyName());
+        }
+        
+        Map flatCollections = element.getFlatCollections();
+        for (Iterator itr = flatCollections.entrySet().iterator(); itr.hasNext();) {
+            Map.Entry entry = (Map.Entry) itr.next();
+            String child = (String) entry.getValue();
+            out.println(element.getElementName() + "." + child + ".flatCollection = " + entry.getKey());
         }
     }
 
