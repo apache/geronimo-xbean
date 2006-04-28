@@ -68,7 +68,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
         ClassLoader classLoader;
         NodeList classpathElements = document.getDocumentElement().getElementsByTagName("classpath");
         if (classpathElements.getLength() < 1) {
-            classLoader = getClass().getClassLoader();
+            classLoader = getClassLoader(applicationContext);
         } else if (classpathElements.getLength() > 1) {
             throw new FatalBeanException("Expected only classpath element but found " + classpathElements.getLength());
         } else {
