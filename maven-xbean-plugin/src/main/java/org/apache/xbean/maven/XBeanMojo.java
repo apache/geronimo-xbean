@@ -19,7 +19,6 @@ package org.apache.xbean.maven;
 
 import java.beans.PropertyEditorManager;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -28,9 +27,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.BuildException;
 import org.apache.xbean.spring.generator.DocumentationGenerator;
 import org.apache.xbean.spring.generator.GeneratorPlugin;
@@ -46,11 +47,16 @@ import org.apache.xbean.spring.generator.XsdGenerator;
  * @version $Id: GenerateApplicationXmlMojo.java 314956 2005-10-12 16:27:15Z brett $
  * @goal mapping
  * @description Creates xbean mapping file
- * @phase process-classes
- * @requiresDependencyResolution runtime
+ * @phase generate-sources
  */
 public class XBeanMojo extends AbstractMojo implements LogFacade {
 
+    /**
+     * @parameter expression="${project}"
+     * @required
+     */
+    private MavenProject project;
+    
 	/**
      * @parameter
      * @required
@@ -64,16 +70,15 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
     private File srcDir;
     
     /**
-     * @parameter expression="${basedir}/target/classes/schema.xsd"
+     * @parameter expression="${basedir}/target/xbean/"
      * @required
      */
-    private File destFile;
+    private File outputDir;
     
     /**
-     * @parameter expression="${basedir}/target/classes/"
-     * @required
+     * @parameter
      */
-    private File metaInfDir;
+    private File schema;
     
     /**
      * @parameter expression="org.apache.xbean.spring.context.impl"
@@ -85,10 +90,14 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         getLog().debug( " ======= XBeanMojo settings =======" );
         getLog().debug( "namespace[" + namespace + "]" );
         getLog().debug( "srcDir[" + srcDir + "]" );
-        getLog().debug( "destFile[" + destFile + "]" );
-        getLog().debug( "metaInfDir[" + metaInfDir + "]" );
+        getLog().debug( "schema[" + schema + "]" );
+        getLog().debug( "outputDir[" + outputDir + "]" );
         getLog().debug( "propertyEditorPaths[" + propertyEditorPaths + "]" );
 
+        if (schema == null) {
+            schema = new File(outputDir, project.getArtifactId() + ".xsd");
+        }
+        
         if (propertyEditorPaths != null) {
             List editorSearchPath = new LinkedList(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
             StringTokenizer paths = new StringTokenizer(propertyEditorPaths, " ,");
@@ -99,13 +108,13 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         try {
-        	destFile.getParentFile().mkdirs();
+        	schema.getParentFile().mkdirs();
         	
             MappingLoader mappingLoader = new QdoxMappingLoader(namespace, new File[] { srcDir });
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(this, metaInfDir.getAbsolutePath()),
-                new DocumentationGenerator(this, destFile),
-                new XsdGenerator(this, destFile)
+                new XmlMetadataGenerator(this, outputDir.getAbsolutePath()),
+                new DocumentationGenerator(this, schema),
+                new XsdGenerator(this, schema)
             };
 
             // load the mappings
@@ -122,6 +131,10 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                     plugin.generate(namespaceMapping);
                 }
             }
+            
+            Resource res = new Resource();
+            res.setDirectory(outputDir.toString());
+            project.addResource(res);
 
             log("...done.");
         } catch (Exception e) {
@@ -130,26 +143,6 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             Thread.currentThread().setContextClassLoader(oldCL);
         }
 	}
-
-    private File[] getFiles(File path) {
-        if (path == null) {
-            return null;
-        }
-        ArrayList files = new ArrayList();
-        recursiveList(path, files);
-        return (File[]) files.toArray(new File[files.size()]);
-    }
-    
-    private void recursiveList(File path, List files) {
-    	File[] children = path.listFiles();
-    	for (int i = 0; i < children.length; i++) {
-			if (children[i].isFile()) {
-				files.add(children[i]);
-			} else if (children[i].isDirectory()) {
-				recursiveList(children[i], files);
-			}
-		}
-    }
 
 	public void log(String message) {
 		getLog().info(message);

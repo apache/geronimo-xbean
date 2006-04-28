@@ -27,6 +27,22 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>maven-xbean-plugin</artifactId>
+        <version>${pom.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>mapping</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <namespace>http://xbean.apache.org/schemas/tiger</namespace>
+        </configuration>
+      </plugin>
+      <!--
+      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
@@ -51,6 +67,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
     </plugins>
   </build>
   <dependencies>
