@@ -153,6 +153,7 @@
     <module>xbean-spring</module>
     <module>xbean-telnet</module>
     <module>xbean-tiger</module>
+    <module>maven-xbean-plugin</module>
   </modules>
 <!--
   <repositories>

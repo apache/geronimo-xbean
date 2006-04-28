@@ -48,7 +48,7 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             return;
         }
 
-        File file = new File(metaInfDir + NamespaceHelper.createDiscoveryPathName(namespace));
+        File file = new File(metaInfDir, NamespaceHelper.createDiscoveryPathName(namespace));
         file.getParentFile().mkdirs();
         log.log("Generating META-INF properties file: " + file + " for namespace: " + namespace);
         PrintWriter out = new PrintWriter(new FileWriter(file));
