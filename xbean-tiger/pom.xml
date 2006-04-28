@@ -1,13 +1,35 @@
-<project>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2005-2006 The Apache Software Foundation
+  
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0">
+  
+  <modelVersion>4.0.0</modelVersion>
+  
   <parent>
-    <artifactId>xbean</artifactId>
     <groupId>org.apache.xbean</groupId>
+    <artifactId>xbean</artifactId>
     <version>2.3-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
+  
   <artifactId>xbean-tiger</artifactId>
   <name>XBean :: Tiger</name>
-  <version>2.3-SNAPSHOT</version>
+
   <build>
     <testResources>
       <testResource>
@@ -41,35 +63,9 @@
           <namespace>http://xbean.apache.org/schemas/tiger</namespace>
         </configuration>
       </plugin>
-      <!--
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
-                  <classpath>
-                    <pathelement path="${basedir}/target/classes"></pathelement>
-                    <path refid="maven.runtime.classpath"></path>
-                  </classpath>
-                </taskdef>
-                <mapping namespace="http://xbean.apache.org/schemas/tiger" srcdir="src/main/java" destFile="target/tiger.xsd" metaInfDir="${basedir}/target/generated/"></mapping>
-                <copy todir="${basedir}/target/classes">
-                  <fileset dir="${basedir}/target/generated"></fileset>
-                </copy>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      -->
     </plugins>
   </build>
+
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -84,4 +80,5 @@
       <artifactId>commons-logging</artifactId>
     </dependency>
   </dependencies>
+
 </project>
