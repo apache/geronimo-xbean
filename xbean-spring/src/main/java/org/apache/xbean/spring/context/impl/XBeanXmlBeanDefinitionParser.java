@@ -58,7 +58,7 @@ import org.w3c.dom.Text;
 
 /**
  * An enhanced XML parser capable of handling custom XML schemas.
- * 
+ *
  * @author James Strachan
  * @version $Id$
  * @since 2.0
@@ -75,7 +75,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     private static final Log log = LogFactory.getLog(XBeanXmlBeanDefinitionParser.class);
 
     private static final String QNAME_ELEMENT = "qname";
-    
+
     /**
      * All the reserved Spring XML element names which cannot be overloaded by
      * an XML extension
@@ -152,7 +152,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         namedConstructorArgs.processParameters(definition, metadata);
         return definition;
     }
-    
+
     /**
      * Parses the non-standard XML element as a Spring bean definition
      */
@@ -170,7 +170,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 throw new BeanDefinitionStoreException("Unrecognized xbean element mapping: " + localName + " in namespace " + uri);
             }
         } else {
-            throw new BeanDefinitionStoreException("Unrecognized xbean namespace mapping: " + uri);
+            if (uri == null) throw new BeanDefinitionStoreException("Unrecognized Spring element: " + localName);
+            else throw new BeanDefinitionStoreException("Unrecognized xbean namespace mapping: " + uri);
         }
     }
 
@@ -304,7 +305,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             }
         }
     }
-    
+
     // Fix Spring 1.2.6 to 1.2.7 binary incompatibility.
     // The addPropertyValueMethod has changed to return a
     // value instead of void.
@@ -322,7 +323,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
     protected Object getValue(String value) {
         if (value == null)  return null;
-        
+
         boolean reference = false;
         if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
             value = value.substring(BEAN_REFERENCE_PREFIX.length());
@@ -332,7 +333,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 reference = true;
             }
         }
-        
+
         if (reference) {
             // TOOD handle custom reference types like local or queries etc
             return new RuntimeBeanReference(value);
@@ -341,7 +342,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             return value;
         }
     }
-    
+
     protected String getLocalName(Element element) {
         String localName = element.getLocalName();
         if (localName == null) {
@@ -402,17 +403,17 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                             }
                         }
                     }
-                    
+
                     if (propertyName == null && metadata.isFlatProperty(getLocalName(element), localName)) {
                        value = parseBeanFromExtensionElement(childElement, className, localName);
                        propertyName = localName;
                     }
-                    
+
                     if (propertyName == null) {
                         value = tryParseNestedPropertyViaIntrospection(metadata, className, childElement);
                         propertyName = localName;
                     }
-                    
+
                     if (value != null) {
                         definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
                     }
@@ -534,14 +535,14 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
     protected Object parseCustomMapElement(MappingMetaData metadata, Element element, String name) {
         Map map = new HashMap();
-        
+
         Element parent = (Element) element.getParentNode();
         String entryName = metadata.getMapEntryName(getLocalName(parent), name);
         String keyName = metadata.getMapKeyName(getLocalName(parent), name);
-        
+
         if (entryName == null) entryName = "property";
         if (keyName == null) keyName = "key";
-        
+
         // TODO : support further customizations
         //String valueName = "value";
         //boolean keyIsAttr = true;
@@ -551,7 +552,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             Node node = nl.item(i);
             if (node instanceof Element) {
                 Element childElement = (Element) node;
-                
+
                 String localName = childElement.getLocalName();
                 String uri = childElement.getNamespaceURI();
                 if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
@@ -563,9 +564,9 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 if (!isEmpty(uri) && localName.equals(entryName)) {
                     String key = childElement.getAttribute(keyName);
                     if (key == null) throw new RuntimeException("No key defined for map " + entryName);
-                    
+
                     Object keyValue = getValue(key);
-                    
+
                     Object value = getValue(getElementText(childElement));
 
                     map.put(keyValue, value);
@@ -578,7 +579,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected boolean isMap(Class type) {
         return Map.class.isAssignableFrom(type);
     }
-    
+
     /**
      * Returns true if the given type is a collection type or an array
      */
@@ -616,7 +617,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     /**
      * Uses META-INF/services discovery to find a Properties file with the XML
      * marshaling configuration
-     * 
+     *
      * @param namespaceURI
      *            the namespace URI of the element
      * @param localName
@@ -721,7 +722,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     //
     // TODO we could apply the following patches into the Spring code -
     // though who knows if it'll ever make it into a release! :)
-    // 
+    //
     // -------------------------------------------------------------------------
     protected int parseBeanDefinitions(Element root) throws BeanDefinitionStoreException {
         int beanDefinitionCount = 0;
@@ -798,7 +799,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         }
         return super.parsePropertySubElement(element, beanName);
     }
-    
+
     protected Object parseQNameElement(Element element) {
         return QNameReflectionHelper.createQName(element, getElementText(element));
     }
