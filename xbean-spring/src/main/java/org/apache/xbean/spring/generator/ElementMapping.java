@@ -42,9 +42,13 @@ public class ElementMapping implements Comparable {
     private final Set attributes;
     private final Map attributesByName;
     private final List constructors;
+    private final List flatProperties;
     private final Map maps;
+    private final Map flatCollections;
     
-    public ElementMapping(String namespace, String elementName, String className, String description, boolean rootElement, String initMethod, String destroyMethod, String factoryMethod, String contentProperty, Set attributes, List constructors, Map maps) {
+    public ElementMapping(String namespace, String elementName, String className, String description, 
+            boolean rootElement, String initMethod, String destroyMethod, String factoryMethod, 
+            String contentProperty, Set attributes, List constructors, List flatProperties, Map maps, Map flatCollections) {
         if (namespace == null) throw new NullPointerException("namespace");
         if (elementName == null) throw new NullPointerException("elementName");
         if (className == null) throw new NullPointerException("className");
@@ -63,6 +67,8 @@ public class ElementMapping implements Comparable {
         this.constructors = constructors;
         this.attributes = Collections.unmodifiableSet(new TreeSet(attributes));
         this.maps = Collections.unmodifiableMap(maps);
+        this.flatProperties = Collections.unmodifiableList(flatProperties);
+        this.flatCollections = Collections.unmodifiableMap(flatCollections);
         
         Map attributesByName = new HashMap();
         for (Iterator iterator = attributes.iterator(); iterator.hasNext();) {
@@ -124,6 +130,14 @@ public class ElementMapping implements Comparable {
         return (MapMapping) maps.get(name);
     }
     
+    public Map getFlatCollections() {
+        return flatCollections;
+    }
+
+    public List getFlatProperties() {
+        return flatProperties;
+    }
+
     public List getConstructors() {
         return constructors;
     }

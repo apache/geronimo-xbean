@@ -191,4 +191,13 @@ public class MappingMetaData {
     public String getMapKeyName(String elementName, String property) {
         return properties.getProperty(elementName + "." + property + ".map.keyName");
     }
+
+    public String getFlatCollectionProperty(String elementName, String property)
+    {
+        return properties.getProperty(elementName + "." + property + ".flatCollection");
+    }
+    
+    public boolean isFlatProperty(String elementName, String property)  {
+        return properties.getProperty(elementName + "." + property + ".flat") != null;
+    }
 }
