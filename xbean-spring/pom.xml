@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <parent>
     <artifactId>xbean</artifactId>
     <groupId>org.apache.xbean</groupId>
@@ -50,6 +52,7 @@
     <dependency>
       <groupId>mx4j</groupId>
       <artifactId>mx4j</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
@@ -62,18 +65,22 @@
     <dependency>
       <groupId>ant</groupId>
       <artifactId>ant</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>backport-util-concurrent</groupId>
       <artifactId>backport-util-concurrent</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>stax</groupId>
       <artifactId>stax-api</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>qdox</groupId>
       <artifactId>qdox</artifactId>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>
