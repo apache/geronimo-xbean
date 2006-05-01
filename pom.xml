@@ -178,7 +178,9 @@
   <modules>
     <module>xbean-classpath</module>
     <module>xbean-kernel</module>
+    <!-- exclude jmx module that has snapshot dependencies
     <module>xbean-jmx</module>
+    -->
     <module>xbean-osgi</module>
     <module>xbean-reflect</module>
     <module>xbean-server</module>
