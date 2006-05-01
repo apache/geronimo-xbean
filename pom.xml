@@ -121,7 +121,7 @@
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
-            <tagBase>https://svn.codehaus.org/xbean/tags</tagBase>
+            <tagBase>http://svn.apache.org/repos/asf/geronimo/xbean/tags</tagBase>
           </configuration>
         </plugin>
       </plugins>
