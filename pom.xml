@@ -120,9 +120,6 @@
       <plugins>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
-          <configuration>
-            <tagBase>http://svn.apache.org/repos/asf/geronimo/xbean/tags</tagBase>
-          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -137,8 +134,8 @@
               <goal>deploy-maven-one-repository</goal>
             </goals>
             <configuration>
-              <remoteRepositoryId>xbean-maven1</remoteRepositoryId>
-              <remoteRepositoryUrl>scpexe://xbean.org/dist</remoteRepositoryUrl>
+              <remoteRepositoryId>apache.m1.releases</remoteRepositoryId>
+              <remoteRepositoryUrl>scp://minotaur.apache.org/www/cvs.apache.org/repository</remoteRepositoryUrl>
             </configuration>
           </execution>
         </executions>
