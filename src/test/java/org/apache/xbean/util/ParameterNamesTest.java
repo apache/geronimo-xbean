@@ -31,6 +31,7 @@ import org.apache.xbean.recipe.ObjectRecipe;
  * @version $Rev$ $Date$
  */
 public class ParameterNamesTest extends TestCase {
+    private final ParameterNames parameterNames = new AsmParameterNames();
     public void testConstructor() throws Exception {
         Constructor constructor = TestClass.class.getConstructor(new Class[] {int.class, Object.class, Long.class});
         assertParameterNames(new String[] {"one", "two", "three"}, constructor);
@@ -53,12 +54,12 @@ public class ParameterNamesTest extends TestCase {
 
     public void testPrivateConstructor() throws Exception {
         Constructor constructor = findPrivateConstructor(TestClass.class, new Class[]{Double.class});
-        assertParameterNames(new String[] {"scotch"}, constructor);
+        assertNull(parameterNames.get(constructor));
     }
 
     public void testPrivateMethod() throws Exception {
         Method method = findPrivateMethod(TestClass.class, "factoryMethod", new Class[] {Double.class});
-        assertParameterNames(new String[] {"shot"}, method);
+        assertNull(parameterNames.get(method));
     }
 
     public void testAllConstructors() throws Exception {
@@ -66,8 +67,9 @@ public class ParameterNamesTest extends TestCase {
         expectedMap.put(TestClass.class.getConstructor(new Class[] {int.class, Object.class, Long.class}),new String[] {"one", "two", "three"});
         expectedMap.put(TestClass.class.getConstructor(new Class[] {int.class}),new String[] {"foo"});
         expectedMap.put(TestClass.class.getConstructor(new Class[] {Object.class}),new String[] {"bar"});
+        expectedMap.put(TestClass.class.getConstructor(new Class[] {Object[].class}),new String[] {"objectArray"});
 
-        Map actualMap = ParameterNames.getAllConstructorParameters(TestClass.class);
+        Map actualMap = parameterNames.getAllConstructorParameters(TestClass.class);
         assertEquals(expectedMap, actualMap);
     }
 
@@ -77,7 +79,7 @@ public class ParameterNamesTest extends TestCase {
         expectedMap.put(TestClass.class.getMethod("instanceMethod", new Class[] {int.class}), new String[] {"apple"});
         expectedMap.put(TestClass.class.getMethod("instanceMethod", new Class[] {Object.class}), new String[] {"ipod"});
 
-        Map actualMap = ParameterNames.getAllMethodParameters(TestClass.class, "instanceMethod");
+        Map actualMap = parameterNames.getAllMethodParameters(TestClass.class, "instanceMethod");
         assertEquals(expectedMap, actualMap);
     }
 
@@ -87,7 +89,7 @@ public class ParameterNamesTest extends TestCase {
         expectedMap.put(TestClass.class.getMethod("factoryMethod", new Class[] {int.class}), new String[] {"beer"});
         expectedMap.put(TestClass.class.getMethod("factoryMethod", new Class[] {Object.class}), new String[] {"pizza"});
 
-        Map actualMap = ParameterNames.getAllMethodParameters(TestClass.class, "factoryMethod");
+        Map actualMap = parameterNames.getAllMethodParameters(TestClass.class, "factoryMethod");
         assertEquals(expectedMap, actualMap);
     }
 
@@ -96,7 +98,7 @@ public class ParameterNamesTest extends TestCase {
         expectedMap.put(TestClass.class.getMethod("mixedMethods", new Class[] {Double.class}), new String[] {"gin"});
         expectedMap.put(TestClass.class.getMethod("mixedMethods", new Class[] {Short.class}), new String[] {"tonic"});
 
-        Map actualMap = ParameterNames.getAllMethodParameters(TestClass.class, "mixedMethods");
+        Map actualMap = parameterNames.getAllMethodParameters(TestClass.class, "mixedMethods");
         assertEquals(expectedMap, actualMap);
     }
 
@@ -108,6 +110,7 @@ public class ParameterNamesTest extends TestCase {
         public TestClass(int one, Object two, Long three) {}
         public TestClass(int foo) {}
         public TestClass(Object bar) {}
+        public TestClass(Object[] objectArray) {}
         private TestClass(Double scotch) {}
 
         public static void factoryMethod(int a, Object b, Long c) {}
@@ -126,13 +129,13 @@ public class ParameterNamesTest extends TestCase {
         public abstract void abstractMethod(Byte ear);
     }
 
-    private static void assertParameterNames(String[] expectedNames, Constructor constructor) {
-        String[] actualNames = ParameterNames.get(constructor);
+    private void assertParameterNames(String[] expectedNames, Constructor constructor) {
+        String[] actualNames = parameterNames.get(constructor);
         assertEquals(expectedNames, actualNames);
     }
 
-    private static void assertParameterNames(String[] expectedNames, Method method) {
-        String[] actualNames = ParameterNames.get(method);
+    private void assertParameterNames(String[] expectedNames, Method method) {
+        String[] actualNames = parameterNames.get(method);
         assertEquals(expectedNames, actualNames);
     }
 

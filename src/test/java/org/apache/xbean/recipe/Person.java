@@ -26,23 +26,13 @@ public class Person {
     private String name;
     private int age;
     private URL homePage;
-
-//    public Person() {
-//    }
-
-//    private Person(String name) {
-//        this.name = name;
-//    }
+    private boolean started;
 
     public Person(String name, int age, URL homePage) {
         this.name = name;
         this.age = age;
         this.homePage = homePage;
     }
-
-//    public static Person newInstance(){
-//        return new Person();
-//    }
 
     public static Person newInstance(String name, int age, URL homePage){
         return new Person(name, age, homePage);        
@@ -60,10 +50,6 @@ public class Person {
         return name;
     }
 
-//    public void setName(String name) {
-//        this.name = name;
-//    }
-
     public int getAge() {
         return age;
     }
@@ -78,6 +64,14 @@ public class Person {
 
     public void setHomePage(URL homePage) {
         this.homePage = homePage;
+    }
+
+    public void start() {
+        started = true;
+    }
+
+    public boolean wasStarted() {
+        return started;
     }
 
     public String toString() {

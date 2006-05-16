@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 public class ObjectRecipeTest extends TestCase {
 
     protected void setUp() throws Exception {
+        super.setUp();
         PropertyEditors.class.getName();
     }
 
@@ -22,7 +23,6 @@ public class ObjectRecipeTest extends TestCase {
     }
 
     public void testConstructor() throws Exception {
-
         ObjectRecipe objectRecipe = new ObjectRecipe(Person.class);
         doTest(objectRecipe);
     }
@@ -43,9 +43,11 @@ public class ObjectRecipeTest extends TestCase {
         objectRecipe.setProperty("name", "Joe");
         objectRecipe.setProperty("age", "21");
         objectRecipe.setProperty("homePage", "http://www.acme.org");
+        objectRecipe.setPostConstruct("start");
 
         Person actual = (Person) objectRecipe.create(Person.class.getClassLoader());
         assertEquals("person", expected, actual);
+        assertTrue(actual.wasStarted());
     }
 
 }

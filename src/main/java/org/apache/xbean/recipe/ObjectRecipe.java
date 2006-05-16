@@ -16,36 +16,37 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.ClassLoading;
-import org.apache.xbean.util.ParameterNames;
-import org.apache.xbean.propertyeditor.PropertyEditors;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import org.apache.xbean.ClassLoading;
+import org.apache.xbean.propertyeditor.PropertyEditors;
+import org.apache.xbean.util.ParameterNames;
+import org.apache.xbean.util.AsmParameterNames;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
  */
 public class ObjectRecipe implements Recipe {
-    // todo add instanceMethod
-    // todo life cycle methods
+    private static final ParameterNames parameterNames = new AsmParameterNames();
+    // todo add instanceFactoryMethod
     private final String type;
     private final String factoryMethod;
     private final LinkedHashMap properties;
+    private String postConstruct;
+    private String preDestroy;
 
     public ObjectRecipe(Class type) {
         this(type.getName());
@@ -59,35 +60,19 @@ public class ObjectRecipe implements Recipe {
         this(type.getName(), properties);
     }
 
-    public ObjectRecipe(Class type, String[] constructorArgNames, Class[] constructorArgTypes) {
-        this(type.getName(), constructorArgNames, constructorArgTypes);
-    }
-
-    public ObjectRecipe(Class type, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes) {
-        this(type.getName(), factoryMethod, constructorArgNames, constructorArgTypes);
+    public ObjectRecipe(String typeName, Map properties) {
+        this(typeName, null, properties);
     }
 
     public ObjectRecipe(String typeName) {
-        this(typeName, null, null, null, null);
+        this(typeName, null, null);
     }
 
     public ObjectRecipe(String typeName, String factoryMethod) {
-        this(typeName, factoryMethod, null, null, null);
+        this(typeName, factoryMethod, null);
     }
 
-    public ObjectRecipe(String typeName, Map properties) {
-        this(typeName, null, null, null, properties);
-    }
-
-    public ObjectRecipe(String typeName, String[] constructorArgNames, Class[] constructorArgTypes) {
-        this(typeName, null, constructorArgNames, constructorArgTypes, null);
-    }
-
-    public ObjectRecipe(String typeName, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes) {
-        this(typeName, factoryMethod, constructorArgNames, constructorArgTypes, null);
-    }
-
-    public ObjectRecipe(String type, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes, Map properties) {
+    private ObjectRecipe(String type, String factoryMethod, Map properties) {
         this.type = type;
         this.factoryMethod = factoryMethod;
         if (properties != null) {
@@ -122,6 +107,22 @@ public class ObjectRecipe implements Recipe {
         }
     }
 
+    public String getPostConstruct() {
+        return postConstruct;
+    }
+
+    public void setPostConstruct(String postConstruct) {
+        this.postConstruct = postConstruct;
+    }
+
+    public String getPreDestroy() {
+        return preDestroy;
+    }
+
+    public void setPreDestroy(String preDestroy) {
+        this.preDestroy = preDestroy;
+    }
+
     public Object create() throws ConstructionException {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         return create(contextClassLoader);
@@ -145,6 +146,16 @@ public class ObjectRecipe implements Recipe {
         }
         if (Modifier.isAbstract(typeClass.getModifiers())) {
             throw new ConstructionException("Class is abstract: " + ClassLoading.getClassName(typeClass, true));
+        }
+
+        // get the PostConstruct method
+        Method postConstructMethod = null;
+        if (postConstruct != null) {
+            try {
+                postConstructMethod = typeClass.getMethod(postConstruct, null);
+            } catch (NoSuchMethodException e) {
+                throw new ConstructionException("Unable to find post construct method: " + postConstruct);
+            }
         }
 
         // get object values for all recipe properties
@@ -174,57 +185,70 @@ public class ObjectRecipe implements Recipe {
             }
         }
 
-        Set requiredProperties = new HashSet(propertyValues.keySet());
-        requiredProperties.removeAll(setters.keySet());
+        // determine the properties that must be used
+        Map requiredProperties = new HashMap(propertyValues);
+        requiredProperties.keySet().removeAll(setters.keySet());
 
-
-        // create the instance
-        Object instance = createInstance(typeClass, requiredProperties, propertyValues);
-        if (instance == null) {
+        // get the factory
+        Factory factory = selectFactory(typeClass, requiredProperties);
+        if (factory == null) {
+            // todo use close match
             throw new ConstructionException("Unable to find a constructor with properties: " + requiredProperties);
         }
+
+        // remove the parameters from the propertyValues map
+        List parameters = removePropertyValues(factory, propertyValues);
+
+        // create the instance
+        Object instance = factory.create(parameters);
 
         // set remaining properties
         for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
             String propertyName = (String) entry.getKey();
+
+            Method setter = (Method) setters.get(propertyName);
+
             Object propertyValue = entry.getValue();
-            Method setter = findSetter(typeClass, propertyName, propertyValue);
+            propertyValue = convert(setter.getParameterTypes()[0], propertyValue);
+
             try {
-                propertyValue = convert(setter.getParameterTypes()[0], propertyValue);
                 setter.invoke(instance, new Object[]{propertyValue});
             } catch (Exception e) {
-                throw new ConstructionException("Error setting property: " + setter);
+                throw new ConstructionException("Error setting property: " + setter, e);
             }
+        }
+
+        try {
+            postConstructMethod.invoke(instance, null);
+        } catch(Exception e) {
+            throw new ConstructionException("Error calling post construct method: " + postConstruct, e);
         }
         return instance;
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues, String[] constructorArgNames, Class[] constructorArgTypes) {
-        Object[] parameters = new Object[constructorArgNames.length];
-        for (int i = 0; i < constructorArgNames.length; i++) {
-            String name = constructorArgNames[i];
-            Class type = constructorArgTypes[i];
-
-            Object value;
-            if (propertyValues.containsKey(name)) {
-                value = propertyValues.remove(name);
-                if (!isInstance(type, value) && !isConvertable(type, value)) {
-                    throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
-                            "name=" + name + ", " +
-                            "index=" + i + ", " +
-                            "expected=" + ClassLoading.getClassName(type, true) + ", " +
-                            "actual=" + ClassLoading.getClassName(value, true));
-                }
-                value = convert(type, value);
-            } else {
-                value = getDefaultValue(type);
-            }
-
-
-            parameters[i] = value;
+    private List removePropertyValues(Factory factory, Map propertyValues) {
+        String[] parameterNames = factory.getParameterNames();
+        Class[] parameterTypes = factory.getParameterTypes();
+        List parameters = new ArrayList(parameterNames.length);
+        for (int i = 0; i < parameterNames.length; i++) {
+            String parameterName = parameterNames[i];
+            Class parameterType = parameterTypes[i];
+            Object value = removePropertyValue(propertyValues, parameterName, parameterType);
+            parameters.add(value);
         }
         return parameters;
+    }
+
+    private Object removePropertyValue(Map propertyValues, String propertyName, Class propertyType) {
+        Object value;
+        if (propertyValues.containsKey(propertyName)) {
+            value = propertyValues.remove(propertyName);
+        } else {
+            value = getDefaultValue(propertyType);
+        }
+        value = convert(propertyType, value);
+        return value;
     }
 
     private static Object convert(Class type, Object value) {
@@ -256,86 +280,73 @@ public class ObjectRecipe implements Recipe {
         return null;
     }
 
-    private Object createInstance(Class typeClass, Set requiredProperties, Map propertyValues) {
+    private Factory selectFactory(Class typeClass, Map requiredProperties) {
         if (factoryMethod != null) {
-            Method method = null;
-            String[] parameterNames = null;
+            SortedMap allMethodParameters = new TreeMap(ARGUMENT_LENGTH_COMPARATOR);
+            allMethodParameters.putAll(parameterNames.getAllMethodParameters(typeClass, factoryMethod));
 
-            Method[] methods = typeClass.getMethods();
-            Arrays.sort(methods, ARGUMENT_LENGTH_COMPARATOR);
-            for (int i = 0; i < methods.length; i++) {
-                Method m = methods[i];
-                if (m.getName().equals(factoryMethod)) {
-                    String[] names = ParameterNames.get(m);
-                    if (names != null && Arrays.asList(names).containsAll(requiredProperties)) {
-                        method = m;
-                        parameterNames = names;
-                        break;
-                    }
-                }
-            }
-            if (method == null) {
-                return null;
-            }
-
-            // get the constructor parameters
-            Object[] parameters = extractConstructorArgs(propertyValues, parameterNames, method.getParameterTypes());
-
-            try {
-                Object object = method.invoke(null, parameters);
-                return object;
-            } catch (Exception e) {
-                Throwable t = e;
-                if (e instanceof InvocationTargetException) {
-                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
-                    if (invocationTargetException.getCause() != null) {
-                        t = invocationTargetException.getCause();
-                    }
-                }
-                throw new ConstructionException("Error invoking factory method: " + method, t);
-            }
-        } else {
-            Constructor constructor = null;
-            String[] parameterNames = null;
-
-            Map map = ParameterNames.getAllConstructorParameters(typeClass);
-            SortedMap constructorArgs = new TreeMap(ARGUMENT_LENGTH_COMPARATOR);
-            constructorArgs.putAll(map);
-
-            for (Iterator iterator = constructorArgs.entrySet().iterator(); iterator.hasNext();) {
+            CloseMatchException closeMatch = null;
+            for (Iterator iterator = allMethodParameters.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                Constructor c = (Constructor) entry.getKey();
-                String[] names = (String[]) entry.getValue();
-                if (names != null && Arrays.asList(names).containsAll(requiredProperties)) {
-                    constructor = c;
-                    parameterNames = names;
-                    break;
-                }
-            }
-            if (constructor == null) {
-                return null;
-            }
+                Method method = (Method) entry.getKey();
+                String[] parameterNames = (String[]) entry.getValue();
 
-            // get the constructor parameters
-            Object[] parameters = extractConstructorArgs(propertyValues, parameterNames, constructor.getParameterTypes());
-
-            try {
-                Object object = constructor.newInstance(parameters);
-                return object;
-            } catch (Exception e) {
-                Throwable t = e;
-                if (e instanceof InvocationTargetException) {
-                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
-                    if (invocationTargetException.getCause() != null) {
-                        t = invocationTargetException.getCause();
+                if (parameterNames != null && Arrays.asList(parameterNames).containsAll(requiredProperties.keySet())) {
+                    Class[] propertyTypes = getPropertyTypes(parameterNames, requiredProperties);
+                    if (isAssignableFrom(method.getParameterTypes(), propertyTypes)) {
+                        CloseMatchException problem = checkFactory(method);
+                        if (problem == null) {
+                            return new FactoryMethodFactory(parameterNames, method);
+                        } else {
+                            closeMatch = CloseMatchException.greater(closeMatch, problem);
+                        }
+                    } else {
+                        closeMatch = CloseMatchException.greater(closeMatch, CloseMatchException.typeMismatch(method, parameterNames, propertyTypes));
                     }
+                } else {
+                    // todo remember most consuming method
                 }
-                throw new ConstructionException("Error invoking constructor: " + constructor, t);
             }
+            throw closeMatch;
+        } else {
+            SortedMap allConstructorParameters = new TreeMap(ARGUMENT_LENGTH_COMPARATOR);
+            allConstructorParameters.putAll(parameterNames.getAllConstructorParameters(typeClass));
+
+            CloseMatchException closeMatch = null;
+            for (Iterator iterator = allConstructorParameters.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Constructor constructor = (Constructor) entry.getKey();
+                String[] parameterNames = (String[]) entry.getValue();
+
+                if (Arrays.asList(parameterNames).containsAll(requiredProperties.keySet())) {
+                    Class[] propertyTypes = getPropertyTypes(parameterNames, requiredProperties);
+                    if (isAssignableFrom(constructor.getParameterTypes(), propertyTypes)) {
+                        return new ConstructorFactory(parameterNames, constructor);
+                    } else {
+                        closeMatch = CloseMatchException.greater(closeMatch, CloseMatchException.typeMismatch(constructor, parameterNames, propertyTypes));
+                    }
+                } else {
+                    // todo remember most consuming method
+                }
+            }
+            throw closeMatch;
         }
     }
 
+    private Class[] getPropertyTypes(String[] propertyNames, Map properties) {
+        Class[] propertyTypes = new Class[propertyNames.length];
+        for (int i = 0; i < propertyNames.length; i++) {
+            String parameterName = propertyNames[i];
+            Object value = properties.get(parameterName);
+            if (value != null) {
+                propertyTypes[i] = value.getClass();
+            }
+        }
+        return propertyTypes;
+    }
+
     private static final ArgumentLengthComparator ARGUMENT_LENGTH_COMPARATOR = new ArgumentLengthComparator();
+
     private static class ArgumentLengthComparator implements Comparator {
         public int compare(Object left, Object right) {
             return getArgumentLength(left) - getArgumentLength(right);
@@ -343,169 +354,14 @@ public class ObjectRecipe implements Recipe {
 
         private int getArgumentLength(Object object) {
             if (object instanceof Method) {
-                return ((Method)object).getParameterTypes().length;
+                return ((Method) object).getParameterTypes().length;
             } else {
-                return ((Constructor)object).getParameterTypes().length;
+                return ((Constructor) object).getParameterTypes().length;
             }
         }
     }
-//    private Method selectFactory(Class typeClass, Set requiredProperties, Map propertyValues) {
-//        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
-//            ArrayList matches = new ArrayList();
-//
-//            Method[] methods = typeClass.getMethods();
-//            for (int i = 0; i < methods.length; i++) {
-//                Method method = methods[i];
-//                if (method.getName().equals(factoryMethod) && method.getParameterTypes().length == constructorArgNames.length) {
-//                    try {
-//                        checkFactory(method);
-//                        matches.add(method);
-//                    } catch (Exception dontCare) {
-//                    }
-//                }
-//            }
-//
-//            if (matches.size() < 1) {
-//                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid factory method: ");
-//                buffer.append("public static Object ").append(factoryMethod);
-//                buffer.append(toArgumentList(constructorArgNames));
-//                throw new ConstructionException(buffer.toString());
-//            } else if (matches.size() > 1) {
-//                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid factory methods: ");
-//                buffer.append("public static Object ").append(factoryMethod);
-//                buffer.append(toArgumentList(constructorArgNames));
-//                throw new ConstructionException(buffer.toString());
-//            }
-//
-//            return (Method) matches.get(0);
-//        }
-//
-//        try {
-//            Method method = typeClass.getMethod(factoryMethod, constructorArgTypes);
-//
-//            checkFactory(method);
-//
-//            return method;
-//        } catch (NoSuchMethodException e) {
-//            // try to find a matching private method
-//            Method[] methods = typeClass.getDeclaredMethods();
-//            for (int i = 0; i < methods.length; i++) {
-//                Method method = methods[i];
-//                if (method.getName().equals(factoryMethod) && isAssignableFrom(constructorArgTypes, method.getParameterTypes())) {
-//                    if (!Modifier.isPublic(method.getModifiers())) {
-//                        throw new ConstructionException("Factory method is not public: " + method);
-//                    }
-//                }
-//            }
-//
-//            StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
-//            buffer.append("public static Object ").append(ClassLoading.getClassName(typeClass, true)).append(".");
-//            buffer.append(factoryMethod).append(toParameterList(constructorArgTypes));
-//            throw new ConstructionException(buffer.toString());
-//        }
-//    }
-//
-//    private void checkFactory(Method method) {
-//        if (!Modifier.isPublic(method.getModifiers())) {
-//            // this will never occur since private methods are not returned from
-//            // getMethod, but leave this here anyway, just to be safe
-//            throw new ConstructionException("Factory method is not public: " + method);
-//        }
-//
-//        if (!Modifier.isStatic(method.getModifiers())) {
-//            throw new ConstructionException("Factory method is not static: " + method);
-//        }
-//
-//        if (method.getReturnType().equals(Void.TYPE)) {
-//            throw new ConstructionException("Factory method does not return anything: " + method);
-//        }
-//
-//        if (method.getReturnType().isPrimitive()) {
-//            throw new ConstructionException("Factory method returns a primitive type: " + method);
-//        }
-//    }
-//
-//    private Constructor selectConstructor(Class typeClass, Set requiredProperties, Map propertyValues) {
-//        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
-//            ArrayList matches = new ArrayList();
-//
-//            Constructor[] constructors = typeClass.getConstructors();
-//            for (int i = 0; i < constructors.length; i++) {
-//                Constructor constructor = constructors[i];
-//                if (constructor.getParameterTypes().length == constructorArgNames.length) {
-//                    matches.add(constructor);
-//                }
-//            }
-//
-//            if (matches.size() < 1) {
-//                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid constructor: ");
-//                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
-//                buffer.append(toArgumentList(constructorArgNames));
-//                throw new ConstructionException(buffer.toString());
-//            } else if (matches.size() > 1) {
-//                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid constructors: ");
-//                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
-//                buffer.append(toArgumentList(constructorArgNames));
-//                throw new ConstructionException(buffer.toString());
-//            }
-//
-//            return (Constructor) matches.get(0);
-//        }
-//
-//        try {
-//            Constructor constructor = typeClass.getConstructor(constructorArgTypes);
-//
-//            if (!Modifier.isPublic(constructor.getModifiers())) {
-//                // this will never occur since private constructors are not returned from
-//                // getConstructor, but leave this here anyway, just to be safe
-//                throw new ConstructionException("Constructor is not public: " + constructor);
-//            }
-//
-//            return constructor;
-//        } catch (NoSuchMethodException e) {
-//            // try to find a matching private method
-//            Constructor[] constructors = typeClass.getDeclaredConstructors();
-//            for (int i = 0; i < constructors.length; i++) {
-//                Constructor constructor = constructors[i];
-//                if (isAssignableFrom(constructorArgTypes, constructor.getParameterTypes())) {
-//                    if (!Modifier.isPublic(constructor.getModifiers())) {
-//                        throw new ConstructionException("Constructor is not public: " + constructor);
-//                    }
-//                }
-//            }
-//
-//            StringBuffer buffer = new StringBuffer("Unable to find a valid constructor: ");
-//            buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
-//            buffer.append(toParameterList(constructorArgTypes));
-//            throw new ConstructionException(buffer.toString());
-//        }
-//    }
-//
-//    private String toParameterList(Class[] parameterTypes) {
-//        StringBuffer buffer = new StringBuffer();
-//        buffer.append("(");
-//        for (int i = 0; i < parameterTypes.length; i++) {
-//            Class type = parameterTypes[i];
-//            if (i > 0) buffer.append(", ");
-//            buffer.append(ClassLoading.getClassName(type, true));
-//        }
-//        buffer.append(")");
-//        return buffer.toString();
-//    }
-//
-//    private String toArgumentList(String[] parameterNames) {
-//        StringBuffer buffer = new StringBuffer();
-//        buffer.append("(");
-//        for (int i = 0; i < parameterNames.length; i++) {
-//            String parameterName = parameterNames[i];
-//            if (i > 0) buffer.append(", ");
-//            buffer.append('<').append(parameterName).append('>');
-//        }
-//        buffer.append(")");
-//        return buffer.toString();
-//    }
 
-    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue) {
+    private static Method findSetter(Class typeClass, String propertyName, Object propertyValue) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
@@ -581,7 +437,8 @@ public class ObjectRecipe implements Recipe {
                 }
 
 
-                if (!isInstance(methodParameterType, propertyValue) && !isConvertable(methodParameterType, propertyValue)) {
+                if (!isInstance(methodParameterType, propertyValue) && !isConvertable(methodParameterType, propertyValue))
+                {
                     if (matchLevel < 5) {
                         matchLevel = 5;
                         missException = new ConstructionException(ClassLoading.getClassName(propertyValue, true) + " can not be assigned or converted to " +
@@ -604,11 +461,33 @@ public class ObjectRecipe implements Recipe {
         }
     }
 
-    public static boolean isConvertable(Class methodParameterType, Object propertyValue) {
+    private CloseMatchException checkFactory(Method method) {
+        if (!Modifier.isPublic(method.getModifiers())) {
+            // this will never occur since private methods are not returned from
+            // getMethod, but leave this here anyway, just to be safe
+            return CloseMatchException.factoryMethodIsNotPublic(method);
+        }
+
+        if (!Modifier.isStatic(method.getModifiers())) {
+            return CloseMatchException.factoryMethodIsNotStatic(method);
+        }
+
+        if (method.getReturnType().equals(Void.TYPE)) {
+            return CloseMatchException.factoryMethodWithNoReturn(method);
+        }
+
+        if (method.getReturnType().isPrimitive()) {
+            return CloseMatchException.factoryMethodReturnsPrimitive(method);
+        }
+
+        return null;
+    }
+
+    private static boolean isConvertable(Class methodParameterType, Object propertyValue) {
         return (propertyValue instanceof String && PropertyEditors.canConvert(methodParameterType));
     }
 
-    public static boolean isInstance(Class type, Object instance) {
+    private static boolean isInstance(Class type, Object instance) {
         if (type.isPrimitive()) {
             // for primitives the insance can't be null
             if (instance == null) {
@@ -641,7 +520,13 @@ public class ObjectRecipe implements Recipe {
     }
 
     public static boolean isAssignableFrom(Class expected, Class actual) {
+        // if actual is null we are ok, since we can always use a default value
+        if (actual == null) return true;
+
         if (expected.isPrimitive()) {
+            // if actual is a String we are ok, since we can always have a converter to primitives
+            if (actual.equals(String.class)) return true;
+
             // verify actual is the correct wrapper type
             if (expected.equals(boolean.class)) {
                 return actual.equals(Boolean.class);
@@ -664,7 +549,11 @@ public class ObjectRecipe implements Recipe {
             }
         }
 
-        return expected.isAssignableFrom(actual);
+        // actual can be cast to expected
+        if (expected.isAssignableFrom(actual)) return true;
+
+        // if actual is a string and we have a property editory we are ok
+        return actual.equals(String.class) && PropertyEditors.canConvert(expected);
     }
 
     public static boolean isAssignableFrom(Class[] expectedTypes, Class[] actualTypes) {
@@ -680,4 +569,83 @@ public class ObjectRecipe implements Recipe {
         }
         return true;
     }
+
+    private static interface Factory {
+        Object create(List parameters);
+
+        String[] getParameterNames();
+
+        Class[] getParameterTypes();
+    }
+
+    private static class ConstructorFactory implements Factory {
+        private final String[] parameterNames;
+        private final Constructor constructor;
+
+        public ConstructorFactory(String[] parameterNames, Constructor constructor) {
+            this.parameterNames = parameterNames;
+            this.constructor = constructor;
+        }
+
+        public String[] getParameterNames() {
+            return parameterNames;
+        }
+
+        public Class[] getParameterTypes() {
+            return constructor.getParameterTypes();
+        }
+
+        public Object create(List parameters) {
+            Object[] parameterArray = parameters.toArray(new Object[parameters.size()]);
+            try {
+                Object object = constructor.newInstance(parameterArray);
+                return object;
+            } catch (Exception e) {
+                Throwable t = e;
+                if (e instanceof InvocationTargetException) {
+                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                    if (invocationTargetException.getCause() != null) {
+                        t = invocationTargetException.getCause();
+                    }
+                }
+                throw new ConstructionException("Error invoking constructor: " + constructor, t);
+            }
+        }
+    }
+
+    private static class FactoryMethodFactory implements Factory {
+        private final String[] parameterNames;
+        private final Method factoryMethod;
+
+        public FactoryMethodFactory(String[] parameterNames, Method factoryMethod) {
+            this.parameterNames = parameterNames;
+            this.factoryMethod = factoryMethod;
+        }
+
+        public String[] getParameterNames() {
+            return parameterNames;
+        }
+
+        public Class[] getParameterTypes() {
+            return factoryMethod.getParameterTypes();
+        }
+
+        public Object create(List parameters) {
+            Object[] parameterArray = parameters.toArray(new Object[parameters.size()]);
+            try {
+                Object object = factoryMethod.invoke(null, parameterArray);
+                return object;
+            } catch (Exception e) {
+                Throwable t = e;
+                if (e instanceof InvocationTargetException) {
+                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                    if (invocationTargetException.getCause() != null) {
+                        t = invocationTargetException.getCause();
+                    }
+                }
+                throw new ConstructionException("Error invoking factory method: " + factoryMethod, t);
+            }
+        }
+    }
+
 }

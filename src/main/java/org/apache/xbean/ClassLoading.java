@@ -116,6 +116,12 @@ public class ClassLoading {
         if (classLoader == null) {
             throw new IllegalArgumentException("classLoader is null");
         }
+
+        // in some cases we get class names contianing slashes '/' instead of dots '.'
+        // we can just blindly replace all slahses with dots since a class name or
+        // package names can't contain a slash
+        className = className.replace('/', '.');
+
         // The easiest case is a proper class name.  We just have the class loader resolve this.
         // If the class loader throws a ClassNotFoundException, then we need to check each of the
         // special name encodings we support.
