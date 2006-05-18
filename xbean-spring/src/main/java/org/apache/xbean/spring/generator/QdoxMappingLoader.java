@@ -209,24 +209,27 @@ public class QdoxMappingLoader implements MappingLoader {
         String initMethod = null;
         String destroyMethod = null;
         String factoryMethod = null;
-        JavaMethod[] methods = javaClass.getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            JavaMethod method = methods[i];
-            if (method.isPublic() && !method.isConstructor()) {
-                if (method.getTagByName(INIT_METHOD_ANNOTATION) != null) {
-                    initMethod = method.getName();
+        for (JavaClass jClass = javaClass; jClass != null; jClass = jClass.getSuperJavaClass()) {
+            JavaMethod[] methods = javaClass.getMethods();
+            for (int i = 0; i < methods.length; i++) {
+                JavaMethod method = methods[i];
+                if (method.isPublic() && !method.isConstructor()) {
+                    if (initMethod == null && method.getTagByName(INIT_METHOD_ANNOTATION) != null) {
+                        initMethod = method.getName();
+                    }
+                    if (destroyMethod == null && method.getTagByName(DESTROY_METHOD_ANNOTATION) != null) {
+                        destroyMethod = method.getName();
+                    }
+                    if (factoryMethod == null && method.getTagByName(FACTORY_METHOD_ANNOTATION) != null) {
+                        factoryMethod = method.getName();
+                    }
+                    
                 }
-                if (method.getTagByName(DESTROY_METHOD_ANNOTATION) != null) {
-                    destroyMethod = method.getName();
-                }
-                if (method.getTagByName(FACTORY_METHOD_ANNOTATION) != null) {
-                    factoryMethod = method.getName();
-                }
-                
             }
         }
 
         List constructorArgs = new ArrayList();
+        JavaMethod[] methods = javaClass.getMethods();
         for (int i = 0; i < methods.length; i++) {
             JavaMethod method = methods[i];
             JavaParameter[] parameters = method.getParameters();
