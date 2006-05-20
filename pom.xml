@@ -4,18 +4,22 @@
     <groupId>org.apache</groupId>
     <version>1</version>
   </parent>
+
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.xbean</groupId>
   <artifactId>xbean</artifactId>
   <packaging>pom</packaging>
+
   <name>XBean</name>
   <version>2.4-SNAPSHOT</version>
   <description>XBean is a plugin based server architecture.</description>
   <url>http://xbean.org</url>
+
   <issueManagement>
     <system>jira</system>
     <url>http://issues.apache.org/jira/browse/XBEAN</url>
   </issueManagement>
+
   <ciManagement>
     <system>continuum</system>
     <notifiers>
@@ -26,6 +30,7 @@
       </notifier>
     </notifiers>
   </ciManagement>
+
   <mailingLists>
     <mailingList>
       <name>xbean developers</name>
@@ -43,6 +48,7 @@
       <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
     </mailingList>
   </mailingLists>
+
   <developers>
     <developer>
       <id>chirino</id>
@@ -103,11 +109,13 @@
       <timezone>+1</timezone>
     </developer>
   </developers>
+
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.3</connection>
     <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.3</developerConnection>
     <url>http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.3</url>
   </scm>
+
   <build>
     <extensions>
       <extension>
@@ -142,8 +150,10 @@
       </plugin>
     </plugins>
   </build>
+
   <modules>
     <module>xbean-classpath</module>
+    <module>xbean-jmx</module>
     <module>xbean-kernel</module>
     <module>xbean-osgi</module>
     <module>xbean-reflect</module>
@@ -153,6 +163,7 @@
     <module>xbean-tiger</module>
     <module>maven-xbean-plugin</module>
   </modules>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -161,6 +172,7 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
   <reporting>
     <plugins>
       <plugin>
@@ -176,6 +188,7 @@
       </plugin>
     </plugins>
   </reporting>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -209,9 +222,9 @@
         <version>1.0-jsr-03</version>
       </dependency>
       <dependency>
-        <groupId>org.livetribe</groupId>
-        <artifactId>livetribe-jmx</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <groupId>lingo</groupId>
+        <artifactId>sca-api</artifactId>
+        <version>SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>mx4j</groupId>
@@ -224,19 +237,19 @@
         <version>3.1.1</version>
       </dependency>
       <dependency>
-        <groupId>qdox</groupId>
-        <artifactId>qdox</artifactId>
-        <version>1.5</version>
+        <groupId>org.livetribe</groupId>
+        <artifactId>livetribe-jmx</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.snmp4j</groupId>
+        <artifactId>snmp4j</artifactId>
+        <version>1.7.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring</artifactId>
         <version>1.2.4</version>
-      </dependency>
-      <dependency>
-        <groupId>stax</groupId>
-        <artifactId>stax-api</artifactId>
-        <version>1.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
@@ -249,16 +262,23 @@
         <version>${version}</version>
       </dependency>
       <dependency>
-        <groupId>lingo</groupId>
-        <artifactId>sca-api</artifactId>
-        <version>SNAPSHOT</version>
+        <groupId>qdox</groupId>
+        <artifactId>qdox</artifactId>
+        <version>1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>stax</groupId>
+        <artifactId>stax-api</artifactId>
+        <version>1.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <distributionManagement>
     <site>
       <id>xbean-website</id>
       <url>scpexe://xbean.org/home/projects/xbean/public_html/maven</url>
     </site>
   </distributionManagement>
+
 </project>
