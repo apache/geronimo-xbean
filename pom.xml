@@ -111,9 +111,9 @@
   </developers>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.3</connection>
-    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.3</developerConnection>
-    <url>http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.3</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
+    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
+    <url>http://svn.apache.org/repos/asf/geronimo/xbean/trunk</url>
   </scm>
 
   <build>
