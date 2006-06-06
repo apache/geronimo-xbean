@@ -88,7 +88,11 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
             URL[] urls = new URL[classpath.size()];
             for (ListIterator iterator = classpath.listIterator(); iterator.hasNext();) {
                 String location = (String) iterator.next();
-                urls[iterator.previousIndex()] = repository.getResource(location);
+                URL url = repository.getResource(location);
+                if (url == null) {
+                    throw new FatalBeanException("Unable to resolve classpath location " + location);
+                }
+                urls[iterator.previousIndex()] = url;
             }
 
             // create the classloader
