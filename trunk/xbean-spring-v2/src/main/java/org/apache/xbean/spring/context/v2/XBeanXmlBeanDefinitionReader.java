@@ -14,20 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.spring.context.impl;
+package org.apache.xbean.spring.context.v2;
 
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.xbean.spring.context.SpringApplicationContext;
+import org.apache.xbean.spring.context.SpringXmlPreprocessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.xml.NamespaceHandlerResolver;
 import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.w3c.dom.Document;
-import org.apache.xbean.spring.context.SpringApplicationContext;
-import org.apache.xbean.spring.context.SpringXmlPreprocessor;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * XBeanXmlBeanDefinitionReader extends XmlBeanDefinitionReader adds support for SpringXMLPreprocessors which can
@@ -53,12 +54,11 @@ public class XBeanXmlBeanDefinitionReader extends XmlBeanDefinitionReader {
         super(beanFactory);
         this.applicationContext = applicationContext;
         this.xmlPreprocessors = xmlPreprocessors;
-        setValidating(false);
         setNamespaceAware(true);
-        setParserClass(XBeanXmlBeanDefinitionParser.class);
-
+        setValidationMode(VALIDATION_NONE);
         setResourceLoader(applicationContext);
         setEntityResolver(new ResourceEntityResolver(applicationContext));
+        setDocumentReaderClass(XBeanBeanDefinitionDocumentReader.class);
     }
 
     /**
@@ -74,10 +74,13 @@ public class XBeanXmlBeanDefinitionReader extends XmlBeanDefinitionReader {
      */
     public int registerBeanDefinitions(Document doc, Resource resource) throws BeansException {
         preprocess(doc);
-        XBeanXmlBeanDefinitionParser parser = new XBeanXmlBeanDefinitionParser();
-        return parser.registerBeanDefinitions(this, doc, resource);
+        return super.registerBeanDefinitions(doc, resource);
     }
 
+    protected NamespaceHandlerResolver createDefaultNamespaceHandlerResolver() {
+        return new XBeanNamespaceHandlerResolver(getBeanClassLoader());
+    }
+    
     private void preprocess(Document doc) {
         for (Iterator iterator = xmlPreprocessors.iterator(); iterator.hasNext();) {
             SpringXmlPreprocessor preprocessor = (SpringXmlPreprocessor) iterator.next();

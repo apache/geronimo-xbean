@@ -15,11 +15,9 @@
  * limitations under the License. 
  * 
  **/
-package org.apache.xbean.spring.context.impl;
+package org.apache.xbean.spring.context.v2;
 
 import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,6 +34,10 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xbean.spring.context.impl.MappingMetaData;
+import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
+import org.apache.xbean.spring.context.impl.NamespaceHelper;
+import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -43,10 +45,15 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanComponentDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.ManagedList;
-import org.springframework.beans.factory.xml.DefaultXmlBeanDefinitionParser;
+import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
+import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
+import org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader;
+import org.springframework.beans.factory.xml.NamespaceHandler;
+import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.w3c.dom.Attr;
@@ -63,7 +70,7 @@ import org.w3c.dom.Text;
  * @version $Id$
  * @since 2.0
  */
-public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser {
+public class XBeanNamespaceHandler implements NamespaceHandler {
 
     public static final String SPRING_SCHEMA = "http://xbean.apache.org/schemas/spring/1.0";
     public static final String SPRING_SCHEMA_COMPAT = "http://xbean.org/schemas/spring/1.0";
@@ -72,24 +79,55 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         PropertyEditorHelper.registerCustomEditors();
     }
 
-    private static final Log log = LogFactory.getLog(XBeanXmlBeanDefinitionParser.class);
+    private static final Log log = LogFactory.getLog(XBeanNamespaceHandler.class);
 
     private static final String QNAME_ELEMENT = "qname";
+    
+    private static final String DESCRIPTION_ELEMENT = "description";
 
     /**
      * All the reserved Spring XML element names which cannot be overloaded by
      * an XML extension
      */
-    protected static final String[] RESERVED_ELEMENT_NAMES = { "beans", DESCRIPTION_ELEMENT, IMPORT_ELEMENT,
-            ALIAS_ELEMENT, BEAN_ELEMENT, CONSTRUCTOR_ARG_ELEMENT, PROPERTY_ELEMENT, LOOKUP_METHOD_ELEMENT,
-            REPLACED_METHOD_ELEMENT, ARG_TYPE_ELEMENT, REF_ELEMENT, IDREF_ELEMENT, VALUE_ELEMENT, NULL_ELEMENT,
-            LIST_ELEMENT, SET_ELEMENT, MAP_ELEMENT, ENTRY_ELEMENT, KEY_ELEMENT, PROPS_ELEMENT, PROP_ELEMENT,
+    protected static final String[] RESERVED_ELEMENT_NAMES = { 
+            "beans", 
+            DESCRIPTION_ELEMENT, 
+            DefaultBeanDefinitionDocumentReader.IMPORT_ELEMENT,
+            DefaultBeanDefinitionDocumentReader.ALIAS_ELEMENT, 
+            DefaultBeanDefinitionDocumentReader.BEAN_ELEMENT, 
+            BeanDefinitionParserDelegate.CONSTRUCTOR_ARG_ELEMENT, 
+            BeanDefinitionParserDelegate.PROPERTY_ELEMENT, 
+            BeanDefinitionParserDelegate.LOOKUP_METHOD_ELEMENT,
+            BeanDefinitionParserDelegate.REPLACED_METHOD_ELEMENT, 
+            BeanDefinitionParserDelegate.ARG_TYPE_ELEMENT, 
+            BeanDefinitionParserDelegate.REF_ELEMENT, 
+            BeanDefinitionParserDelegate.IDREF_ELEMENT, 
+            BeanDefinitionParserDelegate.VALUE_ELEMENT, 
+            BeanDefinitionParserDelegate.NULL_ELEMENT,
+            BeanDefinitionParserDelegate.LIST_ELEMENT, 
+            BeanDefinitionParserDelegate.SET_ELEMENT, 
+            BeanDefinitionParserDelegate.MAP_ELEMENT, 
+            BeanDefinitionParserDelegate.ENTRY_ELEMENT, 
+            BeanDefinitionParserDelegate.KEY_ELEMENT, 
+            BeanDefinitionParserDelegate.PROPS_ELEMENT, 
+            BeanDefinitionParserDelegate.PROP_ELEMENT,
             QNAME_ELEMENT };
 
-    protected static final String[] RESERVED_BEAN_ATTRIBUTE_NAMES = { ID_ATTRIBUTE, NAME_ATTRIBUTE, CLASS_ATTRIBUTE,
-            PARENT_ATTRIBUTE, DEPENDS_ON_ATTRIBUTE, FACTORY_METHOD_ATTRIBUTE, FACTORY_BEAN_ATTRIBUTE,
-            DEPENDENCY_CHECK_ATTRIBUTE, AUTOWIRE_ATTRIBUTE, INIT_METHOD_ATTRIBUTE, DESTROY_METHOD_ATTRIBUTE,
-            ABSTRACT_ATTRIBUTE, SINGLETON_ATTRIBUTE, LAZY_INIT_ATTRIBUTE };
+    protected static final String[] RESERVED_BEAN_ATTRIBUTE_NAMES = { 
+            AbstractBeanDefinitionParser.ID_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.NAME_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.CLASS_ATTRIBUTE,
+            BeanDefinitionParserDelegate.PARENT_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.DEPENDS_ON_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.FACTORY_METHOD_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.FACTORY_BEAN_ATTRIBUTE,
+            BeanDefinitionParserDelegate.DEPENDENCY_CHECK_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.AUTOWIRE_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.INIT_METHOD_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.DESTROY_METHOD_ATTRIBUTE,
+            BeanDefinitionParserDelegate.ABSTRACT_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.SINGLETON_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.LAZY_INIT_ATTRIBUTE };
 
     private static final String JAVA_PACKAGE_PREFIX = "java://";
 
@@ -99,18 +137,36 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     private Set reservedBeanAttributeNames = new HashSet(Arrays.asList(RESERVED_BEAN_ATTRIBUTE_NAMES));
     protected final NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs();
 
-    private boolean qnameIsOnClassPath;
+    private ParserContext parserContext;
+    
+    private XBeanQNameHelper qnameHelper;
 
-    private boolean initQNameOnClassPath;
+    public void init() {
+    }
+
+    public BeanDefinition parse(Element element, ParserContext parserContext) {
+        this.parserContext = parserContext;
+        this.qnameHelper = new XBeanQNameHelper(parserContext.getReaderContext());
+        BeanDefinitionHolder holder = parseBeanFromExtensionElement(element);
+        BeanDefinitionReaderUtils.registerBeanDefinition(holder, parserContext.getRegistry());
+        BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);
+        parserContext.getReaderContext().fireComponentRegistered(componentDefinition);
+        return holder.getBeanDefinition();
+    }
+
+    public BeanDefinitionHolder decorate(Node node, BeanDefinitionHolder definition, ParserContext parserContext) {
+        throw new IllegalArgumentException("Cannot locate BeanDefinitionDecorator for "
+                        + (node instanceof Element ? "element" : "attribute") + " [" +
+                        node.getLocalName() + "].");
+    }
 
     /**
      * Configures the XmlBeanDefinitionReader to work nicely with extensible XML
      * using this reader implementation.
      */
     public static void configure(AbstractApplicationContext context, XmlBeanDefinitionReader reader) {
-        reader.setValidating(false);
         reader.setNamespaceAware(true);
-        reader.setParserClass(XBeanXmlBeanDefinitionParser.class);
+        reader.setValidationMode(XmlBeanDefinitionReader.VALIDATION_XSD);
     }
 
     /**
@@ -143,16 +199,42 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         // lets assume the class name == the package name plus the
         element.setAttributeNS(null, "class", className);
         addSpringAttributeValues(className, element);
-        BeanDefinitionHolder definition = parseBeanDefinitionElement(element, false);
+        BeanDefinitionHolder definition = parserContext.getDelegate().parseBeanDefinitionElement(element, false);
         addAttributeProperties(definition, metadata, className, original);
         addContentProperty(definition, metadata, element);
         addNestedPropertyElements(definition, metadata, className, element);
-        coerceNamespaceAwarePropertyValues(definition, element);
+        qnameHelper.coerceNamespaceAwarePropertyValues(definition.getBeanDefinition(), element);
         declareLifecycleMethods(definition, metadata, element);
+        resolveBeanClass((AbstractBeanDefinition) definition.getBeanDefinition(), definition.getBeanName());
         namedConstructorArgs.processParameters(definition, metadata);
         return definition;
     }
 
+    protected Class resolveBeanClass(AbstractBeanDefinition bd, String beanName) {
+        if (bd.hasBeanClass()) {
+            return bd.getBeanClass();
+        }
+        try {
+            ClassLoader cl = parserContext.getReaderContext().getReader().getBeanClassLoader();
+            if (cl == null) {
+                cl = Thread.currentThread().getContextClassLoader();
+            }
+            if (cl == null) {
+                cl = getClass().getClassLoader();
+            }
+            return bd.resolveBeanClass(cl);
+        }
+        catch (ClassNotFoundException ex) {
+            throw new BeanDefinitionStoreException(bd.getResourceDescription(),
+                    beanName, "Bean class [" + bd.getBeanClassName() + "] not found", ex);
+        }
+        catch (NoClassDefFoundError err) {
+            throw new BeanDefinitionStoreException(bd.getResourceDescription(),
+                    beanName, "Class that bean class [" + bd.getBeanClassName() + "] depends on not found", err);
+        }
+    }
+
+    
     /**
      * Parses the non-standard XML element as a Spring bean definition
      */
@@ -447,62 +529,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     }
 
     /**
-     * Any namespace aware property values (such as QNames) need to be coerced
-     * while we still have access to the XML Element from which its value comes -
-     * so lets do that now before we trash the DOM and just have the bean
-     * definition.
-     */
-    protected void coerceNamespaceAwarePropertyValues(BeanDefinitionHolder definitionHolder, Element element) {
-        BeanDefinition definition = definitionHolder.getBeanDefinition();
-        if (definition instanceof AbstractBeanDefinition && isQnameIsOnClassPath()) {
-            AbstractBeanDefinition bd = (AbstractBeanDefinition) definition;
-            // lets check for any QName types
-            BeanInfo beanInfo = getBeanInfo(bd.getBeanClassName());
-            if (beanInfo != null) {
-                PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
-                for (int i = 0; i < descriptors.length; i++) {
-                    QNameReflectionHelper.coerceNamespaceAwarePropertyValues(bd, element, descriptors, i);
-                }
-            }
-        }
-    }
-
-
-    protected boolean isQnameIsOnClassPath() {
-        if (initQNameOnClassPath == false) {
-            qnameIsOnClassPath = PropertyEditorHelper.loadClass("javax.xml.namespace.QName") != null;
-            initQNameOnClassPath = true;
-        }
-        return qnameIsOnClassPath;
-    }
-
-    protected BeanInfo getBeanInfo(String className) throws BeanDefinitionStoreException {
-        if (className == null) {
-            return null;
-        }
-
-        BeanInfo info = null;
-        Class type = null;
-        try {
-            type = loadClass(className);
-        }
-        catch (ClassNotFoundException e) {
-            throw new BeanDefinitionStoreException("Failed to load type: " + className + ". Reason: " + e, e);
-        }
-        try {
-            info = Introspector.getBeanInfo(type);
-        }
-        catch (IntrospectionException e) {
-            throw new BeanDefinitionStoreException("Failed to introspect type: " + className + ". Reason: " + e, e);
-        }
-        return info;
-    }
-
-    /**
      * Looks up the property decriptor for the given class and property name
      */
     protected PropertyDescriptor getPropertyDescriptor(String className, String localName) {
-        BeanInfo beanInfo = getBeanInfo(className);
+        BeanInfo beanInfo = qnameHelper.getBeanInfo(className);
         if (beanInfo != null) {
             PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
             for (int i = 0; i < descriptors.length; i++) {
@@ -531,6 +561,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         else {
             return parseChildExtensionBean(element);
         }
+    }
+
+    protected Object parseListElement(Element element, String name) {
+        return parserContext.getDelegate().parseListElement(element);
     }
 
     protected Object parseCustomMapElement(MappingMetaData metadata, Element element, String name) {
@@ -599,9 +633,12 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 String uri = childElement.getNamespaceURI();
                 String localName = childElement.getLocalName();
 
-                if (uri == null || uri.equals(SPRING_SCHEMA) || uri.equals(SPRING_SCHEMA_COMPAT)) {
-                    if (BEAN_ELEMENT.equals(localName)) {
-                        return parseBeanDefinitionElement(childElement, true);
+                if (uri == null || 
+                    uri.equals(SPRING_SCHEMA) || 
+                    uri.equals(SPRING_SCHEMA_COMPAT) ||
+                    uri.equals(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI)) {
+                    if (BeanDefinitionParserDelegate.BEAN_ELEMENT.equals(localName)) {
+                        return parserContext.getDelegate().parseBeanDefinitionElement(childElement, true);
                     }
                 } else {
                     Object value = parseBeanFromExtensionElement(childElement);
@@ -667,34 +704,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         if (in == null) {
             in = getClass().getClassLoader().getResourceAsStream(uri);
             if (in == null) {
-                logger.debug("Could not find resource: " + uri);
+                log.debug("Could not find resource: " + uri);
             }
         }
         return in;
-    }
-
-    /**
-     * Attempts to load the class on the current thread context class loader or
-     * the class loader which loaded us
-     */
-    protected Class loadClass(String name) throws ClassNotFoundException {
-        ClassLoader beanClassLoader = getBeanDefinitionReader().getBeanClassLoader();
-        if (beanClassLoader != null) {
-            try {
-                return beanClassLoader.loadClass(name);
-            }
-            catch (ClassNotFoundException e) {
-            }
-        }
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        if (contextClassLoader != null) {
-            try {
-                return contextClassLoader.loadClass(name);
-            }
-            catch (ClassNotFoundException e) {
-            }
-        }
-        return getClass().getClassLoader().loadClass(name);
     }
 
     protected boolean isEmpty(String uri) {
@@ -724,6 +737,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     // though who knows if it'll ever make it into a release! :)
     //
     // -------------------------------------------------------------------------
+    /*
     protected int parseBeanDefinitions(Element root) throws BeanDefinitionStoreException {
         int beanDefinitionCount = 0;
         if (isEmpty(root.getNamespaceURI()) || root.getLocalName().equals("beans")) {
@@ -775,6 +789,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     }
 
     protected BeanDefinitionHolder parseBeanDefinitionElement(Element ele, boolean isInnerBean) throws BeanDefinitionStoreException {
+        
         BeanDefinitionHolder bdh = super.parseBeanDefinitionElement(ele, isInnerBean);
         coerceNamespaceAwarePropertyValues(bdh, ele);
         return bdh;
@@ -803,6 +818,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected Object parseQNameElement(Element element) {
         return QNameReflectionHelper.createQName(element, getElementText(element));
     }
+    */
 
     /**
      * Returns the text of the element

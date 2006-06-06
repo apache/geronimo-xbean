@@ -5,8 +5,8 @@
     <version>2.4-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>xbean-spring</artifactId>
-  <name>XBean :: Spring</name>
+  <artifactId>xbean-spring-v2</artifactId>
+  <name>XBean :: Spring :: V2</name>
   <version>2.4-SNAPSHOT</version>
   <build>
     <testResources>
@@ -48,17 +48,18 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>mx4j</groupId>
-      <artifactId>mx4j</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-spring-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring</artifactId>
+      <version>2.0-m5</version>
+    </dependency>
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>ant</groupId>
