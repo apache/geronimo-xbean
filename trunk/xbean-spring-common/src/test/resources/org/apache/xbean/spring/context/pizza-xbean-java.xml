@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- START SNIPPET: xml -->
-<beans xmlns:p="java://org.apache.xbean.spring.example">
-
-  <p:PizzaService id="pizzaService" topping="Salami" cheese="Edam" size="17"/>
-  
-</beans>
-
-<!-- END SNIPPET: xml -->

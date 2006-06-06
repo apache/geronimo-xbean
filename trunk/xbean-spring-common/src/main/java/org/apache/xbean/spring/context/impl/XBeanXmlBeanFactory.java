@@ -16,13 +16,14 @@
  */
 package org.apache.xbean.spring.context.impl;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.Resource;
-
-import java.util.Collections;
-import java.util.List;
 
 public class XBeanXmlBeanFactory extends DefaultListableBeanFactory {
 
@@ -68,7 +69,7 @@ public class XBeanXmlBeanFactory extends DefaultListableBeanFactory {
      */
     public XBeanXmlBeanFactory(Resource resource, BeanFactory parentBeanFactory, List xmlPreprocessors) throws BeansException {
         super(parentBeanFactory);
-        XBeanXmlBeanDefinitionReader reader = new XBeanXmlBeanDefinitionReader(null, this, xmlPreprocessors);
+        XmlBeanDefinitionReader reader = XBeanHelper.createBeanDefinitionReader(null, this, xmlPreprocessors);
         reader.loadBeanDefinitions(resource);
     }
 

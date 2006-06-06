@@ -17,19 +17,20 @@
  **/
 package org.apache.xbean.spring.context;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.core.io.Resource;
-import org.apache.xbean.spring.context.impl.XBeanXmlBeanDefinitionReader;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.xbean.spring.context.impl.XBeanHelper;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.ResourceEntityResolver;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.core.io.Resource;
 
 /**
  * An XBean version of a regular Spring ApplicationContext which takes a
@@ -84,13 +85,20 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
     }
 
     protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws IOException {
-        XmlBeanDefinitionReader beanDefinitionReader = new XBeanXmlBeanDefinitionReader(this, beanFactory, xmlPreprocessors);
+        // Create a new XmlBeanDefinitionReader for the given BeanFactory.
+        XmlBeanDefinitionReader beanDefinitionReader = XBeanHelper.createBeanDefinitionReader(this, beanFactory, xmlPreprocessors);
 
+        // Configure the bean definition reader with this context's
+        // resource loading environment.
+        beanDefinitionReader.setResourceLoader(this);
+        beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
+
+        // Allow a subclass to provide custom initialization of the reader,
+        // then proceed with actually loading the bean definitions.
         initBeanDefinitionReader(beanDefinitionReader);
-
         loadBeanDefinitions(beanDefinitionReader);
     }
-
+    
     /**
      * {@inheritDoc}
      */

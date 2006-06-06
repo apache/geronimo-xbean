@@ -36,6 +36,8 @@ import org.apache.xbean.spring.context.impl.NamespaceHelper;
 public class XmlMetadataGenerator implements GeneratorPlugin {
     private final String metaInfDir;
     private final LogFacade log;
+    
+    public static final String NAMESPACE_HANDLER = "org.apache.xbean.spring.context.v2.XBeanNamespaceHandler";
 
     public XmlMetadataGenerator(LogFacade log, String metaInfDir) {
         this.metaInfDir = metaInfDir;
@@ -54,6 +56,16 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         PrintWriter out = new PrintWriter(new FileWriter(file));
         try {
             generatePropertiesFile(out, namespaceMapping.getElements());
+        } finally {
+            out.close();
+        }
+        
+        // Generate spring 2.0 mapping
+        file = new File(metaInfDir, "META-INF/spring.handlers");
+        log.log("Generating Spring 2.0 handler mapping: " + file + " for namespace: " + namespace);
+        out = new PrintWriter(new FileWriter(file));
+        try {
+            out.println(namespace.replace(":", "\\:") + "=" + NAMESPACE_HANDLER);
         } finally {
             out.close();
         }
