@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.spring.context.impl;
+package org.apache.xbean.spring.context.v1;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;

@@ -15,7 +15,7 @@
  * limitations under the License. 
  * 
  **/
-package org.apache.xbean.spring.context.impl;
+package org.apache.xbean.spring.context.v1;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -36,6 +36,11 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xbean.spring.context.impl.MappingMetaData;
+import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
+import org.apache.xbean.spring.context.impl.NamespaceHelper;
+import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
+import org.apache.xbean.spring.context.impl.QNameReflectionHelper;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
