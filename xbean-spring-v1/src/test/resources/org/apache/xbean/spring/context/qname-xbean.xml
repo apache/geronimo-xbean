@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:x="http://xbean.apache.org/schemas/pizza"
+	   xmlns:foo="urn:foo">
+
+	<x:qname-service id="qnameService">
+		<x:services>
+			<qname>foo:test</qname>
+			<qname>foo:bar</qname>
+		</x:services>
+		<x:list>
+			<qname>foo:list</qname>
+		</x:list>
+	</x:qname-service>
+	
+</beans>

@@ -1,0 +1,15 @@
+# START SNIPPET: config
+
+# the default package that POJOs are in
+package = org.apache.xbean.spring.example
+
+# Mapping of XML Element localNames to classes 
+salad = org.apache.xbean.spring.example.SaladService
+
+# Mapping of XML Attributes to property names
+salad.alias.addCroutons = crouton
+
+# Mapping of constructor argument names
+org.apache.xbean.spring.example.SaladService(java.lang.String,java.lang.String,boolean).parameterNames=dressing size crouton
+
+# END SNIPPET: config
