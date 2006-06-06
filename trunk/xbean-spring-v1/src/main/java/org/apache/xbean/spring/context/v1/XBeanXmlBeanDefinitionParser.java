@@ -40,6 +40,7 @@ import org.apache.xbean.spring.context.impl.MappingMetaData;
 import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
 import org.apache.xbean.spring.context.impl.NamespaceHelper;
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
+import org.apache.xbean.spring.context.impl.QNameHelper;
 import org.apache.xbean.spring.context.impl.QNameReflectionHelper;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
@@ -302,27 +303,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
             String localName, String value) {
         String propertyName = metadata.getPropertyName(getLocalName(element), localName);
         if (propertyName != null) {
-            try {
-                addPropertyValueMethod.invoke(definition.getBeanDefinition().getPropertyValues(),
-                                              new Object[] { propertyName, getValue(value) });
-            } catch (Exception e) {
-                throw new RuntimeException("Error adding property definition", e);
-            }
-        }
-    }
-
-    // Fix Spring 1.2.6 to 1.2.7 binary incompatibility.
-    // The addPropertyValueMethod has changed to return a
-    // value instead of void.
-    // So use reflectiom to handle both cases.
-    private static final Method addPropertyValueMethod;
-    static {
-        try {
-            addPropertyValueMethod = MutablePropertyValues.class.getMethod(
-                        "addPropertyValue",
-                        new Class[] { String.class, Object.class });
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to find MutablePropertyValues:addPropertyValue", e);
+            QNameHelper.addPropertyValue(
+                            definition.getBeanDefinition().getPropertyValues(),
+                            propertyName, 
+                            getValue(value));
         }
     }
 
@@ -420,7 +404,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                     }
 
                     if (value != null) {
-                        definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
+                        QNameHelper.addPropertyValue(
+                                        definition.getBeanDefinition().getPropertyValues(),
+                                        propertyName, 
+                                        value);
                     }
                     else
                     {

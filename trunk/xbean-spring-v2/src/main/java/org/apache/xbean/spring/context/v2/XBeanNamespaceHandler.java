@@ -379,27 +379,8 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             String localName, String value) {
         String propertyName = metadata.getPropertyName(getLocalName(element), localName);
         if (propertyName != null) {
-            try {
-                addPropertyValueMethod.invoke(definition.getBeanDefinition().getPropertyValues(),
-                                              new Object[] { propertyName, getValue(value) });
-            } catch (Exception e) {
-                throw new RuntimeException("Error adding property definition", e);
-            }
-        }
-    }
-
-    // Fix Spring 1.2.6 to 1.2.7 binary incompatibility.
-    // The addPropertyValueMethod has changed to return a
-    // value instead of void.
-    // So use reflectiom to handle both cases.
-    private static final Method addPropertyValueMethod;
-    static {
-        try {
-            addPropertyValueMethod = MutablePropertyValues.class.getMethod(
-                        "addPropertyValue",
-                        new Class[] { String.class, Object.class });
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to find MutablePropertyValues:addPropertyValue", e);
+            definition.getBeanDefinition().getPropertyValues().addPropertyValue(
+                            propertyName, getValue(value));
         }
     }
 
