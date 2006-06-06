@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<beans xmlns:b="http://xbean.apache.org/schemas/pizza" xmlns:s="http://xbean.apache.org/schemas/spring/1.0">
+
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+  
+  <b:beer s:id="beerService" id="123" name="${beerType}"/>
+
+</beans>
+<!-- END SNIPPET: xml -->
+

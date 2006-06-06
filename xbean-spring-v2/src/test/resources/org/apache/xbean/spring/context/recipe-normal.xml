@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <bean id="recipeService" class="org.apache.xbean.spring.example.RecipeService">
+    <property name="recipes">
+      <list>
+        <bean class="org.apache.xbean.spring.example.Recipe">
+          <property name="instructions" value="Mash together" />
+          <property name="ingredients" value="Food" />
+        </bean>
+        <bean class="org.apache.xbean.spring.example.Recipe">
+          <property name="instructions" value="Mash together" />
+          <property name="ingredients" value="Food" />
+        </bean>
+      </list>
+    </property>
+    <property name="topRecipe"> 
+      <bean class="org.apache.xbean.spring.example.Recipe">
+        <property name="instructions" value="Mash together" />
+        <property name="ingredients" value="Food" />
+      </bean>
+    </property>
+  </bean>
+</beans>
