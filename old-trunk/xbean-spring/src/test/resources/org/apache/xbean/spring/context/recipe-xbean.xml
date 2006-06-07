@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:x="http://xbean.apache.org/schemas/pizza" xmlns:foo="urn:foo">
+
+  <x:recipe-service id="recipeService">
+    <x:topRecipe>
+      <x:instructions>Mash together</x:instructions>
+      <x:ingredients>Food</x:ingredients>
+    </x:topRecipe>
+    <x:recipe>
+      <x:instructions>Mash together</x:instructions>
+      <x:ingredients>Food</x:ingredients>
+    </x:recipe>
+    <x:recipe>
+      <x:instructions>Mash together</x:instructions>
+      <x:ingredients>Food</x:ingredients>
+    </x:recipe>
+  </x:recipe-service>
+
+</beans>
