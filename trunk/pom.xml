@@ -164,6 +164,7 @@
     <module>xbean-spring-v1</module>
     <module>xbean-spring-v2</module>
     <module>xbean-spring</module>
+    <module>xbean-spring-itests</module>
     <module>xbean-telnet</module>
     <module>xbean-tiger</module>
     <module>maven-xbean-plugin</module>
