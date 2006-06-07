@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <parent>
+    <artifactId>xbean</artifactId>
+    <groupId>org.apache.xbean</groupId>
+    <version>2.4-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>xbean-spring-itests</artifactId>
+  <name>XBean :: Spring :: ITests</name>
+  <version>2.4-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <modules>
+    <module>core</module>
+    <module>1.2.4</module>
+    <module>1.2.5</module>
+    <module>1.2.6</module>
+    <module>1.2.7</module>
+    <module>1.2.8</module>
+    <module>2.0-m5</module>
+  </modules>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-spring-itests-core</artifactId>
+        <version>${version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>
