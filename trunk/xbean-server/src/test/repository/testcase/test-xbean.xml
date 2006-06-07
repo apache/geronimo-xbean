@@ -1,8 +1,0 @@
-<beans>
-
-  <bean class="org.apache.xbean.server.deployer.PropertyTestService">
-    <property name="baseDir" value="${xbean.base.dir}" />
-    <property name="currentDir" value="${xbean.current.dir}" />
-  </bean>
-
-</beans>

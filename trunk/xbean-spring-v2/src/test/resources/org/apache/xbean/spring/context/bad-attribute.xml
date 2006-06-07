@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns:b="http://xbean.apache.org/schemas/pizza">
-  
-  <b:beer id="123" unknown="Stella" />
-  
-</beans>
