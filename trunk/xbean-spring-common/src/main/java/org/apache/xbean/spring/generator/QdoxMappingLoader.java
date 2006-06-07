@@ -170,37 +170,40 @@ public class QdoxMappingLoader implements MappingLoader {
         Map flatCollections = new HashMap();
         Set attributes = new HashSet();
         Map attributesByPropertyName = new HashMap();
-        BeanProperty[] beanProperties = javaClass.getBeanProperties();
-        for (int i = 0; i < beanProperties.length; i++) {
-            BeanProperty beanProperty = beanProperties[i];
-
-            // we only care about properties with a setter
-            if (beanProperty.getMutator() != null) {
-                AttributeMapping attributeMapping = loadAttribute(beanProperty, "");
-                if (attributeMapping != null) {
-                    attributes.add(attributeMapping);
-                    attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
-                }
-                JavaMethod acc = beanProperty.getAccessor();
-                if (acc != null) {
-                    DocletTag mapTag = acc.getTagByName(MAP_ANNOTATION);
-                    if (mapTag != null) {
-                        MapMapping mm = new MapMapping(mapTag.getNamedParameter("entryName"), 
-                                mapTag.getNamedParameter("keyName"));
-                        mapsByPropertyName.put(beanProperty.getName(), mm);
+        
+        for (JavaClass jClass = javaClass; jClass != null; jClass = jClass.getSuperJavaClass()) {
+            BeanProperty[] beanProperties = jClass.getBeanProperties();
+            for (int i = 0; i < beanProperties.length; i++) {
+                BeanProperty beanProperty = beanProperties[i];
+    
+                // we only care about properties with a setter
+                if (beanProperty.getMutator() != null) {
+                    AttributeMapping attributeMapping = loadAttribute(beanProperty, "");
+                    if (attributeMapping != null) {
+                        attributes.add(attributeMapping);
+                        attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
                     }
-                    
-                    DocletTag flatColTag = acc.getTagByName(FLAT_COLLECTION_ANNOTATION);
-                    if (flatColTag != null) {
-                        String childName = flatColTag.getNamedParameter("childElement");
-                        if (childName == null)
-                            throw new InvalidModelException("Flat collections must specify the childElement attribute.");
-                        flatCollections.put(beanProperty.getName(), childName);
-                    }
-                    
-                    DocletTag flatPropTag = acc.getTagByName(FLAT_PROPERTY_ANNOTATION);
-                    if (flatPropTag != null) {
-                        flatProperties.add(beanProperty.getName());
+                    JavaMethod acc = beanProperty.getAccessor();
+                    if (acc != null) {
+                        DocletTag mapTag = acc.getTagByName(MAP_ANNOTATION);
+                        if (mapTag != null) {
+                            MapMapping mm = new MapMapping(mapTag.getNamedParameter("entryName"), 
+                                    mapTag.getNamedParameter("keyName"));
+                            mapsByPropertyName.put(beanProperty.getName(), mm);
+                        }
+                        
+                        DocletTag flatColTag = acc.getTagByName(FLAT_COLLECTION_ANNOTATION);
+                        if (flatColTag != null) {
+                            String childName = flatColTag.getNamedParameter("childElement");
+                            if (childName == null)
+                                throw new InvalidModelException("Flat collections must specify the childElement attribute.");
+                            flatCollections.put(beanProperty.getName(), childName);
+                        }
+                        
+                        DocletTag flatPropTag = acc.getTagByName(FLAT_PROPERTY_ANNOTATION);
+                        if (flatPropTag != null) {
+                            flatProperties.add(beanProperty.getName());
+                        }
                     }
                 }
             }

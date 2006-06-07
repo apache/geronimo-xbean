@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executor;
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
 import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
@@ -92,6 +92,17 @@ public class StandardKernel implements Kernel {
      * Creates the service managers with handle service lifecycle.
      */
     private ServiceManagerFactory serviceManagerFactory;
+    
+    /**
+     * The service executor for this kernel
+     */         
+    private ExecutorService serviceExecutor;
+    
+    /**
+     * True if the executor is owned by this kernel and should be shutdown
+     * when the kernel is destroyed     
+     */         
+    private boolean ownsServiceExecutor;
 
     /**
      * Creates a kernel using the specified name.
@@ -100,6 +111,7 @@ public class StandardKernel implements Kernel {
      */
     public StandardKernel(String kernelName) {
         this(kernelName, Executors.newCachedThreadPool(), 30, TimeUnit.SECONDS);
+        ownsServiceExecutor = true;
     }
 
     /**
@@ -110,13 +122,14 @@ public class StandardKernel implements Kernel {
      * @param timeoutDuration the maximum duration to wait for a service event to complete
      * @param timeoutUnits the unit of measure for the timeoutDuration
      */
-    public StandardKernel(String kernelName, Executor serviceExecutor, long timeoutDuration, TimeUnit timeoutUnits) {
+    public StandardKernel(String kernelName, ExecutorService serviceExecutor, long timeoutDuration, TimeUnit timeoutUnits) {
         if (kernelName == null) throw new NullPointerException("kernelName is null");
         if (kernelName.length() ==0) throw new IllegalArgumentException("kernelName must be atleast one character long");
         if (serviceExecutor == null) throw new NullPointerException("serviceExecutor is null");
         if (timeoutUnits == null) throw new NullPointerException("timeoutUnits is null");
 
         this.kernelName = kernelName;
+        this.serviceExecutor = serviceExecutor;
         serviceManagerFactory = new ServiceManagerFactory(this, serviceMonitor, serviceExecutor, timeoutDuration, timeoutUnits);
         serviceManagerRegistry = new ServiceManagerRegistry(serviceManagerFactory);
     }
@@ -138,6 +151,11 @@ public class StandardKernel implements Kernel {
 
         // destroy all services
         serviceManagerRegistry.destroy();
+        
+        // shutdown service executor
+        if (ownsServiceExecutor) {
+            serviceExecutor.shutdown();
+        }
 
         // remove this kernel from the kernel factory registry
         KernelFactory.destroyInstance(this);
