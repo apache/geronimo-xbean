@@ -1,0 +1,17 @@
+# START SNIPPET: config
+
+# the default package that POJOs are in
+package = org.apache.xbean.spring.example
+
+# Mapping of XML Element localNames to classes 
+pizza = org.apache.xbean.spring.example.PizzaService
+restaurant = org.apache.xbean.spring.example.RestaurantService
+
+# Mapping of XML Attributes to property names
+pizza.alias.myTopping = topping
+
+# Mapping of nested bean properties
+restaurant.dinnerMenu.list = dinnerMenu
+restaurant.favourite = favourite
+
+# END SNIPPET: config
