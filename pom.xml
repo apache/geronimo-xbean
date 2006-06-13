@@ -152,6 +152,7 @@
   </build>
 
   <modules>
+    <module>xbean-finder</module>
     <module>xbean-classpath</module>
     <!--
     <module>xbean-jmx</module>
