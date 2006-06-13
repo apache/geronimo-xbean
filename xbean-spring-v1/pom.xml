@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>xbean</artifactId>
     <groupId>org.apache.xbean</groupId>
-    <version>2.4-SNAPSHOT</version>
+    <version>2.4</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>xbean-spring-v1</artifactId>
   <name>XBean :: Spring :: V1</name>
-  <version>2.4-SNAPSHOT</version>
+  <version>2.4</version>
   <build>
     <testResources>
       <testResource>
@@ -30,14 +30,14 @@
               <tasks>
                 <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                   <classpath>
-                    <pathelement path="${basedir}/target/classes"></pathelement>
-                    <pathelement path="${basedir}/target/test-classes"></pathelement>
-                    <path refid="maven.runtime.classpath"></path>
+                    <pathelement path="${basedir}/target/classes" />
+                    <pathelement path="${basedir}/target/test-classes" />
+                    <path refid="maven.runtime.classpath" />
                   </classpath>
                 </taskdef>
-                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/"></mapping>
+                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/" />
                 <copy todir="${basedir}/target/test-classes">
-                  <fileset dir="${basedir}/target/test-generated"></fileset>
+                  <fileset dir="${basedir}/target/test-generated" />
                 </copy>
               </tasks>
             </configuration>
