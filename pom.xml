@@ -111,9 +111,9 @@
   </developers>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.4</connection>
-    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.4</developerConnection>
-    <url>http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.4</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
+    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
+    <url>http://svn.apache.org/repos/asf/geronimo/xbean/trunk</url>
   </scm>
 
   <build>
@@ -142,8 +142,8 @@
               <goal>deploy-maven-one-repository</goal>
             </goals>
             <configuration>
-              <remoteRepositoryId>apache.m1.releases</remoteRepositoryId>
-              <remoteRepositoryUrl>scp://minotaur.apache.org/www/people.apache.org/repository</remoteRepositoryUrl>
+              <remoteRepositoryId>xbean</remoteRepositoryId>
+              <remoteRepositoryUrl>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-${version}/m1</remoteRepositoryUrl>
             </configuration>
           </execution>
         </executions>
@@ -178,6 +178,7 @@
         <modules>
           <module>xbean-tiger</module>
           <module>xbean-finder</module>
+          <module>xbean-jaxb</module>
         </modules>
       </profile>
   </profiles>
@@ -314,9 +315,14 @@
   </dependencyManagement>
 
   <distributionManagement>
+    <repository>
+      <id>xbean</id>
+      <name>Apache Release Distribution Repository</name>
+      <url>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-${version}/m2</url>
+    </repository>
     <site>
-      <id>xbean-website</id>
-      <url>scpexe://xbean.org/home/projects/xbean/public_html/maven</url>
+      <id>xbean</id>
+      <url>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-${version}/site</url>
     </site>
   </distributionManagement>
 
