@@ -18,19 +18,20 @@ package org.apache.xbean.jaxb.jndi;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import java.util.Hashtable;
 
 import junit.framework.TestCase;
 
 /**
- *
+ * 
  * @version $Revision: $
  */
 public class JndiTest extends TestCase {
 
     protected Context context;
-    
+
     public void testContextFromJAXB() throws Exception {
         Object foo = context.lookup("foo");
         System.out.println("Foo: " + foo);
@@ -40,10 +41,14 @@ public class JndiTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        Hashtable environment = createEnvironment();
-        context = new InitialContext(environment );
-        
+        context = createInitialContext();
+
         assertNotNull("Should have created a context!", context);
+    }
+
+    protected InitialContext createInitialContext() throws NamingException {
+        Hashtable environment = createEnvironment();
+        return new InitialContext(environment);
     }
 
     protected Hashtable createEnvironment() {
@@ -51,6 +56,6 @@ public class JndiTest extends TestCase {
         answer.put(Context.PROVIDER_URL, "file:src/test/resources/org/apache/xbean/jaxb/example1.xml");
         answer.put(Context.INITIAL_CONTEXT_FACTORY, JaxbInitialContextFactory.class.getName());
         answer.put(JaxbInitialContextFactory.JAXB_PACKAGES, "org.apache.xbean.jaxb:org.apache.xbean.jaxb.example");
-        return answer ;
+        return answer;
     }
 }
