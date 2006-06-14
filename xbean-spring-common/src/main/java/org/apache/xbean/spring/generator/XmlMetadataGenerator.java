@@ -65,7 +65,7 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         log.log("Generating Spring 2.0 handler mapping: " + file + " for namespace: " + namespace);
         out = new PrintWriter(new FileWriter(file));
         try {
-            out.println(namespace.replace(":", "\\:") + "=" + NAMESPACE_HANDLER);
+            out.println(namespace.replaceAll(":", "\\\\:") + "=" + NAMESPACE_HANDLER);
         } finally {
             out.close();
         }
