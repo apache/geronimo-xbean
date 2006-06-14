@@ -69,15 +69,19 @@ public class QNameReflectionHelper {
     }
 
     protected static Method findMethod(String name) {
-        Class type = PropertyEditorHelper.loadClass("org.apache.xbean.spring.context.impl.QNameHelper");
-        if (type != null) {
-            Method[] methods = type.getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                if (method.getName().equals(name)) {
-                    return method;
+        try {
+            Class type = PropertyEditorHelper.loadClass("org.apache.xbean.spring.context.impl.QNameHelper");
+            if (type != null) {
+                Method[] methods = type.getMethods();
+                for (int i = 0; i < methods.length; i++) {
+                    Method method = methods[i];
+                    if (method.getName().equals(name)) {
+                        return method;
+                    }
                 }
             }
+        } catch (Throwable t) {
+            // Ignore, this is usually because QName method is not in the classpath 
         }
         return null;
     }
