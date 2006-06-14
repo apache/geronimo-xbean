@@ -152,7 +152,6 @@
   </build>
 
   <modules>
-    <module>xbean-finder</module>
     <module>xbean-classpath</module>
     <!--
     <module>xbean-jmx</module>
@@ -167,9 +166,22 @@
     <module>xbean-spring</module>
     <module>xbean-spring-itests</module>
     <module>xbean-telnet</module>
-    <module>xbean-tiger</module>
     <module>maven-xbean-plugin</module>
   </modules>
+
+  <profiles>
+      <profile>
+        <id>jdk1.5</id>
+        <activation>
+          <jdk>1.5</jdk>
+        </activation>
+        <modules>
+          <module>xbean-tiger</module>
+          <module>xbean-finder</module>
+        </modules>
+      </profile>
+  </profiles>
+  
 
   <dependencies>
     <dependency>
