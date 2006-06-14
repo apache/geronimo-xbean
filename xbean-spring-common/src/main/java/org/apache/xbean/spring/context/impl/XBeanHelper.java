@@ -21,7 +21,7 @@ public class XBeanHelper {
             Constructor cstr = cl.getConstructor(new Class[] { SpringApplicationContext.class, BeanDefinitionRegistry.class, List.class });
             return (XmlBeanDefinitionReader) cstr.newInstance(new Object[] { applicationContext, registry, xmlPreprocessors });
         } catch (Exception e) {
-            throw new IllegalStateException("Could not find valid implementation for: " + version, e);
+            throw (IllegalStateException) new IllegalStateException("Could not find valid implementation for: " + version).initCause(e);
         }
     }
 }
