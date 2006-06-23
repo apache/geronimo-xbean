@@ -31,6 +31,12 @@
     </notifiers>
   </ciManagement>
 
+  <properties>
+    <m1.repo>scp://minotaur.apache.org/www/people.apache.org/repository</m1.repo>
+    <m2.repo>scp://minotaur.apache.org/www/people.apache.org/maven-snapshot-repository</m2.repo>
+    <site.repo>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-${version}/m1</site.repo>
+  </properties>
+
   <mailingLists>
     <mailingList>
       <name>xbean developers</name>
@@ -111,9 +117,9 @@
   </developers>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.4</connection>
-    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.4</developerConnection>
-    <url>http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.4</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
+    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
+    <url>http://svn.apache.org/repos/asf/geronimo/xbean/trunk</url>
   </scm>
 
   <build>
@@ -143,7 +149,7 @@
             </goals>
             <configuration>
               <remoteRepositoryId>xbean</remoteRepositoryId>
-              <remoteRepositoryUrl>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-${version}/m1</remoteRepositoryUrl>
+              <remoteRepositoryUrl>${m1.repo}</remoteRepositoryUrl>
             </configuration>
           </execution>
         </executions>
@@ -318,11 +324,11 @@
     <repository>
       <id>xbean</id>
       <name>Apache Release Distribution Repository</name>
-      <url>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-${version}/m2</url>
+      <url>${m2.repo}</url>
     </repository>
     <site>
       <id>xbean</id>
-      <url>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-${version}/site</url>
+      <url>${site.repo}</url>
     </site>
   </distributionManagement>
 
