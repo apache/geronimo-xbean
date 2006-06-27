@@ -1,0 +1,54 @@
+ -----
+ Converting gbean.org from m1 to m2
+ -----
+ Jason van Zyl
+ -----
+ 
+ What follows is a little description of the the process that I go through
+ when converting an m1 project to an m2 project. In this example I'm going to
+ use gbean.org, Dain Sundstrom's [yada yada yada] ...
+ 
+ Usually when I start looking at converting a project from m1 to m2 I take a
+ quick look at the directory structure because the standard layout we
+ decided upon for m2 is slightly different from layout most common in m1 
+ and it's understandable that folks might not want to change their layout. 
+ I talked it over with Dain and because SVN makes it so easy to shuffle things
+ around he decided it would be ok to use the m2 standard. Using the m2
+ standards does make things easier because the standards for m2 are
+ encapsulated in the Super POM that all m2 project inherit from. You can sort of 
+ think of the Super POM in Maven as the analog of <<<java.lang.Object>>> in Java.
+ 
+ - pitfalls in using the default structure
+ 
+ - resources in the same directories as sources
+ 
+ - some things we don't have in m2 right now are a clover plugin
+
+ Updating the POM
+ 
+ - change pomVersion to modelVersion and 3 to 4.0.0
+ 
+ - the id element is deprecated an calculated in m2, so i changed the
+   id element to artifactId
+   
+ - currentVersion to version
+ 
+ - change the version from 1.0-SNAPSHOT to 1.0-alpha-1-SNAPSHOT
+ 
+ - package element no longer exists, it will be the job of plugins
+ 
+ - remove the siteAddress and siteDirectory elemement and replace it
+   with the distributionManagement element
+   
+ - removed the entire build element because we are using m2 standards
+   which are encapsulated in the Super POM.
+   
+ - remove the reports for now as we don't have many
+
+Annoyances
+
+ The single biggest annoyance with converting from m1 to m2 is the fact that
+ often times people have not made POMs for artifacts we have entered into the
+ repository. With m2 the build will not work if artifacts do not have the
+ accompanying POMs.
+ 

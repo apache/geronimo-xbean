@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+* Copyright 2005 the original author or authors.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+-->
+<project default="default"
+    xmlns:j="jelly:core"
+    xmlns:ant="jelly:ant"
+    >
+
+    <!-- ==================== -->
+    <!-- Default Global Goals -->
+    <!-- ==================== -->
+
+    <goal name="default">
+        <attainGoal name="jar:install"/>
+    </goal>
+
+    <goal name="build">
+        <attainGoal name="default"/>
+    </goal>
+
+    <goal name="rebuild">
+        <attainGoal name="clean"/>
+        <attainGoal name="build"/>
+    </goal>
+
+    <!-- Check if the tests need to run -->
+    <preGoal name="test:test">
+        <j:if test="${context.getVariable('maven.test.force') == null}">
+            <j:if test="${cloveroverride != 'true'}">
+                <j:set var="uptodatePropName" value="tests.uptodate"/>
+                <j:remove var="${uptodatePropName}"/>
+                <ant:mkdir dir="${basedir}/target/test-reports/"/>
+                <j:set var="uptodateFile" value="${basedir}/target/test-reports/tstamp"/>
+
+                <ant:uptodate property="${uptodatePropName}" targetfile="${uptodateFile}">
+                    <ant:srcfiles dir="${basedir}/src/" includes="**/*"/>
+                </ant:uptodate>
+
+                <j:if test="${context.getVariable(uptodatePropName) == 'true'}">
+                    <ant:echo>NOTICE: Skipping tests; they seem to have passed already</ant:echo>
+                    <j:set var="maven.test.skip" value="true"/>
+                    <j:set var="unitTestSourcesPresent" value="false"/>
+                </j:if>
+            </j:if>
+        </j:if>
+    </preGoal>
+
+    <!-- Update the timestamp of the last successful test -->
+    <postGoal name="test:test">
+        <j:if test="${context.getVariable('maven.test.failure') == null}">
+            <ant:touch file="${basedir}/target/test-reports/tstamp"/>
+        </j:if>
+    </postGoal>
+</project>
