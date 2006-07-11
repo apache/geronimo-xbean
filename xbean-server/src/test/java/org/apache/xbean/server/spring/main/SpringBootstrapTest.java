@@ -20,6 +20,7 @@ import junit.framework.TestCase;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.kernel.KernelFactory;
 import org.apache.xbean.server.main.KernelMain;
+import org.apache.xbean.bootstrap.Bootstrap;
 
 /**
  * @author Dain Sundstrom
@@ -32,23 +33,27 @@ public class SpringBootstrapTest extends TestCase {
 
     public void testClasspathBootstrap() throws Exception{
         springBootstrap.setConfigurationFile("META-INF/xbean-bootstrap.xml");
-        springBootstrap.setServerBaseDirectory(basedir);
+        springBootstrap.setHomeDirectory(basedir);
         assertBootable(springBootstrap);
     }
 
     public void testFileBootstrapWithAbsoluteConfigPath() throws Exception {
         springBootstrap.setConfigurationFile(basedir + "/src/main/resources/META-INF/xbean-bootstrap.xml");
-        springBootstrap.setServerBaseDirectory(basedir);
+        springBootstrap.setHomeDirectory(basedir);
         assertBootable(springBootstrap);
     }
 
     public void testFileBootstrapWithRelativeConfigPath() throws Exception {
         springBootstrap.setConfigurationFile("src/main/resources/META-INF/xbean-bootstrap.xml");
-        springBootstrap.setServerBaseDirectory(basedir);
+        springBootstrap.setHomeDirectory(basedir);
         assertBootable(springBootstrap);
     }
 
     private static void assertBootable(SpringBootstrap springBootstrap) {
+        // home dir system property is only set in the bootstrap code, so we must set it here
+        // since the test xml file uses this property
+        System.setProperty(Bootstrap.HOME_DIR, springBootstrap.getHomeDirectory());
+
         // load the main instance
         KernelMain main = (KernelMain) springBootstrap.loadMain();
 

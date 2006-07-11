@@ -2,13 +2,13 @@
   <parent>
     <artifactId>xbean</artifactId>
     <groupId>org.apache.xbean</groupId>
-    <version>2.5-SNAPSHOT</version>
+    <version>2.5-colossus</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>maven-xbean-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Maven XBean Plugin</name>
-  <version>2.5-SNAPSHOT</version>
+  <version>2.5-colossus</version>
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>

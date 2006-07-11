@@ -34,9 +34,9 @@
     <constructor-arg index="0" value="xbean"/>
   </bean>
 
-  <s:file-system-repository id="repository" root="${xbean.base.dir}/repository"/>
+  <s:file-system-repository id="repository" root="${xbean.home.dir}/repository"/>
 
-  <s:spring-loader id="springLoader" kernel="#kernel" baseDir="${xbean.base.dir}/conf">
+  <s:spring-loader id="springLoader" kernel="#kernel" baseDir="${xbean.home.dir}/conf">
     <s:xmlPreprocessors>
         <s:class-loader-xml-preprocessor repository="#repository"/>
     </s:xmlPreprocessors>

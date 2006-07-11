@@ -2,22 +2,14 @@
   <parent>
     <artifactId>xbean</artifactId>
     <groupId>org.apache.xbean</groupId>
-    <version>2.5-SNAPSHOT</version>
+    <version>2.5-colossus</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>xbean-server</artifactId>
   <name>XBean :: Server</name>
-  <version>2.5-SNAPSHOT</version>
+  <version>2.5-colossus</version>
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.4</source>
-          <target>1.4</target>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
@@ -44,6 +36,10 @@
     </plugins>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-bootstrap</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-spring</artifactId>

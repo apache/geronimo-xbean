@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>xbean</artifactId>
+    <groupId>org.apache.xbean</groupId>
+    <version>2.5-colossus</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>xbean-colossus</artifactId>
+  <packaging>pom</packaging>
+  <name>XBean :: Colossus</name>
+  <version>2.5-colossus</version>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+            <execution>
+                <phase>package</phase>
+                <goals>
+                    <goal>attached</goal>
+                    <goal>directory</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assemble/colossus.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
+          <finalName>xbean-colossus-${pom.version}</finalName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <!--todo I have no idea why this is required but if you remove it maven will not build the modules in the correct order -->
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-spring-itests-124</artifactId>
+      <version>2.5-colossus</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

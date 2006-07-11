@@ -18,17 +18,16 @@ package org.apache.xbean.server.spring.main;
 
 import java.beans.PropertyEditorManager;
 import java.io.File;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
+import java.util.Properties;
 
+import org.apache.xbean.bootstrap.Bootstrap;
+import org.apache.xbean.bootstrap.BootstrapLoader;
 import org.apache.xbean.server.main.FatalStartupError;
 import org.apache.xbean.server.main.Main;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
@@ -38,17 +37,17 @@ import org.apache.xbean.spring.context.SpringApplicationContext;
 /**
  * SpringBootstrap is the main class used by a Spring based server.  This class uses the following strategies to determine
  * the configuration file to load:
- *
+ * <p/>
  * Command line parameter --bootstrap FILE
  * Manifest entry XBean-Bootstrap in the startup jar
  * META-INF/xbean-bootstrap.xml
- *
+ * <p/>
  * This class atempts to first load the configuration file from the local file system and if that fails it attempts to
  * load it from the classpath.
- *
+ * <p/>
  * SpringBootstrap expects the configuration to contain a service with the id "main" which is an implementation of
  * org.apache.xbean.server.main.Main.
- *
+ * <p/>
  * This class will set the system property xbean.base.dir to the directory containing the startup jar if the property
  * has not alredy been set (on the command line).
  *
@@ -56,53 +55,20 @@ import org.apache.xbean.spring.context.SpringApplicationContext;
  * @version $Id$
  * @since 2.0
  */
-public class SpringBootstrap {
-    private static final String XBEAN_BOOTSTRAP_MANIFEST = "XBean-Bootstrap";
-    private static final String BOOTSTRAP_FLAG = "--bootstrap";
-    private static final String DEFAULT_BOOTSTRAP = "META-INF/xbean-bootstrap.xml";
-    private static final List DEFAULT_PROPERTY_EDITOR_PATHS = Collections.singletonList("org.apache.xbean.server.propertyeditor");
+public class SpringBootstrap implements BootstrapLoader {
+    private static final String CONFIGURATION_FILE = "xbean.server.spring.configuration.file";
+    private static final String CONFIGURATION_FILE_DEFAULT = "conf/server.xml";
 
+    private static final List<String> DEFAULT_PROPERTY_EDITOR_PATHS = Collections.singletonList("org.apache.xbean.server.propertyeditor");
+
+    private String homeDirectory;
     private String configurationFile;
-    private String[] mainArguments;
-    private List propertyEditorPaths = DEFAULT_PROPERTY_EDITOR_PATHS;
-    private String serverBaseDirectory;
-
-    /**
-     * Initializes and boots the server using the supplied arguments.  If an error is thrown from the boot method,
-     * this method will pring the error to standard error along with the stack trace and exit with the exit specified
-     * in the FatalStartupError or exit code 9 if the error was not a FatalStartupError.
-     * @param args the arguments used to start the server
-     */
-    public static void main(String[] args) {
-        SpringBootstrap springBootstrap = new SpringBootstrap();
-        main(args, springBootstrap);
-    }
-
-    /**
-     * Like the main(args) method but allows a configured bootstrap instance to be passed in.
-     * 
-     * @see #main(String[])
-     */
-    public static void main(String[] args, SpringBootstrap springBootstrap) {
-        springBootstrap.initialize(args);
-
-        try {
-            springBootstrap.boot();
-        } catch (FatalStartupError e) {
-            System.err.println(e.getMessage());
-            if (e.getCause() != null) {
-                e.getCause().printStackTrace();
-            }
-            System.exit(e.getExitCode());
-        } catch (Throwable e) {
-            System.err.println("Unknown error");
-            e.printStackTrace();
-            System.exit(9);
-        }
-    }
+    private List<String> propertyEditorPaths = DEFAULT_PROPERTY_EDITOR_PATHS;
+    private ClassLoader classLoader;
 
     /**
      * Gets the configuration file from which the main instance is loaded.
+     *
      * @return the configuration file from which the main instance is loaded
      */
     public String getConfigurationFile() {
@@ -111,6 +77,7 @@ public class SpringBootstrap {
 
     /**
      * Sets the configuration file from which the main instance is loaded.
+     *
      * @param configurationFile the configuration file from which the main instance is loaded
      */
     public void setConfigurationFile(String configurationFile) {
@@ -118,151 +85,139 @@ public class SpringBootstrap {
     }
 
     /**
-     * Gets the arguments passed to the main instance.
-     * @return the arguments passed to the main instance
-     */
-    public String[] getMainArguments() {
-        return mainArguments;
-    }
-
-    /**
-     * Sets the arguments passed to the main instance.
-     * @param mainArguments the arguments passed to the main instance
-     */
-    public void setMainArguments(String[] mainArguments) {
-        this.mainArguments = mainArguments;
-    }
-
-    /**
      * Gets the paths that are appended to the system property editors search path.
+     *
      * @return the paths that are appended to the system property editors search path
      */
-    public List getPropertyEditorPaths() {
+    public List<String> getPropertyEditorPaths() {
         return propertyEditorPaths;
     }
 
     /**
      * Sets the paths that are appended to the system property editors search path.
+     *
      * @param propertyEditorPaths the paths that are appended to the system property editors search path
      */
-    public void setPropertyEditorPaths(List propertyEditorPaths) {
+    public void setPropertyEditorPaths(List<String> propertyEditorPaths) {
         this.propertyEditorPaths = propertyEditorPaths;
     }
 
     /**
-     * Gets the base directory of the server.
-     * @return the base directory of the server
+     * String the home directory of the server.
+     *
+     * @return the home directory of the server
      */
-    public String getServerBaseDirectory() {
-        return serverBaseDirectory;
+    public String getHomeDirectory() {
+        return homeDirectory;
     }
 
     /**
-     * Sets the base directory of the server.
-     * @param serverBaseDirectory the base directory of the server
+     * Sets the home directory of the server.
+     *
+     * @param homeDirectory the home directory of the server
      */
-    public void setServerBaseDirectory(String serverBaseDirectory) {
-        this.serverBaseDirectory = serverBaseDirectory;
+    public void setHomeDirectory(String homeDirectory) {
+        this.homeDirectory = homeDirectory;
     }
 
     /**
-     * Determines the configuration file and server base directory.
-     * @param args the arguments passed to main
+     * Gets the class loader passed to the Spring application context.
+     *
+     * @return the class loader passed to the Spring application context
      */
-    public void initialize(String[] args) {
-        // check if bootstrap configuration was specified on the command line
-        if (args.length > 1 && BOOTSTRAP_FLAG.equals(args[0])) {
-            configurationFile = args[1];
-            this.mainArguments = new String[args.length - 2];
-            System.arraycopy(args, 2, this.mainArguments, 0, args.length);
-        } else {
-            if (configurationFile == null) {
-                configurationFile = DEFAULT_BOOTSTRAP;
-            }
-            this.mainArguments = args;
+    public ClassLoader getClassLoader() {
+        if (classLoader != null) {
+            return classLoader;
         }
-
-        // Determine the xbean installation directory
-        // guess from the location of the jar
-        URL url = SpringBootstrap.class.getClassLoader().getResource("META-INF/startup-jar");
-        if (url != null) {
-            try {
-                JarURLConnection jarConnection = (JarURLConnection) url.openConnection();
-                url = jarConnection.getJarFileURL();
-
-                if (serverBaseDirectory == null) {
-                    URI baseURI = new URI(url.toString()).resolve("..");
-                    serverBaseDirectory = new File(baseURI).getAbsolutePath();
-                }
-
-                Manifest manifest;
-                manifest = jarConnection.getManifest();
-                Attributes mainAttributes = manifest.getMainAttributes();
-                if (configurationFile == null) {
-                    configurationFile = mainAttributes.getValue(XBEAN_BOOTSTRAP_MANIFEST);
-                }
-            } catch (Exception e) {
-                System.err.println("Could not determine xbean installation directory");
-                e.printStackTrace();
-                System.exit(9);
-                return;
-            }
-        } else {
-            if (serverBaseDirectory == null) {
-                String dir = System.getProperty("xbean.base.dir", System.getProperty("user.dir"));
-                serverBaseDirectory = new File(dir).getAbsolutePath();
-            }
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader != null) {
+            return classLoader;
         }
+        return getClass().getClassLoader();
     }
 
     /**
-     * Loads the main instance from the configuration file.
-     * @return the main instance
+     * Sets the class loader passed to the Spring application context.
+     *
+     * @param classLoader the class loader passed to the Spring application context
      */
-    public Main loadMain() {
-        if (serverBaseDirectory == null) {
-            throw new NullPointerException("serverBaseDirectory is null");
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
-        }
-        File baseDirectory = new File(serverBaseDirectory);
-        if (!baseDirectory.isDirectory()) {
-            throw new IllegalArgumentException("serverBaseDirectory is not a directory: " + serverBaseDirectory);
+    /**
+     * Initialized this spring bootstrap instance using the specified properties and invokes main.
+     */
+    public void boot(String[] args, Properties properties, ClassLoader classLoader) {
+        this.classLoader = classLoader;
 
+        initialize(properties);
+
+        main(args);
+    }
+
+    private void main(String[] args) {
+        // load the main instance
+        Main main = loadMain();
+
+        // start it up
+        main.main(args);
+    }
+
+    /**
+     * Sets the home directory and configuration file using the specified properties.
+     *
+     * @param properties the properties for initialization
+     */
+    public void initialize(Properties properties) {
+        File homeDirectory = new File(properties.getProperty(Bootstrap.HOME_DIR));
+        if (!homeDirectory.isDirectory()) {
+            throw new IllegalArgumentException("XBean home directory is not a directory: " + homeDirectory);
         }
+        this.homeDirectory = homeDirectory.getAbsolutePath();
+
         if (configurationFile == null) {
-            throw new NullPointerException("configurationFile is null");
+            configurationFile = properties.getProperty(CONFIGURATION_FILE, CONFIGURATION_FILE_DEFAULT);
+        }
+    }
 
+    public Main loadMain() {
+        File homeDirectory = new File(this.homeDirectory);
+        if (!homeDirectory.isDirectory()) {
+            throw new IllegalArgumentException("XBean home directory is not a directory: " + homeDirectory);
         }
 
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(SpringBootstrap.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(getClassLoader());
         try {
             // add our property editors into the system
             if (propertyEditorPaths != null && !propertyEditorPaths.isEmpty()) {
-                List editorSearchPath = new LinkedList(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
+                List<String> editorSearchPath = new LinkedList<String>(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
                 editorSearchPath.addAll(propertyEditorPaths);
-                PropertyEditorManager.setEditorSearchPath((String[]) editorSearchPath.toArray(new String[editorSearchPath.size()]));
+                PropertyEditorManager.setEditorSearchPath(editorSearchPath.toArray(new String[editorSearchPath.size()]));
             }
 
-            // set the server base directory system property
-            System.setProperty("xbean.base.dir", baseDirectory.getAbsolutePath());
+            List xmlPreprocessors = new ArrayList();
+//            FileSystemRepository repository = new FileSystemRepository(new File(homeDir, "repository"));
+//            ClassLoaderXmlPreprocessor classLoaderXmlPreprocessor = new ClassLoaderXmlPreprocessor(repository);
+//            xmlPreprocessors.add(classLoaderXmlPreprocessor);
 
             // load the configuration file
             SpringApplicationContext factory;
             File file = new File(configurationFile);
             if (!file.isAbsolute()) {
-                file = new File(baseDirectory, configurationFile);
+                file = new File(homeDirectory, configurationFile);
             }
             if (file.canRead()) {
                 try {
                     // configuration file is on the local file system
-                    factory = new FileSystemXmlApplicationContext(file.toURL().toString());
+                    factory = new FileSystemXmlApplicationContext(file.toURL().toString(), xmlPreprocessors);
                 } catch (MalformedURLException e) {
                     throw new FatalStartupError("Error creating url for bootstrap file", e);
                 }
             } else {
                 // assume it is a classpath resource
-                factory = new ClassPathXmlApplicationContext(configurationFile);
+                factory = new ClassPathXmlApplicationContext(configurationFile, xmlPreprocessors);
             }
 
             // get the main service from the configuration file
@@ -277,17 +232,5 @@ public class SpringBootstrap {
         finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
-    }
-
-    /**
-     * Loads the main instance from the Spring configuration file and executes it.
-     */
-    public void boot() {
-        // load the main instance
-        Main main = loadMain();
-
-        // start it up
-        main.main(mainArguments);
-
     }
 }

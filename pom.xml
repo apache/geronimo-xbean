@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
 
   <name>XBean</name>
-  <version>2.5-SNAPSHOT</version>
+  <version>2.5-colossus</version>
   <description>XBean is a plugin based server architecture.</description>
   <url>http://xbean.org</url>
 
@@ -34,7 +34,7 @@
   <properties>
     <m1.repo>scp://minotaur.apache.org/www/people.apache.org/repository</m1.repo>
     <m2.repo>scp://minotaur.apache.org/www/people.apache.org/maven-snapshot-repository</m2.repo>
-    <site.repo>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-2.5-SNAPSHOT/site</site.repo>
+    <site.repo>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-2.5-colossus/site</site.repo>
   </properties>
 
   <mailingLists>
@@ -154,18 +154,38 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>once</forkMode>
+          <argLine>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005</argLine>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
   <modules>
+    <module>xbean-bootstrap</module>
     <module>xbean-classpath</module>
     <!--
     <module>xbean-jmx</module>
     -->
+    <module>xbean-colossus</module>
     <module>xbean-kernel</module>
     <module>xbean-osgi</module>
     <module>xbean-reflect</module>
     <module>xbean-server</module>
+    <!--
+    <module>xbean-spring-bootstrap</module>
+    -->    
     <module>xbean-spring-common</module>
     <module>xbean-spring-v1</module>
     <module>xbean-spring-v2</module>
@@ -184,7 +204,7 @@
         <modules>
           <module>xbean-tiger</module>
           <module>xbean-finder</module>
-          <module>xbean-jaxb</module>
+          <!--module>xbean-jaxb</module-->
         </modules>
       </profile>
   </profiles>
@@ -279,33 +299,53 @@
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-bootstrap</artifactId>
+        <version>2.5-colossus</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-colossus</artifactId>
+        <version>2.5-colossus</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-kernel</artifactId>
-        <version>2.5-SNAPSHOT</version>
+        <version>2.5-colossus</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-server</artifactId>
+        <version>2.5-colossus</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring</artifactId>
-        <version>2.5-SNAPSHOT</version>
+        <version>2.5-colossus</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-spring-bootstrap</artifactId>
+        <version>2.5-colossus</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring-common</artifactId>
-        <version>2.5-SNAPSHOT</version>
+        <version>2.5-colossus</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring-v1</artifactId>
-        <version>2.5-SNAPSHOT</version>
+        <version>2.5-colossus</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring-v2</artifactId>
-        <version>2.5-SNAPSHOT</version>
+        <version>2.5-colossus</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring</artifactId>
-        <version>2.5-SNAPSHOT</version>
+        <version>2.5-colossus</version>
       </dependency>
       <dependency>
         <groupId>qdox</groupId>
