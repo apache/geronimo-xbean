@@ -78,7 +78,11 @@ public class XBeanXmlBeanDefinitionReader extends XmlBeanDefinitionReader {
     }
 
     protected NamespaceHandlerResolver createDefaultNamespaceHandlerResolver() {
-        return new XBeanNamespaceHandlerResolver(getBeanClassLoader());
+        ClassLoader classLoader = getBeanClassLoader();
+        if (classLoader == null) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        }
+        return new XBeanNamespaceHandlerResolver(classLoader);
     }
     
     private void preprocess(Document doc) {

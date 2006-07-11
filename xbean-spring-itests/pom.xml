@@ -18,6 +18,7 @@
     <module>1.2.8</module>
     <module>2.0-m5</module>
     <module>2.0-rc1</module>
+    <module>2.0-rc2</module>
   </modules>
   <dependencyManagement>
     <dependencies>
