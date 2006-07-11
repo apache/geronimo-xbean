@@ -184,7 +184,9 @@
         <modules>
           <module>xbean-tiger</module>
           <module>xbean-finder</module>
+          <!--
           <module>xbean-jaxb</module>
+          -->
         </modules>
       </profile>
   </profiles>
