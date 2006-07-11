@@ -18,15 +18,14 @@
 package org.apache.xbean.spring.context;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.apache.xbean.spring.context.SpringApplicationContext;
+import org.apache.xbean.spring.context.impl.XBeanHelper;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.core.SpringVersion;
 
 /**
  * An XBean version of the regular Spring class to provide improved XML
@@ -60,7 +59,7 @@ public class XmlWebApplicationContext extends org.springframework.web.context.su
      */
     protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws IOException {
         // Create a new XmlBeanDefinitionReader for the given BeanFactory.
-        XmlBeanDefinitionReader beanDefinitionReader = createBeanDefinitionReader(beanFactory);
+        XmlBeanDefinitionReader beanDefinitionReader = XBeanHelper.createBeanDefinitionReader(this, beanFactory, xmlPreprocessors);
 
         // Configure the bean definition reader with this context's
         // resource loading environment.
@@ -73,15 +72,4 @@ public class XmlWebApplicationContext extends org.springframework.web.context.su
         loadBeanDefinitions(beanDefinitionReader);
     }
     
-    protected XmlBeanDefinitionReader createBeanDefinitionReader(DefaultListableBeanFactory beanFactory) {
-        String version = SpringVersion.getVersion();
-        String className = "org.apache.xbean.spring.v" + version.charAt(0) + ".XBeanXmlBeanDefinitionReader";
-        try {
-            Class cl = Class.forName(className);
-            Constructor cstr = cl.getConstructor(new Class[] { SpringApplicationContext.class, BeanDefinitionRegistry.class, List.class });
-            return (XmlBeanDefinitionReader) cstr.newInstance(new Object[] { this, beanFactory, xmlPreprocessors });
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not find valid implementation for: " + version);
-        }
-    }
 }
