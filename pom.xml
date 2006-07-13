@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
+  <!--parent>
     <artifactId>apache</artifactId>
     <groupId>org.apache</groupId>
     <version>1</version>
-  </parent>
+  </parent-->
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.xbean</groupId>
@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
 
   <name>XBean</name>
-  <version>2.5-colossus</version>
+  <version>COL-SNAPSHOT</version>
   <description>XBean is a plugin based server architecture.</description>
   <url>http://xbean.org</url>
 
@@ -32,9 +32,8 @@
   </ciManagement>
 
   <properties>
-    <m1.repo>scp://minotaur.apache.org/www/people.apache.org/repository</m1.repo>
-    <m2.repo>scp://minotaur.apache.org/www/people.apache.org/maven-snapshot-repository</m2.repo>
-    <site.repo>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-2.5-colossus/site</site.repo>
+    <m1.repo>scp://people.apache.org/home/dain/public_html/repository/m1-dev</m1.repo>
+    <m2.repo>scp://people.apache.org/home/dain/public_html/repository/m2-dev</m2.repo>
   </properties>
 
   <mailingLists>
@@ -148,7 +147,7 @@
               <goal>deploy-maven-one-repository</goal>
             </goals>
             <configuration>
-              <remoteRepositoryId>xbean</remoteRepositoryId>
+              <remoteRepositoryId>DainDevRepo</remoteRepositoryId>
               <remoteRepositoryUrl>${m1.repo}</remoteRepositoryUrl>
             </configuration>
           </execution>
@@ -194,6 +193,19 @@
     <module>xbean-telnet</module>
     <module>maven-xbean-plugin</module>
   </modules>
+
+  <repositories>
+    <!-- keep the central repo so that it is first tried -->
+    <repository>
+      <id>central</id>
+      <url>http://ibiblio.org/maven2/</url>
+    </repository>
+    <repository>
+      <id>DainDevRepo</id>
+      <name>Dain's Development Repository</name>
+      <url>http://people.apache.org/~dain/repository/m2-dev</url>
+    </repository>
+  </repositories>
 
   <profiles>
       <profile>
@@ -300,57 +312,57 @@
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-bootstrap</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-colossus</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-kernel</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-server</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring-bootstrap</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring-common</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring-v1</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring-v2</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring</artifactId>
-        <version>2.5-colossus</version>
+        <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>qdox</groupId>
         <artifactId>qdox</artifactId>
-        <version>1.5</version>
+        <version>1.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>stax</groupId>
@@ -362,14 +374,15 @@
 
   <distributionManagement>
     <repository>
-      <id>xbean</id>
-      <name>Apache Release Distribution Repository</name>
+      <id>DainDevRepo</id>
+      <name>Dain's Development Repository</name>
       <url>${m2.repo}</url>
     </repository>
-    <site>
-      <id>xbean</id>
-      <url>${site.repo}</url>
-    </site>
+    <snapshotRepository>
+      <id>DainDevRepo</id>
+      <name>Dain's Development Repository</name>
+      <url>${m2.repo}</url>
+    </snapshotRepository>
   </distributionManagement>
 
 </project>

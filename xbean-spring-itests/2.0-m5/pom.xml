@@ -2,12 +2,12 @@
   <parent>
     <artifactId>xbean-spring-itests</artifactId>
     <groupId>org.apache.xbean</groupId>
-    <version>2.5-colossus</version>
+    <version>COL-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>xbean-spring-itests-20m5</artifactId>
   <name>XBean :: Spring :: ITests :: 20m5</name>
-  <version>2.5-colossus</version>
+  <version>COL-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>org.apache.xbean</groupId>
