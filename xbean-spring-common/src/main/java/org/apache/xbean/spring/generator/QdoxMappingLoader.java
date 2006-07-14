@@ -240,7 +240,6 @@ public class QdoxMappingLoader implements MappingLoader {
                 List args = new ArrayList(parameters.length);
                 for (int j = 0; j < parameters.length; j++) {
                     JavaParameter parameter = parameters[j];
-                    String parameterType = parameter.getType().toString();
                     AttributeMapping attributeMapping = (AttributeMapping) attributesByPropertyName.get(parameter.getName());
                     if (attributeMapping == null) {
                         attributeMapping = loadParameter(parameter);
@@ -248,13 +247,7 @@ public class QdoxMappingLoader implements MappingLoader {
                         attributes.add(attributeMapping);
                         attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
                     }
-                    if (!parameterType.equals(attributeMapping.getType().getName())) {
-                        throw new InvalidModelException("Type mismatch:" +
-                                " The construction method " + toMethodLocator(parameter.getParentMethod()) +
-                                " declared parameter " + parameter.getName() + " as a " + parameterType +
-                                " but the bean property type is " + attributeMapping.getType().getName());
-                    }
-                    args.add(attributeMapping);
+                    args.add(new ParameterMapping(attributeMapping.getPropertyName(), toMappingType(parameter.getType(), null)));
                 }
                 constructorArgs.add(Collections.unmodifiableList(args));
             }
