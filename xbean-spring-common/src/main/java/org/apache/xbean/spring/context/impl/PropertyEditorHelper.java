@@ -31,6 +31,7 @@ public class PropertyEditorHelper {
     private static final Log log = LogFactory.getLog(PropertyEditorHelper.class);
 
     public static void registerCustomEditors() {
+        registerEditor("java.io.File", "org.apache.xbean.spring.context.impl.FileEditor");
         registerEditor("java.net.URI", "org.apache.xbean.spring.context.impl.URIEditor");
         registerEditor("javax.management.ObjectName", "org.apache.xbean.spring.context.impl.ObjectNameEditor");
     }
