@@ -48,14 +48,19 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>org.apache.xbean</groupId>
-      <artifactId>xbean-spring-common</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring</artifactId>
       <version>2.0-m5</version>
-      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-spring-common</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>mx4j</groupId>
