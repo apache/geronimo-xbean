@@ -18,6 +18,7 @@ package org.apache.xbean.spring.generator;
 
 import java.beans.PropertyEditorManager;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
+import org.apache.xbean.spring.example.BeerService;
 
 /**
  * @author Dain Sundstrom
@@ -37,23 +39,11 @@ public class ModelTest extends TestCase {
 
     public void testQdox() throws Exception{
         String basedir = System.getProperties().getProperty("basedir", ".");
-        QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE, new File[] { new File(basedir, "/src/test")});
-        Set namespaces = mappingLoader.loadNamespaces();
-        validateModel(namespaces);
-    }
+        QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE, new File[] { new File(basedir, "/src/test/java")}, null);
 
-    private void validateModel(Set namespaces) {
-        assertFalse(namespaces.isEmpty());
-
-        NamespaceMapping defaultNamespace = null;
-        for (Iterator iterator = namespaces.iterator(); iterator.hasNext();) {
-            NamespaceMapping namespaceMapping = (NamespaceMapping) iterator.next();
-            if (namespaceMapping.getNamespace().equals(DEFAULT_NAMESPACE)) {
-                defaultNamespace = namespaceMapping;
-                break;
-            }
-        }
+        NamespaceMapping defaultNamespace = getDefaultNamespace(mappingLoader);
         assertNotNull(defaultNamespace);
+
         ElementMapping element = defaultNamespace.getElement("pizza");
         assertNotNull(element);
         AttributeMapping attribute = element.getAttribute("myTopping");
@@ -66,13 +56,60 @@ public class ModelTest extends TestCase {
         assertNotNull(beerId);
         AttributeMapping beerName = beer.getAttribute("name");
         assertNotNull(beerName);
-        
+
         ElementMapping recipeService = defaultNamespace.getElement("recipe-service");
         assertNotNull(recipeService);
-        
+
         Map flatCollections = recipeService.getFlatCollections();
         assertNotNull(flatCollections);
         assertEquals(1, flatCollections.size());
+    }
+
+    public void testQdoxExcludeClass() throws Exception{
+        String basedir = System.getProperties().getProperty("basedir", ".");
+        QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE,
+                new File[] { new File(basedir, "/src/test/java")},
+                new String[] { BeerService.class.getName() } );
+
+        NamespaceMapping defaultNamespace = getDefaultNamespace(mappingLoader);
+        assertNotNull(defaultNamespace);
+
+        ElementMapping element = defaultNamespace.getElement("pizza");
+        assertNotNull(element);
+        ElementMapping beer = defaultNamespace.getElement("beer");
+        assertNull(beer);
+    }
+
+    public void testQdoxExcludePackage() throws Exception{
+        String basedir = System.getProperties().getProperty("basedir", ".");
+        QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE,
+                new File[] { new File(basedir, "/src/test/java")},
+                new String[] { "org.apache.xbean.spring.example" } );
+
+        NamespaceMapping defaultNamespace = getDefaultNamespace(mappingLoader);
+        assertNotNull(defaultNamespace);
+
+        ElementMapping element = defaultNamespace.getElement("pizza");
+        assertNull(element);
+        ElementMapping beer = defaultNamespace.getElement("beer");
+        assertNull(beer);
+        ElementMapping cheese = defaultNamespace.getElement("cheese");
+        assertNotNull(cheese);
+    }
+
+    private NamespaceMapping getDefaultNamespace(QdoxMappingLoader mappingLoader) throws IOException {
+        Set namespaces = mappingLoader.loadNamespaces();
+        assertFalse(namespaces.isEmpty());
+
+        NamespaceMapping defaultNamespace = null;
+        for (Iterator iterator = namespaces.iterator(); iterator.hasNext();) {
+            NamespaceMapping namespaceMapping = (NamespaceMapping) iterator.next();
+            if (namespaceMapping.getNamespace().equals(DEFAULT_NAMESPACE)) {
+                defaultNamespace = namespaceMapping;
+                break;
+            }
+        }
+        return defaultNamespace;
     }
 
     public void testPropertyEditor() {

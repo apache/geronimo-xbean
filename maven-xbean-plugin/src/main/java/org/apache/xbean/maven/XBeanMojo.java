@@ -70,6 +70,11 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
     private File srcDir;
     
     /**
+     * @parameter
+     */
+    private String excludedClasses;
+
+    /**
      * @parameter expression="${basedir}/target/xbean/"
      * @required
      */
@@ -84,20 +89,21 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      * @parameter expression="org.apache.xbean.spring.context.impl"
      */
     private String propertyEditorPaths;
-	
-    
-	public void execute() throws MojoExecutionException, MojoFailureException {
+
+
+    public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug( " ======= XBeanMojo settings =======" );
         getLog().debug( "namespace[" + namespace + "]" );
         getLog().debug( "srcDir[" + srcDir + "]" );
         getLog().debug( "schema[" + schema + "]" );
+        getLog().debug( "excludedClasses" + Arrays.asList(excludedClasses) );
         getLog().debug( "outputDir[" + outputDir + "]" );
         getLog().debug( "propertyEditorPaths[" + propertyEditorPaths + "]" );
 
         if (schema == null) {
             schema = new File(outputDir, project.getArtifactId() + ".xsd");
         }
-        
+
         if (propertyEditorPaths != null) {
             List editorSearchPath = new LinkedList(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
             StringTokenizer paths = new StringTokenizer(propertyEditorPaths, " ,");
@@ -108,9 +114,13 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         try {
-        	schema.getParentFile().mkdirs();
-        	
-            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, new File[] { srcDir });
+            schema.getParentFile().mkdirs();
+
+            String[] excludedClasses = null;
+            if (this.excludedClasses != null) {
+                excludedClasses = this.excludedClasses.split(" *, *");
+            }
+            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, new File[] { srcDir }, excludedClasses);
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
                 new XmlMetadataGenerator(this, outputDir.getAbsolutePath()),
                 new DocumentationGenerator(this, schema),
@@ -131,7 +141,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                     plugin.generate(namespaceMapping);
                 }
             }
-            
+
             Resource res = new Resource();
             res.setDirectory(outputDir.toString());
             project.addResource(res);
@@ -142,7 +152,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         } finally {
             Thread.currentThread().setContextClassLoader(oldCL);
         }
-	}
+    }
 
 	public void log(String message) {
 		getLog().info(message);
