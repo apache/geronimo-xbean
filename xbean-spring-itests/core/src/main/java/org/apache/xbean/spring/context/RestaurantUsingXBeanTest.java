@@ -20,8 +20,10 @@ package org.apache.xbean.spring.context;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.apache.xbean.spring.example.RestaurantService;
 import org.apache.xbean.spring.example.PizzaService;
+import org.apache.xbean.spring.context.impl.XBeanXmlBeanFactory;
 
 import javax.xml.namespace.QName;
 
@@ -89,4 +91,10 @@ public class RestaurantUsingXBeanTest extends SpringTestSupport {
     protected AbstractXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/apache/xbean/spring/context/restaurant-xbean.xml");
     }
+    
+     public void testCreateXBeanXmlBeanFactory() throws Exception {
+        XBeanXmlBeanFactory factory = new XBeanXmlBeanFactory(new ClassPathResource("org/apache/xbean/spring/context/restaurant-xbean.xml"));
+        assertNotNull(factory);
+    }
+ 
 }

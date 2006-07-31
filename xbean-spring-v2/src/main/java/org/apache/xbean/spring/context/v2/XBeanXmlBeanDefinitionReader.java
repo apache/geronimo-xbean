@@ -56,8 +56,10 @@ public class XBeanXmlBeanDefinitionReader extends XmlBeanDefinitionReader {
         this.xmlPreprocessors = xmlPreprocessors;
         setNamespaceAware(true);
         setValidationMode(VALIDATION_NONE);
-        setResourceLoader(applicationContext);
-        setEntityResolver(new ResourceEntityResolver(applicationContext));
+        if (applicationContext != null) {
+            setResourceLoader(applicationContext);
+            setEntityResolver(new ResourceEntityResolver(applicationContext));
+        }
         setDocumentReaderClass(XBeanBeanDefinitionDocumentReader.class);
     }
 
