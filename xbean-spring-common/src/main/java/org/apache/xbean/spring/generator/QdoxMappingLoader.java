@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,11 +60,13 @@ public class QdoxMappingLoader implements MappingLoader {
     private static final Log log = LogFactory.getLog(QdoxMappingLoader.class);
     private final String defaultNamespace;
     private final File[] srcDirs;
+    private final String[] excludedClasses;
     private Type listType;
 
-    public QdoxMappingLoader(String defaultNamespace, File[] srcDirs) {
+    public QdoxMappingLoader(String defaultNamespace, File[] srcDirs, String[] excludedClasses) {
         this.defaultNamespace = defaultNamespace;
         this.srcDirs = srcDirs;
+        this.excludedClasses = excludedClasses;
     }
 
     public String getDefaultNamespace() {
@@ -87,7 +90,11 @@ public class QdoxMappingLoader implements MappingLoader {
             }
             log.debug(" - " + sourceDirectory.getAbsolutePath());
 
-            builder.addSourceTree(sourceDirectory);
+            Map sourceFiles = getSourceFiles(sourceDirectory, excludedClasses);
+            for (Iterator iterator = sourceFiles.values().iterator(); iterator.hasNext();) {
+                File file = (File) iterator.next();
+                builder.addSource(file);
+            }
         }
 
         listType = builder.getClassByName("java.util.List").asType();
@@ -462,5 +469,48 @@ public class QdoxMappingLoader implements MappingLoader {
         }
         buf.append(") : ").append(method.getLineNumber());
         return buf.toString();
+    }
+
+    private static Map getSourceFiles(File base, String[] excludedClasses) {
+        return listAllFileNames(base, "", excludedClasses);
+    }
+
+    private static Map listAllFileNames(File base, String prefix, String[] excludedClasses) {
+        if (!base.canRead() || !base.isDirectory()) {
+            throw new IllegalArgumentException(base.getAbsolutePath());
+        }
+        Map map = new LinkedHashMap();
+        File[] hits = base.listFiles();
+        for (int i = 0; i < hits.length; i++) {
+            File hit = hits[i];
+            String name = prefix.equals("") ? hit.getName() : prefix + "/" + hit.getName();
+            if (hit.canRead() && !isExcluded(name, excludedClasses)) {
+                if (hit.isDirectory()) {
+                    map.putAll(listAllFileNames(hit, name, excludedClasses));
+                } else if (name.endsWith(".java")) {
+                    map.put(name, hit);
+                }
+            }
+        }
+        return map;
+    }
+
+    private static boolean isExcluded(String sourceName, String[] excludedClasses) {
+        if (excludedClasses == null) {
+            return false;
+        }
+
+        String className = sourceName;
+        if (sourceName.endsWith(".java")) {
+            className = className.substring(0, className.length() - ".java".length());
+        }
+        className = className.replace("/", ".");
+        for (int i = 0; i < excludedClasses.length; i++) {
+            String excludedClass = excludedClasses[i];
+            if (className.equals(excludedClass)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
