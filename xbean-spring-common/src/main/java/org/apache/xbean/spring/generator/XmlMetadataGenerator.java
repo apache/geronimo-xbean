@@ -144,17 +144,17 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         }
         out.print("(");
         for (Iterator iterator = args.iterator(); iterator.hasNext();) {
-            AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-            out.print(attributeMapping.getType().getName());
+            ParameterMapping parameterMapping = (ParameterMapping) iterator.next();
+            out.print(parameterMapping.getType().getName());
             if (iterator.hasNext()) {
                 out.print(",");
             }
         }
         out.print(").parameterNames =");
         for (Iterator iterator = args.iterator(); iterator.hasNext();) {
-            AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
+            ParameterMapping parameterMapping = (ParameterMapping) iterator.next();
             out.print(" ");
-            out.print(attributeMapping.getPropertyName());
+            out.print(parameterMapping.getName());
         }
         out.println();
     }

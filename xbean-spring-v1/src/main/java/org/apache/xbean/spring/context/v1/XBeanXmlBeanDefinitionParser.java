@@ -42,7 +42,6 @@ import org.apache.xbean.spring.context.impl.NamespaceHelper;
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
 import org.apache.xbean.spring.context.impl.QNameHelper;
 import org.apache.xbean.spring.context.impl.QNameReflectionHelper;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -433,9 +432,10 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         String localName = getLocalName(element);
         PropertyDescriptor descriptor = getPropertyDescriptor(className, localName);
         if (descriptor != null) {
-            return parseNestedPropertyViaIntrospection(metadata, className, element, descriptor);
+            return parseNestedPropertyViaIntrospection(metadata, element, descriptor.getName(), descriptor.getPropertyType());
+        } else {
+            return parseNestedPropertyViaIntrospection(metadata, element, localName, Object.class);
         }
-        return null;
     }
 
     /**
@@ -511,16 +511,12 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     /**
      * Attempts to use introspection to parse the nested property element.
      */
-    protected Object parseNestedPropertyViaIntrospection(MappingMetaData metadata, String className, Element element,
-            PropertyDescriptor descriptor) {
-        String name = descriptor.getName();
-        if (isMap(descriptor.getPropertyType())) {
-            return parseCustomMapElement(metadata, element, name);
-        }
-        else if (isCollection(descriptor.getPropertyType())) {
-            return parseListElement(element, name);
-        }
-        else {
+    private Object parseNestedPropertyViaIntrospection(MappingMetaData metadata, Element element, String propertyName, Class propertyType) {
+        if (isMap(propertyType)) {
+            return parseCustomMapElement(metadata, element, propertyName);
+        } else if (isCollection(propertyType)) {
+            return parseListElement(element, propertyName);
+        } else {
             return parseChildExtensionBean(element);
         }
     }
@@ -594,6 +590,8 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
                 if (uri == null || uri.equals(SPRING_SCHEMA) || uri.equals(SPRING_SCHEMA_COMPAT)) {
                     if (BEAN_ELEMENT.equals(localName)) {
                         return parseBeanDefinitionElement(childElement, true);
+                    } else {
+                        return parsePropertySubElement(childElement, element.getLocalName());
                     }
                 } else {
                     Object value = parseBeanFromExtensionElement(childElement);
