@@ -343,24 +343,28 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             addProperty(definition, metadata, element, name, value);
         }
         else {
-            // lets stry parse a nested properties file
+            StringBuffer buffer = new StringBuffer();
             NodeList childNodes = element.getChildNodes();
-            if (childNodes.getLength() == 1 && childNodes.item(0) instanceof Text) {
-                Text text = (Text) childNodes.item(0);
-                ByteArrayInputStream in = new ByteArrayInputStream(text.getData().getBytes());
-                Properties properties = new Properties();
-                try {
-                    properties.load(in);
+            for (int i = 0, size = childNodes.getLength(); i < size; i++) {
+                Node node = childNodes.item(i);
+                if (node instanceof Text) {
+                    buffer.append(((Text) node).getData());
                 }
-                catch (IOException e) {
-                    return;
-                }
-                Enumeration enumeration = properties.propertyNames();
-                while (enumeration.hasMoreElements()) {
-                    name = (String) enumeration.nextElement();
-                    Object value = properties.getProperty(name);
-                    definition.getBeanDefinition().getPropertyValues().addPropertyValue(name, value);
-                }
+            }
+
+            ByteArrayInputStream in = new ByteArrayInputStream(buffer.toString().getBytes());
+            Properties properties = new Properties();
+            try {
+                properties.load(in);
+            }
+            catch (IOException e) {
+                return;
+            }
+            Enumeration enumeration = properties.propertyNames();
+            while (enumeration.hasMoreElements()) {
+                name = (String) enumeration.nextElement();
+                Object value = getValue(properties.getProperty(name));
+                definition.getBeanDefinition().getPropertyValues().addPropertyValue(name, value);
             }
         }
     }
