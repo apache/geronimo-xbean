@@ -32,6 +32,7 @@ import java.util.Arrays;
  */
 public class NamedClassLoader extends URLClassLoader implements DestroyableClassLoader {
     private final String name;
+    private boolean destroyed = false;
 
     /**
      * Creates a named class loader with no parents.
@@ -68,9 +69,21 @@ public class NamedClassLoader extends URLClassLoader implements DestroyableClass
     }
 
     /**
+     * Check if this classloader has been destroyed 
+     * @return
+     */
+    public synchronized boolean isDestroyed() {
+        return destroyed;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public void destroy() {
+        synchronized(this) {
+            if (destroyed) return;
+            destroyed = true;
+        }
         ClassLoaderUtil.destroy(this);
     }
 
