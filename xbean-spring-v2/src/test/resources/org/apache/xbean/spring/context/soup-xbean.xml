@@ -4,6 +4,19 @@
 
   <s:soup id="soupService" type="French Onion"/>
 
+  <s:soup id="nestedBean">
+    <s:type>
+      <bean class="java.lang.String">
+        <constructor-arg index="0" value="French Onion"/>
+      </bean>
+    </s:type>
+  </s:soup>
+
+  <s:soup id="nestedValue">
+    <s:type>
+      <value>French Onion</value>
+    </s:type>
+  </s:soup>
 </beans>
 <!-- END SNIPPET: xml -->
 

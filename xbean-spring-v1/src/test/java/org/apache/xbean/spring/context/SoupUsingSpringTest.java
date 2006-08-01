@@ -29,13 +29,23 @@ public class SoupUsingSpringTest extends SpringTestSupport {
 
     public void testSoup() throws Exception {
         SoupService soup = (SoupService) getBean("soupService");
+        SoupService nestedBean = (SoupService) getBean("nestedBean");
+        SoupService nestedValue = (SoupService) getBean("nestedValue");
 
-        assertEquals("type", "French Onion", soup.getType());
-        assertTrue(soup.getCreateTime() >= time);
-        assertTrue(soup.exists());
+        asssertValidSoup(soup);
+        asssertValidSoup(nestedBean);
+        asssertValidSoup(nestedValue);
 
         context.close();
         assertFalse(soup.exists());
+        assertFalse(nestedBean.exists());
+        assertFalse(nestedValue.exists());
+    }
+
+    private void asssertValidSoup(SoupService soup) {
+        assertEquals("type", "French Onion", soup.getSoupType());
+        assertTrue(soup.getCreateTime() >= time);
+        assertTrue(soup.exists());
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
