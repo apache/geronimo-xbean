@@ -99,6 +99,7 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     private static final String JAVA_PACKAGE_PREFIX = "java://";
 
     private static final String BEAN_REFERENCE_PREFIX = "#";
+    private static final String NULL_REFERENCE = "#null";
 
     private Set reservedElementNames = new HashSet(Arrays.asList(RESERVED_ELEMENT_NAMES));
     private Set reservedBeanAttributeNames = new HashSet(Arrays.asList(RESERVED_BEAN_ATTRIBUTE_NAMES));
@@ -312,23 +313,30 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
     protected Object getValue(String value) {
         if (value == null)  return null;
 
-        boolean reference = false;
+        //
+        // If value is #null then we are explicitly setting the value null instead of an empty string
+        //
+        if (NULL_REFERENCE.equals(value)) {
+            return null;
+        }
+
+        //
+        // If value starts with # then we have a ref
+        //
         if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
+            // strip off the #
             value = value.substring(BEAN_REFERENCE_PREFIX.length());
 
-            // we could be an escaped string
+            // if the new value starts with a #, then we had an excaped value (e.g. ##value)
             if (!value.startsWith(BEAN_REFERENCE_PREFIX)) {
-                reference = true;
+                return new RuntimeBeanReference(value);
             }
         }
 
-        if (reference) {
-            // TOOD handle custom reference types like local or queries etc
-            return new RuntimeBeanReference(value);
-        }
-        else {
-            return value;
-        }
+        //
+        // Neither null nor a reference
+        //
+        return value;
     }
 
     protected String getLocalName(Element element) {

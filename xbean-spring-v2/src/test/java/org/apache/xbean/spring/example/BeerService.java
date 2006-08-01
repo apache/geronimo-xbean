@@ -30,6 +30,7 @@ package org.apache.xbean.spring.example;
 public class BeerService {
     private String id;
     private String name;
+    private String source = "tap";
 
     public String getId() {
         return id;
@@ -47,6 +48,13 @@ public class BeerService {
         this.name = name;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 }
 // END SNIPPET: bean
 
