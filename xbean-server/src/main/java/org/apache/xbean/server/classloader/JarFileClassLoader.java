@@ -16,28 +16,20 @@
  */
 package org.apache.xbean.server.classloader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.io.File;
 import java.net.URL;
-import java.net.URLStreamHandlerFactory;
+import java.net.URI;
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.security.CodeSource;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedActionException;
 import java.security.cert.Certificate;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
@@ -50,14 +42,14 @@ import java.util.jar.Manifest;
  * replacement for the jar url handler must be written.
  *
  * @author Dain Sundstrom
- * @version $Id$
+ * @version $Id: JarFileClassLoader.java 410741 2006-06-01 04:35:48Z jsisson $
  * @since 2.0
  */
 public class JarFileClassLoader extends MultiParentClassLoader {
     private static final URL[] EMPTY_URLS = new URL[0];
-    private final Object lock = new Object();
-    private final LinkedHashMap classPath = new LinkedHashMap();
-    private boolean destroyed = false;
+
+    private final UrlResourceFinder resourceFinder = new UrlResourceFinder();
+    private final AccessControlContext acc;
 
     /**
      * Creates a JarFileClassLoader that is a child of the system class loader.
@@ -66,6 +58,7 @@ public class JarFileClassLoader extends MultiParentClassLoader {
      */
     public JarFileClassLoader(String name, URL[] urls) {
         super(name, EMPTY_URLS);
+        this.acc = AccessController.getContext();
         addURLs(urls);
     }
 
@@ -76,19 +69,15 @@ public class JarFileClassLoader extends MultiParentClassLoader {
      * @param parent the parent of this class loader
      */
     public JarFileClassLoader(String name, URL[] urls, ClassLoader parent) {
-        this(name, urls, new ClassLoader[] {parent});
+        super(name, EMPTY_URLS, parent);
+        this.acc = AccessController.getContext();
+        addURLs(urls);
     }
 
-    /**
-     * Creates a named class loader as a child of the specified parent and using the specified URLStreamHandlerFactory
-     * for accessing the urls..
-     * @param name the name of this class loader
-     * @param urls the urls from which this class loader will classes and resources
-     * @param parent the parent of this class loader
-     * @param factory the URLStreamHandlerFactory used to access the urls
-     */
-    public JarFileClassLoader(String name, URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
-        this(name, urls, new ClassLoader[] {parent}, factory);
+    public JarFileClassLoader(String name, URL[] urls, ClassLoader parent, boolean inverseClassLoading, String[] hiddenClasses, String[] nonOverridableClasses) {
+        super(name, EMPTY_URLS, parent, inverseClassLoading, hiddenClasses, nonOverridableClasses);
+        this.acc = AccessController.getContext();
+        addURLs(urls);
     }
 
     /**
@@ -99,19 +88,19 @@ public class JarFileClassLoader extends MultiParentClassLoader {
      */
     public JarFileClassLoader(String name, URL[] urls, ClassLoader[] parents) {
         super(name, EMPTY_URLS, parents);
+        this.acc = AccessController.getContext();
         addURLs(urls);
     }
 
-    /**
-     * Creates a named class loader as a child of the specified parents and using the specified URLStreamHandlerFactory
-     * for accessing the urls..
-     * @param name the name of this class loader
-     * @param urls the urls from which this class loader will classes and resources
-     * @param parents the parents of this class loader
-     * @param factory the URLStreamHandlerFactory used to access the urls
-     */
-    public JarFileClassLoader(String name, URL[] urls, ClassLoader[] parents, URLStreamHandlerFactory factory) {
-        super(name, EMPTY_URLS, parents, factory);
+    public JarFileClassLoader(String name, URL[] urls, ClassLoader[] parents, boolean inverseClassLoading, Collection hiddenClasses, Collection nonOverridableClasses) {
+        super(name, EMPTY_URLS, parents, inverseClassLoading, hiddenClasses, nonOverridableClasses);
+        this.acc = AccessController.getContext();
+        addURLs(urls);
+    }
+
+    public JarFileClassLoader(String name, URL[] urls, ClassLoader[] parents, boolean inverseClassLoading, String[] hiddenClasses, String[] nonOverridableClasses) {
+        super(name, EMPTY_URLS, parents, inverseClassLoading, hiddenClasses, nonOverridableClasses);
+        this.acc = AccessController.getContext();
         addURLs(urls);
     }
 
@@ -119,230 +108,174 @@ public class JarFileClassLoader extends MultiParentClassLoader {
      * {@inheritDoc}
      */
     public URL[] getURLs() {
-        return (URL[]) classPath.keySet().toArray(new URL[classPath.keySet().size()]);
+        return resourceFinder.getUrls();
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void addURL(URL url) {
-        addURLs(Collections.singletonList(url));
+    public void addURL(final URL url) {
+        AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                resourceFinder.addUrl(url);
+                return null;
+            }
+        }, acc);
     }
 
     /**
      * Adds an array of urls to the end of this class loader.
      * @param urls the URLs to add
      */
-    protected void addURLs(URL[] urls) {
-        addURLs(Arrays.asList(urls));
-    }
-
-    /**
-     * Adds a list of urls to the end of this class loader.
-     * @param urls the URLs to add
-     */
-    protected void addURLs(List urls) {
-        LinkedList locationStack = new LinkedList(urls);
-        try {
-            while (!locationStack.isEmpty()) {
-                URL url = (URL) locationStack.removeFirst();
-
-                if (!"file".equals(url.getProtocol())) {
-                    // download the jar
-                    throw new Error("Only local file jars are supported " + url);
-                }
-
-                String path = url.getPath();
-                if (classPath.containsKey(path)) {
-                    continue;
-                }
-
-                File file = new File(path);
-                if (!file.canRead()) {
-                    // can't read file...
-                    continue;
-                }
-
-                // open the jar file
-                JarFile jarFile;
-                try {
-                    jarFile = new JarFile(file);
-                } catch (IOException e) {
-                    // can't seem to open the file
-                    continue;
-                }
-                classPath.put(url, jarFile);
-
-                // push the manifest classpath on the stack (make sure to maintain the order)
-                Manifest manifest = null;
-                try {
-                    manifest = jarFile.getManifest();
-                } catch (IOException ignored) {
-                }
-
-                if (manifest != null) {
-                    Attributes mainAttributes = manifest.getMainAttributes();
-                    String manifestClassPath = mainAttributes.getValue(Attributes.Name.CLASS_PATH);
-                    if (manifestClassPath != null) {
-                        LinkedList classPathUrls = new LinkedList();
-                        for (StringTokenizer tokenizer = new StringTokenizer(manifestClassPath, " "); tokenizer.hasMoreTokens();) {
-                            String entry = tokenizer.nextToken();
-                            File parentDir = file.getParentFile();
-                            File entryFile = new File(parentDir, entry);
-                            // manifest entries are optional... if they aren't there it is ok
-                            if (entryFile.canRead()) {
-                                classPathUrls.addLast(entryFile.getAbsolutePath());
-                            }
-                        }
-                        locationStack.addAll(0, classPathUrls);
-                    }
-                }
+    protected void addURLs(final URL[] urls) {
+        AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                resourceFinder.addUrls(urls);
+                return null;
             }
-        } catch (Error e) {
-            destroy();
-            throw e;
-        }
+        }, acc);
     }
 
     /**
      * {@inheritDoc}
      */
     public void destroy() {
-        synchronized (lock) {
-            if (destroyed) {
-                return;
-            }
-            destroyed = true;
-            for (Iterator iterator = classPath.values().iterator(); iterator.hasNext();) {
-                JarFile jarFile = (JarFile) iterator.next();
-                try {
-                    jarFile.close();
-                } catch (IOException ignored) {
-                }
-            }
-            classPath.clear();
-        }
+        resourceFinder.destroy();
         super.destroy();
     }
 
     /**
      * {@inheritDoc}
      */
-    public URL findResource(String resourceName) {
-        URL jarUrl = null;
-        synchronized (lock) {
-            if (destroyed) {
-                return null;
+    public URL findResource(final String resourceName) {
+        return (URL) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return resourceFinder.findResource(resourceName);
             }
-            for (Iterator iterator = classPath.entrySet().iterator(); iterator.hasNext() && jarUrl == null;) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                JarFile jarFile = (JarFile) entry.getValue();
-                JarEntry jarEntry = jarFile.getJarEntry(resourceName);
-                if (jarEntry != null && !jarEntry.isDirectory()) {
-                    jarUrl = (URL) entry.getKey();
-                }
+        }, acc);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Enumeration findResources(final String resourceName) throws IOException {
+        // todo this is not right
+        // first get the resources from the parent classloaders
+        Enumeration parentResources = super.findResources(resourceName);
+
+        // get the classes from my urls
+        Enumeration myResources = (Enumeration) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return resourceFinder.findResources(resourceName);
             }
+        }, acc);
+
+        // join the two together
+        Enumeration resources = new UnionEnumeration(parentResources, myResources);
+        return resources;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected String findLibrary(String libraryName) {
+        // if the libraryName is actually a directory it is invalid
+        int pathEnd = libraryName.lastIndexOf('/');
+        if (pathEnd == libraryName.length() - 1) {
+            throw new IllegalArgumentException("libraryName ends with a '/' character: " + libraryName);
         }
 
+        // get the name if the library file
+        final String resourceName;
+        if (pathEnd < 0) {
+            resourceName = System.mapLibraryName(libraryName);
+        } else {
+            String path = libraryName.substring(0, pathEnd + 1);
+            String file = libraryName.substring(pathEnd + 1);
+            resourceName = path + System.mapLibraryName(file);
+        }
 
-        try {
-            String urlString = "jar:" + jarUrl + "!/" + resourceName;
-            return new URL(jarUrl, urlString);
-        } catch (MalformedURLException e) {
+        // get a resource handle to the library
+        ResourceHandle resourceHandle = (ResourceHandle) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return resourceFinder.getResource(resourceName);
+            }
+        }, acc);
+
+        if (resourceHandle == null) {
             return null;
         }
+
+        // the library must be accessable on the file system
+        URL url = resourceHandle.getUrl();
+        if (!"file".equals(url.getProtocol())) {
+            return null;
+        }
+
+        String path = new File(URI.create(url.toString())).getPath();
+        return path;
     }
 
     /**
      * {@inheritDoc}
      */
-    public Enumeration findResources(String resourceName) throws IOException {
-        List resources = new ArrayList();
-        List superResources = Collections.list(super.findResources(resourceName));
-        resources.addAll(superResources);
+    protected Class findClass(final String className) throws ClassNotFoundException {
+        try {
+            return (Class) AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                public Object run() throws ClassNotFoundException {
+                    // first think check if we are allowed to define the package
+                    SecurityManager securityManager = System.getSecurityManager();
+                    if (securityManager != null) {
+                        String packageName;
+                        int packageEnd = className.lastIndexOf('.');
+                        if (packageEnd >= 0) {
+                            packageName = className.substring(0, packageEnd);
+                            securityManager.checkPackageDefinition(packageName);
+                        }
+                    }
 
-        synchronized (lock) {
-            if (destroyed) {
-                return Collections.enumeration(Collections.EMPTY_LIST);
-            }
-            for (Iterator iterator = classPath.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                JarFile jarFile = (JarFile) entry.getValue();
-                JarEntry jarEntry = jarFile.getJarEntry(resourceName);
-                if (jarEntry != null && !jarEntry.isDirectory()) {
+
+                    // convert the class name to a file name
+                    String resourceName = className.replace('.', '/') + ".class";
+
+                    // find the class file resource
+                    ResourceHandle resourceHandle = resourceFinder.getResource(resourceName);
+                    if (resourceHandle == null) {
+                        throw new ClassNotFoundException(className);
+                    }
+
+                    byte[] bytes;
+                    Manifest manifest;
                     try {
-                        URL url = (URL) entry.getKey();
-                        String urlString = "jar:" + url + "!/" + resourceName;
-                        resources.add(new URL(url, urlString));
-                    } catch (MalformedURLException e) {
+                        // get the bytes from the class file
+                        bytes = resourceHandle.getBytes();
+
+                        // get the manifest for defining the packages
+                        manifest = resourceHandle.getManifest();
+                    } catch (IOException e) {
+                        throw new ClassNotFoundException(className, e);
                     }
+
+                    // get the certificates for the code source
+                    Certificate[] certificates = resourceHandle.getCertificates();
+
+                    // the code source url is used to define the package and as the security context for the class
+                    URL codeSourceUrl = resourceHandle.getCodeSourceUrl();
+
+                    // define the package (required for security)
+                    definePackage(className, codeSourceUrl, manifest);
+
+                    // this is the security context of the class
+                    CodeSource codeSource = new CodeSource(codeSourceUrl, certificates);
+
+                    // load the class into the vm
+                    Class clazz = defineClass(className, bytes, 0, bytes.length, codeSource);
+                    return clazz;
                 }
-            }
+            }, acc);
+        } catch (PrivilegedActionException e) {
+            throw (ClassNotFoundException) e.getException();
         }
-
-        return Collections.enumeration(resources);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected Class findClass(String className) throws ClassNotFoundException {
-        SecurityManager securityManager = System.getSecurityManager();
-        if (securityManager != null) {
-            String packageName;
-            int packageEnd = className.lastIndexOf('.');
-            if (packageEnd >= 0) {
-                packageName = className.substring(0, packageEnd);
-                securityManager.checkPackageDefinition(packageName);
-            }
-        }
-
-        Certificate[] certificates = null;
-        URL jarUrl = null;
-        Manifest manifest = null;
-        byte[] bytes;
-        synchronized (lock) {
-            if (destroyed) {
-                throw new ClassNotFoundException("Class loader has been destroyed: " + className);
-            }
-
-            try {
-                String entryName = className.replace('.', '/') + ".class";
-                InputStream inputStream = null;
-                for (Iterator iterator = classPath.entrySet().iterator(); iterator.hasNext() && inputStream == null;) {
-                    Map.Entry entry = (Map.Entry) iterator.next();
-                    jarUrl = (URL) entry.getKey();
-                    JarFile jarFile = (JarFile) entry.getValue();
-                    JarEntry jarEntry = jarFile.getJarEntry(entryName);
-                    if (jarEntry != null && !jarEntry.isDirectory()) {
-                        inputStream = jarFile.getInputStream(jarEntry);
-                        certificates = jarEntry.getCertificates();
-                        manifest = jarFile.getManifest();
-                    }
-                }
-                if (inputStream == null) {
-                    throw new ClassNotFoundException(className);
-                }
-
-                try {
-                    byte[] buffer = new byte[4096];
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    for (int count = inputStream.read(buffer); count >= 0; count = inputStream.read(buffer)) {
-                        out.write(buffer, 0, count);
-                    }
-                    bytes = out.toByteArray();
-                } finally {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                throw new ClassNotFoundException(className, e);
-            }
-        }
-
-        definePackage(className, jarUrl, manifest);
-        CodeSource codeSource = new CodeSource(jarUrl, certificates);
-        Class clazz = defineClass(className, bytes, 0, bytes.length, codeSource);
-        return clazz;
     }
 
     private void definePackage(String className, URL jarUrl, Manifest manifest) {
