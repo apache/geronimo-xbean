@@ -92,7 +92,7 @@ public final class Utils {
         String name = type.getName();
         String xsdType = (String) XSD_TYPES.get(name);
         if (xsdType == null) {
-            xsdType = "xsd:string";
+            xsdType = "xs:string";
         }
         return xsdType;
     }
