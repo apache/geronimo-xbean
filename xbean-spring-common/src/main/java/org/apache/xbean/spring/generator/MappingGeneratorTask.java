@@ -22,6 +22,7 @@ import java.beans.PropertyEditorManager;
 public class MappingGeneratorTask extends MatchingTask implements LogFacade {
     private String namespace;
     private Path srcDir;
+    private String excludedClasses = null;
     private File destFile = new File("target/classes/schema.xsd");
     private String metaInfDir = "target/classes/";
     private String propertyEditorPaths = "org.apache.xbean.spring.context.impl";
@@ -87,7 +88,11 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
         ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         try {
-            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, getFiles(srcDir));
+            String[] excludedClasses = null;
+            if (this.excludedClasses != null) {
+                excludedClasses = this.excludedClasses.split(" *, *");
+            }
+            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, getFiles(srcDir), excludedClasses);
 
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
                 new XmlMetadataGenerator(this, metaInfDir),
