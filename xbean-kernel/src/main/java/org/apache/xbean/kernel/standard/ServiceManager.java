@@ -31,7 +31,6 @@ import org.apache.xbean.kernel.IllegalServiceStateException;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.kernel.KernelOperationInterruptedException;
 import org.apache.xbean.kernel.KernelOperationTimoutException;
-import org.apache.xbean.kernel.ServiceCondition;
 import org.apache.xbean.kernel.ServiceEvent;
 import org.apache.xbean.kernel.ServiceFactory;
 import org.apache.xbean.kernel.ServiceMonitor;
@@ -80,11 +79,6 @@ public class ServiceManager implements Comparable {
      * The type of service this service manager will create.  This value is cached from the serviceFactory.getT
      */
     private final Set serviceTypes;
-
-    /**
-     * The class loader for this service.
-     */
-    private final ClassLoader classLoader;
 
     /**
      * The monitor to which we fire service events.  The ServiceManager requires an asynchronous monitor becuse events are
@@ -162,7 +156,6 @@ public class ServiceManager implements Comparable {
      * @param serviceId the unique id of this service in the kernel
      * @param serviceName the unique name of this service in the kernel
      * @param serviceFactory the factory used to create and destroy the service instance
-     * @param classLoader the class loader for this service
      * @param serviceMonitor the monitor of service events
      * @param timeoutDuration the maximum duration to wait for a lock
      * @param timeoutUnits the unit of measure for the timeoutDuration
@@ -171,7 +164,6 @@ public class ServiceManager implements Comparable {
             long serviceId,
             ServiceName serviceName,
             ServiceFactory serviceFactory,
-            ClassLoader classLoader,
             ServiceMonitor serviceMonitor,
             long timeoutDuration,
             TimeUnit timeoutUnits) {
@@ -180,11 +172,10 @@ public class ServiceManager implements Comparable {
         this.serviceId = serviceId;
         this.serviceName = serviceName;
         this.serviceFactory = serviceFactory;
-        this.classLoader = classLoader;
         this.serviceMonitor = serviceMonitor;
         this.timeoutDuration = timeoutDuration;
         this.timeoutUnits = timeoutUnits;
-        standardServiceContext = new StandardServiceContext(kernel, serviceName, classLoader);
+        standardServiceContext = new StandardServiceContext(kernel, serviceName, serviceFactory.getClassLoader());
         serviceTypes = Collections.unmodifiableSet(new LinkedHashSet(Arrays.asList(serviceFactory.getTypes())));
     }
 
@@ -225,7 +216,7 @@ public class ServiceManager implements Comparable {
             // method is called.  This should cause the stop logic of a stop condition to fire.
             lock("initialize");
             try {
-                stopCondition = new NonRestartableStopCondition(kernel, serviceName, classLoader, lock, serviceFactory);
+                stopCondition = new NonRestartableStopCondition(kernel, serviceName, serviceFactory.getClassLoader(), lock, serviceFactory);
             } finally {
                 unlock();
             }
@@ -325,7 +316,7 @@ public class ServiceManager implements Comparable {
      * @see Kernel#getClassLoaderFor(ServiceName)
      */
     public ClassLoader getClassLoader() {
-        return classLoader;
+        return serviceFactory.getClassLoader();
     }
 
     /**
@@ -405,7 +396,7 @@ public class ServiceManager implements Comparable {
                         serviceMonitor.serviceStarting(createServiceEvent());
 
                         // initialize the start conditions
-                        startCondition = new AggregateCondition(kernel, serviceName, classLoader, lock, serviceFactory.getStartConditions());
+                        startCondition = new AggregateCondition(kernel, serviceName, serviceFactory.getClassLoader(), lock, serviceFactory.getStartConditions());
                         startCondition.initialize();
                     }
 
@@ -572,7 +563,7 @@ public class ServiceManager implements Comparable {
                         state = ServiceState.STOPPING;
 
                         // initialize all of the stop conditions
-                        stopCondition = new AggregateCondition(kernel, serviceName, classLoader, lock, serviceFactory.getStopConditions());
+                        stopCondition = new AggregateCondition(kernel, serviceName, serviceFactory.getClassLoader(), lock, serviceFactory.getStopConditions());
                         stopCondition.initialize();
                     }
 
@@ -694,15 +685,15 @@ public class ServiceManager implements Comparable {
     }
 
     private ServiceEvent createServiceEvent() {
-        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, service, null, null);
+        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, serviceFactory.getClassLoader(), service, null, null);
     }
 
     private ServiceEvent createWaitingServiceEvent(Set unsatisfiedConditions) {
-        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, service, null, unsatisfiedConditions);
+        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, serviceFactory.getClassLoader(), service, null, unsatisfiedConditions);
     }
 
     private ServiceEvent createErrorServiceEvent(Throwable cause) {
-        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, classLoader, null, cause, null);
+        return new ServiceEvent(eventId.getAndIncrement(), kernel, serviceName, serviceFactory, serviceFactory.getClassLoader(), null, cause, null);
     }
 
     public int hashCode() {

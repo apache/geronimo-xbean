@@ -210,15 +210,14 @@ public class StandardKernel implements Kernel {
     /**
      * {@inheritDoc}
      */
-    public void registerService(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException {
+    public void registerService(ServiceName serviceName, ServiceFactory serviceFactory) throws ServiceAlreadyExistsException, ServiceRegistrationException {
         if (serviceName == null) throw new NullPointerException("serviceName is null");
         if (serviceFactory == null) throw new NullPointerException("serviceFactory is null");
-        if (classLoader == null) throw new NullPointerException("classLoader is null");
         if (!isRunning()) {
             throw new ServiceRegistrationException(serviceName, new IllegalStateException("Kernel is destroyed"));
         }
 
-        serviceManagerRegistry.registerService(serviceName, serviceFactory, classLoader);
+        serviceManagerRegistry.registerService(serviceName, serviceFactory);
     }
 
     /**

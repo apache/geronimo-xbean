@@ -146,7 +146,7 @@ public class ServiceManagerRegistryTest extends TestCase {
     public void testDoubleRegister() throws Exception {
         register();
         try {
-            registry.registerService(SERVICE_NAME, SERVICE_FACTORY, CLASS_LOADER);
+            registry.registerService(SERVICE_NAME, SERVICE_FACTORY);
             fail("should have thrown an exception");
         } catch (ServiceAlreadyExistsException expected) {
             // expected
@@ -592,7 +592,7 @@ public class ServiceManagerRegistryTest extends TestCase {
         serviceManager.setInitializeException(throwable);
         serviceManagerFactory.addServiceManager(serviceManager);
         try {
-            registry.registerService(SERVICE_NAME, SERVICE_FACTORY, CLASS_LOADER);
+            registry.registerService(SERVICE_NAME, SERVICE_FACTORY);
             assertNull(throwable);
         } catch (ServiceRegistrationException expected) {
             // expected
@@ -722,10 +722,9 @@ public class ServiceManagerRegistryTest extends TestCase {
             super(null, null, null, 0, null);
         }
 
-        public ServiceManager createServiceManager(long serviceId, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
+        public ServiceManager createServiceManager(long serviceId, ServiceName serviceName, ServiceFactory serviceFactory) {
             assertEquals(SERVICE_NAME, serviceName);
             assertEquals(SERVICE_FACTORY, serviceFactory);
-            assertEquals(CLASS_LOADER, classLoader);
             synchronized (serviceManagers) {
                 return (ServiceManager) serviceManagers.removeFirst();
             }
@@ -756,7 +755,6 @@ public class ServiceManagerRegistryTest extends TestCase {
                     0,
                     new StringServiceName("MockService"),
                     new StaticServiceFactory(new Object()),
-                    null,
                     new NullServiceMonitor(),
                     0,
                     null);

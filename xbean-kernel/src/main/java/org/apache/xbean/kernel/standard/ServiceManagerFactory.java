@@ -81,12 +81,11 @@ public class ServiceManagerFactory {
      * @param classLoader the classloader for the service
      * @return a new service manager
      */
-    public ServiceManager createServiceManager(long serviceId, ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) {
+    public ServiceManager createServiceManager(long serviceId, ServiceName serviceName, ServiceFactory serviceFactory) {
         return new ServiceManager(kernel,
                 serviceId,
                 serviceName,
                 serviceFactory,
-                classLoader,
                 new AsyncServiceMonitor(serviceMonitor, serviceExecutor),
                 timeoutDuration,
                 timeoutUnits);

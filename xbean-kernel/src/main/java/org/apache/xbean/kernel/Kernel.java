@@ -71,11 +71,10 @@ public interface Kernel {
      *
      * @param serviceName the unique name of the service in the kernel
      * @param serviceFactory the factory used to create the service
-     * @param classLoader the class loader to use for this service
      * @throws ServiceAlreadyExistsException if service is already registered with the specified name
      * @throws ServiceRegistrationException if the service is not restartable and an error occured while starting the service
      */
-    void registerService(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException;
+    void registerService(ServiceName serviceName, ServiceFactory serviceFactory) throws ServiceAlreadyExistsException, ServiceRegistrationException;
 
     /**
      * Unregisters a service from this kernel.  The kernel will attempt to stop the service using the

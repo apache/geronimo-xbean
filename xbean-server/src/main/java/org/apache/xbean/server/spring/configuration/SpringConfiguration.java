@@ -59,6 +59,10 @@ public class SpringConfiguration {
 
         // read the configuration file from source
         applicationContext.refresh();
+        
+        // If the class loader was modified by an xml preprocessor,
+        // make sure we have the right one
+        classLoader = getClassLoader(applicationContext);
 
         try {
 
@@ -73,7 +77,7 @@ public class SpringConfiguration {
                 ServiceName serviceName = (ServiceName) entry.getValue();
 
                 Object bean = applicationContext.getBean(beanName);
-                StaticServiceFactory serviceFactory = new StaticServiceFactory(bean);
+                StaticServiceFactory serviceFactory = new StaticServiceFactory(bean, classLoader);
                 factories.put(serviceName, serviceFactory);
             }
             serviceFactories = Collections.unmodifiableMap(factories);
@@ -83,7 +87,7 @@ public class SpringConfiguration {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 ServiceName serviceName = (ServiceName) entry.getKey();
                 StaticServiceFactory serviceFactory = (StaticServiceFactory) entry.getValue();
-                kernel.registerService(serviceName, serviceFactory, classLoader);
+                kernel.registerService(serviceName, serviceFactory);
             }
 
         } catch (ServiceAlreadyExistsException e) {
@@ -148,7 +152,7 @@ public class SpringConfiguration {
         return serviceNameIndex;
     }
 
-    private static ClassLoader getClassLoader(SpringApplicationContext applicationContext) {
+    protected static ClassLoader getClassLoader(SpringApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         if (classLoader == null) {
             classLoader = Thread.currentThread().getContextClassLoader();

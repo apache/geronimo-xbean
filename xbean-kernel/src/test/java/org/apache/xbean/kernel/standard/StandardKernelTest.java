@@ -41,7 +41,7 @@ public class StandardKernelTest extends TestCase {
     private final StringServiceName serviceName = new StringServiceName("Service");
 //    private final StringServiceName ownedServiceName = new StringServiceName("OwnedService");
     private final MockServiceFactory serviceFactory = new MockServiceFactory();
-    private final ClassLoader classLoader = new URLClassLoader(new URL[0]);
+    private static final ClassLoader CLASSLOADER = new URLClassLoader(new URL[0]);
 
     /**
      * Tests the initial state of the kernel is as expected.
@@ -233,10 +233,10 @@ public class StandardKernelTest extends TestCase {
      * @throws Exception if a problem occurs
      */ 
     public void testSimpleLifecycle() throws Exception {
-        kernel.registerService(serviceName, serviceFactory, classLoader);
+        kernel.registerService(serviceName, serviceFactory);
         assertTrue(kernel.isRegistered(serviceName));
         assertSame(serviceFactory, kernel.getServiceFactory(serviceName));
-        assertSame(classLoader, kernel.getClassLoaderFor(serviceName));
+        assertSame(CLASSLOADER, kernel.getClassLoaderFor(serviceName));
         assertSame(ServiceState.STOPPED, kernel.getServiceState(serviceName));
         assertNull(kernel.getService(serviceName));
         assertEquals(0, kernel.getServiceStartTime(serviceName));
@@ -247,7 +247,7 @@ public class StandardKernelTest extends TestCase {
         private boolean restartable = true;
 
         private MockServiceFactory() throws NullPointerException {
-            super(SERVICE);
+            super(SERVICE, CLASSLOADER);
         }
 
         public boolean isRestartable() {

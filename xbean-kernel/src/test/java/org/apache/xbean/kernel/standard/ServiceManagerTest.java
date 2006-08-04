@@ -67,7 +67,7 @@ public class ServiceManagerTest extends TestCase {
     private final MockStartCondition startCondition = new MockStartCondition();
     private final MockStopCondition stopCondition = new MockStopCondition();
     private final MockServiceFactory serviceFactory = new MockServiceFactory();
-    private final ClassLoader classLoader = new URLClassLoader(new URL[0]);
+    private static final ClassLoader CLASSLOADER = new URLClassLoader(new URL[0]);
     private final MockServiceMonitor serviceMonitor = new MockServiceMonitor();
     private ServiceManager serviceManager;
 
@@ -77,7 +77,7 @@ public class ServiceManagerTest extends TestCase {
     public void testInitialState() {
         assertSame(serviceName, serviceManager.getServiceName());
         assertSame(serviceFactory, serviceManager.getServiceFactory());
-        assertSame(classLoader, serviceManager.getClassLoader());
+        assertSame(CLASSLOADER, serviceManager.getClassLoader());
         assertEquals(0, serviceManager.getStartTime());
         assertNull(serviceManager.getService());
         assertSame(ServiceState.STOPPED, serviceManager.getState());
@@ -705,7 +705,7 @@ public class ServiceManagerTest extends TestCase {
         assertSame(ServiceState.RUNNING, serviceManager.getState());
         assertSame(serviceName, serviceManager.getServiceName());
         assertSame(serviceFactory, serviceManager.getServiceFactory());
-        assertSame(classLoader, serviceManager.getClassLoader());
+        assertSame(CLASSLOADER, serviceManager.getClassLoader());
         assertTrue(serviceManager.getStartTime() > 0);
         assertNotNull(serviceManager.getService());
         assertNull(serviceMonitor.registered);
@@ -773,7 +773,7 @@ public class ServiceManagerTest extends TestCase {
 
         assertSame(serviceName, serviceManager.getServiceName());
         assertSame(serviceFactory, serviceManager.getServiceFactory());
-        assertSame(classLoader, serviceManager.getClassLoader());
+        assertSame(CLASSLOADER, serviceManager.getClassLoader());
 
         if (serviceFactory.restartable) {
             assertSame(ServiceState.STOPPED, serviceManager.getState());
@@ -876,7 +876,7 @@ public class ServiceManagerTest extends TestCase {
 
         assertSame(serviceName, serviceManager.getServiceName());
         assertSame(serviceFactory, serviceManager.getServiceFactory());
-        assertSame(classLoader, serviceManager.getClassLoader());
+        assertSame(CLASSLOADER, serviceManager.getClassLoader());
 
         // these events should never fire in response to start
         assertNull(serviceMonitor.registered);
@@ -1069,7 +1069,7 @@ public class ServiceManagerTest extends TestCase {
 
         assertSame(serviceName, serviceManager.getServiceName());
         assertSame(serviceFactory, serviceManager.getServiceFactory());
-        assertSame(classLoader, serviceManager.getClassLoader());
+        assertSame(CLASSLOADER, serviceManager.getClassLoader());
 
         // these events should never fire in response to start
         assertNull(serviceMonitor.registered);
@@ -1254,7 +1254,7 @@ public class ServiceManagerTest extends TestCase {
             assertSame(ServiceState.STOPPED, serviceManager.getState());
             assertSame(serviceName, serviceManager.getServiceName());
             assertSame(serviceFactory, serviceManager.getServiceFactory());
-            assertSame(classLoader, serviceManager.getClassLoader());
+            assertSame(CLASSLOADER, serviceManager.getClassLoader());
             assertEquals(0, serviceManager.getStartTime());
             assertNull(serviceManager.getService());
             // verify expected events fired
@@ -1272,7 +1272,7 @@ public class ServiceManagerTest extends TestCase {
             assertSame(ServiceState.RUNNING, serviceManager.getState());
             assertSame(serviceName, serviceManager.getServiceName());
             assertSame(serviceFactory, serviceManager.getServiceFactory());
-            assertSame(classLoader, serviceManager.getClassLoader());
+            assertSame(CLASSLOADER, serviceManager.getClassLoader());
             assertTrue(serviceManager.getStartTime() > 0);
             assertNotNull(serviceManager.getService());
             assertNull(serviceMonitor.registered);
@@ -1356,7 +1356,6 @@ public class ServiceManagerTest extends TestCase {
                 0,
                 serviceName,
                 serviceFactory,
-                classLoader,
                 serviceMonitor,
                 10,
                 TimeUnit.SECONDS);
@@ -1411,11 +1410,15 @@ public class ServiceManagerTest extends TestCase {
             if (throwExceptionFromDestroy) throw destroyException;
             super.destroyService(serviceContext);
         }
+        
+        public ClassLoader getClassLoader() {
+            return CLASSLOADER;
+        }
 
         private void assertValidServiceContext(ServiceContext serviceContext) {
             assertSame(serviceName, serviceContext.getServiceName());
             assertSame(kernel, serviceContext.getKernel());
-            assertSame(classLoader, serviceContext.getClassLoader());
+            assertSame(CLASSLOADER, serviceContext.getClassLoader());
         }
 
     }
@@ -1501,7 +1504,7 @@ public class ServiceManagerTest extends TestCase {
     private void assertValidServiceConditionContext(ServiceConditionContext context) {
         assertSame(serviceName, context.getServiceName());
         assertSame(kernel, context.getKernel());
-        assertSame(classLoader, context.getClassLoader());
+        assertSame(CLASSLOADER, context.getClassLoader());
     }
 
     private class MockServiceMonitor implements ServiceMonitor {
@@ -1582,7 +1585,7 @@ public class ServiceManagerTest extends TestCase {
         private void assertValidEvent(ServiceEvent serviceEvent, boolean mustHaveService) {
             assertSame(serviceName, serviceEvent.getServiceName());
             assertSame(kernel, serviceEvent.getKernel());
-            assertSame(classLoader, serviceEvent.getClassLoader());
+            assertSame(CLASSLOADER, serviceEvent.getClassLoader());
             assertSame(serviceFactory, serviceEvent.getServiceFactory());
             if (mustHaveService) {
                 assertSame(SERVICE, serviceEvent.getService());
@@ -1640,7 +1643,7 @@ public class ServiceManagerTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
-        public void registerService(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException {
+        public void registerService(ServiceName serviceName, ServiceFactory serviceFactory) throws ServiceAlreadyExistsException, ServiceRegistrationException {
             throw new UnsupportedOperationException();
         }
 

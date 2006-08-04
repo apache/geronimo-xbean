@@ -130,4 +130,11 @@ public interface ServiceFactory {
      * @param serviceContext the context information for the service
      */
     void destroyService(ServiceContext serviceContext);
+    
+    /**
+     * Gets the class loader associated with this service.
+     *
+     * @return the class loader associated with the service
+     */
+    ClassLoader getClassLoader();
 }

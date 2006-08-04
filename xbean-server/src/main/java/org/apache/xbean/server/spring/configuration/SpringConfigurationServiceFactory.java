@@ -130,6 +130,13 @@ public class SpringConfigurationServiceFactory extends AbstractServiceFactory {
         applicationContext.close();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public ClassLoader getClassLoader() {
+        return SpringConfiguration.getClassLoader(applicationContext);
+    }
+    
     private static class ConfigurationStopCondition implements ServiceCondition {
         private final List ownedServiceConditions = new ArrayList();
 
