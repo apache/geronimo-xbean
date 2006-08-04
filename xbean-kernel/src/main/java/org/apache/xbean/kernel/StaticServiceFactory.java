@@ -28,6 +28,7 @@ import java.util.Set;
  */
 public class StaticServiceFactory extends AbstractServiceFactory {
     private final Object service;
+    private final ClassLoader classLoader;
 
     /**
      * Creates a non-restartable service factory which will simply returns the specified service from the createService
@@ -39,6 +40,26 @@ public class StaticServiceFactory extends AbstractServiceFactory {
     public StaticServiceFactory(Object service) throws NullPointerException {
         if (service == null) throw new NullPointerException("service is null");
         this.service = service;
+        ClassLoader cl = service.getClass().getClassLoader();
+        if (cl == null) {
+            cl = ClassLoader.getSystemClassLoader();
+        }
+        this.classLoader = cl;
+    }
+
+    /**
+     * Creates a non-restartable service factory which will simply returns the specified service from the createService
+     * method.
+     *
+     * @param service the static to which this factory "creates"
+     * @param classLoader the classLoader used to load the service class
+     * @throws NullPointerException if service or classLoader is null
+     */
+    public StaticServiceFactory(Object service, ClassLoader classLoader) throws NullPointerException {
+        if (service == null) throw new NullPointerException("service is null");
+        if (classLoader == null) throw new NullPointerException("classLoader is null");
+        this.service = service;
+        this.classLoader = classLoader;
     }
 
     public Class[] getTypes() {
@@ -76,4 +97,12 @@ public class StaticServiceFactory extends AbstractServiceFactory {
      */
     public void destroyService(ServiceContext serviceContext) {
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+    
 }

@@ -146,7 +146,7 @@ public class SpringLoader implements Loader {
 
         ServiceName serviceName = new StringServiceName("configuration:" + location);
         ServiceFactory springConfigurationServiceFactory = new SpringConfigurationServiceFactory(applicationContext);
-        kernel.registerService(serviceName, springConfigurationServiceFactory, classLoader);
+        kernel.registerService(serviceName, springConfigurationServiceFactory);
         return serviceName;
     }
 }

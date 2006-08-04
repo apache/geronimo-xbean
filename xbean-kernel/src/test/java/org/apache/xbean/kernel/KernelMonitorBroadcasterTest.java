@@ -32,7 +32,7 @@ public class KernelMonitorBroadcasterTest extends TestCase {
     private static final ServiceEvent SERVICE_EVENT = new ServiceEvent(0,
             new StandardKernel("test"),
             new StringServiceName("service-name"),
-            new StaticServiceFactory(new Object()),
+            new StaticServiceFactory(new Object(), KernelMonitorBroadcasterTest.class.getClassLoader()),
             ClassLoader.getSystemClassLoader(), 
             null,
             null,

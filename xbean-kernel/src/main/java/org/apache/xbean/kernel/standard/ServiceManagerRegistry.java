@@ -338,14 +338,12 @@ public class ServiceManagerRegistry {
      *
      * @param serviceName the unique name of the service
      * @param serviceFactory the factory used to create the service
-     * @param classLoader the class loader to use for this service
      * @throws ServiceAlreadyExistsException if service is already registered with the specified name
      * @throws ServiceRegistrationException if the service is not restartable and an error occured while starting the service
      */
-    public void registerService(ServiceName serviceName, ServiceFactory serviceFactory, ClassLoader classLoader) throws ServiceAlreadyExistsException, ServiceRegistrationException {
+    public void registerService(ServiceName serviceName, ServiceFactory serviceFactory) throws ServiceAlreadyExistsException, ServiceRegistrationException {
         if (serviceName == null) throw new NullPointerException("serviceName is null");
         if (serviceFactory == null) throw new NullPointerException("serviceFactory is null");
-        if (classLoader == null) throw new NullPointerException("classLoader is null");
 
         if (!serviceFactory.isEnabled()) {
             throw new ServiceRegistrationException(serviceName,
@@ -386,8 +384,7 @@ public class ServiceManagerRegistry {
                     existingRegistration = null;
                     ServiceManager serviceManager = serviceManagerFactory.createServiceManager(serviceId.getAndIncrement(),
                             serviceName,
-                            serviceFactory,
-                            classLoader);
+                            serviceFactory);
                     registrationTask = RegistryFutureTask.createRegisterTask(serviceManager);
                     serviceManagers.put(serviceName, registrationTask);
                     addTypeIndex(serviceManager, registrationTask);

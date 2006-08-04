@@ -29,7 +29,6 @@ import org.apache.xbean.spring.context.ResourceXmlApplicationContext;
 import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.FileSystemResource;
@@ -46,7 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -348,14 +346,7 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
 
                 log.info("Registering spring services service: " + name + " from: " + file.getAbsolutePath() + " into the Kernel");
 
-                // TODO should we use the classLaoder we used to load the
-                // context
-                // or, if the XBean config file defined a new classloader,
-                // should we use the one
-                // from the ApplicationContext?
-                // classLoader = applicationContext.getClassLoader();
-
-                kernel.registerService(new StringServiceName(name), serviceFactory, classLoader);
+                kernel.registerService(new StringServiceName(name), serviceFactory);
             }
             finally {
                 Thread.currentThread().setContextClassLoader(oldClassLoader);

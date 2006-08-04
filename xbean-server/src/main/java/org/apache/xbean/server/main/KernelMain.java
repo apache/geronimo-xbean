@@ -155,7 +155,7 @@ public class KernelMain implements Main {
 
                     try {
                         ServiceName serviceName = new StringServiceName(name);
-                        kernel.registerService(serviceName, new StaticServiceFactory(service), classLoader);
+                        kernel.registerService(serviceName, new StaticServiceFactory(service, classLoader));
                         kernel.startService(serviceName);
                     } catch (Exception e) {
                         throw new FatalStartupError("Unable to bind bootstrap service '" + name + "' into the kernel", e);
