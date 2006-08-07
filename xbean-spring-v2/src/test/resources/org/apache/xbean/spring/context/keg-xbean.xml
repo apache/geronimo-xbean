@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: xml -->
+<beans xmlns:x="http://xbean.apache.org/schemas/pizza">
+
+  <x:keg id="ml1000" remaining="1000 ml"/>
+  <x:keg id="pints5" remaining="5 pints"/>
+  <x:keg id="liter20" remaining="20 liter"/>
+  <x:keg id="empty" remaining="0"/>
+
+</beans>
+<!-- END SNIPPET: xml -->

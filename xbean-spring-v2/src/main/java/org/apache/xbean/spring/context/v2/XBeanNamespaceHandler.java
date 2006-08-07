@@ -19,6 +19,7 @@ package org.apache.xbean.spring.context.v2;
 
 import java.beans.BeanInfo;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -362,9 +363,11 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             }
             Enumeration enumeration = properties.propertyNames();
             while (enumeration.hasMoreElements()) {
-                name = (String) enumeration.nextElement();
-                Object value = getValue(properties.getProperty(name));
-                definition.getBeanDefinition().getPropertyValues().addPropertyValue(name, value);
+                String propertyName = (String) enumeration.nextElement();
+                String propertyEditor = metadata.getPropertyEditor(getLocalName(element), propertyName);
+                
+                Object value = getValue(properties.getProperty(propertyName), propertyEditor);
+                definition.getBeanDefinition().getPropertyValues().addPropertyValue(propertyName, value);
             }
         }
     }
@@ -382,13 +385,14 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     protected void addProperty(BeanDefinitionHolder definition, MappingMetaData metadata, Element element,
             String localName, String value) {
         String propertyName = metadata.getPropertyName(getLocalName(element), localName);
+        String propertyEditor = metadata.getPropertyEditor(getLocalName(element), propertyName);
         if (propertyName != null) {
             definition.getBeanDefinition().getPropertyValues().addPropertyValue(
-                            propertyName, getValue(value));
+                            propertyName, getValue(value,propertyEditor));
         }
     }
 
-    protected Object getValue(String value) {
+    protected Object getValue(String value, String propertyEditor) {
         if (value == null)  return null;
 
         //
@@ -411,11 +415,30 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             }
         }
 
+        if( propertyEditor!=null ) {
+        	PropertyEditor p = createPropertyEditor(propertyEditor);
+        	p.setAsText(value);
+        	return p.getValue();
+        }
+        
         //
         // Neither null nor a reference
         //
         return value;
     }
+
+    protected PropertyEditor createPropertyEditor(String propertyEditor) {    	
+    	ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    	if( cl==null ) {
+    		cl = XBeanNamespaceHandler.class.getClassLoader();
+    	}
+    	
+    	try {
+    		return (PropertyEditor)cl.loadClass(propertyEditor).newInstance();
+    	} catch (Throwable e){
+    		throw new IllegalArgumentException("Could not load property editor: "+propertyEditor, e);
+    	}
+	}
 
     protected String getLocalName(Element element) {
         String localName = element.getLocalName();
@@ -588,9 +611,9 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     String key = childElement.getAttribute(keyName);
                     if (key == null) throw new RuntimeException("No key defined for map " + entryName);
 
-                    Object keyValue = getValue(key);
+                    Object keyValue = getValue(key, null);
 
-                    Object value = getValue(getElementText(childElement));
+                    Object value = getValue(getElementText(childElement), null);
 
                     map.put(keyValue, value);
                 }

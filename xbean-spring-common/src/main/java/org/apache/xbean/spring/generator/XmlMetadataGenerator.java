@@ -107,6 +107,13 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             out.println(element.getElementName() + ".factoryMethod = " + factoryMethod);
         }
         
+        for (Iterator iter = element.getAttributes().iterator(); iter.hasNext();) {
+			AttributeMapping attribute = (AttributeMapping) iter.next();
+			if( attribute.getPropertyEditor() !=null ) {
+	            out.println(element.getElementName() + "."+attribute.getPropertyName()+ ".propertyEditor = " + attribute.getPropertyEditor());
+			}
+		}
+        
         List flatProperties = element.getFlatProperties();
         for (Iterator itr = flatProperties.iterator(); itr.hasNext();) {
             out.println(element.getElementName() + "." + itr.next() + ".flat");

@@ -306,6 +306,7 @@ public class QdoxMappingLoader implements MappingLoader {
         boolean fixed = getBooleanProperty(propertyTag, "fixed");
         boolean required = getBooleanProperty(propertyTag, "required");
         String nestedType = getProperty(propertyTag, "nestedType");
+        String propertyEditor = getProperty(propertyTag, "propertyEditor");
 
         return new AttributeMapping(attribute,
                 beanProperty.getName(),
@@ -313,7 +314,8 @@ public class QdoxMappingLoader implements MappingLoader {
                 toMappingType(beanProperty.getType(), nestedType),
                 defaultValue,
                 fixed,
-                required);
+                required,
+                propertyEditor);
     }
 
     private static DocletTag getPropertyTag(BeanProperty beanProperty) {
@@ -383,7 +385,8 @@ public class QdoxMappingLoader implements MappingLoader {
                 toMappingType(parameter.getType(), null),
                 null,
                 false,
-                false);
+                false,
+                null);
     }
 
     private String getParameterDescription(JavaParameter parameter) {

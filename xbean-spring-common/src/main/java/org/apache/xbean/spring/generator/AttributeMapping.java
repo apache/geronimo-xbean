@@ -29,9 +29,11 @@ public class AttributeMapping implements Comparable {
     private final String value;
     private final boolean fixed;
     private final boolean required;
+	private final String propertyEditor;
 
-    public AttributeMapping(String attributeName, String propertyName, String description, Type type, String value, boolean fixed, boolean required) {
-        if (attributeName == null) throw new NullPointerException("attributeName");
+    public AttributeMapping(String attributeName, String propertyName, String description, Type type, String value, boolean fixed, boolean required, String propertyEditor) {
+        this.propertyEditor = propertyEditor;
+		if (attributeName == null) throw new NullPointerException("attributeName");
         if (propertyName == null) throw new NullPointerException("propertyName");
         if (type == null) throw new NullPointerException("type");
         this.attributeName = attributeName;
@@ -86,4 +88,8 @@ public class AttributeMapping implements Comparable {
     public int compareTo(Object obj) {
         return attributeName.compareTo(((AttributeMapping) obj).attributeName);
     }
+
+	public String getPropertyEditor() {
+		return propertyEditor;
+	}
 }

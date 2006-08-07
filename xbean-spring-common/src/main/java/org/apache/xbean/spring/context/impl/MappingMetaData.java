@@ -200,4 +200,10 @@ public class MappingMetaData {
     public boolean isFlatProperty(String elementName, String property)  {
         return properties.getProperty(elementName + "." + property + ".flat") != null;
     }
+    
+    public String getPropertyEditor(String elementName, String property)
+    {
+        return properties.getProperty(elementName + "." + property + ".propertyEditor");
+    }
+
 }
