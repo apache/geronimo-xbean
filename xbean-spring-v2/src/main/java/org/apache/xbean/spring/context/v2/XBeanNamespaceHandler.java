@@ -436,7 +436,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     	try {
     		return (PropertyEditor)cl.loadClass(propertyEditor).newInstance();
     	} catch (Throwable e){
-    		throw new IllegalArgumentException("Could not load property editor: "+propertyEditor, e);
+    		throw (IllegalArgumentException)new IllegalArgumentException("Could not load property editor: "+propertyEditor).initCause(e);
     	}
 	}
 
