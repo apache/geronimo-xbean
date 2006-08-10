@@ -103,10 +103,22 @@ public class XsdGenerator implements GeneratorPlugin {
                 generateElementMappingComplexPropertyAsRef(out, attributeMapping);
             }
         }
+        generateIDAttributeMapping(out, namespaceMapping, element);
+
         out.println("      <xs:anyAttribute namespace='##other' processContents='lax'/>");
         out.println("    </xs:complexType>");
         out.println("  </xs:element>");
         out.println();
+    }
+
+    private void generateIDAttributeMapping(PrintWriter out, NamespaceMapping namespaceMapping, ElementMapping element) {
+        for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
+            AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
+            if ("id".equals(attributeMapping.getAttributeName())) {
+                return;
+            }
+        }
+        out.println("      <xs:attribute name='id' type='xs:ID'/>");
     }
 
     private void generateElementMappingSimpleProperty(PrintWriter out, AttributeMapping attributeMapping) {
