@@ -17,8 +17,9 @@
 package org.apache.xbean.server.spring.loader;
 
 import java.io.File;
-import java.util.List;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.kernel.ServiceFactory;
@@ -28,6 +29,7 @@ import org.apache.xbean.server.loader.Loader;
 import org.apache.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
 import org.apache.xbean.spring.context.FileSystemXmlApplicationContext;
 import org.apache.xbean.spring.context.SpringApplicationContext;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 
 
 /**
@@ -132,8 +134,11 @@ public class SpringLoader implements Loader {
                 new String[] {configLocation},
                 false,
                 xmlPreprocessors);
-        
-        // TODO - not adding the bean post processors
+
+        for (Iterator iter = beanFactoryPostProcessors.iterator(); iter.hasNext();) {
+            BeanFactoryPostProcessor processor = (BeanFactoryPostProcessor) iter.next();
+            applicationContext.addBeanFactoryPostProcessor(processor);
+        }
         applicationContext.setDisplayName(location);
 
         ClassLoader classLoader = applicationContext.getClassLoader();
