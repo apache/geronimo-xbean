@@ -30,6 +30,8 @@ import org.apache.xbean.kernel.StaticServiceFactory;
 import org.apache.xbean.kernel.StringServiceName;
 import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.apache.xbean.server.spring.loader.SpringLoader;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
 /**
  * SpringConfiguration that registers and unregisters services that have been defined in a SpringApplicationContext.
@@ -142,14 +144,34 @@ public class SpringConfiguration {
     }
 
     private static Map buildServiceNameIndex(SpringApplicationContext applicationContext) {
-        String[] beanNames = applicationContext.getBeanDefinitionNames();
-        Map serviceNameIndex = new HashMap(beanNames.length);
-        for (int i = 0; i < beanNames.length; i++) {
-            String beanName = beanNames[i];
-            ServiceName serviceName = new StringServiceName(beanName);
-            serviceNameIndex.put(beanName, serviceName);
+        BeanDefinitionRegistry registry = null;
+        if (applicationContext instanceof BeanDefinitionRegistry) {
+            registry = (BeanDefinitionRegistry) applicationContext;
+        } else if (applicationContext.getBeanFactory() instanceof BeanDefinitionRegistry) {
+            registry = (BeanDefinitionRegistry) applicationContext.getBeanFactory(); 
         }
-        return serviceNameIndex;
+        if (registry != null) {
+            String[] beanNames = registry.getBeanDefinitionNames();
+            Map serviceNameIndex = new HashMap(beanNames.length);
+            for (int i = 0; i < beanNames.length; i++) {
+                String beanName = beanNames[i];
+                BeanDefinition def = registry.getBeanDefinition(beanName);
+                if (!def.isAbstract()) {
+                    ServiceName serviceName = new StringServiceName(beanName);
+                    serviceNameIndex.put(beanName, serviceName);
+                }
+            }
+            return serviceNameIndex;
+        } else {
+            String[] beanNames = applicationContext.getBeanDefinitionNames();
+            Map serviceNameIndex = new HashMap(beanNames.length);
+            for (int i = 0; i < beanNames.length; i++) {
+                String beanName = beanNames[i];
+                ServiceName serviceName = new StringServiceName(beanName);
+                serviceNameIndex.put(beanName, serviceName);
+            }
+            return serviceNameIndex;
+        }
     }
 
     protected static ClassLoader getClassLoader(SpringApplicationContext applicationContext) {
