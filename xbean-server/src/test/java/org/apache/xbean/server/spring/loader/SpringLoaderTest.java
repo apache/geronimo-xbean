@@ -81,6 +81,7 @@ public class SpringLoaderTest extends TestCase {
         }
     }
 
+    /*
     public void testReload() throws Exception{
         Kernel kernel = KernelFactory.newInstance().createKernel("test");
 
@@ -124,6 +125,7 @@ public class SpringLoaderTest extends TestCase {
             kernel.destroy();
         }
     }
+    */
 
     protected void setUp() throws Exception {
         super.setUp();
