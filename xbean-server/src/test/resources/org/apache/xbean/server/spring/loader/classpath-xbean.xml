@@ -10,5 +10,15 @@
   <bean name="FileSystemRepository" class="org.apache.xbean.server.repository.FileSystemRepository">
     <property name="root" value="${xbean.base.dir}/repository"/>
   </bean>
+  
+  <bean id="inheritedTestBean" abstract="true" class="javax.swing.JComponent">
+    <property name="autoscrolls" value="true"/>
+  </bean>
+
+  <bean id="inheritsWithDifferentClass" class="javax.swing.JButton"
+        parent="inheritedTestBean">
+    <property name="autoscrolls" value="false"/>
+  </bean>
+
 </beans>
 <!-- END SNIPPET: xml -->
