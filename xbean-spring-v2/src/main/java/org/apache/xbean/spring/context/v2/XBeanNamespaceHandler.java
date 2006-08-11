@@ -21,6 +21,9 @@ import java.beans.BeanInfo;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -713,6 +716,14 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
      * Loads the resource from the given URI
      */
     protected InputStream loadResource(String uri) {
+        if (System.getProperty("xbean.dir") != null) {
+            File f = new File(System.getProperty("xbean.dir") + uri);
+            try {
+                return new FileInputStream(f);
+            } catch (FileNotFoundException e) {
+                // Ignore
+            }
+        }
         // lets try the thread context class loader first
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
         if (in == null) {
