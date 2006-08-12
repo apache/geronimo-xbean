@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +37,14 @@ import org.apache.xbean.spring.context.impl.NamespaceHelper;
 public class XmlMetadataGenerator implements GeneratorPlugin {
     private final String metaInfDir;
     private final LogFacade log;
+    private final File schema;
     
     public static final String NAMESPACE_HANDLER = "org.apache.xbean.spring.context.v2.XBeanNamespaceHandler";
 
-    public XmlMetadataGenerator(LogFacade log, String metaInfDir) {
+    public XmlMetadataGenerator(LogFacade log, String metaInfDir, File schema) {
         this.metaInfDir = metaInfDir;
         this.log = log;
+        this.schema = schema;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
@@ -68,6 +71,18 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             out.println(namespace.replaceAll(":", "\\\\:") + "=" + NAMESPACE_HANDLER);
         } finally {
             out.close();
+        }
+
+        if (schema != null) {
+            String cp = new File(metaInfDir).toURI().relativize(schema.toURI()).toString();
+            file = new File(metaInfDir, "META-INF/spring.schemas");
+            log.log("Generating Spring 2.0 schema mapping: " + file + " for namespace: " + namespace);
+            out = new PrintWriter(new FileWriter(file));
+            try {
+                out.println(namespace.replaceAll(":", "\\\\:") + "=" + cp);
+            } finally {
+                out.close();
+            }
         }
     }
 

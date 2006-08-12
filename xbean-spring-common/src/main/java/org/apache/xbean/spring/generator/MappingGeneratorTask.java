@@ -95,7 +95,7 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
             MappingLoader mappingLoader = new QdoxMappingLoader(namespace, getFiles(srcDir), excludedClasses);
 
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(this, metaInfDir),
+                new XmlMetadataGenerator(this, metaInfDir, destFile),
                 new DocumentationGenerator(this, destFile),
                 new XsdGenerator(this, destFile)
             };
