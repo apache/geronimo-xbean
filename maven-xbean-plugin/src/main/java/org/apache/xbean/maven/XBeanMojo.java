@@ -122,7 +122,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             }
             MappingLoader mappingLoader = new QdoxMappingLoader(namespace, new File[] { srcDir }, excludedClasses);
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(this, outputDir.getAbsolutePath()),
+                new XmlMetadataGenerator(this, outputDir.getAbsolutePath(), schema),
                 new DocumentationGenerator(this, schema),
                 new XsdGenerator(this, schema)
             };
