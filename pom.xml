@@ -11,7 +11,7 @@
   <name>XBean</name>
   <version>2.6-SNAPSHOT</version>
   <description>XBean is a plugin based server architecture.</description>
-  <url>http://xbean.org</url>
+  <url>http://geronimo.apache.org/xbean</url>
   <issueManagement>
     <system>jira</system>
     <url>http://issues.apache.org/jira/browse/XBEAN</url>
@@ -22,25 +22,20 @@
       <notifier>
         <sendOnError>false</sendOnError>
         <sendOnFailure>false</sendOnFailure>
-        <address>dev@xbean.org</address>
+        <address>xbean-dev@xbean.org</address>
       </notifier>
     </notifiers>
   </ciManagement>
   <mailingLists>
     <mailingList>
       <name>xbean developers</name>
-      <subscribe>mailto:dev-subscribe@xbean.org</subscribe>
-      <unsubscribe>mailto:dev-unsubscribe@xbean.org</unsubscribe>
+      <subscribe>mailto:xbean-dev-subscribe@geronimo.apache.org</subscribe>
+      <unsubscribe>mailto:xbean-dev-unsubscribe@xbean.org</unsubscribe>
     </mailingList>
     <mailingList>
       <name>xbean users</name>
-      <subscribe>mailto:user-subscribe@xbean.org</subscribe>
-      <unsubscribe>mailto:user-unsubscribe@xbean.org</unsubscribe>
-    </mailingList>
-    <mailingList>
-      <name>xbean source control messages</name>
-      <subscribe>mailto:scm-subscribe@xbean.org</subscribe>
-      <unsubscribe>mailto:scm-unsubscribe@xbean.org</unsubscribe>
+      <subscribe>mailto:xbean-user-subscribe@geronimo.apache.org</subscribe>
+      <unsubscribe>mailto:xbean-user-unsubscribe@geronimo.apache.org</unsubscribe>
     </mailingList>
   </mailingLists>
   <developers>
@@ -104,9 +99,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.5</connection>
-    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.5</developerConnection>
-    <url>http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-2.5</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
+    <developerConnection>scm:svn:https://${maven.username}@svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
+    <url>http://svn.apache.org/repos/asf/geronimo/xbean/trunk</url>
   </scm>
   <build>
     <extensions>
@@ -123,27 +118,6 @@
         </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
-      <!-- Remove maven-one-plugin, as m2 repo is automatically
-          synced in m1 repo
-      <plugin>
-        <artifactId>maven-one-plugin</artifactId>
-        <version>1.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>install-maven-one-repository</goal>
-              <goal>deploy-maven-one-repository</goal>
-            </goals>
-            <configuration>
-              <remoteRepositoryId>xbean</remoteRepositoryId>
-              <remoteRepositoryUrl>${m1.repo}</remoteRepositoryUrl>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      -->
-    </plugins>
   </build>
   <profiles>
     <profile>
@@ -299,19 +273,12 @@
     </dependencies>
   </dependencyManagement>
   <distributionManagement>
-    <repository>
-      <id>xbean</id>
-      <name>Apache Release Distribution Repository</name>
-      <url>${m2.repo}</url>
-    </repository>
     <site>
       <id>xbean</id>
-      <url>${site.repo}</url>
+      <url>scp://people.apache.org/www/geronimo.apache.org/xbean/dist/xbean-2.6/site</url>
     </site>
   </distributionManagement>
   <properties>
-    <m1.repo>scp://minotaur.apache.org/www/people.apache.org/repository</m1.repo>
-    <site.repo>scp://minotaur.apache.org/www/geronimo.apache.org/xbean/dist/xbean-2.6/site</site.repo>
-    <m2.repo>scp://people.apache.org/www/people.apache.org/repo/m2-ibiblio-rsync-repository</m2.repo>
+    <site.repo></site.repo>
   </properties>
 </project>
