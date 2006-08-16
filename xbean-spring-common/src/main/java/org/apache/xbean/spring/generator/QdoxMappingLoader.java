@@ -504,7 +504,7 @@ public class QdoxMappingLoader implements MappingLoader {
         if (sourceName.endsWith(".java")) {
             className = className.substring(0, className.length() - ".java".length());
         }
-        className = className.replace("/", ".");
+        className = className.replace('/', '.');
         for (int i = 0; i < excludedClasses.length; i++) {
             String excludedClass = excludedClasses[i];
             if (className.equals(excludedClass)) {

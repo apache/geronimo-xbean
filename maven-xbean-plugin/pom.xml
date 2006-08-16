@@ -9,6 +9,17 @@
   <packaging>maven-plugin</packaging>
   <name>Maven XBean Plugin</name>
   <version>COL-SNAPSHOT</version>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
