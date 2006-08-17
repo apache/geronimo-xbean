@@ -36,14 +36,13 @@ import org.apache.xbean.spring.context.impl.NamespaceHelper;
  */
 public class XmlMetadataGenerator implements GeneratorPlugin {
     private final String metaInfDir;
-    private final LogFacade log;
+    private LogFacade log;
     private final File schema;
     
     public static final String NAMESPACE_HANDLER = "org.apache.xbean.spring.context.v2.XBeanNamespaceHandler";
 
-    public XmlMetadataGenerator(LogFacade log, String metaInfDir, File schema) {
+    public XmlMetadataGenerator(String metaInfDir, File schema) {
         this.metaInfDir = metaInfDir;
-        this.log = log;
         this.schema = schema;
     }
 
@@ -195,4 +194,12 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             }
         }
     }
+
+	public LogFacade getLog() {
+		return log;
+	}
+
+	public void setLog(LogFacade log) {
+		this.log = log;
+	}
 }

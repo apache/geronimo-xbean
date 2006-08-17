@@ -30,11 +30,10 @@ import java.util.List;
  */
 public class DocumentationGenerator implements GeneratorPlugin {
     private final File destFile;
-    private final LogFacade log;
+    private LogFacade log;
 
-    public DocumentationGenerator(LogFacade log, File destFile) {
+    public DocumentationGenerator(File destFile) {
         this.destFile = destFile;
-        this.log = log;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
@@ -190,4 +189,12 @@ public class DocumentationGenerator implements GeneratorPlugin {
             out.print(")*");
         }
     }
+
+	public LogFacade getLog() {
+		return log;
+	}
+
+	public void setLog(LogFacade log) {
+		this.log = log;
+	}
 }
