@@ -1,9 +1,22 @@
+/**
+ *
+ * Copyright 2006 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.apache.xbean.naming.context;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
+import org.apache.geronimo.naming.enc.EnterpriseNamingContextNameParser;
 
 import javax.naming.Binding;
 import javax.naming.CompositeName;
@@ -17,22 +30,23 @@ import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
-import org.apache.geronimo.naming.enc.EnterpriseNamingContextNameParser;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 public class GeronimoGlobalContext implements Context {
-
     protected Hashtable env;
     protected Map bindings;
-    protected GeronimoGlobalContext parent = null;
-    protected Name contextAtomicName = null;
+    protected GeronimoGlobalContext parent;
+    protected Name contextAtomicName;
 
     public GeronimoGlobalContext() {
         bindings = new HashMap();
         env = new Hashtable();
     }
 
-    protected GeronimoGlobalContext(GeronimoGlobalContext parent,
-        Hashtable environment, Name contextAtomicName) {
+    protected GeronimoGlobalContext(GeronimoGlobalContext parent, Hashtable environment, Name contextAtomicName) {
         this.env = environment;
         this.parent = parent;
         bindings = new HashMap();
@@ -91,8 +105,7 @@ public class GeronimoGlobalContext implements Context {
 
     public void destroySubcontext(Name name) throws NamingException {
         if (name.isEmpty()) {
-            throw new InvalidNameException(
-                    "Cannot destroy subcontext with empty name");
+            throw new InvalidNameException("Cannot destroy subcontext with empty name");
         }
         unbind(name);
     }
@@ -103,15 +116,15 @@ public class GeronimoGlobalContext implements Context {
         }
         Map bindings = this.bindings;
         if (name.size() == 1) {
-        	synchronized (bindings){
-            bindings.remove(name.toString());
-        	}
+            synchronized (bindings) {
+                bindings.remove(name.toString());
+            }
         } else {
             String segment = null;
             int lastIndex = name.size() - 1;
             Object terminalContext = null;
             for (int i = 0; i < lastIndex; i++) {
-                segment = (String) name.get(i);
+                segment = name.get(i);
                 terminalContext = bindings.get(segment);
                 if (terminalContext == null) {
                     throw new NamingException("The intermediate context "
@@ -139,8 +152,7 @@ public class GeronimoGlobalContext implements Context {
 
     public Object removeFromEnvironment(String propName) throws NamingException {
         if (propName == null) {
-            throw new NamingException(
-                    "The parameter for this method cannot be null");
+            throw new NamingException("The parameter for this method cannot be null");
         }
         Object obj = env.get(propName);
         env.remove(propName);
@@ -156,21 +168,21 @@ public class GeronimoGlobalContext implements Context {
     }
 
     public Object lookup(Name name) throws NamingException {
-        return internalLookup(name,true);
+        return internalLookup(name, true);
     }
 
-    protected Object internalLookup(Name name,boolean resolveLinks) throws NamingException {
+    protected Object internalLookup(Name name, boolean resolveLinks) throws NamingException {
         Object result = null;
         Map bindings = this.bindings;
         Object terminalContext = null;
         if (name.isEmpty()) {
-            return new GeronimoGlobalContext(this,this.env);
+            return new GeronimoGlobalContext(this, this.env);
         }
         int index = name.get(0).indexOf(':');
-        if(index != -1){
-            String temp = name.get(0).substring(index+1);
+        if (index != -1) {
+            String temp = name.get(0).substring(index + 1);
             name.remove(0);
-            name.add(0,temp);
+            name.add(0, temp);
         }
         if (name.size() == 1) {
             result = bindings.get(name.toString());
@@ -178,7 +190,7 @@ public class GeronimoGlobalContext implements Context {
             String segment = null;
             int lastIndex = name.size() - 1;
             for (int i = 0; i < lastIndex; i++) {
-                segment = (String) name.get(i);
+                segment = name.get(i);
                 terminalContext = bindings.get(segment);
                 if (terminalContext == null) {
                     throw new NamingException("The intermediate context "
@@ -209,7 +221,7 @@ public class GeronimoGlobalContext implements Context {
         if (name.isEmpty()) {
             throw new InvalidNameException("Name cannot be empty");
         }
-        return internalLookup(name,false);
+        return internalLookup(name, false);
     }
 
     /**
@@ -223,14 +235,10 @@ public class GeronimoGlobalContext implements Context {
      * NameAlreadyBoundException is thrown. If any of the subContexts included
      * in the Name do not exist then a NamingException is thrown.
      *
-     * @param name
-     *            the name to bind; may not be empty
-     * @param obj
-     *            the object to bind; possibly null
-     * @throws NameAlreadyBoundException
-     *             if name is already bound
-     * @throws NamingException
-     *             if a naming exception is encountered
+     * @param name the name to bind; may not be empty
+     * @param obj  the object to bind; possibly null
+     * @throws NameAlreadyBoundException if name is already bound
+     * @throws NamingException           if a naming exception is encountered
      */
     public void bind(Name name, Object obj) throws NamingException {
         if (name.isEmpty()) {
@@ -251,7 +259,7 @@ public class GeronimoGlobalContext implements Context {
             int lastIndex = name.size() - 1;
             Object terminalContext = null;
             for (int i = 0; i < lastIndex; i++) {
-                segment = (String) name.get(i);
+                segment = name.get(i);
                 terminalContext = bindings.get(segment);
                 if (terminalContext == null) {
                     throw new NamingException("The intermediate context "
@@ -275,7 +283,7 @@ public class GeronimoGlobalContext implements Context {
         }
         Map bindings = this.bindings;
         if (name.size() == 1) {
-            synchronized(bindings){
+            synchronized (bindings) {
                 bindings.put(name.toString(), obj);
             }
         } else {
@@ -283,7 +291,7 @@ public class GeronimoGlobalContext implements Context {
             int lastIndex = name.size() - 1;
             Object terminalContext = null;
             for (int i = 0; i < lastIndex; i++) {
-                segment = (String) name.get(i);
+                segment = name.get(i);
                 terminalContext = bindings.get(segment);
                 if (terminalContext == null) {
                     throw new NamingException("The intermediate context "
@@ -311,35 +319,30 @@ public class GeronimoGlobalContext implements Context {
 
     public Context createSubcontext(Name name) throws NamingException {
         if (name.isEmpty()) {
-            throw new InvalidNameException(
-                    "Cannot create a subcontext if the name is empty");
+            throw new InvalidNameException("Cannot create a subcontext if the name is empty");
         }
         Map bindings = this.bindings;
-        GeronimoGlobalContext geronimoGlobalContext = new GeronimoGlobalContext(
-                this, this.env, name);
+        GeronimoGlobalContext geronimoGlobalContext = new GeronimoGlobalContext(this, this.env, name);
         if (name.size() == 1) {
             if (bindings.get(name.toString()) == null) {
                 synchronized (bindings) {
                     bindings.put(name.toString(), geronimoGlobalContext);
                 }
             } else {
-                throw new NameAlreadyBoundException("The name " + name
-                        + "is already bound");
+                throw new NameAlreadyBoundException("The name " + name + "is already bound");
             }
         } else {
             String segment = null;
             int lastIndex = name.size() - 1;
             Object terminalContext = null;
             for (int i = 0; i < lastIndex; i++) {
-                segment = (String) name.get(i);
+                segment = name.get(i);
                 terminalContext = bindings.get(segment);
                 if (terminalContext == null) {
-                    throw new NamingException("The intermediate context "
-                            + segment + " does not exist");
+                    throw new NamingException("The intermediate context " + segment + " does not exist");
                 } else if (!(terminalContext instanceof Context)) {
-                    throw new NameAlreadyBoundException(
-                            " An object that is not a context is already bound at element "
-                                    + segment + "of name " + name);
+                    throw new NameAlreadyBoundException(" An object that is not a context is already bound at element "
+                            + segment + "of name " + name);
                 } else {
                     bindings = ((GeronimoGlobalContext) terminalContext).bindings;
                 }
@@ -356,8 +359,7 @@ public class GeronimoGlobalContext implements Context {
         } else if (oldName.isEmpty() || newName.isEmpty()) {
             throw new InvalidNameException("Name cannot be empty");
         } else if (this.lookup(newName) != null) {
-            throw new NameAlreadyBoundException(
-                    "The target name is already bound");
+            throw new NameAlreadyBoundException("The target name is already bound");
         }
         this.bind(newName, this.lookup(oldName));
         this.unbind(oldName);
@@ -401,28 +403,27 @@ public class GeronimoGlobalContext implements Context {
         throw new NotContextException("The name " + name + " cannot be listed");
     }
 
-    public Object addToEnvironment(String propName, Object propVal)
-            throws NamingException {
+    public Object addToEnvironment(String propName, Object propVal) throws NamingException {
         if (propName == null || propVal == null) {
-            throw new NamingException(
-                    "The parameters for this method cannot be null");
+            throw new NamingException("The parameters for this method cannot be null");
         }
         Object obj = env.get(propName);
         env.put(propName, propVal);
         return obj;
     }
 
-    public String composeName(String name, String prefix)
-            throws NamingException {
+    public String composeName(String name, String prefix) throws NamingException {
         return composeName(new CompositeName(name), new CompositeName(prefix))
                 .toString();
     }
 
     public Name composeName(Name name, Name prefix) throws NamingException {
-        if (name == null)
+        if (name == null) {
             throw new NullPointerException("name is null");
-        if (prefix == null)
+        }
+        if (prefix == null) {
             throw new NullPointerException("prefix is null");
+        }
 
         Name result = (Name) prefix.clone();
         result.addAll(name);
@@ -492,7 +493,7 @@ public class GeronimoGlobalContext implements Context {
     }
 
     protected void internalBind(String name, Object obj) throws NamingException {
-        internalBind(new CompositeName(name),obj);
+        internalBind(new CompositeName(name), obj);
     }
 
     /**
@@ -501,16 +502,12 @@ public class GeronimoGlobalContext implements Context {
      * NameAlreadyBoundException is thrown. If any of the subContexts included
      * in the Name do not exist then a NamingException is thrown.
      *
-     * @param name
-     *            the name to bind; may not be empty
-     * @param obj
-     *            the object to bind; possibly null
-     * @throws NameAlreadyBoundException
-     *             if name is already bound
-     * @throws NamingException
-     *             if a naming exception is encountered
+     * @param name the name to bind; may not be empty
+     * @param obj  the object to bind; possibly null
+     * @throws NameAlreadyBoundException if name is already bound
+     * @throws NamingException           if a naming exception is encountered
      */
-     protected void internalBind(Name name, Object obj) throws NamingException {
+    protected void internalBind(Name name, Object obj) throws NamingException {
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot bind empty name");
         }
@@ -518,30 +515,28 @@ public class GeronimoGlobalContext implements Context {
         if (name.size() == 1) {
             if (bindings.get(name.toString()) == null) {
                 synchronized (bindings) {
-                bindings.put(name.toString(), obj);
+                    bindings.put(name.toString(), obj);
                 }
             } else {
-                throw new NameAlreadyBoundException("The name " + name
-                        + "is already bound");
+                throw new NameAlreadyBoundException("The name " + name + "is already bound");
             }
         } else {
             String segment = null;
             int lastIndex = name.size() - 1;
             Object terminalContext = null;
             for (int i = 0; i < lastIndex; i++) {
-                segment = (String) name.get(i);
+                segment = name.get(i);
                 terminalContext = bindings.get(segment);
                 if (terminalContext == null) {
                     terminalContext = new GeronimoGlobalContext(this, this.env, name);
                     synchronized (bindings) {
-                    bindings.put(segment,terminalContext);
+                        bindings.put(segment, terminalContext);
                     }
                 } else if (!(terminalContext instanceof Context)) {
-                    throw new NameAlreadyBoundException(
-                            " An object that is not a context is already bound at element "
-                                    + segment + "of name " + name);
+                    throw new NameAlreadyBoundException(" An object that is not a context is already bound at element "
+                            + segment + "of name " + name);
                 }
-                    bindings = ((GeronimoGlobalContext) terminalContext).bindings;
+                bindings = ((GeronimoGlobalContext) terminalContext).bindings;
 
             }
             segment = name.get(lastIndex);
