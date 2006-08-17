@@ -34,10 +34,10 @@ import java.util.Map;
 /**
  * @version $Rev: 355877 $ $Date: 2005-12-10 18:48:27 -0800 (Sat, 10 Dec 2005) $
  */
-public abstract class AbstractReadOnlyContext extends AbstractContext implements Context, ContextFactory, Serializable {
+public abstract class AbstractUnmodifiableContext extends AbstractContext implements Context, ContextFactory, Serializable {
     private static final long serialVersionUID = 3808693663629444493L;
 
-    protected AbstractReadOnlyContext(String nameInNamespace) {
+    protected AbstractUnmodifiableContext(String nameInNamespace) {
         super(nameInNamespace);
     }
 
@@ -180,7 +180,7 @@ public abstract class AbstractReadOnlyContext extends AbstractContext implements
             throw new InvalidNameException("Name is empty");
         }
 
-        AbstractReadOnlyContext currentContext = this;
+        AbstractUnmodifiableContext currentContext = this;
         for (int i = 0; i < compoundName.size(); i++) {
             String part = compoundName.get(i);
 
@@ -212,11 +212,11 @@ public abstract class AbstractReadOnlyContext extends AbstractContext implements
                 } else {
                     // the current value must be an abstract read only context
                     // todo this is a problem since a nested node could be an AbstractReadOnlyContext but not one of our contexts
-                    if (!(currentValue instanceof AbstractReadOnlyContext)) {
+                    if (!(currentValue instanceof AbstractUnmodifiableContext)) {
                         throw new NotContextException("Expected an instance of AbstractReadOnlyContext to be bound at " +
                                 part + " but found an instance of " + currentValue.getClass().getName());
                     }
-                    currentContext = (AbstractReadOnlyContext) currentValue;
+                    currentContext = (AbstractUnmodifiableContext) currentValue;
                     // now we recurse into the current context
                 }
             }
@@ -244,7 +244,7 @@ public abstract class AbstractReadOnlyContext extends AbstractContext implements
             String key = name.get(i + 1);
             value = createContext(fullPath, Collections.singletonMap(key, value));
         }
-        return (AbstractReadOnlyContext) value;
+        return (AbstractUnmodifiableContext) value;
     }
 
     //
@@ -272,10 +272,10 @@ public abstract class AbstractReadOnlyContext extends AbstractContext implements
         // we serch the tree for a target context and name to remove
         // this is normally the last context in the tree and the final name part, but
         // it may be farther up the path if the intervening nodes are empty
-        AbstractReadOnlyContext targetContext = this;
+        AbstractUnmodifiableContext targetContext = this;
         String targetName = compoundName.get(0);
 
-        AbstractReadOnlyContext currentContext = this;
+        AbstractUnmodifiableContext currentContext = this;
         for (int i = 0; i < compoundName.size(); i++) {
             String part = compoundName.get(i);
 
@@ -308,11 +308,11 @@ public abstract class AbstractReadOnlyContext extends AbstractContext implements
                 } else {
                     // the current value must be an abstract read only context
                     // todo this is a problem since a nested node could be an AbstractReadOnlyContext but not one of our contexts
-                    if (!(currentValue instanceof AbstractReadOnlyContext)) {
+                    if (!(currentValue instanceof AbstractUnmodifiableContext)) {
                         throw new NotContextException("Expected an instance of AbstractReadOnlyContext to be bound at " +
                                 part + " but found an instance of " + currentValue.getClass().getName());
                     }
-                    currentContext = (AbstractReadOnlyContext) currentValue;
+                    currentContext = (AbstractUnmodifiableContext) currentValue;
                     // now we recurse into the current context
                 }
             }

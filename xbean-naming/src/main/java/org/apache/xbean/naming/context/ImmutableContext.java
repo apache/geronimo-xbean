@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @version $Rev: 417891 $ $Date: 2006-06-28 15:45:07 -0700 (Wed, 28 Jun 2006) $
  */
-public class ImmutableContext extends AbstractReadOnlyContext {
+public class ImmutableContext extends AbstractUnmodifiableContext {
     private final Map localBindings;
     private final Map absoluteIndex;
 
@@ -99,7 +99,7 @@ public class ImmutableContext extends AbstractReadOnlyContext {
     /**
      * Nested context which shares the absolute index map in MapContext.
      */
-    public final class NestedMapContext extends AbstractReadOnlyContext {
+    public final class NestedMapContext extends AbstractUnmodifiableContext {
         private final Map localBindings;
         private final String pathWithSlash;
 
