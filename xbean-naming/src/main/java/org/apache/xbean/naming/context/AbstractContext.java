@@ -18,19 +18,16 @@ package org.apache.xbean.naming.context;
 
 import org.apache.geronimo.naming.enc.EnterpriseNamingContextNameParser;
 
-import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 
 public abstract class AbstractContext implements Context {
@@ -83,10 +80,12 @@ public abstract class AbstractContext implements Context {
     }
 
     public void destroySubcontext(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         destroySubcontext(new CompositeName(name));
     }
 
     public void unbind(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         unbind(new CompositeName(name));
     }
 
@@ -95,6 +94,7 @@ public abstract class AbstractContext implements Context {
     }
 
     public void destroySubcontext(Name name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot destroy subcontext with empty name");
         }
@@ -102,6 +102,7 @@ public abstract class AbstractContext implements Context {
     }
 
     public void unbind(Name name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot unbind empty name");
         }
@@ -109,38 +110,39 @@ public abstract class AbstractContext implements Context {
     }
 
     public Object lookup(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return lookup(new CompositeName(name));
     }
 
     public Object lookupLink(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return lookupLink(new CompositeName(name));
     }
 
     public Object removeFromEnvironment(String propName) throws NamingException {
-        if (propName == null) {
-            throw new NamingException("The parameter for this method cannot be null");
-        }
+        if (propName == null) throw new NullPointerException("propName is null");
         Object obj = env.get(propName);
         env.remove(propName);
         return obj;
     }
 
     public void bind(String name, Object obj) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         bind(new CompositeName(name), obj);
     }
 
     public void rebind(String name, Object obj) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         rebind(new CompositeName(name), obj);
     }
 
     public Object lookup(Name name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return internalLookup(name, true);
     }
 
     public Object lookupLink(Name name) throws NamingException {
-        if (name.isEmpty()) {
-            throw new InvalidNameException("Name cannot be empty");
-        }
+        if (name == null) throw new NullPointerException("name is null");
         return internalLookup(name, false);
     }
 
@@ -161,28 +163,34 @@ public abstract class AbstractContext implements Context {
      * @throws NamingException           if a naming exception is encountered
      */
     public void bind(Name name, Object obj) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
-            throw new InvalidNameException("Cannot bind empty name");
+            throw new NameAlreadyBoundException("Cannot bind to an empty name (this context)");
         }
         addBinding(name, obj, false);
     }
 
     public void rebind(Name name, Object obj) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
-            throw new InvalidNameException("Cannot bind empty name");
+            throw new NameAlreadyBoundException("Cannot rebind an empty name (this context)");
         }
         addBinding(name, obj, true);
     }
 
     public synchronized void rename(String oldName, String newName) throws NamingException {
+        if (oldName == null) throw new NullPointerException("oldName is null");
+        if (newName == null) throw new NullPointerException("newName is null");
         rename(new CompositeName(oldName), new CompositeName(newName));
     }
 
     public Context createSubcontext(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return createSubcontext(new CompositeName(name));
     }
 
     public Context createSubcontext(Name name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot create a subcontext if the name is empty");
         }
@@ -194,7 +202,7 @@ public abstract class AbstractContext implements Context {
 
     public synchronized void rename(Name oldName, Name newName) throws NamingException {
         if (oldName == null || newName == null) {
-            throw new InvalidNameException("Name cannot be null");
+            throw new NullPointerException("name is null");
         } else if (oldName.isEmpty() || newName.isEmpty()) {
             throw new InvalidNameException("Name cannot be empty");
         } else if (this.lookup(newName) != null) {
@@ -205,24 +213,29 @@ public abstract class AbstractContext implements Context {
     }
 
     public NameParser getNameParser(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return getNameParser(new CompositeName(name));
     }
 
     public NameParser getNameParser(Name name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return EnterpriseNamingContextNameParser.INSTANCE;
     }
 
     public NamingEnumeration list(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return list(new CompositeName(name));
     }
 
     public NamingEnumeration listBindings(String name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         return listBindings(new CompositeName(name));
     }
 
     public NamingEnumeration list(Name name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
-            return new ListEnumeration(getBindingsCopy());
+            return new ContextUtil.ListEnumeration(getBindingsCopy());
         }
         Object target = lookup(name);
         if (target instanceof Context) {
@@ -232,8 +245,9 @@ public abstract class AbstractContext implements Context {
     }
 
     public NamingEnumeration listBindings(Name name) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
-            return new ListBindingEnumeration(getBindingsCopy());
+            return new ContextUtil.ListBindingEnumeration(getBindingsCopy());
         }
         Object target = lookup(name);
         if (target instanceof Context) {
@@ -252,10 +266,14 @@ public abstract class AbstractContext implements Context {
     }
 
     public String composeName(String name, String prefix) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
+        if (prefix == null) throw new NullPointerException("prefix is null");
         return composeName(new CompositeName(name), new CompositeName(prefix)) .toString();
     }
 
     public Name composeName(Name name, Name prefix) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
+        if (prefix == null) throw new NullPointerException("prefix is null");
         if (name == null) {
             throw new NullPointerException("name is null");
         }
@@ -266,67 +284,5 @@ public abstract class AbstractContext implements Context {
         Name result = (Name) prefix.clone();
         result.addAll(name);
         return result;
-    }
-
-    private static final class ListEnumeration implements NamingEnumeration {
-        private final Iterator iterator;
-
-        public ListEnumeration(Map localBindings) {
-            this.iterator = localBindings.entrySet().iterator();
-        }
-
-        public boolean hasMore() {
-            return iterator.hasNext();
-        }
-
-        public boolean hasMoreElements() {
-            return iterator.hasNext();
-        }
-
-        public Object next() {
-            return nextElement();
-        }
-
-        public Object nextElement() {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String name = (String) entry.getKey();
-            Object value = entry.getValue();
-            String className = null;
-            className = value.getClass().getName();
-            return new NameClassPair(name, className);
-        }
-
-        public void close() {
-        }
-    }
-
-    private static final class ListBindingEnumeration implements NamingEnumeration {
-        private final Iterator iterator;
-
-        public ListBindingEnumeration(Map localBindings) {
-            this.iterator = localBindings.entrySet().iterator();
-        }
-
-        public boolean hasMore() {
-            return iterator.hasNext();
-        }
-
-        public boolean hasMoreElements() {
-            return iterator.hasNext();
-        }
-
-        public Object next() {
-            return nextElement();
-        }
-
-        public Object nextElement() {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String name = (String) entry.getKey();
-            Object value = entry.getValue();
-            return new Binding(name, value);
-        }
-
-        public void close() {
-        }
     }
 }

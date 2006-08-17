@@ -37,6 +37,7 @@ public class GeronimoGlobalContext extends AbstractContext {
 
     public GeronimoGlobalContext(AbstractContext parent, Hashtable environment, Name contextAtomicName) {
         super(parent, environment, contextAtomicName);
+        bindings = new HashMap();
     }
 
     public GeronimoGlobalContext(Hashtable env) {
