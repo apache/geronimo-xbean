@@ -95,9 +95,9 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
             MappingLoader mappingLoader = new QdoxMappingLoader(namespace, getFiles(srcDir), excludedClasses);
 
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(this, metaInfDir, destFile),
-                new DocumentationGenerator(this, destFile),
-                new XsdGenerator(this, destFile)
+                new XmlMetadataGenerator(metaInfDir, destFile),
+                new DocumentationGenerator(destFile),
+                new XsdGenerator(destFile)
             };
 
             // load the mappings
@@ -111,6 +111,7 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
                 NamespaceMapping namespaceMapping = (NamespaceMapping) iterator.next();
                 for (int i = 0; i < plugins.length; i++) {
                     GeneratorPlugin plugin = plugins[i];
+                    plugin.setLog(this);
                     plugin.generate(namespaceMapping);
                 }
             }

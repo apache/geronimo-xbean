@@ -39,6 +39,7 @@ import org.apache.xbean.spring.generator.LogFacade;
 import org.apache.xbean.spring.generator.MappingLoader;
 import org.apache.xbean.spring.generator.NamespaceMapping;
 import org.apache.xbean.spring.generator.QdoxMappingLoader;
+import org.apache.xbean.spring.generator.WikiDocumentationGenerator;
 import org.apache.xbean.spring.generator.XmlMetadataGenerator;
 import org.apache.xbean.spring.generator.XsdGenerator;
 
@@ -90,8 +91,15 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      */
     private String propertyEditorPaths;
 
-
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    /**
+     * A list of additional GeneratorPlugins that should get used executed
+     * when generating output.
+     *
+     * @parameter
+     */
+    private List generatorPlugins = Collections.EMPTY_LIST;
+    
+	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug( " ======= XBeanMojo settings =======" );
         getLog().debug( "namespace[" + namespace + "]" );
         getLog().debug( "srcDir[" + srcDir + "]" );
@@ -122,9 +130,10 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             }
             MappingLoader mappingLoader = new QdoxMappingLoader(namespace, new File[] { srcDir }, excludedClasses);
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(this, outputDir.getAbsolutePath(), schema),
-                new DocumentationGenerator(this, schema),
-                new XsdGenerator(this, schema)
+                new XmlMetadataGenerator(outputDir.getAbsolutePath(), schema),
+                new DocumentationGenerator(schema),
+                new XsdGenerator(schema),
+                new WikiDocumentationGenerator(schema),
             };
 
             // load the mappings
@@ -138,8 +147,14 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                 NamespaceMapping namespaceMapping = (NamespaceMapping) iterator.next();
                 for (int i = 0; i < plugins.length; i++) {
                     GeneratorPlugin plugin = plugins[i];
+                    plugin.setLog(this);
                     plugin.generate(namespaceMapping);
-                }
+                }                
+                for (Iterator iter = generatorPlugins.iterator(); iter.hasNext();) {
+					GeneratorPlugin plugin = (GeneratorPlugin) iter.next();
+                    plugin.setLog(this);
+                    plugin.generate(namespaceMapping);
+				}
             }
 
             Resource res = new Resource();

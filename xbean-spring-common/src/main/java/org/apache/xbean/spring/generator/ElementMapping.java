@@ -18,6 +18,7 @@ package org.apache.xbean.spring.generator;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +46,16 @@ public class ElementMapping implements Comparable {
     private final List flatProperties;
     private final Map maps;
     private final Map flatCollections;
+	private final List superClasses;
+	private final HashSet interfaces;
     
     public ElementMapping(String namespace, String elementName, String className, String description, 
             boolean rootElement, String initMethod, String destroyMethod, String factoryMethod, 
-            String contentProperty, Set attributes, List constructors, List flatProperties, Map maps, Map flatCollections) {
-        if (namespace == null) throw new NullPointerException("namespace");
+            String contentProperty, Set attributes, List constructors, List flatProperties, Map maps, 
+            Map flatCollections, List superClasses, HashSet interfaces) {
+        this.superClasses = superClasses;
+		this.interfaces = interfaces;
+		if (namespace == null) throw new NullPointerException("namespace");
         if (elementName == null) throw new NullPointerException("elementName");
         if (className == null) throw new NullPointerException("className");
         if (attributes == null) throw new NullPointerException("attributes");
@@ -156,4 +162,12 @@ public class ElementMapping implements Comparable {
     public int compareTo(Object obj) {
         return elementName.compareTo(((ElementMapping) obj).elementName);
     }
+
+	public HashSet getInterfaces() {
+		return interfaces;
+	}
+
+	public List getSuperClasses() {
+		return superClasses;
+	}
 }

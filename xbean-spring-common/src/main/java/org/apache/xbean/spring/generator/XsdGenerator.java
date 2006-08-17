@@ -31,11 +31,10 @@ import java.util.Collections;
  */
 public class XsdGenerator implements GeneratorPlugin {
     private final File destFile;
-    private final LogFacade log;
+    private LogFacade log;
 
-    public XsdGenerator(LogFacade log, File destFile) {
+    public XsdGenerator(File destFile) {
         this.destFile = destFile;
-        this.log = log;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
@@ -155,4 +154,12 @@ public class XsdGenerator implements GeneratorPlugin {
         out.println("          </xs:complexType>");
         out.println("        </xs:element>");
     }
+
+	public LogFacade getLog() {
+		return log;
+	}
+
+	public void setLog(LogFacade log) {
+		this.log = log;
+	}
 }

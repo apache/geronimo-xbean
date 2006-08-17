@@ -25,4 +25,8 @@ import java.io.IOException;
  */
 public interface GeneratorPlugin {
     void generate(NamespaceMapping namespaceMapping) throws IOException;
+    
+	LogFacade getLog();
+	void setLog(LogFacade log);
+
 }
