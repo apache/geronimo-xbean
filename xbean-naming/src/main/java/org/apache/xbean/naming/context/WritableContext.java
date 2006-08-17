@@ -22,7 +22,6 @@ import javax.naming.NamingException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.LinkRef;
 import java.util.Map;
-import java.util.Hashtable;
 import java.util.HashMap;
 
 /**
@@ -32,26 +31,17 @@ public class WritableContext extends AbstractContext {
     protected Map bindings;
 
     public WritableContext() {
+        super("");
         bindings = new HashMap();
     }
 
-    public WritableContext(AbstractContext parent, Hashtable environment, Name contextAtomicName) {
-        super(parent, environment, contextAtomicName);
+    public WritableContext(String nameInNamespace) {
+        super(nameInNamespace);
         bindings = new HashMap();
     }
 
-    public WritableContext(Hashtable env) {
-        super(env);
-        bindings = new HashMap();
-    }
-
-    public WritableContext(WritableContext clone, Hashtable env) {
-        super(env);
-        bindings = clone.bindings;
-    }
-
-    protected AbstractContext newSubcontext(Name name) {
-        return new WritableContext(this, this.env, name);
+    public Context createContext(String path, Map bindings) {
+        return new WritableContext(getNameInNamespace(path));
     }
 
     protected void removeBindings(Name name) throws NamingException {

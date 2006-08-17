@@ -17,70 +17,28 @@
 
 package org.apache.xbean.naming.context;
 
-import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.InvalidNameException;
+import javax.naming.LinkRef;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
-import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.OperationNotSupportedException;
-import javax.naming.InvalidNameException;
-import javax.naming.LinkRef;
 import java.io.Serializable;
-import java.util.Hashtable;
-import java.util.Map;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * @version $Rev: 355877 $ $Date: 2005-12-10 18:48:27 -0800 (Sat, 10 Dec 2005) $
  */
-public abstract class AbstractReadOnlyContext implements Context, ContextFactory, Serializable {
+public abstract class AbstractReadOnlyContext extends AbstractContext implements Context, ContextFactory, Serializable {
     private static final long serialVersionUID = 3808693663629444493L;
-    private final String nameInNamespace;
 
     protected AbstractReadOnlyContext(String nameInNamespace) {
-        this.nameInNamespace = nameInNamespace;
-    }
-
-    /**
-     * Gets the name of this context withing the global namespace.  This method may return null
-     * if the location of the node in the global namespace is not known
-     * @return the name of this context within the global namespace or null if unknown.
-     */
-    public String getNameInNamespace() {
-        return nameInNamespace;
-    }
-
-    /**
-     * Gets the name of a path withing the global namespace context.
-     */
-    protected String getNameInNamespace(String path) {
-        String nameInNamespace = getNameInNamespace();
-        if (nameInNamespace == null || nameInNamespace.length() == 0) {
-            return path;
-        } else {
-            return nameInNamespace + "/" + path;
-        }
-    }
-
-
-    /**
-     * Always returns a new (empty) Hashtable.
-     * @return a new (empty) Hashtable
-     */
-    public Hashtable getEnvironment() {
-        return new Hashtable();
-    }
-
-    /**
-     * A parser that can turn Strings into javax.naming.Name objects.
-     * @return ContextUtil.NAME_PARSER
-     */
-    protected NameParser getNameParser() {
-        return ContextUtil.NAME_PARSER;
+        super(nameInNamespace);
     }
 
     //
@@ -465,46 +423,8 @@ public abstract class AbstractReadOnlyContext implements Context, ContextFactory
     }
 
     //
-    // Name manipulation
-    //
-
-    public final NameParser getNameParser(Name name) {
-        return getNameParser();
-    }
-
-    public final NameParser getNameParser(String name) {
-        return getNameParser();
-    }
-
-    public final Name composeName(Name name, Name prefix) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-        if (prefix == null) throw new NullPointerException("prefix is null");
-
-        Name result = (Name) prefix.clone();
-        result.addAll(name);
-        return result;
-    }
-
-    public final String composeName(String name, String prefix) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-        if (prefix == null) throw new NullPointerException("prefix is null");
-
-        CompositeName result = new CompositeName(prefix);
-        result.addAll(new CompositeName(name));
-        return result.toString();
-    }
-
-    //
     //  Unsupported Operations
     //
-
-    public final Object addToEnvironment(String propName, Object propVal) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final Object removeFromEnvironment(String propName) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
 
     public final void bind(Name name, Object obj) throws NamingException {
         throw new OperationNotSupportedException("Context is read only");
