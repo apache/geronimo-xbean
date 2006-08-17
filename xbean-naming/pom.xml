@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>xbean</artifactId>
+    <groupId>org.apache.xbean</groupId>
+    <version>COL-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>xbean-naming</artifactId>
+  <name>XBean :: Naming</name>
+  <version>COL-SNAPSHOT</version>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes/>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>backport-util-concurrent</groupId>
+      <artifactId>backport-util-concurrent</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.modules</groupId>
+      <artifactId>geronimo-naming</artifactId>
+      <version>1.2-SNAPSHOT</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+</project>

@@ -179,6 +179,7 @@
     -->
     <module>xbean-colossus</module>
     <module>xbean-kernel</module>
+    <module>xbean-naming</module>
     <module>xbean-osgi</module>
     <module>xbean-reflect</module>
     <module>xbean-server</module>
