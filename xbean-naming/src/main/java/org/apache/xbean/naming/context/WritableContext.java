@@ -28,30 +28,30 @@ import java.util.HashMap;
 /**
  * @version $Rev$ $Date$
  */
-public class GeronimoGlobalContext extends AbstractContext {
+public class WritableContext extends AbstractContext {
     protected Map bindings;
 
-    public GeronimoGlobalContext() {
+    public WritableContext() {
         bindings = new HashMap();
     }
 
-    public GeronimoGlobalContext(AbstractContext parent, Hashtable environment, Name contextAtomicName) {
+    public WritableContext(AbstractContext parent, Hashtable environment, Name contextAtomicName) {
         super(parent, environment, contextAtomicName);
         bindings = new HashMap();
     }
 
-    public GeronimoGlobalContext(Hashtable env) {
+    public WritableContext(Hashtable env) {
         super(env);
         bindings = new HashMap();
     }
 
-    public GeronimoGlobalContext(GeronimoGlobalContext clone, Hashtable env) {
+    public WritableContext(WritableContext clone, Hashtable env) {
         super(env);
         bindings = clone.bindings;
     }
 
     protected AbstractContext newSubcontext(Name name) {
-        return new GeronimoGlobalContext(this, this.env, name);
+        return new WritableContext(this, this.env, name);
     }
 
     protected void removeBindings(Name name) throws NamingException {
@@ -75,7 +75,7 @@ public class GeronimoGlobalContext extends AbstractContext {
                             " An object that is not a context is already bound at element "
                                     + segment + "of name " + name);
                 } else {
-                    bindings = ((GeronimoGlobalContext) terminalContext).bindings;
+                    bindings = ((WritableContext) terminalContext).bindings;
                 }
             }
             segment = name.get(lastIndex);
@@ -113,7 +113,7 @@ public class GeronimoGlobalContext extends AbstractContext {
                                     + segment
                                     + " refer to an object that is not a context");
                 } else {
-                    bindings = ((GeronimoGlobalContext) terminalContext).bindings;
+                    bindings = ((WritableContext) terminalContext).bindings;
                 }
             }
             segment = name.get(lastIndex);
@@ -155,7 +155,7 @@ public class GeronimoGlobalContext extends AbstractContext {
                             " An object that is not a context is already bound at element "
                                     + segment + "of name " + name);
                 } else {
-                    bindings = ((GeronimoGlobalContext) terminalContext).bindings;
+                    bindings = ((WritableContext) terminalContext).bindings;
                 }
             }
             segment = name.get(lastIndex);

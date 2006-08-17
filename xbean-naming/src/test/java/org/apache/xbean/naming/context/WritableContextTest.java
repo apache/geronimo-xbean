@@ -38,7 +38,7 @@ public class WritableContextTest extends AbstractContextTest {
         map.put("a/b/c/d/e/two", new Integer(2));
         map.put("a/b/c/d/e/three", new Integer(3));
 
-        Context context = new GeronimoGlobalContext();
+        Context context = new WritableContext();
         bind(context, map);
 
         assertEq(map, context);
@@ -53,7 +53,7 @@ public class WritableContextTest extends AbstractContextTest {
         map.put("a/b/c/d/e/two", new Integer(2));
         map.put("a/b/c/d/e/three", new Integer(3));
 
-        Context context = new GeronimoGlobalContext();
+        Context context = new WritableContext();
         bind(context, map);
 
         assertEq(map, context);
@@ -76,7 +76,7 @@ public class WritableContextTest extends AbstractContextTest {
         map.put("a/b/c/d/e/two", new Integer(2));
         map.put("a/b/c/d/e/three", new Integer(3));
 
-        Context context = new GeronimoGlobalContext();
+        Context context = new WritableContext();
         bind(context, map);
 
         assertEq(map, context);
