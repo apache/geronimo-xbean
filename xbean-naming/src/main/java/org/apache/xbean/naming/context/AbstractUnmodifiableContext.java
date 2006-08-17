@@ -41,6 +41,14 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
         super(nameInNamespace);
     }
 
+    protected final void addBinding(Name name, Object obj, boolean rebind) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    protected final void removeBindings(Name name) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
     //
     //  Lookup Binding
     //
@@ -65,8 +73,11 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
     }
 
     /**
-     * Finds the specified entry.  Normally there is no need to override this method; insted you should
-     * simply implement the getBindings(String) method.
+     * Finds the specified entry.  Normally there is no need to override this method; instead you should
+     * simply implement the getDeepBindings(String) and getBindings(String) method.
+     *
+     * This method will follow links except for the final element which is always just returned without
+     * inspection.  This means this method can be used to implement lookupLink.
      *
      * @param stringName the string version of the name; maybe null
      * @param parsedName the parsed name; may be null

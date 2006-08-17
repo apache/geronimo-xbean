@@ -45,9 +45,9 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     }
 
     protected abstract void removeBindings(Name name) throws NamingException;
-    protected abstract Object internalLookup(Name name, boolean resolveLinks) throws NamingException;
+    protected abstract Object lookup(String stringName, Name parsedName) throws NamingException;
     protected abstract void addBinding(Name name, Object obj, boolean rebind) throws NamingException;
-    protected abstract Map getBindingsCopy();
+    protected abstract Map getBindings() throws NamingException;
 
     /**
      * Gets the name of this context withing the global namespace.  This method may return null
@@ -147,7 +147,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     public Object lookup(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
 
-        Object value = internalLookup(name, true);
+        Object value = lookup(null, name);
 
 
         // if we got a link back we need to resolve it
@@ -166,7 +166,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
 
     public Object lookupLink(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
-        return internalLookup(name, false);
+        return lookup(null, name);
     }
 
     //
@@ -245,7 +245,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     public NamingEnumeration list(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
-            return new ContextUtil.ListEnumeration(getBindingsCopy());
+            return new ContextUtil.ListEnumeration(getBindings());
         }
         Object target = lookup(name);
         if (target instanceof Context) {
@@ -262,7 +262,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     public NamingEnumeration listBindings(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
-            return new ContextUtil.ListBindingEnumeration(getBindingsCopy());
+            return new ContextUtil.ListBindingEnumeration(getBindings());
         }
         Object target = lookup(name);
         if (target instanceof Context) {

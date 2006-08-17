@@ -73,26 +73,28 @@ public class WritableContext extends AbstractContext {
         }
     }
 
-    protected Object internalLookup(Name name, boolean resolveLinks) throws NamingException {
+    protected Object lookup(String stringName, Name parsedName) throws NamingException {
+        if (parsedName == null) parsedName = getNameParser().parse(stringName);
+
         Object result = null;
         Map bindings = this.bindings;
         Object terminalContext = null;
-        if (name.isEmpty()) {
+        if (parsedName.isEmpty()) {
             return this;
         }
-        int index = name.get(0).indexOf(':');
+        int index = parsedName.get(0).indexOf(':');
         if (index != -1) {
-            String temp = name.get(0).substring(index + 1);
-            name.remove(0);
-            name.add(0, temp);
+            String temp = parsedName.get(0).substring(index + 1);
+            parsedName.remove(0);
+            parsedName.add(0, temp);
         }
-        if (name.size() == 1) {
-            result = bindings.get(name.toString());
+        if (parsedName.size() == 1) {
+            result = bindings.get(parsedName.toString());
         } else {
             String segment = null;
-            int lastIndex = name.size() - 1;
+            int lastIndex = parsedName.size() - 1;
             for (int i = 0; i < lastIndex; i++) {
-                segment = name.get(i);
+                segment = parsedName.get(i);
                 terminalContext = bindings.get(segment);
                 if (terminalContext == null) {
                     throw new NamingException("The intermediate context "
@@ -106,7 +108,7 @@ public class WritableContext extends AbstractContext {
                     bindings = ((WritableContext) terminalContext).bindings;
                 }
             }
-            segment = name.get(lastIndex);
+            segment = parsedName.get(lastIndex);
             result = ((Context) terminalContext).lookup(segment);
         }
 
@@ -157,7 +159,7 @@ public class WritableContext extends AbstractContext {
         }
     }
 
-    protected Map getBindingsCopy() {
+    protected Map getBindings() {
         return bindings;
     }
 }
