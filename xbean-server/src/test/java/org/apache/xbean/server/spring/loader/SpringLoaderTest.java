@@ -16,24 +16,10 @@
  */
 package org.apache.xbean.server.spring.loader;
 
-import junit.framework.TestCase;
-import net.sf.cglib.core.DefaultGeneratorStrategy;
-import net.sf.cglib.core.NamingPolicy;
-import net.sf.cglib.core.Predicate;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.NoOp;
-import org.apache.xbean.kernel.Kernel;
-import org.apache.xbean.kernel.KernelFactory;
-import org.apache.xbean.kernel.ServiceName;
-import org.apache.xbean.kernel.StringServiceName;
-import org.apache.xbean.server.repository.FileSystemRepository;
-import org.apache.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
-import org.apache.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
-import org.apache.xbean.spring.context.SpringApplicationContext;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -41,6 +27,23 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+
+import junit.framework.TestCase;
+import net.sf.cglib.core.DefaultGeneratorStrategy;
+import net.sf.cglib.core.NamingPolicy;
+import net.sf.cglib.core.Predicate;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.NoOp;
+
+import org.apache.xbean.kernel.Kernel;
+import org.apache.xbean.kernel.KernelFactory;
+import org.apache.xbean.kernel.ServiceName;
+import org.apache.xbean.kernel.StringServiceName;
+import org.apache.xbean.server.classloader.MultiParentClassLoader;
+import org.apache.xbean.server.repository.FileSystemRepository;
+import org.apache.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
+import org.apache.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
+import org.apache.xbean.spring.context.SpringApplicationContext;
 
 /**
  * @author Dain Sundstrom
@@ -76,6 +79,27 @@ public class SpringLoaderTest extends TestCase {
             Object testService = kernel.getService(new StringServiceName("test"));
             assertEquals("TestClass", testService.getClass().getName());
             assertTrue(testService instanceof SortedSet);
+            
+            ClassLoader loader = kernel.getClassLoaderFor(new StringServiceName("test"));
+            assertNotNull(loader);
+            assertTrue(loader instanceof MultiParentClassLoader);
+            MultiParentClassLoader mpcl = (MultiParentClassLoader) loader;
+            Field f = MultiParentClassLoader.class.getDeclaredField("inverseClassLoading");
+            f.setAccessible(true);
+            assertEquals(Boolean.TRUE, f.get(mpcl));
+            f = MultiParentClassLoader.class.getDeclaredField("hiddenClasses");
+            f.setAccessible(true);
+            String[] hiddenClasses = (String[]) f.get(mpcl);
+            assertNotNull(hiddenClasses);
+            assertEquals(1, hiddenClasses.length);
+            assertEquals("org.apache.commons.logging.", hiddenClasses[0]);
+            f = MultiParentClassLoader.class.getDeclaredField("nonOverridableClasses");
+            f.setAccessible(true);
+            String[] nonOverridableClasses = (String[]) f.get(mpcl);
+            assertNotNull(nonOverridableClasses);
+            assertEquals(2, nonOverridableClasses.length);
+            assertEquals("java.", nonOverridableClasses[0]);
+            assertEquals("javax.", nonOverridableClasses[1]);
         } finally {
             kernel.destroy();
         }
