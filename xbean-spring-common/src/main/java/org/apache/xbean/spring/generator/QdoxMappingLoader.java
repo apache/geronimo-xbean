@@ -261,22 +261,20 @@ public class QdoxMappingLoader implements MappingLoader {
         }
 
         HashSet interfaces = new HashSet();
-        interfaces.addAll( getFullyQulifiedNames( javaClass.getImplementedInterfaces() ) );
+        interfaces.addAll( getFullyQualifiedNames( javaClass.getImplementedInterfaces() ) );
 
-    	System.out.println("Checking: "+javaClass.getFullyQualifiedName());
+        System.out.println("Checking: "+javaClass.getFullyQualifiedName());
 
-    	ArrayList superClasses = new ArrayList();        
+        ArrayList superClasses = new ArrayList();
         JavaClass p = javaClass;
         while( true ) {
-
-            JavaClass s = javaClass.getSuperJavaClass();
-            if(  s==null || s.equals(p) || "java.lang.Object".equals(s.getFullyQualifiedName()) ) {
-            	break;
+            JavaClass s = p.getSuperJavaClass();
+            if( s==null || s.equals(p) || "java.lang.Object".equals(s.getFullyQualifiedName()) ) {
+                break;
             }
-        	p=s;
-        	
-        	superClasses.add(p.getFullyQualifiedName());
-            interfaces.addAll( getFullyQulifiedNames( p.getImplementedInterfaces() ) );
+            p = s;
+            superClasses.add(p.getFullyQualifiedName());
+            interfaces.addAll( getFullyQualifiedNames( p.getImplementedInterfaces() ) );
         }
 
         return new ElementMapping(namespace,
@@ -297,15 +295,15 @@ public class QdoxMappingLoader implements MappingLoader {
                 interfaces);
     }
 
-    private List getFullyQulifiedNames(JavaClass[] implementedInterfaces) {
-    	ArrayList l = new ArrayList();
-    	for (int i = 0; i < implementedInterfaces.length; i++) {
-			l.add( implementedInterfaces[i].getFullyQualifiedName() );
-		}
-		return l;
-	}
+    private List getFullyQualifiedNames(JavaClass[] implementedInterfaces) {
+        ArrayList l = new ArrayList();
+        for (int i = 0; i < implementedInterfaces.length; i++) {
+            l.add( implementedInterfaces[i].getFullyQualifiedName() );
+        }
+        return l;
+    }
 
-	private String getElementName(JavaClass javaClass, DocletTag tag) {
+    private String getElementName(JavaClass javaClass, DocletTag tag) {
         String elementName = getProperty(tag, "element");
         if (elementName == null) {
             String className = javaClass.getFullyQualifiedName();
