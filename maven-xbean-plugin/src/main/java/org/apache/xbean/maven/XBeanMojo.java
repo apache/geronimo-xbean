@@ -32,6 +32,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.apache.tools.ant.BuildException;
 import org.apache.xbean.spring.generator.DocumentationGenerator;
 import org.apache.xbean.spring.generator.GeneratorPlugin;
@@ -57,19 +58,26 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      * @required
      */
     private MavenProject project;
-    
-	/**
+
+    /**
+     * Maven ProjectHelper
+     *
+     * @component
+     */
+    protected MavenProjectHelper projectHelper;
+
+    /**
      * @parameter
      * @required
-	 */
+     */
     private String namespace;
-    
+
     /**
      * @parameter expression="${basedir}/src/main/java"
      * @required
      */
     private File srcDir;
-    
+
     /**
      * @parameter
      */
@@ -80,16 +88,21 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      * @required
      */
     private File outputDir;
-    
+
     /**
      * @parameter
      */
     private File schema;
-    
+
     /**
      * @parameter expression="org.apache.xbean.spring.context.impl"
      */
     private String propertyEditorPaths;
+
+    /**
+     * @parameter schemaAsArtifact
+     */
+    private boolean schemaAsArtifact = true;
 
     /**
      * A list of additional GeneratorPlugins that should get used executed
@@ -98,8 +111,8 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      * @parameter
      */
     private List generatorPlugins = Collections.EMPTY_LIST;
-    
-	public void execute() throws MojoExecutionException, MojoFailureException {
+
+    public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug( " ======= XBeanMojo settings =======" );
         getLog().debug( "namespace[" + namespace + "]" );
         getLog().debug( "srcDir[" + srcDir + "]" );
@@ -107,6 +120,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         getLog().debug( "excludedClasses" + excludedClasses );
         getLog().debug( "outputDir[" + outputDir + "]" );
         getLog().debug( "propertyEditorPaths[" + propertyEditorPaths + "]" );
+        getLog().debug( "schemaAsArtifact[" + schemaAsArtifact + "]");
 
         if (schema == null) {
             schema = new File(outputDir, project.getArtifactId() + ".xsd");
@@ -151,10 +165,16 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                     plugin.generate(namespaceMapping);
                 }                
                 for (Iterator iter = generatorPlugins.iterator(); iter.hasNext();) {
-					GeneratorPlugin plugin = (GeneratorPlugin) iter.next();
+                    GeneratorPlugin plugin = (GeneratorPlugin) iter.next();
                     plugin.setLog(this);
                     plugin.generate(namespaceMapping);
-				}
+                }
+            }
+
+            // Attach them as artifacts
+            if (schemaAsArtifact) {
+                projectHelper.attachArtifact(project, "xsd", null, schema);
+                projectHelper.attachArtifact(project, "html", "schema", new File(schema.getAbsolutePath() + ".html"));
             }
 
             Resource res = new Resource();
@@ -169,11 +189,11 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         }
     }
 
-	public void log(String message) {
-		getLog().info(message);
-	}
+    public void log(String message) {
+        getLog().info(message);
+    }
 
-	public void log(String message, int level) {
-		getLog().info(message);
-	}
+    public void log(String message, int level) {
+        getLog().info(message);
+    }
 }
