@@ -117,7 +117,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         getLog().debug( "namespace[" + namespace + "]" );
         getLog().debug( "srcDir[" + srcDir + "]" );
         getLog().debug( "schema[" + schema + "]" );
-        getLog().debug( "excludedClasses" + excludedClasses );
+        getLog().debug( "excludedClasses[" + excludedClasses + "]");
         getLog().debug( "outputDir[" + outputDir + "]" );
         getLog().debug( "propertyEditorPaths[" + propertyEditorPaths + "]" );
         getLog().debug( "schemaAsArtifact[" + schemaAsArtifact + "]");
