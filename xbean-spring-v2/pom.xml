@@ -73,10 +73,6 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.apache.xbean</groupId>
-      <artifactId>xbean-spring-common</artifactId>
-    </dependency>
-    <dependency>
       <groupId>backport-util-concurrent</groupId>
       <artifactId>backport-util-concurrent</artifactId>
       <optional>true</optional>
