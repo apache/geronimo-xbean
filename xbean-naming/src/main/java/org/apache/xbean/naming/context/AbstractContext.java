@@ -49,27 +49,6 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     protected abstract void addBinding(Name name, Object obj, boolean rebind) throws NamingException;
     protected abstract Map getBindings() throws NamingException;
 
-    /**
-     * Gets the name of this context withing the global namespace.  This method may return null
-     * if the location of the node in the global namespace is not known
-     * @return the name of this context within the global namespace or null if unknown.
-     */
-    public String getNameInNamespace() {
-        return nameInNamespace;
-    }
-
-    /**
-     * Gets the name of a path withing the global namespace context.
-     */
-    protected String getNameInNamespace(String path) {
-        String nameInNamespace = getNameInNamespace();
-        if (nameInNamespace == null || nameInNamespace.length() == 0) {
-            return path;
-        } else {
-            return nameInNamespace + "/" + path;
-        }
-    }
-
     //
     // Environment
     //
@@ -100,6 +79,27 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     //
     // Name handling
     //
+
+    /**
+     * Gets the name of this context withing the global namespace.  This method may return null
+     * if the location of the node in the global namespace is not known
+     * @return the name of this context within the global namespace or null if unknown.
+     */
+    public String getNameInNamespace() {
+        return nameInNamespace;
+    }
+
+    /**
+     * Gets the name of a path withing the global namespace context.
+     */
+    protected String getNameInNamespace(String path) {
+        String nameInNamespace = getNameInNamespace();
+        if (nameInNamespace == null || nameInNamespace.length() == 0) {
+            return path;
+        } else {
+            return nameInNamespace + "/" + path;
+        }
+    }
 
     /**
      * A parser that can turn Strings into javax.naming.Name objects.
