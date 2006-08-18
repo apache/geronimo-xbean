@@ -160,15 +160,11 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
     //  Add Binding
     //
 
-    /**
-     * Add the binding to the context.  The name will not contain a path but the value may
-     * be a nested context which should be indexed for indexing contexts.
-     * @param name name under which the value should be bound
-     * @param value the value to bind
-     * @throws NamingException if a problem occurs during the bind such as a value already being bound
-     */
-    protected void addBinding(String name, Object value) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
+    protected void addDeepBinding(Name name, Object value, boolean rebind) throws NamingException {
+        if (rebind) {
+            throw new OperationNotSupportedException("This conext does not support rebind");
+        }
+        addDeepBinding(name.toString(), value);
     }
 
     protected void addDeepBinding(String name, Object value) throws NamingException {
@@ -192,7 +188,7 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
             // Is this the last element in the name?
             if (i == compoundName.size() - 1) {
                 // we're at the end... bind the value into the parent context
-                currentContext.addBinding(part, value);
+                currentContext.addBinding(part, value, false);
 
                 // all done... this is redundant but makes the code more readable
                 break;
@@ -205,7 +201,7 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
                     Context context = currentContext.createContextTree(compoundName.getPrefix(i).toString(),
                             compoundName.getSuffix(i),
                             value);
-                    currentContext.addBinding(part, context);
+                    currentContext.addBinding(part, context, false);
 
                     // all done
                     break;

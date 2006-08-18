@@ -25,6 +25,7 @@ import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
+import javax.naming.OperationNotSupportedException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -60,7 +61,11 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
         this.indexRef = new AtomicReference(Collections.unmodifiableMap(buildIndex("", localBindings)));
     }
 
-    protected void addBinding(String name, Object value) throws NamingException {
+    protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
+        if (rebind) {
+            throw new OperationNotSupportedException("This conext does not support rebind");
+        }
+
         writeLock.lock();
         try {
             Map bindings = (Map) bindingsRef.get();
@@ -193,7 +198,11 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
             return bindings;
         }
 
-        protected void addBinding(String name, Object value) {
+        protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
+            if (rebind) {
+                throw new OperationNotSupportedException("This conext does not support rebind");
+            }
+
             writeLock.lock();
             try {
                 Map currentBindings = (Map) bindingsRef.get();

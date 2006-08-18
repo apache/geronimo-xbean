@@ -44,9 +44,38 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
         //Ignore. Explicitly do not close the context
     }
 
+    protected void addDeepBinding(Name name, Object value, boolean rebind) throws NamingException {
+        if (name.size() == 1) {
+            addBinding(name.get(0), value, rebind);
+            return;
+        }
+
+        Context context = this;
+        for (int i = 0; i < name.size() - 1; i++) {
+            String segment = name.get(i);
+            Object object = context.lookup(segment);
+            if (object == null) {
+                throw new NotContextException("The intermediate context " + segment + " does not exist");
+            } else if (!(object instanceof Context)) {
+                throw new NotContextException("The intermediate context " + segment + " does is not a context");
+            } else {
+                context = (Context) object;
+            }
+        }
+
+        String lastSegment = name.get(name.size() - 1);
+        if (rebind) {
+            context.rebind(lastSegment, value);
+        } else {
+            context.bind(lastSegment, value);
+        }
+    }
+
+    protected abstract void addBinding(String name, Object value, boolean rebind) throws NamingException;
+
+
     protected abstract void removeBindings(Name name) throws NamingException;
     protected abstract Object lookup(String stringName, Name parsedName) throws NamingException;
-    protected abstract void addBinding(Name name, Object obj, boolean rebind) throws NamingException;
     protected abstract Map getBindings() throws NamingException;
 
     //
@@ -195,7 +224,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
         if (name.isEmpty()) {
             throw new NameAlreadyBoundException("Cannot bind to an empty name (this context)");
         }
-        addBinding(name, obj, false);
+        addDeepBinding(name, obj, false);
     }
 
     public void rebind(String name, Object obj) throws NamingException {
@@ -208,7 +237,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
         if (name.isEmpty()) {
             throw new NameAlreadyBoundException("Cannot rebind an empty name (this context)");
         }
-        addBinding(name, obj, true);
+        addDeepBinding(name, obj, true);
     }
 
     public void rename(String oldName, String newName) throws NamingException {
@@ -351,7 +380,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
             throw new InvalidNameException("Cannot create a subcontext if the name is empty");
         }
         Context abstractContext = createContext(name.toString(), Collections.EMPTY_MAP);
-        addBinding(name, abstractContext, false);
+        addDeepBinding(name, abstractContext, false);
         return abstractContext;
     }
 

@@ -88,6 +88,10 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
+    protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
+        throw new OperationNotSupportedException("Context is immutable");
+    }
+
     protected void removeDeepBinding(String name, Object value) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
@@ -122,6 +126,10 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         }
 
         protected void addDeepBinding(String name, Object value) throws NamingException {
+            throw new OperationNotSupportedException("Context is immutable");
+        }
+
+        protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 

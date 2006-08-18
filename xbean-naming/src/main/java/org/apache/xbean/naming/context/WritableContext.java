@@ -121,40 +121,13 @@ public class WritableContext extends AbstractContext {
 
     }
 
-    protected void addBinding(Name name, Object obj, boolean rebind) throws NamingException {
-        Map bindings = this.bindings;
-        if (name.size() == 1) {
+    protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
+        synchronized (bindings) {
             if (rebind || bindings.get(name.toString()) == null) {
-                synchronized (bindings) {
-                    bindings.put(name.toString(), obj);
-                }
+                bindings.put(name, value);
             } else {
                 throw new NameAlreadyBoundException("The name " + name
                         + "is already bound");
-            }
-        } else {
-            String segment = null;
-            int lastIndex = name.size() - 1;
-            Object terminalContext = null;
-            for (int i = 0; i < lastIndex; i++) {
-                segment = name.get(i);
-                terminalContext = bindings.get(segment);
-                if (terminalContext == null) {
-                    throw new NamingException("The intermediate context "
-                            + segment + " does not exist");
-                } else if (!(terminalContext instanceof Context)) {
-                    throw new NameAlreadyBoundException(
-                            " An object that is not a context is already bound at element "
-                                    + segment + "of name " + name);
-                } else {
-                    bindings = ((WritableContext) terminalContext).bindings;
-                }
-            }
-            segment = name.get(lastIndex);
-            if (rebind) {
-                ((Context) terminalContext).rebind(segment, obj);
-            } else {
-                ((Context) terminalContext).bind(segment, obj);
             }
         }
     }
