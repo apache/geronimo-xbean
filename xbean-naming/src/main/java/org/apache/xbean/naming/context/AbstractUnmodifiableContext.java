@@ -23,7 +23,6 @@ import javax.naming.InvalidNameException;
 import javax.naming.LinkRef;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.OperationNotSupportedException;
@@ -155,16 +154,6 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
      */
     protected Map getBindings() throws NamingException {
         throw new OperationNotSupportedException("This context is not listable");
-    }
-
-    protected NamingEnumeration list() throws NamingException {
-        Map bindings = getBindings();
-        return new ContextUtil.ListEnumeration(bindings);
-    }
-
-    protected NamingEnumeration listBindings() throws NamingException {
-        Map bindings = getBindings();
-        return new ContextUtil.ListBindingEnumeration(bindings);
     }
 
     //
@@ -333,105 +322,6 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
     // ==================================================================================
     // =================== Final Methods (see methods above) ============================
     // ==================================================================================
-
-    //
-    //  Lookup methods
-    //
-
-    public final Object lookup(String name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        Object value = lookup(name, null);
-
-        // if we got a link back we need to resolve it
-        if (value instanceof LinkRef) {
-            LinkRef linkRef = (LinkRef) value;
-            value = lookup(linkRef.getLinkName());
-        }
-        return value;
-    }
-
-    public final Object lookup(Name name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        Object value = lookup(null, name);
-
-        // if we got a link back we need to resolve it
-        if (value instanceof LinkRef) {
-            LinkRef linkRef = (LinkRef) value;
-            value = lookup(linkRef.getLinkName());
-        }
-
-        return value;
-    }
-
-    public final Object lookupLink(String name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        return lookup(name, null);
-    }
-
-    public final Object lookupLink(Name name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        return lookup(null, name);
-    }
-
-    //
-    //  List Operations
-    //
-
-    public final NamingEnumeration list(String name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        Object o = lookup(name);
-        if (o == this) {
-            return list();
-        } else if (o instanceof Context) {
-            return ((Context) o).list("");
-        } else {
-            throw new NotContextException();
-        }
-    }
-
-    public final NamingEnumeration listBindings(String name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        Object o = lookup(name);
-        if (o == this) {
-            return listBindings();
-        } else if (o instanceof Context) {
-            return ((Context) o).listBindings("");
-        } else {
-            throw new NotContextException();
-        }
-    }
-
-    public final NamingEnumeration list(Name name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        Object o = lookup(name);
-        if (o == this) {
-            return list();
-        } else if (o instanceof Context) {
-            return ((Context) o).list("");
-        } else {
-            throw new NotContextException();
-        }
-    }
-
-    public final NamingEnumeration listBindings(Name name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        Object o = lookup(name);
-        if (o == this) {
-            return listBindings();
-        } else if (o instanceof Context) {
-            return ((Context) o).listBindings("");
-        } else {
-            throw new NotContextException();
-        }
-    }
 
     //
     //  Unsupported Operations

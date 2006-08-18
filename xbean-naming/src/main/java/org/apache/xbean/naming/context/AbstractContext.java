@@ -141,7 +141,16 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
 
     public Object lookup(String name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
-        return lookup(new CompositeName(name));
+
+        Object value = lookup(name, null);
+
+        // if we got a link back we need to resolve it
+        if (value instanceof LinkRef) {
+            LinkRef linkRef = (LinkRef) value;
+            value = lookup(linkRef.getLinkName());
+        }
+
+        return value;
     }
 
     public Object lookup(Name name) throws NamingException {
@@ -161,7 +170,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
 
     public Object lookupLink(String name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
-        return lookupLink(new CompositeName(name));
+        return lookup(name, null);
     }
 
     public Object lookupLink(Name name) throws NamingException {
@@ -237,38 +246,94 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     // List
     //
 
+    protected NamingEnumeration list() throws NamingException {
+        Map bindings = getBindings();
+        return new ContextUtil.ListEnumeration(bindings);
+    }
+
+    protected NamingEnumeration listBindings() throws NamingException {
+        Map bindings = getBindings();
+        return new ContextUtil.ListBindingEnumeration(bindings);
+    }
+
     public NamingEnumeration list(String name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
-        return list(new CompositeName(name));
+
+        // if the name is empty, list the current context
+        if (name.length() == 0) {
+            return list();
+        }
+
+        // lookup the target context
+        Object target = lookup(name);
+
+        if (target == this) {
+            return list();
+        } else if (target instanceof Context) {
+            return ((Context) target).list("");
+        } else {
+            throw new NotContextException("The name " + name + " cannot be listed");
+        }
     }
 
     public NamingEnumeration list(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
+
+        // if the name is empty, list the current context
         if (name.isEmpty()) {
-            return new ContextUtil.ListEnumeration(getBindings());
+            return list();
         }
+
+        // lookup the target context
         Object target = lookup(name);
-        if (target instanceof Context) {
+
+        if (target == this) {
+            return list();
+        } else if (target instanceof Context) {
             return ((Context) target).list("");
+        } else {
+            throw new NotContextException("The name " + name + " cannot be listed");
         }
-        throw new NotContextException("The name " + name + " cannot be listed");
     }
 
     public NamingEnumeration listBindings(String name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
-        return listBindings(new CompositeName(name));
+
+        // if the name is empty, list the current context
+        if (name.length() == 0) {
+            return listBindings();
+        }
+
+        // lookup the target context
+        Object target = lookup(name);
+
+        if (target == this) {
+            return listBindings();
+        } else if (target instanceof Context) {
+            return ((Context) target).listBindings("");
+        } else {
+            throw new NotContextException("The name " + name + " cannot be listed");
+        }
     }
 
     public NamingEnumeration listBindings(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
+
+        // if the name is empty, list the current context
         if (name.isEmpty()) {
-            return new ContextUtil.ListBindingEnumeration(getBindings());
+            return listBindings();
         }
+
+        // lookup the target context
         Object target = lookup(name);
-        if (target instanceof Context) {
+
+        if (target == this) {
+            return listBindings();
+        } else if (target instanceof Context) {
             return ((Context) target).listBindings("");
+        } else {
+            throw new NotContextException("The name " + name + " cannot be listed");
         }
-        throw new NotContextException("The name " + name + " cannot be listed");
     }
 
     //
