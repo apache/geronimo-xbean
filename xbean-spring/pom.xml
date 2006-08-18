@@ -50,7 +50,7 @@
     <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-spring-v1</artifactId>
-      <optional>true</optional>
+      <scope>optional</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-spring-v2</artifactId>
-      <optional>true</optional>
+      <scope>optional</scope>
     </dependency>
   </dependencies>
 </project>
