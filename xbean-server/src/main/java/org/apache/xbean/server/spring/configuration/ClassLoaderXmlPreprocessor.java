@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.xbean.server.classloader.MultiParentClassLoader;
+import org.apache.xbean.server.classloader.JarFileClassLoader;
 import org.apache.xbean.server.repository.Repository;
 import org.apache.xbean.server.spring.loader.SpringLoader;
-import org.apache.xbean.spring.context.SpringXmlPreprocessor;
 import org.apache.xbean.spring.context.SpringApplicationContext;
+import org.apache.xbean.spring.context.SpringXmlPreprocessor;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.w3c.dom.Document;
@@ -73,17 +73,41 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
             throw new FatalBeanException("Expected only classpath element but found " + classpathElements.getLength());
         } else {
             Element classpathElement = (Element) classpathElements.item(0);
+            
+            // Delegation mode
+            boolean inverse = false;
+            String inverseAttr = classpathElement.getAttribute("inverse");
+            if (inverseAttr != null && "true".equalsIgnoreCase(inverseAttr)) {
+                inverse = true;
+            }
+
+            // build hidden classes
+            List hidden = new ArrayList();
+            NodeList hiddenElems = classpathElement.getElementsByTagName("hidden");
+            for (int i = 0; i < hiddenElems.getLength(); i++) {
+                Element hiddenElement = (Element) hiddenElems.item(i);
+                String pattern = ((Text) hiddenElement.getFirstChild()).getData().trim();
+                hidden.add(pattern);
+            }
+
+            // build non overridable classes
+            List nonOverridable = new ArrayList();
+            NodeList nonOverridableElems = classpathElement.getElementsByTagName("nonOverridable");
+            for (int i = 0; i < nonOverridableElems.getLength(); i++) {
+                Element nonOverridableElement = (Element) nonOverridableElems.item(i);
+                String pattern = ((Text) nonOverridableElement.getFirstChild()).getData().trim();
+                nonOverridable.add(pattern);
+            }
 
             // build the classpath
             List classpath = new ArrayList();
             NodeList locations = classpathElement.getElementsByTagName("location");
             for (int i = 0; i < locations.getLength(); i++) {
                 Element locationElement = (Element) locations.item(i);
-
                 String location = ((Text) locationElement.getFirstChild()).getData().trim();
                 classpath.add(location);
             }
-
+            
             // convert the paths to URLS
             URL[] urls = new URL[classpath.size()];
             for (ListIterator iterator = classpath.listIterator(); iterator.hasNext();) {
@@ -97,7 +121,12 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
 
             // create the classloader
             ClassLoader parentLoader = getClassLoader(applicationContext);
-            classLoader = new MultiParentClassLoader(applicationContext.getDisplayName(), urls, parentLoader);
+            classLoader = new JarFileClassLoader(applicationContext.getDisplayName(), 
+                                                 urls, 
+                                                 parentLoader,
+                                                 inverse,
+                                                 (String[]) hidden.toArray(new String[hidden.size()]),
+                                                 (String[]) nonOverridable.toArray(new String[nonOverridable.size()]));
 
             // remove the classpath element so Spring doesn't get confused
             document.getDocumentElement().removeChild(classpathElement);

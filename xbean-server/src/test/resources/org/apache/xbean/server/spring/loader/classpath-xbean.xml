@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- START SNIPPET: xml -->
 <beans>
-  <classpath>
+  <classpath inverse="true">
+    <hidden>org.apache.commons.logging.</hidden>
+    <nonOverridable>java.</nonOverridable>
+    <nonOverridable>javax.</nonOverridable>
     <location>target/SpringLoaderTest.jar</location>
   </classpath>
 
