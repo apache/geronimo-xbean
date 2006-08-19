@@ -37,6 +37,10 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-classloaders</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-spring</artifactId>
     </dependency>
     <dependency>

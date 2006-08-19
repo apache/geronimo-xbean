@@ -25,7 +25,7 @@ import java.io.Writer;
 import java.util.jar.JarFile;
 
 /**
- * @version $Rev: 410741 $ $Date: 2006-06-01 06:35:48 +0200 (Thu, 01 Jun 2006) $
+ * @version $Rev$ $Date: 2006-06-01 06:35:48 +0200 (Thu, 01 Jun 2006) $
  */
 public final class IoUtil {
     private IoUtil() {

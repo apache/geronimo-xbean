@@ -24,7 +24,7 @@ import java.util.Enumeration;
  * finder performs implementation-specific lookup, and, if it is able to locate
  * the resource, returns the {@link AbstractResourceHandle handle(s)} or URL(s) of it.
  *
- * @version $Rev: 410741 $ $Date: 2006-06-01 06:35:48 +0200 (Thu, 01 Jun 2006) $
+ * @version $Rev$ $Date: 2006-06-01 06:35:48 +0200 (Thu, 01 Jun 2006) $
  */
 public interface ResourceFinder {
     /**
