@@ -19,7 +19,7 @@ package org.apache.xbean.server.classloader;
 import java.net.URL;
 
 /**
- * @version $Rev: 410741 $ $Date: 2006-06-01 06:35:48 +0200 (Thu, 01 Jun 2006) $
+ * @version $Rev$ $Date: 2006-06-01 06:35:48 +0200 (Thu, 01 Jun 2006) $
  */
 public abstract class AbstractUrlResourceLocation implements ResourceLocation {
     private final URL codeSource;

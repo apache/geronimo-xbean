@@ -42,7 +42,7 @@ import java.util.jar.Manifest;
  * replacement for the jar url handler must be written.
  *
  * @author Dain Sundstrom
- * @version $Id: JarFileClassLoader.java 410741 2006-06-01 04:35:48Z jsisson $
+ * @version $Id$
  * @since 2.0
  */
 public class JarFileClassLoader extends MultiParentClassLoader {
