@@ -22,6 +22,19 @@ import java.util.Map;
 /**
  * @version $Rev$ $Date$
  */
-public interface ContextFactory {
-    Context createContext(String path, Map bindings);
+public interface NestedContextFactory {
+    /**
+     * Is the specified value an instance of a nested context
+     * @param value the value to inspect
+     * @return true if the specified value an instance of a nested context; false otherwise
+     */
+    boolean isNestedSubcontext(Object value);
+
+    /**
+     * Creates a nested subcontext instance.  This does not cause the nested context to be bound.
+     * @param path the path to the new nested context
+     * @param bindings the initial bindings for the context
+     * @return the new nested context
+     */
+    Context createNestedSubcontext(String path, Map bindings);
 }

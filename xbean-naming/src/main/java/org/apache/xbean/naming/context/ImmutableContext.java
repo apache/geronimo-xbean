@@ -67,8 +67,8 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
             Map.Entry entry = (Map.Entry) iterator.next();
             String name = (String) entry.getKey();
             Object value = entry.getValue();
-            if (value instanceof ImmutableContext.NestedMapContext) {
-                ImmutableContext.NestedMapContext nestedContext = (ImmutableContext.NestedMapContext)value;
+            if (value instanceof ImmutableContext.NestedImmutableContext) {
+                ImmutableContext.NestedImmutableContext nestedContext = (ImmutableContext.NestedImmutableContext)value;
                 globalBindings.putAll(ImmutableContext.buildAbsoluteIndex(nestedContext.getNameInNamespace(), nestedContext.localBindings));
             }
             globalBindings.put(path + name, value);
@@ -84,7 +84,7 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         return localBindings;
     }
 
-    protected void addDeepBinding(String name, Object value) throws NamingException {
+    protected void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
@@ -96,18 +96,22 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    public Context createContext(String path, Map bindings) {
-        return new NestedMapContext(path, bindings);
+    public boolean isNestedSubcontext(Object value) {
+        return value instanceof NestedImmutableContext;
+    }
+
+    public Context createNestedSubcontext(String path, Map bindings) {
+        return new NestedImmutableContext(path, bindings);
     }
 
     /**
      * Nested context which shares the absolute index map in MapContext.
      */
-    public final class NestedMapContext extends AbstractUnmodifiableContext {
+    public final class NestedImmutableContext extends AbstractUnmodifiableContext {
         private final Map localBindings;
         private final String pathWithSlash;
 
-        public NestedMapContext(String path, Map bindings) {
+        public NestedImmutableContext(String path, Map bindings) {
             super(ImmutableContext.this.getNameInNamespace(path));
 
             if (!path.endsWith("/")) path += "/";
@@ -125,7 +129,7 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
             return localBindings;
         }
 
-        protected void addDeepBinding(String name, Object value) throws NamingException {
+        protected void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
@@ -137,8 +141,12 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        public Context createContext(String path, Map bindings) {
-            return new NestedMapContext(path, bindings);
+        public boolean isNestedSubcontext(Object value) {
+            return value instanceof NestedImmutableContext;
+        }
+
+        public Context createNestedSubcontext(String path, Map bindings) {
+            return new NestedImmutableContext(path, bindings);
         }
     }
 }

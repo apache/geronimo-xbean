@@ -216,7 +216,7 @@ public final class ContextUtil {
         }
     }
 
-    public static Map createBindings(Map absoluteBindings, ContextFactory factory) throws NamingException {
+    public static Map createBindings(Map absoluteBindings, NestedContextFactory factory) throws NamingException {
         // create a tree of Nodes using the absolute bindings
         Node node = buildMapTree(absoluteBindings);
 
@@ -226,7 +226,7 @@ public final class ContextUtil {
         return localBindings;
     }
 
-    private static Map createBindings(String nameInNameSpace, Node node, ContextFactory factory) {
+    private static Map createBindings(String nameInNameSpace, Node node, NestedContextFactory factory) {
         Map bindings = new HashMap(node.size());
         for (Iterator iterator = node.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
@@ -241,7 +241,7 @@ public final class ContextUtil {
                 String path = nameInNameSpace == null ? name : nameInNameSpace + "/" + name;
 
                 Map nestedBindings = createBindings(path, nestedNode, factory);
-                Context nestedContext = factory.createContext(path, nestedBindings);
+                Context nestedContext = factory.createNestedSubcontext(path, nestedBindings);
                 bindings.put(name, nestedContext);
             } else {
                 bindings.put(name, value);

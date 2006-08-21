@@ -88,8 +88,8 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
         Map index = (Map) indexRef.get();
         Map newIndex = new HashMap(index);
         newIndex.put(name, value);
-        if (value instanceof NestedMapContext) {
-            NestedMapContext nestedcontext = (NestedMapContext) value;
+        if (value instanceof NestedUnmodifiableContext) {
+            NestedUnmodifiableContext nestedcontext = (NestedUnmodifiableContext) value;
             Map newIndexValues = buildIndex(name, nestedcontext.getBindings());
             newIndex.putAll(newIndexValues);
         }
@@ -119,8 +119,8 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
         Map index = (Map) indexRef.get();
         Map newIndex = new HashMap(index);
         Object oldValue = newIndex.remove(name);
-        if (oldValue instanceof NestedMapContext) {
-            NestedMapContext nestedcontext = (NestedMapContext) oldValue;
+        if (oldValue instanceof NestedUnmodifiableContext) {
+            NestedUnmodifiableContext nestedcontext = (NestedUnmodifiableContext) oldValue;
             Map removedIndexValues = buildIndex(name, nestedcontext.getBindings());
             for (Iterator iterator = removedIndexValues.keySet().iterator(); iterator.hasNext();) {
                 String key = (String) iterator.next();
@@ -130,8 +130,12 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
         return newIndex;
     }
 
-    public Context createContext(String path, Map bindings) {
-        return new NestedMapContext(path,bindings);
+    public boolean isNestedSubcontext(Object value) {
+        return value instanceof NestedUnmodifiableContext;
+    }
+
+    public Context createNestedSubcontext(String path, Map bindings) {
+        return new NestedUnmodifiableContext(path,bindings);
     }
 
     private static Map buildIndex(String nameInNamespace, Map bindings) {
@@ -145,8 +149,8 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
             Map.Entry entry = (Map.Entry) iterator.next();
             String name = (String) entry.getKey();
             Object value = entry.getValue();
-            if (value instanceof UnmodifiableContext.NestedMapContext) {
-                UnmodifiableContext.NestedMapContext nestedContext = (UnmodifiableContext.NestedMapContext)value;
+            if (value instanceof UnmodifiableContext.NestedUnmodifiableContext) {
+                UnmodifiableContext.NestedUnmodifiableContext nestedContext = (UnmodifiableContext.NestedUnmodifiableContext)value;
                 absoluteIndex.putAll(UnmodifiableContext.buildIndex(nestedContext.pathWithSlash, nestedContext.getBindings()));
             }
             absoluteIndex.put(path + name, value);
@@ -167,15 +171,15 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
     /**
      * Nested context which shares the absolute index map in MapContext.
      */
-    public final class NestedMapContext extends AbstractUnmodifiableContext {
+    public final class NestedUnmodifiableContext extends AbstractUnmodifiableContext {
         private final AtomicReference bindingsRef;
         private final String pathWithSlash;
 
-        public NestedMapContext(String path, String key, Object value) {
+        public NestedUnmodifiableContext(String path, String key, Object value) {
             this(path, Collections.singletonMap(key, value));
         }
 
-        public NestedMapContext(String path, Map bindings) {
+        public NestedUnmodifiableContext(String path, Map bindings) {
             super(UnmodifiableContext.this.getNameInNamespace(path));
 
             if (!path.endsWith("/")) path += "/";
@@ -184,8 +188,12 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
             this.bindingsRef = new AtomicReference(Collections.unmodifiableMap(bindings));
         }
 
-        public Context createContext(String path, Map bindings) {
-            return new NestedMapContext(path, bindings);
+        public boolean isNestedSubcontext(Object value) {
+            return value instanceof NestedUnmodifiableContext;
+        }
+
+        public Context createNestedSubcontext(String path, Map bindings) {
+            return new NestedUnmodifiableContext(path, bindings);
         }
 
         protected Object getDeepBinding(String name) {

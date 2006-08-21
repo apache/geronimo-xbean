@@ -18,6 +18,8 @@ package org.apache.xbean.naming.context;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.naming.Name;
+import javax.naming.NameParser;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,8 +34,8 @@ public class UnmodifiableContextTest extends AbstractContextTest {
             super(bindings);
         }
 
-        public void addDeepBinding(String name, Object value) throws NamingException {
-            super.addDeepBinding(name, value);
+        public void addDeepBinding(Name name, Object value, boolean rebind, boolean createIntermediateContexts) throws NamingException {
+            super.addDeepBinding(name, value, rebind, createIntermediateContexts);
         }
 
         public void removeDeepBinding(String name) throws NamingException {
@@ -70,13 +72,14 @@ public class UnmodifiableContextTest extends AbstractContextTest {
 
         // add a new deep tree
         map.put("uno/dos/tres", new Integer(123));
-        context.addDeepBinding("uno/dos/tres", new Integer(123));
+        NameParser parser = context.getNameParser();
+        context.addDeepBinding(parser.parse("uno/dos/tres"), new Integer(123), false, true);
 
         assertEq(map, context);
 
         // modify an existing context
         map.put("a/b/c/d/e/four", new Integer(4));
-        context.addDeepBinding("a/b/c/d/e/four", new Integer(4));
+        context.addDeepBinding(parser.parse("a/b/c/d/e/four"), new Integer(4), false, true);
 
         assertEq(map, context);
     }

@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
-public abstract class AbstractContext implements Context, ContextFactory, Serializable {
+public abstract class AbstractContext implements Context, NestedContextFactory, Serializable {
     private static final long serialVersionUID = 6481918425692261483L;
     private final String nameInNamespace;
 
@@ -155,23 +155,145 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     //  Add Binding
     //
 
-    protected void addDeepBinding(Name name, Object value, boolean rebind) throws NamingException {
+    protected void addDeepBinding(Name name, Object value, boolean rebind, boolean createIntermediateContexts) throws NamingException {
+        if (name == null) throw new NullPointerException("name is null");
+        if (value == null) throw new NullPointerException("value is null");
+
+        if (name.isEmpty()) {
+            throw new InvalidNameException("Name is empty");
+        }
+
         if (name.size() == 1) {
             addBinding(name.get(0), value, rebind);
             return;
         }
 
-        Context context = lookupFinalContext(name);
+        if (!createIntermediateContexts) {
+            Context context = lookupFinalContext(name);
 
-        String lastSegment = name.get(name.size() - 1);
-        if (rebind) {
-            context.rebind(lastSegment, value);
+            String lastSegment = name.get(name.size() - 1);
+            if (rebind) {
+                context.rebind(lastSegment, value);
+            } else {
+                context.bind(lastSegment, value);
+            }
         } else {
-            context.bind(lastSegment, value);
+            Context currentContext = this;
+            for (int i = 0; i < name.size(); i++) {
+                String part = name.get(i);
+
+                // empty path parts are not allowed
+                if (part.length() == 0) {
+                    // this could be supported but it would be tricky
+                    throw new InvalidNameException("Name part " + i + " is empty: " + name);
+                }
+
+                // Is this the last element in the name?
+                if (i == name.size() - 1) {
+                    // we're at the end... (re)bind the value into the parent context
+                    addBinding(currentContext, part, value, rebind);
+
+                    // all done... this is redundant but makes the code more readable
+                    break;
+                } else {
+                    Object currentValue = getBinding(currentContext, part);
+                    if (currentValue == null) {
+                        if (createIntermediateContexts) {
+                            // the next step in the tree is not present, so create everything down
+                            // and add it to the current bindings
+                            Context subcontext = createSubcontextTree(name.getPrefix(i).toString(), name.getSuffix(i), value);
+                            addBinding(currentContext, part, subcontext, rebind);
+
+                            // all done
+                            break;
+                        } else {
+                            throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " does not exist");
+                        }
+                    } else {
+                        // the current value must be a nested subcontext
+                        if (!isNestedSubcontext(currentValue)) {
+                            throw new NotContextException("Expected a nested subcontext to be bound at " +
+                                    part + " but found an instance of " + currentValue.getClass().getName());
+                        }
+                        currentContext = (Context) currentValue;
+                        // now we recurse into the current context
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the value bound to the specified name within the specified context.  If the specified context is an
+     * AbstractContext this method will call the faster getBinding method, otherwise it will call lookup.
+     *
+     * @param context the context to get the binding from
+     * @param name the binding name
+     * @return the bound value or null if no value was bound
+     */
+    private static Object getBinding(Context context, String name) {
+        try {
+            if (context instanceof AbstractContext) {
+                AbstractContext abstractContext = (AbstractContext) context;
+                Object value = abstractContext.getBinding(name);
+                return value;
+            } else {
+                Object value = context.lookup(name);
+                return value;
+            }
+        } catch (NamingException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gets the value bound to the specified name within the specified context.  If the specified context is an
+     * AbstractContext this method will call the faster getBinding method, otherwise it will call lookup.
+     *
+     * @param context the context to get the binding from
+     * @param name the binding name
+     * @param value the value to bind
+     * @param rebind if true, this method will replace any exsiting binding, otherwise a NamingException will be thrown
+     * @throws NamingException
+     */
+    private static void addBinding(Context context, String name, Object value, boolean rebind) throws NamingException {
+        if (context instanceof AbstractContext) {
+            AbstractContext abstractContext = (AbstractContext) context;
+            abstractContext.addBinding(name, value, rebind);
+        } else {
+            if (rebind) {
+                context.rebind(name, value);
+            } else {
+                context.bind(name, value);
+            }
         }
     }
 
     protected abstract void addBinding(String name, Object value, boolean rebind) throws NamingException;
+
+    /**
+     * Creates a context tree which will be rooted at the specified path and contain a single entry located down
+     * a path specified by the name.  All necessary intermediate contexts will be created using the createContext method.
+     * @param path the path to the context that will contains this context
+     * @param name the name under which the value should be bound
+     * @param value the vale
+     * @return a context with the value bound at the specified name
+     * @throws NamingException
+     */
+    protected Context createSubcontextTree(String path, Name name, Object value) throws NamingException {
+        if (path == null) throw new NullPointerException("path is null");
+        if (name == null) throw new NullPointerException("name is null");
+        if (name.size() < 2) throw new InvalidNameException("name must have at least 2 parts " + name);
+
+        if (!path.endsWith("/")) path += "/";
+
+        for (int i = name.size() - 2; i >= 0; i--) {
+            String fullPath = path + name.getSuffix(i);
+            String key = name.get(i + 1);
+            value = createNestedSubcontext(fullPath, Collections.singletonMap(key, value));
+        }
+        return (Context) value;
+    }
 
 
     //
@@ -337,7 +459,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
         if (name.isEmpty()) {
             throw new NameAlreadyBoundException("Cannot bind to an empty name (this context)");
         }
-        addDeepBinding(name, obj, false);
+        addDeepBinding(name, obj, false, true);
     }
 
     public void rebind(String name, Object obj) throws NamingException {
@@ -350,7 +472,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
         if (name.isEmpty()) {
             throw new NameAlreadyBoundException("Cannot rebind an empty name (this context)");
         }
-        addDeepBinding(name, obj, true);
+        addDeepBinding(name, obj, true, true);
     }
 
     public void rename(String oldName, String newName) throws NamingException {
@@ -492,8 +614,8 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot create a subcontext if the name is empty");
         }
-        Context abstractContext = createContext(name.toString(), Collections.EMPTY_MAP);
-        addDeepBinding(name, abstractContext, false);
+        Context abstractContext = createNestedSubcontext(name.toString(), Collections.EMPTY_MAP);
+        addDeepBinding(name, abstractContext, false, true);
         return abstractContext;
     }
 

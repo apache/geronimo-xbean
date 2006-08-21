@@ -24,13 +24,12 @@ import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.OperationNotSupportedException;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Map;
 
 /**
  * @version $Rev: 355877 $ $Date: 2005-12-10 18:48:27 -0800 (Sat, 10 Dec 2005) $
  */
-public abstract class AbstractUnmodifiableContext extends AbstractContext implements Context, ContextFactory, Serializable {
+public abstract class AbstractUnmodifiableContext extends AbstractContext implements Context, NestedContextFactory, Serializable {
     private static final long serialVersionUID = 3808693663629444493L;
 
     protected AbstractUnmodifiableContext(String nameInNamespace) {
@@ -96,93 +95,6 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
      */
     protected Map getBindings() throws NamingException {
         throw new OperationNotSupportedException("This context is not listable");
-    }
-
-    //
-    //  Add Binding
-    //
-
-    protected void addDeepBinding(Name name, Object value, boolean rebind) throws NamingException {
-        if (rebind) {
-            throw new OperationNotSupportedException("This conext does not support rebind");
-        }
-        addDeepBinding(name.toString(), value);
-    }
-
-    protected void addDeepBinding(String name, Object value) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-        if (value == null) throw new NullPointerException("value is null");
-
-        Name compoundName = ContextUtil.parseName(name);
-        if (compoundName.isEmpty()) {
-            throw new InvalidNameException("Name is empty");
-        }
-
-        AbstractUnmodifiableContext currentContext = this;
-        for (int i = 0; i < compoundName.size(); i++) {
-            String part = compoundName.get(i);
-
-            // empty path parts are not allowed
-            if (part.length() == 0) {
-                throw new InvalidNameException("Name part " + i + " is empty: " + name);
-            }
-
-            // Is this the last element in the name?
-            if (i == compoundName.size() - 1) {
-                // we're at the end... bind the value into the parent context
-                currentContext.addBinding(part, value, false);
-
-                // all done... this is redundant but makes the code more readable
-                break;
-            } else {
-                Map currentBindings = currentContext.getBindings();
-                Object currentValue = currentBindings.get(part);
-                if (currentValue == null) {
-                    // the next step in the tree is not present, so create everything down
-                    // and add it to the current bindings
-                    Context context = currentContext.createContextTree(compoundName.getPrefix(i).toString(),
-                            compoundName.getSuffix(i),
-                            value);
-                    currentContext.addBinding(part, context, false);
-
-                    // all done
-                    break;
-                } else {
-                    // the current value must be an abstract read only context
-                    // todo this is a problem since a nested node could be an AbstractReadOnlyContext but not one of our contexts
-                    if (!(currentValue instanceof AbstractUnmodifiableContext)) {
-                        throw new NotContextException("Expected an instance of AbstractReadOnlyContext to be bound at " +
-                                part + " but found an instance of " + currentValue.getClass().getName());
-                    }
-                    currentContext = (AbstractUnmodifiableContext) currentValue;
-                    // now we recurse into the current context
-                }
-            }
-        }
-    }
-
-    /**
-     * Creates a context tree which will be rooted at the specified path and contain a single entry located down
-     * a path specified by the name.  All necessary intermediate contexts will be created using the createContext method.
-     * @param path the path to the context that will contains this context
-     * @param name the name under which the value should be bound
-     * @param value the vale
-     * @return a context with the value bound at the specified name
-     * @throws NamingException
-     */
-    protected Context createContextTree(String path, Name name, Object value) throws NamingException {
-        if (path == null) throw new NullPointerException("path is null");
-        if (name == null) throw new NullPointerException("name is null");
-        if (name.size() < 2) throw new InvalidNameException("name must have at least 2 parts " + name);
-
-        if (!path.endsWith("/")) path += "/";
-
-        for (int i = name.size() - 2; i >= 0; i--) {
-            String fullPath = path + name.getSuffix(i);
-            String key = name.get(i + 1);
-            value = createContext(fullPath, Collections.singletonMap(key, value));
-        }
-        return (AbstractUnmodifiableContext) value;
     }
 
     //

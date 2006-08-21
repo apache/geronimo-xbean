@@ -38,7 +38,11 @@ public class WritableContext extends AbstractContext {
         bindings = new HashMap();
     }
 
-    public Context createContext(String path, Map bindings) {
+    public boolean isNestedSubcontext(Object value) {
+        return value instanceof WritableContext;
+    }
+
+    public Context createNestedSubcontext(String path, Map bindings) {
         return new WritableContext(getNameInNamespace(path));
     }
 
