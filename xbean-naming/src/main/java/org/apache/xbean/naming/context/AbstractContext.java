@@ -126,6 +126,18 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
         throw new NameNotFoundException(stringName);
     }
 
+    protected Context lookupFinalContext(Name name) throws NamingException {
+        Object value = lookup(name.getPrefix(name.size() - 1));
+
+        if (value == null) {
+            throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " does not exist");
+        } else if (!(value instanceof Context)) {
+            throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " does is not a context");
+        } else {
+            return (Context) value;
+        }
+    }
+
     //
     //  List Bindings
     //
@@ -149,18 +161,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
             return;
         }
 
-        Context context = this;
-        for (int i = 0; i < name.size() - 1; i++) {
-            String segment = name.get(i);
-            Object object = context.lookup(segment);
-            if (object == null) {
-                throw new NotContextException("The intermediate context " + segment + " does not exist");
-            } else if (!(object instanceof Context)) {
-                throw new NotContextException("The intermediate context " + segment + " does is not a context");
-            } else {
-                context = (Context) object;
-            }
-        }
+        Context context = lookupFinalContext(name);
 
         String lastSegment = name.get(name.size() - 1);
         if (rebind) {
@@ -185,18 +186,7 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
             return;
         }
 
-        Context context = this;
-        for (int i = 0; i < name.size() - 1; i++) {
-            String segment = name.get(i);
-            Object object = context.lookup(segment);
-            if (object == null) {
-                throw new NotContextException("The intermediate context " + segment + " does not exist");
-            } else if (!(object instanceof Context)) {
-                throw new NotContextException("The intermediate context " + segment + " does is not a context");
-            } else {
-                context = (Context) object;
-            }
-        }
+        Context context = lookupFinalContext(name);
 
         context.unbind(name.getSuffix(name.size() - 1));
     }
