@@ -17,12 +17,10 @@
 package org.apache.xbean.naming.context;
 
 import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NamingException;
 import javax.naming.NameAlreadyBoundException;
-import javax.naming.LinkRef;
-import java.util.Map;
+import javax.naming.NamingException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @version $Rev$ $Date$
@@ -44,53 +42,23 @@ public class WritableContext extends AbstractContext {
         return new WritableContext(getNameInNamespace(path));
     }
 
-    protected void removeBindings(Name name) throws NamingException {
-        Map bindings;
-        synchronized (this.bindings) {
-            bindings = this.bindings;
-        }
-        if (name.size() == 1) {
-            synchronized (bindings) {
-                bindings.remove(name.toString());
-            }
-        } else {
-            String segment = null;
-            int lastIndex = name.size() - 1;
-            Object terminalContext = null;
-            for (int i = 0; i < lastIndex; i++) {
-                segment = name.get(i);
-                terminalContext = bindings.get(segment);
-                if (terminalContext == null) {
-                    throw new NamingException("The intermediate context "
-                            + segment + " does not exist");
-                } else if (!(terminalContext instanceof Context)) {
-                    throw new NameAlreadyBoundException(
-                            " An object that is not a context is already bound at element "
-                                    + segment + "of name " + name);
-                } else {
-                    WritableContext writableContext = ((WritableContext) terminalContext);
-                    synchronized (writableContext.bindings) {
-                        bindings = writableContext.bindings;
-                    }
-                }
-            }
-            segment = name.get(lastIndex);
-            ((Context) terminalContext).unbind(segment);
-        }
+    protected Map getBindings() {
+        return bindings;
     }
 
     protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
         synchronized (bindings) {
-            if (rebind || bindings.get(name.toString()) == null) {
+            if (rebind || !bindings.containsKey(name)) {
                 bindings.put(name, value);
             } else {
-                throw new NameAlreadyBoundException("The name " + name
-                        + "is already bound");
+                throw new NameAlreadyBoundException("The name " + name + " is already bound");
             }
         }
     }
 
-    protected Map getBindings() {
-        return bindings;
+    protected void removeBinding(String name) throws NamingException {
+        synchronized (bindings) {
+            bindings.remove(name);
+        }
     }
 }

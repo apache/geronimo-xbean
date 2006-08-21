@@ -177,7 +177,29 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     //  Remove Binding
     //
 
-    protected abstract void removeBindings(Name name) throws NamingException;
+    protected abstract void removeBinding(String name) throws NamingException;
+
+    protected void removeBindings(Name name) throws NamingException {
+        if (name.size() == 1) {
+            removeBinding(name.get(0));
+            return;
+        }
+
+        Context context = this;
+        for (int i = 0; i < name.size() - 1; i++) {
+            String segment = name.get(i);
+            Object object = context.lookup(segment);
+            if (object == null) {
+                throw new NotContextException("The intermediate context " + segment + " does not exist");
+            } else if (!(object instanceof Context)) {
+                throw new NotContextException("The intermediate context " + segment + " does is not a context");
+            } else {
+                context = (Context) object;
+            }
+        }
+
+        context.unbind(name.getSuffix(name.size() - 1));
+    }
 
     //
     // Environment
