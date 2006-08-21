@@ -35,11 +35,11 @@ import net.sf.cglib.core.Predicate;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.NoOp;
 
+import org.apache.xbean.classloader.MultiParentClassLoader;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.kernel.KernelFactory;
 import org.apache.xbean.kernel.ServiceName;
 import org.apache.xbean.kernel.StringServiceName;
-import org.apache.xbean.server.classloader.MultiParentClassLoader;
 import org.apache.xbean.server.repository.FileSystemRepository;
 import org.apache.xbean.server.spring.configuration.ClassLoaderXmlPreprocessor;
 import org.apache.xbean.server.spring.configuration.SpringConfigurationServiceFactory;

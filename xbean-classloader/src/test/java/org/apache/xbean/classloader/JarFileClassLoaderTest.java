@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2005 The Apache Software Foundation
+ * Copyright 2005-2006 The Apache Software Foundation or its licensors, as applicable.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.server.classloader;
+package org.apache.xbean.classloader;
 
-import java.util.jar.Manifest;
-import java.io.IOException;
 import java.net.URL;
 
 /**
- * This is a location which is searched by
- * @version $Rev$ $Date: 2006-06-01 06:35:48 +0200 (Thu, 01 Jun 2006) $
+ * Test the JarFileClassLoader.
+ *
+ * @author Dain Sundstrom
+ * @version $Id$
+ * @since 2.0
  */
-public interface ResourceLocation {
-    URL getCodeSource();    
-    ResourceHandle getResourceHandle(String resourceName);
-    Manifest getManifest() throws IOException;
-    void close();
+public class JarFileClassLoaderTest extends MultiParentClassLoaderTest {
+    protected MultiParentClassLoader createClassLoader(String name, URL[] urls, ClassLoader[] parents) {
+        return new JarFileClassLoader(name, urls, parents);
+    }
 }
