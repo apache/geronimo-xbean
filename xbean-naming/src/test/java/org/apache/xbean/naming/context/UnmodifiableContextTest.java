@@ -38,8 +38,8 @@ public class UnmodifiableContextTest extends AbstractContextTest {
             super.addDeepBinding(name, value, rebind, createIntermediateContexts);
         }
 
-        public void removeDeepBinding(String name) throws NamingException {
-            super.removeDeepBinding(name);
+        protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+            super.removeDeepBinding(name, pruneEmptyContexts);
         }
     }
 
@@ -100,13 +100,14 @@ public class UnmodifiableContextTest extends AbstractContextTest {
 
         // remove from an exisitng node
         map.remove("a/b/c/d/e/three");
-        context.removeDeepBinding("a/b/c/d/e/three");
+        NameParser parser = context.getNameParser();
+        context.removeDeepBinding(parser.parse("a/b/c/d/e/three"), true);
 
         assertEq(map, context);
 
         // remove a deep single element element... empty nodes should be removed
         map.remove("nested/context/string");
-        context.removeDeepBinding("nested/context/string");
+        context.removeDeepBinding(parser.parse("nested/context/string"), true);
 
         assertEq(map, context);
     }

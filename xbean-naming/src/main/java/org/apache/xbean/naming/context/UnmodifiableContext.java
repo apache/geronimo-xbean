@@ -131,7 +131,11 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
     }
 
     public boolean isNestedSubcontext(Object value) {
-        return value instanceof NestedUnmodifiableContext;
+        if (value instanceof NestedUnmodifiableContext) {
+            NestedUnmodifiableContext context = (NestedUnmodifiableContext) value;
+            return this == context.getUnmodifiableContext();
+        }
+        return false;
     }
 
     public Context createNestedSubcontext(String path, Map bindings) {
@@ -189,7 +193,11 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
         }
 
         public boolean isNestedSubcontext(Object value) {
-            return value instanceof NestedUnmodifiableContext;
+            if (value instanceof NestedUnmodifiableContext) {
+                NestedUnmodifiableContext context = (NestedUnmodifiableContext) value;
+                return getUnmodifiableContext() == context.getUnmodifiableContext();
+            }
+            return false;
         }
 
         public Context createNestedSubcontext(String path, Map bindings) {
@@ -240,6 +248,10 @@ public class UnmodifiableContext extends AbstractUnmodifiableContext {
             } finally {
                 writeLock.unlock();
             }
+        }
+
+        private UnmodifiableContext getUnmodifiableContext() {
+            return UnmodifiableContext.this;
         }
     }
 }

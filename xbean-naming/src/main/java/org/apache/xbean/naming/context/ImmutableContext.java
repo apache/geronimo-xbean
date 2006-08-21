@@ -97,7 +97,11 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
     }
 
     public boolean isNestedSubcontext(Object value) {
-        return value instanceof NestedImmutableContext;
+        if (value instanceof NestedImmutableContext) {
+            NestedImmutableContext context = (NestedImmutableContext) value;
+            return this == context.getImmutableContext();
+        }
+        return false;
     }
 
     public Context createNestedSubcontext(String path, Map bindings) {
@@ -142,11 +146,19 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         }
 
         public boolean isNestedSubcontext(Object value) {
-            return value instanceof NestedImmutableContext;
+            if (value instanceof NestedImmutableContext) {
+                NestedImmutableContext context = (NestedImmutableContext) value;
+                return getImmutableContext() == context.getImmutableContext();
+            }
+            return false;
         }
 
         public Context createNestedSubcontext(String path, Map bindings) {
             return new NestedImmutableContext(path, bindings);
+        }
+
+        private ImmutableContext getImmutableContext() {
+            return ImmutableContext.this;
         }
     }
 }

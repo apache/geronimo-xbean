@@ -39,7 +39,7 @@ public class WritableContext extends AbstractContext {
     }
 
     public boolean isNestedSubcontext(Object value) {
-        return value instanceof WritableContext;
+        return false;
     }
 
     public Context createNestedSubcontext(String path, Map bindings) {

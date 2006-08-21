@@ -18,10 +18,8 @@
 package org.apache.xbean.naming.context;
 
 import javax.naming.Context;
-import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NamingException;
-import javax.naming.NotContextException;
 import javax.naming.OperationNotSupportedException;
 import java.io.Serializable;
 import java.util.Map;
@@ -37,10 +35,6 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
     }
 
     protected final void addBinding(Name name, Object obj, boolean rebind) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    protected final void removeBindings(Name name) throws NamingException {
         throw new OperationNotSupportedException("Context is read only");
     }
 
@@ -109,64 +103,6 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
      */
     protected void removeBinding(String name) throws NamingException {
         throw new OperationNotSupportedException("Context is read only");
-    }
-
-    protected void removeDeepBinding(String name) throws NamingException {
-        if (name == null) throw new NullPointerException("name is null");
-
-        Name compoundName = ContextUtil.parseName(name);
-        if (compoundName.isEmpty()) {
-            throw new InvalidNameException("Name is empty");
-        }
-
-        // we serch the tree for a target context and name to remove
-        // this is normally the last context in the tree and the final name part, but
-        // it may be farther up the path if the intervening nodes are empty
-        AbstractUnmodifiableContext targetContext = this;
-        String targetName = compoundName.get(0);
-
-        AbstractUnmodifiableContext currentContext = this;
-        for (int i = 0; i < compoundName.size(); i++) {
-            String part = compoundName.get(i);
-
-            // empty path parts are not allowed
-            if (part.length() == 0) {
-                throw new InvalidNameException("Name part " + i + " is empty: " + name);
-            }
-
-            Map currentBindings = currentContext.getBindings();
-
-            // update targets
-            if (currentBindings.size() > 1) {
-                targetContext = currentContext;
-                targetName = part;
-            }
-
-
-            // Is this the last element in the name?
-            if (i == compoundName.size() - 1) {
-                // we're at the end... bind the value into the parent context
-                targetContext.removeBinding(targetName);
-
-                // all done... this is redundant but makes the code more readable
-                break;
-            } else {
-                Object currentValue = currentBindings.get(part);
-                if (currentValue == null) {
-                    // path not found we are done
-                    break;
-                } else {
-                    // the current value must be an abstract read only context
-                    // todo this is a problem since a nested node could be an AbstractReadOnlyContext but not one of our contexts
-                    if (!(currentValue instanceof AbstractUnmodifiableContext)) {
-                        throw new NotContextException("Expected an instance of AbstractReadOnlyContext to be bound at " +
-                                part + " but found an instance of " + currentValue.getClass().getName());
-                    }
-                    currentContext = (AbstractUnmodifiableContext) currentValue;
-                    // now we recurse into the current context
-                }
-            }
-        }
     }
 
     // ==================================================================================
