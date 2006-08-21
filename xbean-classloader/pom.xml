@@ -5,8 +5,8 @@
     <version>2.6-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>xbean-classloaders</artifactId>
-  <name>XBean :: Classloaders</name>
+  <artifactId>xbean-classloader</artifactId>
+  <name>XBean :: Classloader</name>
   <version>2.6-SNAPSHOT</version>
   <build>
     <plugins>

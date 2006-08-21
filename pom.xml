@@ -133,7 +133,7 @@
   </profiles>
   <modules>
     <module>xbean-classpath</module>
-    <module>xbean-classloaders</module>
+    <module>xbean-classloader</module>
     <module>xbean-kernel</module>
     <module>xbean-osgi</module>
     <module>xbean-reflect</module>
