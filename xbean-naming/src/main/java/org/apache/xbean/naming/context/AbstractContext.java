@@ -26,6 +26,8 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.LinkRef;
+import javax.naming.NameNotFoundException;
+import javax.naming.InitialContext;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -43,6 +45,103 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     public void close() throws NamingException {
         //Ignore. Explicitly do not close the context
     }
+
+    //
+    //  Lookup Binding
+    //
+
+    /**
+     * Gets the object bound to the name.  The name will not contain slashes.
+     * @param name the name
+     * @return the object bound to the name, or null if not found
+     */
+    protected Object getBinding(String name) throws NamingException {
+        Map bindings = getBindings();
+        return bindings.get(name);
+    }
+
+    /**
+     * Finds the specified entry.  Normally there is no need to override this method; instead you should
+     * simply the getBindings(String) method.
+     *
+     * This method will follow links except for the final element which is always just returned without
+     * inspection.  This means this method can be used to implement lookupLink.
+     *
+     * @param stringName the string version of the name; maybe null
+     * @param parsedName the parsed name; may be null
+     * @return the value bound to the name
+     * @throws NamingException if no value is bound to that name or if a problem occurs during the lookup
+     */
+    protected Object lookup(String stringName, Name parsedName) throws NamingException {
+        if (stringName == null && parsedName == null) {
+            throw new IllegalArgumentException("Both stringName and parsedName are null");
+        }
+        if (stringName == null) stringName = parsedName.toString();
+
+        // if the parsed name has no parts, they are asking for the current context
+        if (parsedName == null) parsedName = getNameParser().parse(stringName);
+        if (parsedName.isEmpty()) {
+            return this;
+        }
+
+        // we didn't find an entry, pop the first element off the parsed name and attempt to
+        // get a context from the bindings and delegate to that context
+        Object localValue;
+        String firstNameElement = parsedName.get(0);
+        if (firstNameElement.length() == 0) {
+            // the element is null... this is normally caused by looking up with a trailing '/' character
+            localValue = this;
+        } else {
+            localValue = getBinding(firstNameElement);
+        }
+
+        if (localValue != null) {
+
+            // if the name only had one part, we've looked up everything
+            if (parsedName.size() == 1) {
+                localValue = ContextUtil.resolve(stringName, localValue);
+                return localValue;
+            }
+
+            // if we have a link ref, follow it
+            if (localValue instanceof LinkRef) {
+                LinkRef linkRef = (LinkRef) localValue;
+                localValue = lookup(linkRef.getLinkName());
+            }
+
+            // we have more to lookup so we better have a context object
+            if (!(localValue instanceof Context)) {
+                throw new NameNotFoundException(stringName);
+            }
+
+            // delegate to the sub-context
+            return ((Context) localValue).lookup(parsedName.getSuffix(1));
+        }
+
+        // if we didn't find an entry, it may be an absolute name
+        if (stringName.indexOf(':') > 0) {
+            Context ctx = new InitialContext();
+            return ctx.lookup(parsedName);
+        }
+        throw new NameNotFoundException(stringName);
+    }
+
+    //
+    //  List Bindings
+    //
+
+    /**
+     * Gets a map of the bindings for the current node (i.e., no names with slashes).
+     * This method must not return null.
+     *
+     * @return a Map from binding name to binding value
+     * @throws NamingException if a problem occurs while getting the bindigns
+     */
+    protected abstract Map getBindings() throws NamingException;
+
+    //
+    //  Add Binding
+    //
 
     protected void addDeepBinding(Name name, Object value, boolean rebind) throws NamingException {
         if (name.size() == 1) {
@@ -74,9 +173,11 @@ public abstract class AbstractContext implements Context, ContextFactory, Serial
     protected abstract void addBinding(String name, Object value, boolean rebind) throws NamingException;
 
 
+    //
+    //  Remove Binding
+    //
+
     protected abstract void removeBindings(Name name) throws NamingException;
-    protected abstract Object lookup(String stringName, Name parsedName) throws NamingException;
-    protected abstract Map getBindings() throws NamingException;
 
     //
     // Environment

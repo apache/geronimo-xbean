@@ -18,11 +18,8 @@
 package org.apache.xbean.naming.context;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.InvalidNameException;
-import javax.naming.LinkRef;
 import javax.naming.Name;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.OperationNotSupportedException;
@@ -62,16 +59,6 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
     }
 
     /**
-     * Gets the object bound to the name.  The name will not contain slashes.
-     * @param name the name
-     * @return the object bound to the name, or null if not found
-     */
-    protected Object getBinding(String name) throws NamingException {
-        Map bindings = getBindings();
-        return bindings.get(name);
-    }
-
-    /**
      * Finds the specified entry.  Normally there is no need to override this method; instead you should
      * simply implement the getDeepBindings(String) and getBindings(String) method.
      *
@@ -95,53 +82,8 @@ public abstract class AbstractUnmodifiableContext extends AbstractContext implem
             return ContextUtil.resolve(stringName, directLookup);
         }
 
-        // if the parsed name has no parts, they are asking for the current context
-        if (parsedName == null) parsedName = getNameParser().parse(stringName);
-        if (parsedName.size() == 0) {
-            return this;
-        }
-
-
-        // we didn't find an entry, pop the first element off the parsed name and attempt to
-        // get a context from the bindings and delegate to that context
-        Object localValue;
-        String firstNameElement = parsedName.get(0);
-        if (firstNameElement.length() == 0) {
-            // the element is null... this is normally caused by looking up with a trailing '/' character
-            localValue = this;
-        } else {
-            localValue = getBinding(firstNameElement);
-        }
-
-        if (localValue != null) {
-
-            // if the name only had one part, we've looked up everything
-            if (parsedName.size() == 1) {
-                localValue = ContextUtil.resolve(stringName, localValue);
-                return localValue;
-            }
-
-            // if we have a link ref, follow it
-            if (localValue instanceof LinkRef) {
-                LinkRef linkRef = (LinkRef) localValue;
-                localValue = lookup(linkRef.getLinkName());
-            }
-
-            // we have more to lookup so we better have a context object
-            if (!(localValue instanceof Context)) {
-                throw new NameNotFoundException(stringName);
-            }
-
-            // delegate to the sub-context
-            return ((Context) localValue).lookup(parsedName.getSuffix(1));
-        }
-
-        // if we didn't find an entry, it may be an absolute name
-        if (stringName.indexOf(':') > 0) {
-            Context ctx = new InitialContext();
-            return ctx.lookup(parsedName);
-        }
-        throw new NameNotFoundException(stringName);
+        Object value = super.lookup(stringName, parsedName);
+        return value;
     }
 
     //

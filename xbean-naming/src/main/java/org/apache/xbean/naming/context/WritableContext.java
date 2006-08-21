@@ -28,7 +28,7 @@ import java.util.HashMap;
  * @version $Rev$ $Date$
  */
 public class WritableContext extends AbstractContext {
-    protected Map bindings;
+    protected final Map bindings;
 
     public WritableContext() {
         super("");
@@ -45,7 +45,10 @@ public class WritableContext extends AbstractContext {
     }
 
     protected void removeBindings(Name name) throws NamingException {
-        Map bindings = this.bindings;
+        Map bindings;
+        synchronized (this.bindings) {
+            bindings = this.bindings;
+        }
         if (name.size() == 1) {
             synchronized (bindings) {
                 bindings.remove(name.toString());
@@ -65,60 +68,15 @@ public class WritableContext extends AbstractContext {
                             " An object that is not a context is already bound at element "
                                     + segment + "of name " + name);
                 } else {
-                    bindings = ((WritableContext) terminalContext).bindings;
+                    WritableContext writableContext = ((WritableContext) terminalContext);
+                    synchronized (writableContext.bindings) {
+                        bindings = writableContext.bindings;
+                    }
                 }
             }
             segment = name.get(lastIndex);
             ((Context) terminalContext).unbind(segment);
         }
-    }
-
-    protected Object lookup(String stringName, Name parsedName) throws NamingException {
-        if (parsedName == null) parsedName = getNameParser().parse(stringName);
-
-        Object result = null;
-        Map bindings = this.bindings;
-        Object terminalContext = null;
-        if (parsedName.isEmpty()) {
-            return this;
-        }
-        int index = parsedName.get(0).indexOf(':');
-        if (index != -1) {
-            String temp = parsedName.get(0).substring(index + 1);
-            parsedName.remove(0);
-            parsedName.add(0, temp);
-        }
-        if (parsedName.size() == 1) {
-            result = bindings.get(parsedName.toString());
-        } else {
-            String segment = null;
-            int lastIndex = parsedName.size() - 1;
-            for (int i = 0; i < lastIndex; i++) {
-                segment = parsedName.get(i);
-                terminalContext = bindings.get(segment);
-                if (terminalContext == null) {
-                    throw new NamingException("The intermediate context "
-                            + segment + " does not exist");
-                } else if (!(terminalContext instanceof Context)) {
-                    throw new NamingException(
-                            "One of the intermediate names i.e. "
-                                    + segment
-                                    + " refer to an object that is not a context");
-                } else {
-                    bindings = ((WritableContext) terminalContext).bindings;
-                }
-            }
-            segment = parsedName.get(lastIndex);
-            result = ((Context) terminalContext).lookup(segment);
-        }
-
-        if (result instanceof LinkRef) {
-            LinkRef ref = (LinkRef) result;
-            result = lookup(ref.getLinkName());
-        }
-
-        return result;
-
     }
 
     protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
