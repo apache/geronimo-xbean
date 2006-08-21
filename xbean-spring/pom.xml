@@ -36,14 +36,14 @@
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring-v1</artifactId>
             <version>${pom.version}</version>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring-v2</artifactId>
             <version>${pom.version}</version>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
