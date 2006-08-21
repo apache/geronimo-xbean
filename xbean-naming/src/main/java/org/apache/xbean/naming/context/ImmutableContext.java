@@ -21,6 +21,7 @@ import org.apache.xbean.naming.reference.CachingReference;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
+import javax.naming.Name;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -92,7 +93,11 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    protected void removeDeepBinding(String name, Object value) throws NamingException {
+    protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+        throw new OperationNotSupportedException("Context is immutable");
+    }
+
+    protected void removeBinding(String name) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
@@ -141,7 +146,11 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected void removeDeepBinding(String name, Object value) throws NamingException {
+        protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+            throw new OperationNotSupportedException("Context is immutable");
+        }
+
+        protected void removeBinding(String name) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 

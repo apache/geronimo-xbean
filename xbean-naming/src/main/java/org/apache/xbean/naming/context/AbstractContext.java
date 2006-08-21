@@ -51,6 +51,15 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     //
 
     /**
+     * Gets the object bound to the name.  The name may contain slashes.
+     * @param name the name
+     * @return the object bound to the name, or null if not found
+     */
+    protected Object getDeepBinding(String name) {
+        return null;
+    }
+
+    /**
      * Gets the object bound to the name.  The name will not contain slashes.
      * @param name the name
      * @return the object bound to the name, or null if not found
@@ -62,7 +71,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
 
     /**
      * Finds the specified entry.  Normally there is no need to override this method; instead you should
-     * simply the getBindings(String) method.
+     * simply implement the getDeepBindings(String) and getBindings(String) method.
      *
      * This method will follow links except for the final element which is always just returned without
      * inspection.  This means this method can be used to implement lookupLink.
@@ -77,6 +86,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
             throw new IllegalArgumentException("Both stringName and parsedName are null");
         }
         if (stringName == null) stringName = parsedName.toString();
+
+        // try to look up the name directly (this is the fastest path)
+        Object directLookup = getDeepBinding(stringName);
+        if (directLookup != null) {
+            return ContextUtil.resolve(stringName, directLookup);
+        }
 
         // if the parsed name has no parts, they are asking for the current context
         if (parsedName == null) parsedName = getNameParser().parse(stringName);
@@ -293,6 +308,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     //  Remove Binding
     //
 
+    /**
+     * Removes the binding from the context.  The name will not contain a path and the value will not
+     * be a nested context although it may be a foreign context.
+     * @param name name under which the value should be bound
+     * @throws NamingException if a problem occurs during the bind such as a value already being bound
+     */
     protected abstract void removeBinding(String name) throws NamingException;
 
     protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
