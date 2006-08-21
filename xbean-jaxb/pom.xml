@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
-    Copyright 2005 The Apache Software Foundation
+    Copyright 2006 The Apache Software Foundation
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,94 +14,100 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<!-- $Rev: 356052 $ $Date: 2005-12-11 14:41:20 -0800 (dim., 11 déc. 2005) $ -->
-<project>
 
-  <parent>
-    <artifactId>xbean</artifactId>
-    <groupId>org.apache.xbean</groupId>
-    <version>2.6-SNAPSHOT</version>
-  </parent>
+<!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
 
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>xbean-jaxb</artifactId>
-  <name>XBean :: JAXB</name>
-  <version>2.6-SNAPSHOT</version>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>java.net</id>
-      <name>java.net Maven Repository</name>
-      <url>https://maven-repository.dev.java.net/nonav/repository</url>
-      <layout>legacy</layout>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
+    <modelVersion>4.0.0</modelVersion>
 
-  <build>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-      </testResource>
-      <testResource>
-        <directory>target/test-generated</directory>
-      </testResource>
-    </testResources>
+    <parent>
+        <artifactId>xbean</artifactId>
+        <groupId>org.apache.xbean</groupId>
+        <version>2.6-SNAPSHOT</version>
+    </parent>
 
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
+    <artifactId>xbean-jaxb</artifactId>
+    <name>XBean :: JAXB</name>
+    
+    <dependencies>
+        
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring</artifactId>
+            <version>2.0-m5</version>
+        </dependency>
+    </dependencies>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>java.net</id>
+            <name>java.net Maven Repository</name>
+            <url>https://maven-repository.dev.java.net/nonav/repository</url>
+            <layout>legacy</layout>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
-      <plugin>
-        <groupId>com.sun.tools.xjc.maven2</groupId>
-        <artifactId>maven-jaxb-plugin</artifactId>
-        <version>1.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <generatePackage>org.apache.xbean.jaxb.schema</generatePackage>
-          <includeSchemas>
-            <includeSchema>spring-beans.xsd</includeSchema>
-          </includeSchemas>
-          <excludeSchemas>
-            <excludeSchema>test*.xsd</excludeSchema>
-          </excludeSchemas>
-          <includeBindings>
-            <includeBinding>*.xjb</includeBinding>
-          </includeBindings>
-          <strict>true</strict>
-          <verbose>true</verbose>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>target/test-generated</directory>
+            </testResource>
+        </testResources>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-      <version>2.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring</artifactId>
-      <version>2.0-m5</version>
-    </dependency>
-  </dependencies>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.sun.tools.xjc.maven2</groupId>
+                <artifactId>maven-jaxb-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generatePackage>org.apache.xbean.jaxb.schema</generatePackage>
+                    <includeSchemas>
+                        <includeSchema>spring-beans.xsd</includeSchema>
+                    </includeSchemas>
+                    <excludeSchemas>
+                        <excludeSchema>test*.xsd</excludeSchema>
+                    </excludeSchemas>
+                    <includeBindings>
+                        <includeBinding>*.xjb</includeBinding>
+                    </includeBindings>
+                    <strict>true</strict>
+                    <verbose>true</verbose>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
 </project>
