@@ -37,7 +37,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.xbean</groupId>
-      <artifactId>xbean-classloaders</artifactId>
+      <artifactId>xbean-classloader</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.xbean</groupId>

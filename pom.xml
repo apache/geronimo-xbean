@@ -233,7 +233,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
-        <artifactId>xbean-classloaders</artifactId>
+        <artifactId>xbean-classloader</artifactId>
         <version>2.6-SNAPSHOT</version>
       </dependency>
       <dependency>
