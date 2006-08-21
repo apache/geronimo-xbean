@@ -31,7 +31,7 @@ import java.util.Map;
  *
  * @version $Rev: 417891 $ $Date: 2006-06-28 15:45:07 -0700 (Wed, 28 Jun 2006) $
  */
-public class ImmutableContext extends AbstractUnmodifiableContext {
+public class ImmutableContext extends AbstractContext {
     private final Map localBindings;
     private final Map absoluteIndex;
 
@@ -85,19 +85,19 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         return localBindings;
     }
 
-    protected void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
+    protected final void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
+    protected final void addBinding(String name, Object value, boolean rebind) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+    protected final void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    protected void removeBinding(String name) throws NamingException {
+    protected final void removeBinding(String name) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
@@ -113,10 +113,62 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
         return new NestedImmutableContext(path, bindings);
     }
 
+    public final void bind(Name name, Object obj) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void bind(String name, Object obj) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void close() throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final Context createSubcontext(Name name) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final Context createSubcontext(String name) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void destroySubcontext(Name name) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void destroySubcontext(String name) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void rebind(Name name, Object obj) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void rebind(String name, Object obj) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void rename(Name oldName, Name newName) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void rename(String oldName, String newName) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void unbind(Name name) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
+    public final void unbind(String name) throws NamingException {
+        throw new OperationNotSupportedException("Context is read only");
+    }
+
     /**
      * Nested context which shares the absolute index map in MapContext.
      */
-    public final class NestedImmutableContext extends AbstractUnmodifiableContext {
+    public final class NestedImmutableContext extends AbstractContext {
         private final Map localBindings;
         private final String pathWithSlash;
 
@@ -138,19 +190,19 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
             return localBindings;
         }
 
-        protected void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
+        protected final void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
+        protected final void addBinding(String name, Object value, boolean rebind) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+        protected final void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected void removeBinding(String name) throws NamingException {
+        protected final void removeBinding(String name) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
@@ -166,8 +218,60 @@ public class ImmutableContext extends AbstractUnmodifiableContext {
             return new NestedImmutableContext(path, bindings);
         }
 
-        private ImmutableContext getImmutableContext() {
+        protected ImmutableContext getImmutableContext() {
             return ImmutableContext.this;
+        }
+
+        public final void bind(Name name, Object obj) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void bind(String name, Object obj) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void close() throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final Context createSubcontext(Name name) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final Context createSubcontext(String name) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void destroySubcontext(Name name) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void destroySubcontext(String name) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void rebind(Name name, Object obj) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void rebind(String name, Object obj) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void rename(Name oldName, Name newName) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void rename(String oldName, String newName) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void unbind(Name name) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+
+        public final void unbind(String name) throws NamingException {
+            throw new OperationNotSupportedException("Context is read only");
         }
     }
 }
