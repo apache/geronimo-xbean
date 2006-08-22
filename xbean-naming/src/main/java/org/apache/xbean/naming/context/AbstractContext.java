@@ -135,8 +135,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
 
         // if we didn't find an entry, it may be an absolute name
         if (stringName.indexOf(':') > 0) {
-            Context ctx = new InitialContext();
-            return ctx.lookup(parsedName);
+            try {
+                Context ctx = new InitialContext();
+                return ctx.lookup(parsedName);
+            } catch (NamingException ignored) {
+                // thrown below
+            }
         }
         throw new NameNotFoundException(stringName);
     }

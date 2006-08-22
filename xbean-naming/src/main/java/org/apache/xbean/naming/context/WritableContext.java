@@ -71,10 +71,6 @@ public class WritableContext extends AbstractContext {
     }
 
     protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
-        if (rebind) {
-            throw new OperationNotSupportedException("This conext does not support rebind");
-        }
-
         writeLock.lock();
         try {
             Map bindings = (Map) bindingsRef.get();
