@@ -22,9 +22,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
 import org.apache.xbean.naming.reference.CachingReference;
 
 import javax.naming.Context;
-import javax.naming.Name;
 import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,11 +32,10 @@ import java.util.Map;
 /**
  * @version $Rev$ $Date$
  */
-public class WritableContext extends AbstractContext {
+public class WritableContext extends AbstractFederatedContext {
     private final Lock writeLock = new ReentrantLock();
     private final AtomicReference bindingsRef;
     private final AtomicReference indexRef;
-    protected final ContextFederation contextFederation = new ContextFederation(this);
 
     public WritableContext() throws NamingException {
         this("", Collections.EMPTY_MAP, true);
@@ -69,31 +66,6 @@ public class WritableContext extends AbstractContext {
         this.indexRef = new AtomicReference(Collections.unmodifiableMap(buildIndex("", localBindings)));
     }
 
-    protected Object faultLookup(String stringName, Name parsedName) {
-        Object value = contextFederation.lookup(parsedName);
-        if (value != null) {
-            return value;
-        }
-        return super.faultLookup(stringName, parsedName);
-    }
-
-    protected NamingEnumeration list() throws NamingException {
-        Map bindings = getListBindings();
-        return new ContextUtil.ListEnumeration(bindings);
-    }
-
-    protected NamingEnumeration listBindings() throws NamingException {
-        Map bindings = getListBindings();
-        return new ContextUtil.ListBindingEnumeration(bindings);
-    }
-
-    protected Map getListBindings() throws NamingException {
-        Map bindings = new HashMap();
-        bindings.putAll(getBindings());
-        bindings.putAll(contextFederation.getFederatedBindings());
-        return bindings;
-    }
-
     protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
         addBinding(bindingsRef, name, value);
     }
@@ -109,14 +81,12 @@ public class WritableContext extends AbstractContext {
                 // if we already have a context bound at the specified value
                 if (bindings.containsKey(name)) {
                     NestedWritableContext nestedContext = (NestedWritableContext) bindings.get(name);
-                    // push new context into all children
-                    Map nestedBindings = (Map) nestedContext.bindingsRef.get();
-                    addFederatedContext(nestedBindings, federatedContext);
+                    nestedContext.addFederatedContext(federatedContext);
                     return;
                 }
 
                 NestedWritableContext nestedContext = (NestedWritableContext) createNestedSubcontext(name, Collections.EMPTY_MAP);
-                nestedContext.contextFederation.addContext(federatedContext);
+                nestedContext.addFederatedContext(federatedContext);
                 value = nestedContext;
             }
 
@@ -128,18 +98,6 @@ public class WritableContext extends AbstractContext {
             indexRef.set(newIndex);
         } finally {
             writeLock.unlock();
-        }
-    }
-
-    protected void addFederatedContext(Map bindings, Context federatedContext) {
-        for (Iterator iterator = bindings.values().iterator(); iterator.hasNext();) {
-            Object value = iterator.next();
-            if (value instanceof NestedWritableContext) {
-                NestedWritableContext nestedContext = (NestedWritableContext) value;
-                nestedContext.contextFederation.addContext(federatedContext);
-                Map nestedBindings = (Map) nestedContext.bindingsRef.get();
-                addFederatedContext(nestedBindings, federatedContext);
-            }
         }
     }
 
@@ -193,16 +151,8 @@ public class WritableContext extends AbstractContext {
         return newIndex;
     }
 
-    public boolean isNestedSubcontext(Object value) {
-        if (value instanceof NestedWritableContext) {
-            NestedWritableContext context = (NestedWritableContext) value;
-            return this == context.getUnmodifiableContext();
-        }
-        return false;
-    }
-
     public Context createNestedSubcontext(String path, Map bindings) throws NamingException {
-        return new NestedWritableContext(path,bindings, contextFederation);
+        return new NestedWritableContext(path,bindings);
     }
 
     private static Map buildIndex(String nameInNamespace, Map bindings) {
@@ -238,32 +188,21 @@ public class WritableContext extends AbstractContext {
     /**
      * Nested context which shares the absolute index map in MapContext.
      */
-    public class NestedWritableContext extends AbstractContext {
+    public class NestedWritableContext extends AbstractNestedFederatedContext {
         private final AtomicReference bindingsRef;
         private final String pathWithSlash;
-        protected final ContextFederation contextFederation;
 
-        public NestedWritableContext(String path, Map bindings, ContextFederation parentContextFederation) throws NamingException {
+        public NestedWritableContext(String path, Map bindings) throws NamingException {
             super(WritableContext.this.getNameInNamespace(path));
 
             if (!path.endsWith("/")) path += "/";
             this.pathWithSlash = path;
 
             this.bindingsRef = new AtomicReference(Collections.unmodifiableMap(bindings));
-
-            this.contextFederation = parentContextFederation.createSubcontextFederation(path, this);
-        }
-
-        public boolean isNestedSubcontext(Object value) {
-            if (value instanceof NestedWritableContext) {
-                NestedWritableContext context = (NestedWritableContext) value;
-                return getUnmodifiableContext() == context.getUnmodifiableContext();
-            }
-            return false;
         }
 
         public Context createNestedSubcontext(String path, Map bindings) throws NamingException {
-            return new NestedWritableContext(path, bindings, contextFederation);
+            return new NestedWritableContext(path, bindings);
         }
 
         protected Object getDeepBinding(String name) {
@@ -276,41 +215,12 @@ public class WritableContext extends AbstractContext {
             return bindings;
         }
 
-        protected Object faultLookup(String stringName, Name parsedName) {
-            Object value = contextFederation.lookup(parsedName);
-            if (value != null) {
-                return value;
-            }
-            return super.faultLookup(stringName, parsedName);
-        }
-
-        protected NamingEnumeration list() throws NamingException {
-            Map bindings = getListBindings();
-            return new ContextUtil.ListEnumeration(bindings);
-        }
-
-        protected NamingEnumeration listBindings() throws NamingException {
-            Map bindings = getListBindings();
-            return new ContextUtil.ListBindingEnumeration(bindings);
-        }
-
-        protected Map getListBindings() throws NamingException {
-            Map bindings = new HashMap();
-            bindings.putAll(getBindings());
-            bindings.putAll(contextFederation.getFederatedBindings());
-            return bindings;
-        }
-
         protected void addBinding(String name, Object value, boolean rebind) throws NamingException {
             WritableContext.this.addBinding(bindingsRef, name, value);
         }
 
         protected void removeBinding(String name) throws NameNotFoundException {
             WritableContext.this.removeBinding(bindingsRef, name);
-        }
-
-        private WritableContext getUnmodifiableContext() {
-            return WritableContext.this;
         }
     }
 }
