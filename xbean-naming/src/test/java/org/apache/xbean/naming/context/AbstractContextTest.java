@@ -22,12 +22,9 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
-import javax.naming.NameClassPair;
-import javax.naming.Binding;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.TreeSet;
-import java.util.HashMap;
 
 /**
  * @version $Rev$ $Date$
@@ -114,9 +111,9 @@ public abstract class AbstractContextTest extends TestCase {
     public static void assertListResults(ContextUtil.Node node, NamingEnumeration enumeration, String contextName, String name, boolean wasListBinding) {
         Map actualValues;
         if (wasListBinding) {
-            actualValues = AbstractContextTest.toListBindingResults(enumeration);
+            actualValues = ContextUtil.listBindingsToMap(enumeration);
         } else {
-            actualValues = AbstractContextTest.toListResults(enumeration);
+            actualValues = ContextUtil.listToMap(enumeration);
         }
 
         for (Iterator iterator = node.entrySet().iterator(); iterator.hasNext();) {
@@ -129,14 +126,14 @@ public abstract class AbstractContextTest extends TestCase {
             assertNotNull("list of " + name + " on " + contextName + " did not find value for " + name, actualValue);
             if (wasListBinding) {
                 if (expectedValue instanceof ContextUtil.Node) {
-                    assertTrue("Expected list of " + name + " on " + contextName + " result value for " + name + " to return a Context, but got a " + actualValue.getClass().getName(),
+                    assertTrue("Expected list of " + name + " on " + contextName + " result value for " + expectedName + " to return a Context, but got a " + actualValue.getClass().getName(),
                         actualValue instanceof Context);
                 } else {
-                    assertEquals("list of " + name + " on " + contextName + " for value for " + name, expectedValue, actualValue);
+                    assertEquals("list of " + name + " on " + contextName + " for value for " + expectedName, expectedValue, actualValue);
                 }
             } else {
                 if (!(expectedValue instanceof ContextUtil.Node)) {
-                    assertEquals("list of " + name + " on " + contextName + " for value for " + name, expectedValue.getClass().getName(), actualValue);
+                    assertEquals("list of " + name + " on " + contextName + " for value for " + expectedName, expectedValue.getClass().getName(), actualValue);
                 } else {
                     // can't really test this since it the value is the name of a nested node class
                 }
@@ -146,29 +143,7 @@ public abstract class AbstractContextTest extends TestCase {
         TreeSet extraNames = new TreeSet(actualValues.keySet());
         extraNames.removeAll(node.keySet());
         if (!extraNames.isEmpty()) {
-            fail("list of " + name + " on " + contextName + " found extra values: " + extraNames);
+            fail("list of " + name + " on " + contextName + " did not find values: " + extraNames);
         }
-    }
-
-    private static Map toListResults(NamingEnumeration enumeration) {
-        Map result = new HashMap();
-        while (enumeration.hasMoreElements()) {
-            NameClassPair nameClassPair = (NameClassPair) enumeration.nextElement();
-            String name = nameClassPair.getName();
-            assertFalse(result.containsKey(name));
-            result.put(name, nameClassPair.getClassName());
-        }
-        return result;
-    }
-
-    private static Map toListBindingResults(NamingEnumeration enumeration) {
-        Map result = new HashMap();
-        while (enumeration.hasMoreElements()) {
-            Binding binding = (Binding) enumeration.nextElement();
-            String name = binding.getName();
-            assertFalse(result.containsKey(name));
-            result.put(name, binding.getObject());
-        }
-        return result;
     }
 }

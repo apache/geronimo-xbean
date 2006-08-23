@@ -17,6 +17,7 @@
 package org.apache.xbean.naming.context;
 
 import javax.naming.Context;
+import javax.naming.NamingException;
 import java.util.Map;
 
 /**
@@ -36,5 +37,5 @@ public interface NestedContextFactory {
      * @param bindings the initial bindings for the context
      * @return the new nested context
      */
-    Context createNestedSubcontext(String path, Map bindings);
+    Context createNestedSubcontext(String path, Map bindings) throws NamingException;
 }

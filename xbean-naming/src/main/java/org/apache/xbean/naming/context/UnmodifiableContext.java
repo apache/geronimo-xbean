@@ -53,8 +53,8 @@ public class UnmodifiableContext extends WritableContext {
         return false;
     }
 
-    public Context createNestedSubcontext(String path, Map bindings) {
-        return new NestedUnmodifiableContext(path,bindings);
+    public Context createNestedSubcontext(String path, Map bindings) throws NamingException {
+        return new NestedUnmodifiableContext(path, bindings, contextFederation);
     }
 
     public final void bind(Name name, Object obj) throws NamingException {
@@ -113,12 +113,8 @@ public class UnmodifiableContext extends WritableContext {
      * Nested context which shares the absolute index map in MapContext.
      */
     public class NestedUnmodifiableContext extends NestedWritableContext {
-        public NestedUnmodifiableContext(String path, String key, Object value) {
-            super(path, key, value);
-        }
-
-        public NestedUnmodifiableContext(String path, Map bindings) {
-            super(path, bindings);
+        public NestedUnmodifiableContext(String path, Map bindings, ContextFederation contextFederation) throws NamingException {
+            super(path, bindings, contextFederation);
         }
 
         public boolean isNestedSubcontext(Object value) {
@@ -129,8 +125,8 @@ public class UnmodifiableContext extends WritableContext {
             return false;
         }
 
-        public Context createNestedSubcontext(String path, Map bindings) {
-            return new NestedUnmodifiableContext(path, bindings);
+        public Context createNestedSubcontext(String path, Map bindings) throws NamingException {
+            return new NestedUnmodifiableContext(path, bindings, contextFederation);
         }
 
         protected UnmodifiableContext getUnmodifiableContext() {

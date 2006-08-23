@@ -20,20 +20,20 @@ import org.apache.xbean.naming.reference.SimpleReference;
 
 import javax.naming.Binding;
 import javax.naming.CompoundName;
+import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.Context;
 import javax.naming.spi.NamingManager;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.HashMap;
-import java.util.Enumeration;
 
 /**
  * @version $Rev$ $Date$
@@ -84,6 +84,26 @@ public final class ContextUtil {
         } catch (Exception e) {
             throw (NamingException) new NamingException("Could not look up : " + name).initCause(e);
         }
+    }
+
+    public static Map listToMap(NamingEnumeration enumeration) {
+        Map result = new HashMap();
+        while (enumeration.hasMoreElements()) {
+            NameClassPair nameClassPair = (NameClassPair) enumeration.nextElement();
+            String name = nameClassPair.getName();
+            result.put(name, nameClassPair.getClassName());
+        }
+        return result;
+    }
+
+    public static Map listBindingsToMap(NamingEnumeration enumeration) {
+        Map result = new HashMap();
+        while (enumeration.hasMoreElements()) {
+            Binding binding = (Binding) enumeration.nextElement();
+            String name = binding.getName();
+            result.put(name, binding.getObject());
+        }
+        return result;
     }
 
     public static final class ListEnumeration implements NamingEnumeration {
@@ -226,7 +246,7 @@ public final class ContextUtil {
         return localBindings;
     }
 
-    private static Map createBindings(String nameInNameSpace, Node node, NestedContextFactory factory) {
+    private static Map createBindings(String nameInNameSpace, Node node, NestedContextFactory factory) throws NamingException {
         Map bindings = new HashMap(node.size());
         for (Iterator iterator = node.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();

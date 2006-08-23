@@ -36,9 +36,15 @@ import java.util.Map;
 public abstract class AbstractContext implements Context, NestedContextFactory, Serializable {
     private static final long serialVersionUID = 6481918425692261483L;
     private final String nameInNamespace;
+    private final Name parsedNameInNamespace;
 
     protected AbstractContext(String nameInNamespace) {
         this.nameInNamespace = nameInNamespace;
+        try {
+            this.parsedNameInNamespace = getNameParser().parse(nameInNamespace);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -134,6 +140,21 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // if we didn't find an entry, it may be an absolute name
+        Object value = faultLookup(stringName, parsedName);
+        if (value != null) {
+            return value;
+        }
+        throw new NameNotFoundException(stringName);
+    }
+
+    /**
+     * When a value can not be found within this context, this method is called as a last ditch effort befrore
+     * thowing a null pointer exception.
+     * @param stringName the string version of the name; will not be null
+     * @param parsedName the parsed name; will not be null
+     * @return the value or null if no fault value could be found
+     */
+    protected Object faultLookup(String stringName, Name parsedName) {
         if (stringName.indexOf(':') > 0) {
             try {
                 Context ctx = new InitialContext();
@@ -142,7 +163,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
                 // thrown below
             }
         }
-        throw new NameNotFoundException(stringName);
+        return null;
     }
 
     protected Context lookupFinalContext(Name name) throws NamingException {
@@ -456,6 +477,15 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     /**
+     * Gets the name of this context withing the global namespace.  This method may return null
+     * if the location of the node in the global namespace is not known
+     * @return the name of this context within the global namespace or null if unknown.
+     */
+    protected Name getParsedNameInNamespace() {
+        return parsedNameInNamespace;
+    }
+
+    /**
      * Gets the name of a path withing the global namespace context.
      */
     protected String getNameInNamespace(String path) {
@@ -464,6 +494,18 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
             return path;
         } else {
             return nameInNamespace + "/" + path;
+        }
+    }
+
+    /**
+     * Gets the name of a path withing the global namespace context.
+     */
+    protected Name getNameInNamespace(Name path) throws NamingException {
+        Name nameInNamespace = getParsedNameInNamespace();
+        if (nameInNamespace == null || nameInNamespace.size() == 0) {
+            return path;
+        } else {
+            return composeName(nameInNamespace, path);
         }
     }
 
