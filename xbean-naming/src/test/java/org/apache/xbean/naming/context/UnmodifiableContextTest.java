@@ -29,9 +29,9 @@ import java.util.Map;
 public class UnmodifiableContextTest extends AbstractContextTest {
     private static final String STRING_VAL = "some string";
 
-    private final class MutableContext extends UnmodifiableContext {
+    private final class MutableContext extends WritableContext {
         public MutableContext(Map bindings) throws NamingException {
-            super(bindings);
+            super("", bindings, ContextAccess.UNMODIFIABLE);
         }
 
         public void addDeepBinding(Name name, Object value, boolean rebind, boolean createIntermediateContexts) throws NamingException {
@@ -52,9 +52,10 @@ public class UnmodifiableContextTest extends AbstractContextTest {
         map.put("a/b/c/d/e/two", new Integer(2));
         map.put("a/b/c/d/e/three", new Integer(3));
 
-        Context context = new UnmodifiableContext(map);
+        Context context = new WritableContext("", map, ContextAccess.UNMODIFIABLE);
 
         assertEq(map, context);
+        assertUnmodifiable(context);
     }
 
     public void testAddBinding() throws Exception {
@@ -69,6 +70,7 @@ public class UnmodifiableContextTest extends AbstractContextTest {
         MutableContext context = new MutableContext(map);
 
         assertEq(map, context);
+        assertUnmodifiable(context);
 
         // add a new deep tree
         map.put("uno/dos/tres", new Integer(123));
@@ -76,12 +78,14 @@ public class UnmodifiableContextTest extends AbstractContextTest {
         context.addDeepBinding(parser.parse("uno/dos/tres"), new Integer(123), false, true);
 
         assertEq(map, context);
+        assertUnmodifiable(context);
 
         // modify an existing context
         map.put("a/b/c/d/e/four", new Integer(4));
         context.addDeepBinding(parser.parse("a/b/c/d/e/four"), new Integer(4), false, true);
 
         assertEq(map, context);
+        assertUnmodifiable(context);
     }
 
 
@@ -97,6 +101,7 @@ public class UnmodifiableContextTest extends AbstractContextTest {
         MutableContext context = new MutableContext(map);
 
         assertEq(map, context);
+        assertUnmodifiable(context);
 
         // remove from an exisitng node
         map.remove("a/b/c/d/e/three");
@@ -104,13 +109,13 @@ public class UnmodifiableContextTest extends AbstractContextTest {
         context.removeDeepBinding(parser.parse("a/b/c/d/e/three"), true);
 
         assertEq(map, context);
+        assertUnmodifiable(context);
 
         // remove a deep single element element... empty nodes should be removed
         map.remove("nested/context/string");
         context.removeDeepBinding(parser.parse("nested/context/string"), true);
 
         assertEq(map, context);
+        assertUnmodifiable(context);
     }
-
-
 }

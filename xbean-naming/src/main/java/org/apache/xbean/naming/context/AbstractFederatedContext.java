@@ -20,6 +20,7 @@ import javax.naming.NamingException;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.Context;
+import javax.naming.OperationNotSupportedException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,13 +30,21 @@ import java.util.Iterator;
  */
 public abstract class AbstractFederatedContext extends AbstractContext {
     private final ContextFederation contextFederation = new ContextFederation(this);
+    private final ContextAccess contextAccess;
+    private final boolean modifiable;
 
     public AbstractFederatedContext() {
-        this("");
+        this("", ContextAccess.MODIFIABLE);
     }
 
     public AbstractFederatedContext(String nameInNamespace) {
+        this(nameInNamespace, ContextAccess.MODIFIABLE);
+    }
+
+    protected AbstractFederatedContext(String nameInNamespace, ContextAccess contextAccess) {
         super(nameInNamespace);
+        this.contextAccess = contextAccess;
+        modifiable = contextAccess.isModifiable(getParsedNameInNamespace());
     }
 
     protected Object faultLookup(String stringName, Name parsedName) {
@@ -82,14 +91,100 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         return false;
     }
 
+    public void bind(String name, Object obj) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.bind(name, obj);
+    }
+
+    public void bind(Name name, Object obj) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.bind(name, obj);
+    }
+
+    public void rebind(String name, Object obj) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.rebind(name, obj);
+    }
+
+    public void rebind(Name name, Object obj) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.rebind(name, obj);
+    }
+
+    public void rename(String oldName, String newName) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.rename(oldName, newName);
+    }
+
+    public void rename(Name oldName, Name newName) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.rename(oldName, newName);
+    }
+
+    public void unbind(String name) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.unbind(name);
+    }
+
+    public void unbind(Name name) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.unbind(name);
+    }
+
+    public Context createSubcontext(String name) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        return super.createSubcontext(name);
+    }
+
+    public Context createSubcontext(Name name) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        return super.createSubcontext(name);
+    }
+
+    public void destroySubcontext(String name) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.destroySubcontext(name);
+    }
+
+    public void destroySubcontext(Name name) throws NamingException {
+        if (!modifiable) {
+            throw new OperationNotSupportedException("Context is read only");
+        }
+        super.destroySubcontext(name);
+    }
+
     public abstract class AbstractNestedFederatedContext extends AbstractContext {
         private final ContextFederation contextFederation;
+        private final boolean modifiable;
 
         public AbstractNestedFederatedContext(String path) throws NamingException {
             super(AbstractFederatedContext.this.getNameInNamespace(path));
 
-            ContextFederation outerContextFederation = getOuterContext().contextFederation;
-            this.contextFederation = outerContextFederation.createSubcontextFederation(path, this);
+            AbstractFederatedContext outerContext = getOuterContext();
+            this.contextFederation = outerContext.contextFederation.createSubcontextFederation(path, this);
+            this.modifiable = outerContext.contextAccess.isModifiable(getParsedNameInNamespace());
         }
 
         public boolean isNestedSubcontext(Object value) {
@@ -138,6 +233,90 @@ public abstract class AbstractFederatedContext extends AbstractContext {
                     nestedContext.addFederatedContext(federatedContext);
                 }
             }
+        }
+
+        public void bind(String name, Object obj) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.bind(name, obj);
+        }
+
+        public void bind(Name name, Object obj) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.bind(name, obj);
+        }
+
+        public void rebind(String name, Object obj) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.rebind(name, obj);
+        }
+
+        public void rebind(Name name, Object obj) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.rebind(name, obj);
+        }
+
+        public void rename(String oldName, String newName) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.rename(oldName, newName);
+        }
+
+        public void rename(Name oldName, Name newName) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.rename(oldName, newName);
+        }
+
+        public void unbind(String name) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.unbind(name);
+        }
+
+        public void unbind(Name name) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.unbind(name);
+        }
+
+        public Context createSubcontext(String name) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            return super.createSubcontext(name);
+        }
+
+        public Context createSubcontext(Name name) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            return super.createSubcontext(name);
+        }
+
+        public void destroySubcontext(String name) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.destroySubcontext(name);
+        }
+
+        public void destroySubcontext(Name name) throws NamingException {
+            if (!modifiable) {
+                throw new OperationNotSupportedException("Context is read only");
+            }
+            super.destroySubcontext(name);
         }
     }
 }

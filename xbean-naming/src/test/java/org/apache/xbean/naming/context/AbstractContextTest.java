@@ -22,6 +22,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
+import javax.naming.OperationNotSupportedException;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -144,6 +145,104 @@ public abstract class AbstractContextTest extends TestCase {
         extraNames.removeAll(node.keySet());
         if (!extraNames.isEmpty()) {
             fail("list of " + name + " on " + contextName + " did not find values: " + extraNames);
+        }
+    }
+
+    public static void assertUnmodifiable(Context context) throws Exception {
+        Object value = "VALUE";
+        String nameString = "TEST_NAME";
+        Name name = context.getNameParser("").parse(nameString);
+
+        //
+        // bind
+        //
+        try {
+            context.bind(nameString, value);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        try {
+            context.bind(name, value);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        //
+        // rebind
+        //
+        try {
+            context.rebind(nameString, value);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        try {
+            context.rebind(name, value);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        //
+        // rename
+        //
+        String newNameString = "NEW_TEST_NAME";
+        Name newName = context.getNameParser("").parse(newNameString);
+        try {
+            context.rename(nameString, newNameString);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        try {
+            context.rename(name, newName);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        //
+        // unbind
+        //
+        try {
+            context.unbind(nameString);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        try {
+            context.unbind(name);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        //
+        // createSubcontext
+        //
+        try {
+            context.createSubcontext(nameString);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        try {
+            context.createSubcontext(name);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        //
+        // destroySubcontext
+        //
+        try {
+            context.destroySubcontext(nameString);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
+        }
+
+        try {
+            context.destroySubcontext(name);
+            fail("Expected an OperationNotSupportedException");
+        } catch(OperationNotSupportedException expected) {
         }
     }
 }

@@ -38,24 +38,29 @@ public class WritableContext extends AbstractFederatedContext {
     private final AtomicReference indexRef;
 
     public WritableContext() throws NamingException {
-        this("", Collections.EMPTY_MAP, true);
+        this("", Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, true);
     }
 
     public WritableContext(String nameInNamespace) throws NamingException {
-        this(nameInNamespace, Collections.EMPTY_MAP, true);
+        this(nameInNamespace, Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, true);
     }
 
-    public WritableContext(Map bindings) throws NamingException {
-        this("", bindings, true);
-    }
-
-    public WritableContext(Map bindings, boolean cacheReferences) throws NamingException {
-        this("", bindings, cacheReferences);
+    public WritableContext(String nameInNamespace, Map bindings) throws NamingException {
+        this(nameInNamespace, bindings, ContextAccess.MODIFIABLE, true);
     }
 
     public WritableContext(String nameInNamespace, Map bindings, boolean cacheReferences) throws NamingException {
-        super(nameInNamespace);
+        this(nameInNamespace, bindings, ContextAccess.MODIFIABLE, cacheReferences);
+    }
 
+    public WritableContext(String nameInNamespace, Map bindings, ContextAccess contextAccess) throws NamingException {
+        this(nameInNamespace, bindings, contextAccess, true);
+    }
+
+    public WritableContext(String nameInNamespace, Map bindings, ContextAccess contextAccess, boolean cacheReferences) throws NamingException {
+        super(nameInNamespace, contextAccess);
+
+        // todo we need to wrap any reference bound, not just the initial bindings
         if (cacheReferences) {
             bindings = CachingReference.wrapReferences(bindings);
         }
