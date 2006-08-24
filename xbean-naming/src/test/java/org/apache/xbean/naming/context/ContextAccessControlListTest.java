@@ -17,7 +17,6 @@
 package org.apache.xbean.naming.context;
 
 import javax.naming.Context;
-import javax.naming.NamingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;

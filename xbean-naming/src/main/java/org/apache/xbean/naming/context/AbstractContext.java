@@ -63,7 +63,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     protected ContextAccess getContextAccess() {
         return contextAccess;
     }
-    
+
     //
     //  Lookup Binding
     //
@@ -156,7 +156,11 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         if (value != null) {
             return value;
         }
-        throw new NameNotFoundException(stringName);
+        if (parsedName.size() > 1) {
+            throw new NotContextException(stringName);
+        } else {
+            throw new NameNotFoundException(stringName);
+        }
     }
 
     /**
@@ -691,7 +695,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = lookup(name);
+        Object target = null;
+        try {
+            target = lookup(name);
+        } catch (NamingException e) {
+            throw new NotContextException(name);
+        }
 
         if (target == this) {
             return list();
@@ -711,7 +720,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = lookup(name);
+        Object target = null;
+        try {
+            target = lookup(name);
+        } catch (NamingException e) {
+            throw new NotContextException(name.toString());
+        }
 
         if (target == this) {
             return list();
@@ -731,7 +745,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = lookup(name);
+        Object target = null;
+        try {
+            target = lookup(name);
+        } catch (NamingException e) {
+            throw new NotContextException(name.toString());
+        }
 
         if (target == this) {
             return listBindings();
@@ -751,7 +770,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = lookup(name);
+        Object target = null;
+        try {
+            target = lookup(name);
+        } catch (NamingException e) {
+            throw new NotContextException(name.toString());
+        }
 
         if (target == this) {
             return listBindings();

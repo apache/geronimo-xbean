@@ -409,4 +409,12 @@ public abstract class AbstractContextTest extends TestCase {
 
         assertNoBinding(context, name);
     }
+
+    public static boolean bindingExists(Context context, Name contextName) {
+        try {
+            return context.lookup(contextName) != null;
+        } catch (NamingException e) {
+        }
+        return false;
+    }
 }
