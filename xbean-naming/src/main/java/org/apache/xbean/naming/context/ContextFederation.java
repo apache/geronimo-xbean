@@ -23,6 +23,7 @@ import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.NamingEnumeration;
 import javax.naming.Binding;
+import javax.naming.OperationNotSupportedException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -95,7 +96,7 @@ public class ContextFederation {
                     context.bind(name, value);
                 }
                 return true;
-            } catch (NamingException ignored) {
+            } catch (OperationNotSupportedException ignored) {
             }
         }
         return false;
@@ -108,7 +109,7 @@ public class ContextFederation {
             try {
                 context.unbind(name);
                 return true;
-            } catch (NamingException ignored) {
+            } catch (OperationNotSupportedException ignored) {
             }
         }
         return false;

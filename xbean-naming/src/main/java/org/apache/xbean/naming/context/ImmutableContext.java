@@ -44,7 +44,7 @@ public class ImmutableContext extends AbstractContext {
     }
 
     public ImmutableContext(String nameInNamespace, Map bindings, boolean cacheReferences) throws NamingException {
-        super(nameInNamespace);
+        super(nameInNamespace, ContextAccess.UNMODIFIABLE);
 
         if (cacheReferences) {
             bindings = CachingReference.wrapReferences(bindings);
@@ -113,58 +113,6 @@ public class ImmutableContext extends AbstractContext {
         return new NestedImmutableContext(path, bindings);
     }
 
-    public final void bind(Name name, Object obj) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void bind(String name, Object obj) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void close() throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final Context createSubcontext(Name name) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final Context createSubcontext(String name) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void destroySubcontext(Name name) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void destroySubcontext(String name) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void rebind(Name name, Object obj) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void rebind(String name, Object obj) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void rename(Name oldName, Name newName) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void rename(String oldName, String newName) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void unbind(Name name) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
-    public final void unbind(String name) throws NamingException {
-        throw new OperationNotSupportedException("Context is read only");
-    }
-
     /**
      * Nested context which shares the absolute index map in MapContext.
      */
@@ -173,7 +121,7 @@ public class ImmutableContext extends AbstractContext {
         private final String pathWithSlash;
 
         public NestedImmutableContext(String path, Map bindings) {
-            super(ImmutableContext.this.getNameInNamespace(path));
+            super(ImmutableContext.this.getNameInNamespace(path), ContextAccess.UNMODIFIABLE);
 
             if (!path.endsWith("/")) path += "/";
             this.pathWithSlash = path;
@@ -220,58 +168,6 @@ public class ImmutableContext extends AbstractContext {
 
         protected ImmutableContext getImmutableContext() {
             return ImmutableContext.this;
-        }
-
-        public final void bind(Name name, Object obj) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void bind(String name, Object obj) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void close() throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final Context createSubcontext(Name name) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final Context createSubcontext(String name) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void destroySubcontext(Name name) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void destroySubcontext(String name) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void rebind(Name name, Object obj) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void rebind(String name, Object obj) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void rename(Name oldName, Name newName) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void rename(String oldName, String newName) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void unbind(Name name) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
-        }
-
-        public final void unbind(String name) throws NamingException {
-            throw new OperationNotSupportedException("Context is read only");
         }
     }
 }

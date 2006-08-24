@@ -28,6 +28,7 @@ import javax.naming.NotContextException;
 import javax.naming.LinkRef;
 import javax.naming.NameNotFoundException;
 import javax.naming.InitialContext;
+import javax.naming.OperationNotSupportedException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -37,21 +38,32 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     private static final long serialVersionUID = 6481918425692261483L;
     private final String nameInNamespace;
     private final Name parsedNameInNamespace;
+    private final ContextAccess contextAccess;
+    private final boolean modifiable;
 
     protected AbstractContext(String nameInNamespace) {
+        this(nameInNamespace, ContextAccess.MODIFIABLE);
+    }
+
+    public AbstractContext(String nameInNamespace, ContextAccess contextAccess) {
         this.nameInNamespace = nameInNamespace;
         try {
             this.parsedNameInNamespace = getNameParser().parse(nameInNamespace);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
+        this.contextAccess = contextAccess;
+        this.modifiable = contextAccess.isModifiable(getParsedNameInNamespace());
     }
-
 
     public void close() throws NamingException {
         //Ignore. Explicitly do not close the context
     }
 
+    protected ContextAccess getContextAccess() {
+        return contextAccess;
+    }
+    
     //
     //  Lookup Binding
     //
@@ -591,6 +603,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     //
 
     public void bind(String name, Object obj) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         if (name.length() == 0) {
             throw new NameAlreadyBoundException("Cannot bind to an empty name (this context)");
@@ -599,6 +612,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     public void bind(Name name, Object obj) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new NameAlreadyBoundException("Cannot bind to an empty name (this context)");
@@ -607,11 +621,13 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     public void rebind(String name, Object obj) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         rebind(new CompositeName(name), obj);
     }
 
     public void rebind(Name name, Object obj) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new NameAlreadyBoundException("Cannot rebind an empty name (this context)");
@@ -620,12 +636,14 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     public void rename(String oldName, String newName) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (oldName == null) throw new NullPointerException("oldName is null");
         if (newName == null) throw new NullPointerException("newName is null");
         rename(new CompositeName(oldName), new CompositeName(newName));
     }
 
     public void rename(Name oldName, Name newName) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (oldName == null || newName == null) {
             throw new NullPointerException("name is null");
         } else if (oldName.isEmpty() || newName.isEmpty()) {
@@ -636,11 +654,13 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     public void unbind(String name) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         unbind(new CompositeName(name));
     }
 
     public void unbind(Name name) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot unbind empty name");
@@ -747,11 +767,13 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     //
 
     public Context createSubcontext(String name) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         return createSubcontext(new CompositeName(name));
     }
 
     public Context createSubcontext(Name name) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot create a subcontext if the name is empty");
@@ -762,11 +784,13 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     public void destroySubcontext(String name) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         destroySubcontext(new CompositeName(name));
     }
 
     public void destroySubcontext(Name name) throws NamingException {
+        if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new InvalidNameException("Cannot destroy subcontext with empty name");
