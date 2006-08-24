@@ -16,22 +16,23 @@
  */
 package org.apache.xbean.naming.context;
 
-import javax.naming.NamingException;
-import javax.naming.Name;
-import javax.naming.NamingEnumeration;
 import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @version $Rev$ $Date$
  */
 public abstract class AbstractFederatedContext extends AbstractContext {
-    private final ContextFederation contextFederation = new ContextFederation(this);
+    private final ContextFederation contextFederation;
     private final ContextAccess contextAccess;
     private final boolean modifiable;
+    private final AbstractFederatedContext masterContext;
 
     public AbstractFederatedContext() {
         this("", ContextAccess.MODIFIABLE);
@@ -41,10 +42,20 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         this(nameInNamespace, ContextAccess.MODIFIABLE);
     }
 
-    protected AbstractFederatedContext(String nameInNamespace, ContextAccess contextAccess) {
+    public AbstractFederatedContext(String nameInNamespace, ContextAccess contextAccess) {
         super(nameInNamespace);
+        this.masterContext = this;
+        this.contextFederation = new ContextFederation(this);
         this.contextAccess = contextAccess;
-        modifiable = contextAccess.isModifiable(getParsedNameInNamespace());
+        this.modifiable = contextAccess.isModifiable(getParsedNameInNamespace());
+    }
+
+    public AbstractFederatedContext(AbstractFederatedContext masterContext, String path) throws NamingException {
+        super(masterContext.getNameInNamespace(path));
+        this.masterContext = masterContext;
+        this.contextFederation = this.masterContext.contextFederation.createSubcontextFederation(path, this);
+        this.contextAccess = masterContext.contextAccess;
+        this.modifiable = masterContext.contextAccess.isModifiable(getParsedNameInNamespace());
     }
 
     protected Object faultLookup(String stringName, Name parsedName) {
@@ -55,40 +66,75 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         return super.faultLookup(stringName, parsedName);
     }
 
-    protected NamingEnumeration list() throws NamingException {
-        Map bindings = getListBindings();
-        return new ContextUtil.ListEnumeration(bindings);
-    }
-
-    protected NamingEnumeration listBindings() throws NamingException {
-        Map bindings = getListBindings();
-        return new ContextUtil.ListBindingEnumeration(bindings);
-    }
-
-    protected Map getListBindings() throws NamingException {
-        Map bindings = new HashMap();
-        bindings.putAll(getBindings());
-        bindings.putAll(contextFederation.getFederatedBindings());
+    protected final Map getBindings() throws NamingException {
+        Map bindings = contextFederation.getFederatedBindings();
+        bindings.putAll(getWrapperBindings());
         return bindings;
     }
 
-    protected void addFederatedContext(Context federatedContext) throws NamingException {
-        contextFederation.addContext(federatedContext);
-        for (Iterator iterator = getBindings().values().iterator(); iterator.hasNext();) {
-            Object value = iterator.next();
-            if (value instanceof AbstractNestedFederatedContext) {
-                AbstractNestedFederatedContext nestedContext = (AbstractNestedFederatedContext) value;
-                nestedContext.addFederatedContext(federatedContext);
+    protected abstract Map getWrapperBindings() throws NamingException;
+
+    protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
+        if (!(value instanceof Context && !isNestedSubcontext(value))) {
+            return contextFederation.addBinding(name, value, rebind);
+        } else if (value instanceof Context && !isNestedSubcontext(value)) {
+            Context federatedContext = (Context) value;
+
+            // if we already have a context bound at the specified value
+            Object existingValue = getBinding(name);
+            if (existingValue != null) {
+                if (!(existingValue instanceof AbstractFederatedContext)) {
+                    throw new NameAlreadyBoundException(name);
+                }
+
+                AbstractFederatedContext nestedContext = (AbstractFederatedContext) existingValue;
+                addFederatedContext(nestedContext, federatedContext);
+                return true;
+            } else {
+                AbstractFederatedContext nestedContext = (AbstractFederatedContext) createNestedSubcontext(name, Collections.EMPTY_MAP);
+                addFederatedContext(nestedContext, federatedContext);
+
+                // call back into this method using the new nested context
+                // this gives subclasses a chance to handle the binding
+                return addBinding(name, nestedContext, rebind);
+            }
+        }
+
+        return false;
+    }
+
+    protected boolean removeBinding(String name) throws NamingException {
+        return contextFederation.removeBinding(name);
+    }
+
+    protected static void addFederatedContext(AbstractFederatedContext wrappingContext, Context innerContext) throws NamingException {
+        wrappingContext.contextFederation.addContext(innerContext);
+        for (Iterator iterator = wrappingContext.getWrapperBindings().entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String name = (String) entry.getKey();
+            Object value = entry.getValue();
+            if (value instanceof AbstractFederatedContext) {
+                AbstractFederatedContext nestedContext = (AbstractFederatedContext) value;
+
+                Name parsedName = wrappingContext.getNameParser().parse(name);
+                Name nameInNamespace = wrappingContext.getNameInNamespace(parsedName);
+
+                VirtualSubcontext virtualSubcontext = new VirtualSubcontext(nameInNamespace, innerContext);
+                addFederatedContext(nestedContext, virtualSubcontext);
             }
         }
     }
 
     public boolean isNestedSubcontext(Object value) {
-        if (value instanceof AbstractNestedFederatedContext) {
-            AbstractFederatedContext.AbstractNestedFederatedContext context = (AbstractNestedFederatedContext) value;
-            return this == context.getOuterContext();
+        if (value instanceof AbstractFederatedContext) {
+            AbstractFederatedContext context = (AbstractFederatedContext) value;
+            return getMasterContext() == context.getMasterContext();
         }
         return false;
+    }
+
+    protected AbstractFederatedContext getMasterContext() {
+        return masterContext;
     }
 
     public void bind(String name, Object obj) throws NamingException {
@@ -173,150 +219,5 @@ public abstract class AbstractFederatedContext extends AbstractContext {
             throw new OperationNotSupportedException("Context is read only");
         }
         super.destroySubcontext(name);
-    }
-
-    public abstract class AbstractNestedFederatedContext extends AbstractContext {
-        private final ContextFederation contextFederation;
-        private final boolean modifiable;
-
-        public AbstractNestedFederatedContext(String path) throws NamingException {
-            super(AbstractFederatedContext.this.getNameInNamespace(path));
-
-            AbstractFederatedContext outerContext = getOuterContext();
-            this.contextFederation = outerContext.contextFederation.createSubcontextFederation(path, this);
-            this.modifiable = outerContext.contextAccess.isModifiable(getParsedNameInNamespace());
-        }
-
-        public boolean isNestedSubcontext(Object value) {
-            if (value instanceof AbstractNestedFederatedContext) {
-                AbstractNestedFederatedContext context = (AbstractNestedFederatedContext) value;
-                return getOuterContext() == context.getOuterContext();
-            }
-            return false;
-        }
-
-        protected Object faultLookup(String stringName, Name parsedName) {
-            Object value = contextFederation.lookup(parsedName);
-            if (value != null) {
-                return value;
-            }
-            return super.faultLookup(stringName, parsedName);
-        }
-
-        protected NamingEnumeration list() throws NamingException {
-            Map bindings = getListBindings();
-            return new ContextUtil.ListEnumeration(bindings);
-        }
-
-        protected NamingEnumeration listBindings() throws NamingException {
-            Map bindings = getListBindings();
-            return new ContextUtil.ListBindingEnumeration(bindings);
-        }
-
-        protected Map getListBindings() throws NamingException {
-            Map bindings = new HashMap();
-            bindings.putAll(getBindings());
-            bindings.putAll(contextFederation.getFederatedBindings());
-            return bindings;
-        }
-
-        protected AbstractFederatedContext getOuterContext() {
-            return AbstractFederatedContext.this;
-        }
-
-        protected void addFederatedContext(Context federatedContext) throws NamingException {
-            contextFederation.addContext(federatedContext);
-            for (Iterator iterator = getBindings().values().iterator(); iterator.hasNext();) {
-                Object value = iterator.next();
-                if (value instanceof AbstractNestedFederatedContext) {
-                    AbstractNestedFederatedContext nestedContext = (AbstractNestedFederatedContext) value;
-                    nestedContext.addFederatedContext(federatedContext);
-                }
-            }
-        }
-
-        public void bind(String name, Object obj) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.bind(name, obj);
-        }
-
-        public void bind(Name name, Object obj) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.bind(name, obj);
-        }
-
-        public void rebind(String name, Object obj) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.rebind(name, obj);
-        }
-
-        public void rebind(Name name, Object obj) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.rebind(name, obj);
-        }
-
-        public void rename(String oldName, String newName) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.rename(oldName, newName);
-        }
-
-        public void rename(Name oldName, Name newName) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.rename(oldName, newName);
-        }
-
-        public void unbind(String name) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.unbind(name);
-        }
-
-        public void unbind(Name name) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.unbind(name);
-        }
-
-        public Context createSubcontext(String name) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            return super.createSubcontext(name);
-        }
-
-        public Context createSubcontext(Name name) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            return super.createSubcontext(name);
-        }
-
-        public void destroySubcontext(String name) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.destroySubcontext(name);
-        }
-
-        public void destroySubcontext(Name name) throws NamingException {
-            if (!modifiable) {
-                throw new OperationNotSupportedException("Context is read only");
-            }
-            super.destroySubcontext(name);
-        }
     }
 }

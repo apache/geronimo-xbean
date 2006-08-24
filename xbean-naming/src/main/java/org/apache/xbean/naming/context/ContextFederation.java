@@ -22,6 +22,7 @@ import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.NamingEnumeration;
+import javax.naming.Binding;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -70,10 +71,47 @@ public class ContextFederation {
             NamingEnumeration namingEnumeration = context.listBindings("");
 
             // add to bindings
-            Map map = ContextUtil.listBindingsToMap(namingEnumeration);
-            bindings.putAll(map);
+            while (namingEnumeration.hasMoreElements()) {
+                Binding binding = (Binding) namingEnumeration.nextElement();
+                String name = binding.getName();
+
+                // don't overwrite existing bindings
+                if (!bindings.containsKey(name)) {
+                    bindings.put(name, binding.getObject());
+                }
+            }
         }
         return bindings;
+    }
+
+    protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
+        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
+            Context context = (Context) iterator.next();
+
+            try {
+                if (rebind) {
+                    context.rebind(name, value);
+                } else {
+                    context.bind(name, value);
+                }
+                return true;
+            } catch (NamingException ignored) {
+            }
+        }
+        return false;
+    }
+
+    protected boolean removeBinding(String name) throws NamingException {
+        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
+            Context context = (Context) iterator.next();
+
+            try {
+                context.unbind(name);
+                return true;
+            } catch (NamingException ignored) {
+            }
+        }
+        return false;
     }
 
     public Object lookup(Name name) {

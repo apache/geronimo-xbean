@@ -89,7 +89,7 @@ public class ImmutableContext extends AbstractContext {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    protected final void addBinding(String name, Object value, boolean rebind) throws NamingException {
+    protected final boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
@@ -97,7 +97,7 @@ public class ImmutableContext extends AbstractContext {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    protected final void removeBinding(String name) throws NamingException {
+    protected final boolean removeBinding(String name) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
@@ -194,7 +194,7 @@ public class ImmutableContext extends AbstractContext {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected final void addBinding(String name, Object value, boolean rebind) throws NamingException {
+        protected final boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
@@ -202,7 +202,7 @@ public class ImmutableContext extends AbstractContext {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected final void removeBinding(String name) throws NamingException {
+        protected final boolean removeBinding(String name) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 

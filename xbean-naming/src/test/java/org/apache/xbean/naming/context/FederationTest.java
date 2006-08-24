@@ -28,9 +28,11 @@ import java.util.Iterator;
  */
 public class FederationTest extends AbstractContextTest {
     private Context rootContext;
-    private Map env2Bindings;
-    private MutableContext actualEnv2Context;
+    private MutableContext unmodifibleContext;
+    private Context writableContext;
     private Map rootBindings;
+    private Map unmodifibleBindings;
+    private Map writableBindings;
 
     private final class MutableContext extends WritableContext {
         public MutableContext(Map bindings) throws NamingException {
@@ -62,17 +64,29 @@ public class FederationTest extends AbstractContextTest {
 
         assertEq(rootBindings, rootContext);
 
-        env2Bindings = new HashMap();
-        env2Bindings.put("string", "blah");
-        env2Bindings.put("one", new Integer(1));
-        env2Bindings.put("two", new Integer(2));
-        env2Bindings.put("three", new Integer(3));
+        unmodifibleBindings = new HashMap();
+        unmodifibleBindings.put("string", "blah");
+        unmodifibleBindings.put("one", new Integer(1));
+        unmodifibleBindings.put("two", new Integer(2));
+        unmodifibleBindings.put("three", new Integer(3));
 
-        actualEnv2Context = new MutableContext(env2Bindings);
-        assertEq(env2Bindings, actualEnv2Context);
+        unmodifibleContext = new MutableContext(unmodifibleBindings);
+        assertEq(unmodifibleBindings, unmodifibleContext);
 
-        rootContext.bind("java:comp/env2", actualEnv2Context);
-        putAllBindings(rootBindings, "java:comp/env2", env2Bindings);
+        rootContext.bind("java:comp/unmodifible", unmodifibleContext);
+        putAllBindings(rootBindings, "java:comp/unmodifible", unmodifibleBindings);
+
+        writableBindings = new HashMap();
+        writableBindings.put("string", "blah");
+        writableBindings.put("one", new Integer(1));
+        writableBindings.put("two", new Integer(2));
+        writableBindings.put("three", new Integer(3));
+
+        writableContext = new WritableContext("", writableBindings);
+        assertEq(writableBindings, writableContext);
+
+        rootContext.bind("java:comp/writable", writableContext);
+        putAllBindings(rootBindings, "java:comp/writable", writableBindings);
     }
 
     public void testBasic() throws Exception {
@@ -81,66 +95,117 @@ public class FederationTest extends AbstractContextTest {
 
     public void testMutability() throws Exception {
         assertModifiable(rootContext);
-        assertUnmodifiable(actualEnv2Context);
-        assertModifiable(lookupSubcontext(rootContext, "java:comp/env2"));
+        assertUnmodifiable(unmodifibleContext);
+        assertModifiable(writableContext);
+        assertModifiable(lookupSubcontext(rootContext, "java:comp/unmodifible"));
+        assertModifiable(lookupSubcontext(rootContext, "java:comp/writable"));
     }
 
-    public void testBindOverFederated() throws Exception {
-        // update the verification map
-        rootBindings.put("java:comp/env2/TEST", "TEST_VALUE");
-
-        // bind into root context OVER the env2 context
-        rootContext.bind("java:comp/env2/TEST", "TEST_VALUE");
+    public void testBindOverUnmodifiable() throws Exception {
+        // bind into root context OVER the unmodifible context
+        rootContext.bind("java:comp/unmodifible/TEST", "TEST_VALUE");
 
         // visible from root context
+        rootBindings.put("java:comp/unmodifible/TEST", "TEST_VALUE");
         assertEq(rootBindings, rootContext);
 
-        // not-visible from actualEnv2Context
-        assertEq(env2Bindings, actualEnv2Context);
+        // not-visible from unmodifibleContext
+        assertEq(unmodifibleBindings, unmodifibleContext);
     }
 
-    public void testBindDirectIntoFederated() throws Exception {
-        // update the verification maps
-        rootBindings.put("java:comp/env2/DIRECT", "DIRECT_VALUE");
-        env2Bindings.put("DIRECT", "DIRECT_VALUE");
-
-        // bind directly into the actual env2 context
-        actualEnv2Context.addDeepBinding(parse("DIRECT"), "DIRECT_VALUE", false, true);
+    public void testBindDirectIntoUnmodifiable() throws Exception {
+        // bind directly into the unmodifible context
+        unmodifibleContext.addDeepBinding(parse("DIRECT"), "DIRECT_VALUE", false, true);
 
         // visible from root context
+        rootBindings.put("java:comp/unmodifible/DIRECT", "DIRECT_VALUE");
         assertEq(rootBindings, rootContext);
 
-        // visible from actualEnv2Context
-        assertEq(env2Bindings, actualEnv2Context);
+        // visible from unmodifibleContext
+        unmodifibleBindings.put("DIRECT", "DIRECT_VALUE");
+        assertEq(unmodifibleBindings, unmodifibleContext);
     }
 
-    public void testUnbindOverFederated() throws Exception {
-        // unbind value under env2... no exception occurs since unbind is idempotent
-        rootContext.unbind("java:comp/env2/three");
+    public void testUnbindOverUnmodifiable() throws Exception {
+        // unbind value under unmodifible... no exception occurs since unbind is idempotent
+        rootContext.unbind("java:comp/unmodifible/three");
 
         // no change in root context
         assertEq(rootBindings, rootContext);
 
-        // no change in actualEnv2Context
-        assertEq(env2Bindings, actualEnv2Context);
+        // no change in unmodifibleContext
+        assertEq(unmodifibleBindings, unmodifibleContext);
 
-        // unbind value deep env2... no exception occurs since unbind is idempotent
-        rootContext.unbind("java:comp/env2/three");
+        // unbind value deep unmodifible... no exception occurs since unbind is idempotent
+        rootContext.unbind("java:comp/unmodifible/three");
     }
 
-    public void testUnbindDirectIntoFederated() throws Exception {
-        // update the verification maps
-        rootBindings.remove("java:comp/env2/three");
-        env2Bindings.remove("three");
-
-        // bind directly into the actual env2 context
-        actualEnv2Context.removeDeepBinding(parse("three"), true);
+    public void testUnbindDirectIntoUnmodifiable() throws Exception {
+        // unbind directly from the unmodifible context
+        unmodifibleContext.removeDeepBinding(parse("three"), true);
 
         // visible from root context
+        rootBindings.remove("java:comp/unmodifible/three");
         assertEq(rootBindings, rootContext);
 
-        // visible from actualEnv2Context
-        assertEq(env2Bindings, actualEnv2Context);
+        // visible from unmodifibleContext
+        unmodifibleBindings.remove("three");
+        assertEq(unmodifibleBindings, unmodifibleContext);
+    }
+
+    public void testBindIntoWritable() throws Exception {
+        // bind into root context OVER the writable context
+        rootContext.bind("java:comp/writable/TEST", "TEST_VALUE");
+
+        // visible from root context
+        rootBindings.put("java:comp/writable/TEST", "TEST_VALUE");
+        assertEq(rootBindings, rootContext);
+
+        // visible from writableContext
+        writableBindings.put("TEST", "TEST_VALUE");
+        assertEq(writableBindings, writableContext);
+    }
+
+    public void testBindDirectIntoWritable() throws Exception {
+        // bind directly into the writable context
+        writableContext.bind("DIRECT", "DIRECT_VALUE");
+
+        // visible from root context
+        rootBindings.put("java:comp/writable/DIRECT", "DIRECT_VALUE");
+        assertEq(rootBindings, rootContext);
+
+        // visible from writableContext
+        writableBindings.put("DIRECT", "DIRECT_VALUE");
+        assertEq(writableBindings, writableContext);
+    }
+
+    public void testUnbindOverWritable() throws Exception {
+        // unbind value under writable... no exception occurs since unbind is idempotent
+        rootContext.unbind("java:comp/writable/three");
+
+        // visible from root context
+        rootBindings.remove("java:comp/writable/three");
+        assertEq(rootBindings, rootContext);
+
+        // visible from writableContext
+        writableBindings.remove("three");
+        assertEq(writableBindings, writableContext);
+
+        // unbind value deep writable... no exception occurs since unbind is idempotent
+        rootContext.unbind("java:comp/writable/three");
+    }
+
+    public void testUnbindDirectIntoWritable() throws Exception {
+        // unbind directly from the writable context
+        writableContext.unbind("three");
+
+        // visible from root context
+        rootBindings.remove("java:comp/writable/three");
+        assertEq(rootBindings, rootContext);
+
+        // visible from writableContext
+        writableBindings.remove("three");
+        assertEq(writableBindings, writableContext);
     }
 
 

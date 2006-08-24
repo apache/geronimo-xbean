@@ -289,7 +289,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * @param rebind if true, this method will replace any exsiting binding, otherwise a NamingException will be thrown
      * @throws NamingException if a problem occurs while (re)binding
      */
-    private void addBinding(Context context, String name, Object value, boolean rebind) throws NamingException {
+    protected void addBinding(Context context, String name, Object value, boolean rebind) throws NamingException {
         if (context == this || (context instanceof AbstractContext && isNestedSubcontext(context))) {
             AbstractContext abstractContext = (AbstractContext) context;
             abstractContext.addBinding(name, value, rebind);
@@ -302,7 +302,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
     }
 
-    protected abstract void addBinding(String name, Object value, boolean rebind) throws NamingException;
+    protected abstract boolean addBinding(String name, Object value, boolean rebind) throws NamingException;
 
     /**
      * Creates a context tree which will be rooted at the specified path and contain a single entry located down
@@ -339,7 +339,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * @param name name under which the value should be bound
      * @throws NamingException if a problem occurs during the bind such as a value already being bound
      */
-    protected abstract void removeBinding(String name) throws NamingException;
+    protected abstract boolean removeBinding(String name) throws NamingException;
 
     protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
@@ -630,7 +630,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
             throw new NullPointerException("name is null");
         } else if (oldName.isEmpty() || newName.isEmpty()) {
             throw new InvalidNameException("Name cannot be empty");
-        } 
+        }
         this.bind(newName, this.lookup(oldName));
         this.unbind(oldName);
     }
