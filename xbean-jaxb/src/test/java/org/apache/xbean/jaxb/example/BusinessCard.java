@@ -17,7 +17,6 @@
  * own identifying information: Portions Copyright [yyyy]
  * [name of copyright owner]
  */
- 
 package org.apache.xbean.jaxb.example;
 
 import javax.xml.bind.annotation.*;
