@@ -36,17 +36,18 @@ public class WritableContext extends AbstractFederatedContext {
     private final Lock writeLock = new ReentrantLock();
     private final AtomicReference bindingsRef;
     private final AtomicReference indexRef;
+    private final boolean cacheReferences;
 
     public WritableContext() throws NamingException {
-        this("", Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, true);
+        this("", Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, false);
     }
 
     public WritableContext(String nameInNamespace) throws NamingException {
-        this(nameInNamespace, Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, true);
+        this(nameInNamespace, Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, false);
     }
 
     public WritableContext(String nameInNamespace, Map bindings) throws NamingException {
-        this(nameInNamespace, bindings, ContextAccess.MODIFIABLE, true);
+        this(nameInNamespace, bindings, ContextAccess.MODIFIABLE, false);
     }
 
     public WritableContext(String nameInNamespace, Map bindings, boolean cacheReferences) throws NamingException {
@@ -54,14 +55,14 @@ public class WritableContext extends AbstractFederatedContext {
     }
 
     public WritableContext(String nameInNamespace, Map bindings, ContextAccess contextAccess) throws NamingException {
-        this(nameInNamespace, bindings, contextAccess, true);
+        this(nameInNamespace, bindings, contextAccess, false);
     }
 
     public WritableContext(String nameInNamespace, Map bindings, ContextAccess contextAccess, boolean cacheReferences) throws NamingException {
         super(nameInNamespace, contextAccess);
 
-        // todo we need to wrap any reference bound, not just the initial bindings
-        if (cacheReferences) {
+        this.cacheReferences = cacheReferences;
+        if (this.cacheReferences) {
             bindings = CachingReference.wrapReferences(bindings);
         }
 
@@ -93,6 +94,10 @@ public class WritableContext extends AbstractFederatedContext {
                 NestedWritableContext nestedContext = (NestedWritableContext) createNestedSubcontext(name, Collections.EMPTY_MAP);
                 nestedContext.addFederatedContext(federatedContext);
                 value = nestedContext;
+            }
+
+            if (cacheReferences) {
+                value = CachingReference.wrapReference(getNameInNamespace(name), value);
             }
 
             Map newBindings = new HashMap(bindings);

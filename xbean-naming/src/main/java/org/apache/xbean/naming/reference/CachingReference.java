@@ -28,6 +28,13 @@ import java.util.Iterator;
  * @version $Rev: 355877 $ $Date: 2005-12-10 18:48:27 -0800 (Sat, 10 Dec 2005) $
  */
 public class CachingReference extends SimpleReference {
+    public static Object wrapReference(String fullName, Object value) {
+        if (value instanceof Reference && !(value instanceof CachingReference)) {
+            return new CachingReference(fullName, (Reference)value);
+        }
+        return value;
+    }
+
     public static Map wrapReferences(Map bindings) {
         LinkedHashMap newBindings = new LinkedHashMap(bindings);
         for (Iterator iterator = bindings.entrySet().iterator(); iterator.hasNext();) {
