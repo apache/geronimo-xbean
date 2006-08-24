@@ -27,83 +27,122 @@ import java.util.Iterator;
  * @version $Rev: 355877 $ $Date: 2005-12-10 18:48:27 -0800 (Sat, 10 Dec 2005) $
  */
 public class FederationTest extends AbstractContextTest {
-    private static final String STRING_VAL = "some string";
+    private Context rootContext;
+    private Map env2Bindings;
+    private MutableContext actualEnv2Context;
+    private Map rootBindings;
+
+    private final class MutableContext extends WritableContext {
+        public MutableContext(Map bindings) throws NamingException {
+            super("", bindings, ContextAccess.UNMODIFIABLE);
+        }
+
+        public void addDeepBinding(Name name, Object value, boolean rebind, boolean createIntermediateContexts) throws NamingException {
+            super.addDeepBinding(name, value, rebind, createIntermediateContexts);
+        }
+
+        protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+            super.removeDeepBinding(name, pruneEmptyContexts);
+        }
+    }
+
+    public void setUp() throws Exception {
+        super.setUp();
+
+        rootBindings = new HashMap();
+        rootBindings.put("string", "blah");
+        rootBindings.put("nested/context/string", "blah");
+        rootBindings.put("java:comp/env/string", "blah");
+        rootBindings.put("java:comp/env/one", new Integer(1));
+        rootBindings.put("java:comp/env/two", new Integer(2));
+        rootBindings.put("java:comp/env/three", new Integer(3));
+
+        rootContext = new WritableContext();
+        FederationTest.bind(rootContext, rootBindings);
+
+        assertEq(rootBindings, rootContext);
+
+        env2Bindings = new HashMap();
+        env2Bindings.put("string", "blah");
+        env2Bindings.put("one", new Integer(1));
+        env2Bindings.put("two", new Integer(2));
+        env2Bindings.put("three", new Integer(3));
+
+        actualEnv2Context = new MutableContext(env2Bindings);
+        assertEq(env2Bindings, actualEnv2Context);
+
+        rootContext.bind("java:comp/env2", actualEnv2Context);
+        putAllBindings(rootBindings, "java:comp/env2", env2Bindings);
+    }
 
     public void testBasic() throws Exception {
-        Map map = new HashMap();
-        map.put("string", FederationTest.STRING_VAL);
-        map.put("nested/context/string", FederationTest.STRING_VAL);
-        map.put("java:comp/env/string", FederationTest.STRING_VAL);
-        map.put("java:comp/env/one", new Integer(1));
-        map.put("java:comp/env/two", new Integer(2));
-        map.put("java:comp/env/three", new Integer(3));
-
-        Context context = new WritableContext();
-        FederationTest.bind(context, map);
-
-        assertEq(map, context);
-
-        Map env2Map = new HashMap();
-        env2Map.put("string", FederationTest.STRING_VAL);
-        env2Map.put("one", new Integer(1));
-        env2Map.put("two", new Integer(2));
-        env2Map.put("three", new Integer(3));
-
-        ImmutableContext actualEnv2Context = new ImmutableContext(env2Map);
-        assertEq(env2Map, actualEnv2Context);
-
-        context.bind("java:comp/env2", actualEnv2Context);
-
-        Context env2Context = (Context) context.lookup("java:comp/env2");
-        assertEq(env2Map, env2Context);
-
-        putAllBindings(map, "java:comp/env2", env2Map);
-        assertEq(map, context);
+        assertEq(rootBindings, rootContext);
     }
 
-    public void testAddBinding() throws Exception {
-        Map map = new HashMap();
-        map.put("string", FederationTest.STRING_VAL);
-        map.put("nested/context/string", FederationTest.STRING_VAL);
-        map.put("a/b/c/d/e/string", FederationTest.STRING_VAL);
-        map.put("a/b/c/d/e/one", new Integer(1));
-        map.put("a/b/c/d/e/two", new Integer(2));
-        map.put("a/b/c/d/e/three", new Integer(3));
-
-        Context context = new WritableContext();
-        FederationTest.bind(context, map);
-
-        assertEq(map, context);
-
-        // add a new deep tree
-        map.put("a/b/c/d/e/forty-two", new Integer(42));
-        context.bind("a/b/c/d/e/forty-two", new Integer(42));
-
-        assertEq(map, context);
-
+    public void testMutability() throws Exception {
+        assertModifiable(rootContext);
+        assertUnmodifiable(actualEnv2Context);
+        assertModifiable(lookupSubcontext(rootContext, "java:comp/env2"));
     }
 
+    public void testBindOverFederated() throws Exception {
+        // update the verification map
+        rootBindings.put("java:comp/env2/TEST", "TEST_VALUE");
 
-    public void testRemoveBinding() throws Exception {
-        Map map = new HashMap();
-        map.put("string", FederationTest.STRING_VAL);
-        map.put("nested/context/string", FederationTest.STRING_VAL);
-        map.put("a/b/c/d/e/string", FederationTest.STRING_VAL);
-        map.put("a/b/c/d/e/one", new Integer(1));
-        map.put("a/b/c/d/e/two", new Integer(2));
-        map.put("a/b/c/d/e/three", new Integer(3));
+        // bind into root context OVER the env2 context
+        rootContext.bind("java:comp/env2/TEST", "TEST_VALUE");
 
-        Context context = new WritableContext();
-        FederationTest.bind(context, map);
+        // visible from root context
+        assertEq(rootBindings, rootContext);
 
-        assertEq(map, context);
-
-        // remove from an exisitng node
-        map.remove("a/b/c/d/e/three");
-        context.unbind("a/b/c/d/e/three");
-
-        assertEq(map, context);
+        // not-visible from actualEnv2Context
+        assertEq(env2Bindings, actualEnv2Context);
     }
+
+    public void testBindDirectIntoFederated() throws Exception {
+        // update the verification maps
+        rootBindings.put("java:comp/env2/DIRECT", "DIRECT_VALUE");
+        env2Bindings.put("DIRECT", "DIRECT_VALUE");
+
+        // bind directly into the actual env2 context
+        actualEnv2Context.addDeepBinding(parse("DIRECT"), "DIRECT_VALUE", false, true);
+
+        // visible from root context
+        assertEq(rootBindings, rootContext);
+
+        // visible from actualEnv2Context
+        assertEq(env2Bindings, actualEnv2Context);
+    }
+
+    public void testUnbindOverFederated() throws Exception {
+        // unbind value under env2... no exception occurs since unbind is idempotent
+        rootContext.unbind("java:comp/env2/three");
+
+        // no change in root context
+        assertEq(rootBindings, rootContext);
+
+        // no change in actualEnv2Context
+        assertEq(env2Bindings, actualEnv2Context);
+
+        // unbind value deep env2... no exception occurs since unbind is idempotent
+        rootContext.unbind("java:comp/env2/three");
+    }
+
+    public void testUnbindDirectIntoFederated() throws Exception {
+        // update the verification maps
+        rootBindings.remove("java:comp/env2/three");
+        env2Bindings.remove("three");
+
+        // bind directly into the actual env2 context
+        actualEnv2Context.removeDeepBinding(parse("three"), true);
+
+        // visible from root context
+        assertEq(rootBindings, rootContext);
+
+        // visible from actualEnv2Context
+        assertEq(env2Bindings, actualEnv2Context);
+    }
+
 
     public static void putAllBindings(Map rootBindings, String nestedPath, Map nestedBindings) {
         for (Iterator iterator = nestedBindings.entrySet().iterator(); iterator.hasNext();) {
