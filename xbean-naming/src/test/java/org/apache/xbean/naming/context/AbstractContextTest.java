@@ -381,7 +381,7 @@ public abstract class AbstractContextTest extends TestCase {
         context.rename(nameString, newNameString);
         assertSame(value, context.lookup(newNameString));
         assertNoBinding(context, nameString);
-        context.unbind(nameString);
+        context.unbind(newNameString);
 
         assertNoBinding(context, nameString);
 
@@ -390,7 +390,7 @@ public abstract class AbstractContextTest extends TestCase {
         context.rename(name, newName);
         assertSame(value, context.lookup(newName));
         assertNoBinding(context, name);
-        context.unbind(name);
+        context.unbind(newName);
 
         assertNoBinding(context, name);
 

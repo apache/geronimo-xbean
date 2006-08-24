@@ -183,7 +183,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     protected Context lookupFinalContext(Name name) throws NamingException {
-        Object value = lookup(name.getPrefix(name.size() - 1));
+        Object value = null;
+        try {
+            value = lookup(name.getPrefix(name.size() - 1));
+        } catch (NamingException e) {
+            throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " does not exist");
+        }
 
         if (value == null) {
             throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " does not exist");
@@ -353,9 +358,10 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * Removes the binding from the context.  The name will not contain a path and the value will not
      * be a nested context although it may be a foreign context.
      * @param name name under which the value should be bound
+     * @param removeNotEmptyContext
      * @throws NamingException if a problem occurs during the bind such as a value already being bound
      */
-    protected abstract boolean removeBinding(String name) throws NamingException;
+    protected abstract boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException;
 
     protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
@@ -364,7 +370,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         if (name.size() == 1) {
-            removeBinding(name.get(0));
+            removeBinding(name.get(0), false);
             return;
         }
 
@@ -388,7 +394,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
                 }
 
                 // update targets
-                if (isEmpty(currentContext)) {
+                if (getSize(currentContext) > 1) {
                     targetContext = currentContext;
                     targetName = part;
                 }
@@ -397,7 +403,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
                 // Is this the last element in the name?
                 if (i == name.size() - 1) {
                     // we're at the end... unbind value
-                    unbind(targetContext, targetName);
+                    unbind(targetContext, targetName, true);
 
                     // all done... this is redundant but makes the code more readable
                     break;
@@ -406,7 +412,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
                     if (currentValue == null) {
                         // path not found we are done, but first prune the empty contexts
                         if (targetContext != currentContext) {
-                            unbind(targetContext, targetName);
+                            unbind(targetContext, targetName, false);
                         }
                         break;
                     } else {
@@ -423,14 +429,27 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
     }
 
-    private static boolean isEmpty(Context context) throws NamingException {
+    protected static boolean isEmpty(Context context) throws NamingException {
         if (context instanceof AbstractContext) {
             AbstractContext abstractContext = (AbstractContext) context;
             Map currentBindings = abstractContext.getBindings();
-            return currentBindings.size() > 1;
+            return currentBindings.isEmpty();
         } else {
             NamingEnumeration namingEnumeration = context.list("");
             return namingEnumeration.hasMore();
+        }
+    }
+
+    protected static int getSize(Context context) throws NamingException {
+        if (context instanceof AbstractContext) {
+            AbstractContext abstractContext = (AbstractContext) context;
+            Map currentBindings = abstractContext.getBindings();
+            return currentBindings.size();
+        } else {
+            NamingEnumeration namingEnumeration = context.list("");
+            int size = 0;
+            while (namingEnumeration.hasMore()) size++;
+            return size;
         }
     }
 
@@ -441,12 +460,13 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      *
      * @param context the context to remove the binding from
      * @param name the binding name
+     * @param removeNotEmptyContext
      * @throws NamingException if a problem occurs while unbinding
      */
-    private void unbind(Context context, String name) throws NamingException {
+    private void unbind(Context context, String name, boolean removeNotEmptyContext) throws NamingException {
         if (context == this || (context instanceof AbstractContext && isNestedSubcontext(context))) {
             AbstractContext abstractContext = (AbstractContext) context;
-            abstractContext.removeBinding(name);
+            abstractContext.removeBinding(name, removeNotEmptyContext);
         } else {
             context.unbind(name);
         }
@@ -651,7 +671,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         if (oldName == null || newName == null) {
             throw new NullPointerException("name is null");
         } else if (oldName.isEmpty() || newName.isEmpty()) {
-            throw new InvalidNameException("Name cannot be empty");
+            throw new NameAlreadyBoundException("Name cannot be empty");
         }
         this.bind(newName, this.lookup(oldName));
         this.unbind(oldName);
@@ -800,7 +820,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         if (!modifiable) throw new OperationNotSupportedException("Context is read only");
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
-            throw new InvalidNameException("Cannot create a subcontext if the name is empty");
+            throw new NameAlreadyBoundException("Cannot create a subcontext if the name is empty");
         }
         Context abstractContext = createNestedSubcontext(name.toString(), Collections.EMPTY_MAP);
         addDeepBinding(name, abstractContext, false, false);

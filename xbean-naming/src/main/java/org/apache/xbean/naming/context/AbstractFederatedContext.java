@@ -96,7 +96,7 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         return false;
     }
 
-    protected boolean removeBinding(String name) throws NamingException {
+    protected boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
         return contextFederation.removeBinding(name);
     }
 

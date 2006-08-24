@@ -97,7 +97,7 @@ public class ImmutableContext extends AbstractContext {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
-    protected final boolean removeBinding(String name) throws NamingException {
+    protected final boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
         throw new OperationNotSupportedException("Context is immutable");
     }
 
@@ -150,7 +150,7 @@ public class ImmutableContext extends AbstractContext {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected final boolean removeBinding(String name) throws NamingException {
+        protected final boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 

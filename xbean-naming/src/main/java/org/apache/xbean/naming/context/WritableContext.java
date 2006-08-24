@@ -23,6 +23,8 @@ import org.apache.xbean.naming.reference.CachingReference;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.ContextNotEmptyException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -76,15 +78,18 @@ public class WritableContext extends AbstractFederatedContext {
             return true;
         }
 
-        addBinding(bindingsRef, name, value);
+        addBinding(bindingsRef, name, value, rebind);
         return true;
     }
 
-    protected void addBinding(AtomicReference bindingsRef, String name, Object value) throws NamingException {
+    protected void addBinding(AtomicReference bindingsRef, String name, Object value, boolean rebind) throws NamingException {
         writeLock.lock();
         try {
             Map bindings = (Map) bindingsRef.get();
 
+            if (!rebind && bindings.containsKey(name)) {
+                throw new NameAlreadyBoundException(name);
+            }
             if (cacheReferences) {
                 value = CachingReference.wrapReference(getNameInNamespace(name), value);
             }
@@ -112,15 +117,15 @@ public class WritableContext extends AbstractFederatedContext {
         return newIndex;
     }
 
-    protected boolean removeBinding(String name) throws NamingException {
-        if (super.removeBinding(name)) {
+    protected boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
+        if (super.removeBinding(name, removeNotEmptyContext)) {
             return true;
         }
-        removeBinding(bindingsRef, name);
+        removeBinding(bindingsRef, name, removeNotEmptyContext);
         return true;
     }
 
-    private boolean removeBinding(AtomicReference bindingsRef, String name) {
+    private boolean removeBinding(AtomicReference bindingsRef, String name, boolean removeNotEmptyContext) throws NamingException {
         writeLock.lock();
         try {
             Map bindings = (Map) bindingsRef.get();
@@ -130,7 +135,10 @@ public class WritableContext extends AbstractFederatedContext {
             }
 
             Map newBindings = new HashMap(bindings);
-            newBindings.remove(name);
+            Object oldValue = newBindings.remove(name);
+            if (!removeNotEmptyContext && oldValue instanceof Context && !isEmpty((Context)oldValue)) {
+                throw new ContextNotEmptyException(name);
+            }
             bindingsRef.set(newBindings);
 
             Map newIndex = removeFromIndex(name);
@@ -225,15 +233,15 @@ public class WritableContext extends AbstractFederatedContext {
                 return true;
             }
 
-            WritableContext.this.addBinding(bindingsRef, name, value);
+            WritableContext.this.addBinding(bindingsRef, name, value, rebind);
             return true;
         }
 
-        protected boolean removeBinding(String name) throws NamingException {
-            if (WritableContext.this.removeBinding(bindingsRef, name)) {
+        protected boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
+            if (WritableContext.this.removeBinding(bindingsRef, name, false)) {
                 return true;
             }
-            return super.removeBinding(name);
+            return super.removeBinding(name, false);
         }
     }
 }
