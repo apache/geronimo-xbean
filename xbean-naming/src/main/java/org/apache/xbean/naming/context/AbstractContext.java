@@ -630,9 +630,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
             throw new NullPointerException("name is null");
         } else if (oldName.isEmpty() || newName.isEmpty()) {
             throw new InvalidNameException("Name cannot be empty");
-        } else if (this.lookup(newName) != null) {
-            throw new NameAlreadyBoundException("The target name is already bound");
-        }
+        } 
         this.bind(newName, this.lookup(oldName));
         this.unbind(oldName);
     }

@@ -31,6 +31,9 @@ import java.util.TreeSet;
  * @version $Rev$ $Date$
  */
 public abstract class AbstractContextTest extends TestCase {
+    public static Name parse(String name) throws NamingException {
+        return ContextUtil.NAME_PARSER.parse(name);
+    }
     public static void assertEq(Map expected, Context actual) throws NamingException {
         AbstractContextTest.assertEq(ContextUtil.buildMapTree(expected), actual, actual, null);
     }
@@ -148,6 +151,83 @@ public abstract class AbstractContextTest extends TestCase {
         }
     }
 
+    public static Context lookupSubcontext(Context context, String name) throws NamingException {
+        Object value = context.lookup(name);
+        assertTrue("Expected an instance of Context from look up of " + name + " in context " + context.getNameInNamespace(),
+                value instanceof Context);
+        return (Context) value;
+    }
+
+    public static void assertHasBinding(Context context, String name) {
+        String nameInNamespace = null;
+        try {
+            nameInNamespace = context.getNameInNamespace();
+        } catch (NamingException e) {
+            throw new RuntimeException("getNameInNamespace threw a NamingException", e);
+        }
+
+        try {
+            Object value = context.lookup(name);
+            if (value != null) {
+                fail("Lookup of " + name + " on context " + nameInNamespace + " return null");
+            }
+        } catch (NamingException e) {
+            fail("Lookup of " + name + " on context " + nameInNamespace + " threw " + e.getClass().getName());
+        }
+    }
+
+    public static void assertHasBinding(Context context, Name name) {
+        String nameInNamespace = null;
+        try {
+            nameInNamespace = context.getNameInNamespace();
+        } catch (NamingException e) {
+            throw new RuntimeException("getNameInNamespace threw a NamingException", e);
+        }
+
+        try {
+            Object value = context.lookup(name);
+            if (value != null) {
+                fail("Lookup of " + name + " on context " + nameInNamespace + " return null");
+            }
+        } catch (NamingException e) {
+            fail("Lookup of " + name + " on context " + nameInNamespace + " threw " + e.getClass().getName());
+        }
+    }
+
+    public static void assertNoBinding(Context context, String name) {
+        String nameInNamespace = null;
+        try {
+            nameInNamespace = context.getNameInNamespace();
+        } catch (NamingException e) {
+            throw new RuntimeException("getNameInNamespace threw a NamingException", e);
+        }
+
+        try {
+            Object value = context.lookup(name);
+            if (value == null) {
+                fail("Context " + nameInNamespace + " has a binding for " + name);
+            }
+        } catch (NamingException expected) {
+        }
+    }
+
+    public static void assertNoBinding(Context context, Name name) {
+        String nameInNamespace = null;
+        try {
+            nameInNamespace = context.getNameInNamespace();
+        } catch (NamingException e) {
+            throw new RuntimeException("getNameInNamespace threw a NamingException", e);
+        }
+
+        try {
+            Object value = context.lookup(name);
+            if (value == null) {
+                fail("Context " + nameInNamespace + " has a binding for " + name);
+            }
+        } catch (NamingException expected) {
+        }
+    }
+
     public static void assertUnmodifiable(Context context) throws Exception {
         Object value = "VALUE";
         String nameString = "TEST_NAME";
@@ -244,5 +324,89 @@ public abstract class AbstractContextTest extends TestCase {
             fail("Expected an OperationNotSupportedException");
         } catch(OperationNotSupportedException expected) {
         }
+    }
+
+    public static void assertModifiable(Context context) throws Exception {
+        Object value = "VALUE";
+        Object newValue = "NEW_VALUE";
+
+        String nameString = "TEST_NAME";
+        Name name = context.getNameParser("").parse(nameString);
+
+        String newNameString = "NEW_TEST_NAME";
+        Name newName = context.getNameParser("").parse(newNameString);
+
+        assertNoBinding(context, nameString);
+        assertNoBinding(context, name);
+
+        //
+        // bind / unbind
+        //
+        context.bind(nameString, value);
+        assertSame(value, context.lookup(nameString));
+        context.unbind(nameString);
+
+        assertNoBinding(context, nameString);
+
+        context.bind(name, value);
+        assertSame(value, context.lookup(name));
+        context.unbind(name);
+
+        assertNoBinding(context, name);
+
+        //
+        // rebind
+        //
+        context.bind(nameString, value);
+        assertSame(value, context.lookup(nameString));
+        context.rebind(nameString, newValue);
+        assertSame(newValue, context.lookup(nameString));
+        context.unbind(nameString);
+
+        assertNoBinding(context, nameString);
+
+        context.bind(name, value);
+        assertSame(value, context.lookup(name));
+        context.rebind(name, newValue);
+        assertSame(newValue, context.lookup(name));
+        context.unbind(name);
+
+        assertNoBinding(context, name);
+
+        //
+        // rename
+        //
+        context.bind(nameString, value);
+        assertSame(value, context.lookup(nameString));
+        context.rename(nameString, newNameString);
+        assertSame(value, context.lookup(newNameString));
+        assertNoBinding(context, nameString);
+        context.unbind(nameString);
+
+        assertNoBinding(context, nameString);
+
+        context.bind(name, value);
+        assertSame(value, context.lookup(name));
+        context.rename(name, newName);
+        assertSame(value, context.lookup(newName));
+        assertNoBinding(context, name);
+        context.unbind(name);
+
+        assertNoBinding(context, name);
+
+        //
+        // createSubcontext / destroySubcontext
+        //
+        context.createSubcontext(nameString);
+        assertTrue(context.lookup(nameString) instanceof Context);
+        context.destroySubcontext(nameString);
+
+        assertNoBinding(context, nameString);
+
+        context.createSubcontext(name);
+        assertTrue(context.lookup(name) instanceof Context);
+        context.destroySubcontext(name);
+
+        assertNoBinding(context, name);
     }
 }

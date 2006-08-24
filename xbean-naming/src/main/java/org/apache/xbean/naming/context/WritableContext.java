@@ -122,12 +122,13 @@ public class WritableContext extends AbstractFederatedContext {
         removeBinding(bindingsRef, name);
     }
 
-    private void removeBinding(AtomicReference bindingsRef, String name) throws NameNotFoundException {
+    private void removeBinding(AtomicReference bindingsRef, String name) {
         writeLock.lock();
         try {
             Map bindings = (Map) bindingsRef.get();
             if (!bindings.containsKey(name)) {
-                throw new NameNotFoundException(name);
+                // remove is idempotent meaning remove succeededs even if there was no value bound
+                return;
             }
 
             Map newBindings = new HashMap(bindings);
