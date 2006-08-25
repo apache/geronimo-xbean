@@ -19,6 +19,7 @@ package org.apache.xbean.naming.context;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -281,8 +282,83 @@ public class FederationTest extends AbstractContextTest {
         rootBindings.remove("java:comp/writable/three");
         assertEq(rootBindings, rootContext);
 
+        // visible from writableContext
+        writableBindings.remove("three");
+        assertEq(writableBindings, writableContext);
+    }
+
+    public void testRenameInner() throws Exception {
+        //
+        // rename in inner context
+        rootContext.rename("java:comp/writable/three", "java:comp/writable/four");
+
+        // visible from root context
+        rootBindings.remove("java:comp/writable/three");
+        rootBindings.put("java:comp/writable/four", new Integer(3));
+        assertEq(rootBindings, rootContext);
+
         // visible from unmodifibleContext
         writableBindings.remove("three");
+        writableBindings.put("four", new Integer(3));
+        assertEq(writableBindings, writableContext);
+
+        //
+        // rename from inner to wrapper
+        rootContext.rename("java:comp/writable/two", "java:comp/unmodifible/four");
+
+        // visible from root context
+        rootBindings.remove("java:comp/writable/two");
+        rootBindings.put("java:comp/unmodifible/four", new Integer(2));
+        assertEq(rootBindings, rootContext);
+
+        // visible from writableContext
+        writableBindings.remove("two");
+        assertEq(writableBindings, writableContext);
+
+        // not visible from unmodifibleContext
+        assertEq(unmodifibleBindings, unmodifibleContext);
+
+        //
+        // rename from wrapper to inner
+        rootContext.rename("java:comp/unmodifible/four", "java:comp/writable/two");
+
+        // visible from root context
+        rootBindings.remove("java:comp/unmodifible/four");
+        rootBindings.put("java:comp/writable/two", new Integer(2));
+        assertEq(rootBindings, rootContext);
+
+        // visible from writableContext
+        writableBindings.put("two", new Integer(2));
+        assertEq(writableBindings, writableContext);
+
+        // not visible from unmodifibleContext
+        assertEq(unmodifibleBindings, unmodifibleContext);
+    }
+
+    public void testCreateSubcontextWrapper() throws Exception {
+        //
+        // createSubcontext in wrapper
+        rootContext.createSubcontext("java:comp/unmodifible/context");
+        rootContext.bind("java:comp/unmodifible/context/foo", "bar");
+
+        // visible from root context
+        rootBindings.put("java:comp/unmodifible/context/foo", "bar");
+        assertEq(rootBindings, rootContext);
+
+        // not-visible from unmodifibleContext
+        assertEq(unmodifibleBindings, unmodifibleContext);
+    }
+
+    public void testCreateSubcontextInner() throws Exception {
+        // bind into root context OVER the writable context
+        rootContext.bind("java:comp/writable/TEST", "TEST_VALUE");
+
+        // visible from root context
+        rootBindings.put("java:comp/writable/TEST", "TEST_VALUE");
+        assertEq(rootBindings, rootContext);
+
+        // visible from writableContext
+        writableBindings.put("TEST", "TEST_VALUE");
         assertEq(writableBindings, writableContext);
     }
 
