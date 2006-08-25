@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collections;
 
 /**
  * @author Dain Sundstrom
@@ -177,7 +176,6 @@ public class XsdGenerator implements GeneratorPlugin {
         } else {
             types = Utils.findImplementationsOf(namespaceMapping, type);
         }
-        types = Collections.EMPTY_LIST;
         String maxOccurs = type.isCollection() ? "unbounded" : "1";
 
         out.println("        <xs:element name='" + attributeMapping.getAttributeName() + "' minOccurs='0' maxOccurs='1'>");
@@ -197,6 +195,7 @@ public class XsdGenerator implements GeneratorPlugin {
                 ElementMapping element = (ElementMapping) iterator.next();
                 out.println("              <xs:element ref='tns:" + element.getElementName() + "'/>");
             }
+            out.println("              <xs:any/>");
             out.println("            </xs:choice>");
         }
         out.println("          </xs:complexType>");

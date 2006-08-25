@@ -128,7 +128,10 @@ public final class Utils {
         String nestedTypeName = type.getName();
         for (Iterator iter = namespaceMapping.getElements().iterator(); iter.hasNext();) {
             ElementMapping element = (ElementMapping) iter.next();
-            if (nestedTypeName.equals(element.getClassName())) {
+            if (element.getClassName().equals(nestedTypeName) ||
+                element.getInterfaces().contains(nestedTypeName) ||
+                element.getSuperClasses().contains(nestedTypeName)) 
+            {
                 elements.add(element);
             }
         }
