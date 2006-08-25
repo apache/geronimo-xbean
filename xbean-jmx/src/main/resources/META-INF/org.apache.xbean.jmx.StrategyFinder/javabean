@@ -1,1 +1,0 @@
-org.apache.xbean.jmx.WrapperStrategyClass=org.apache.xbean.jmx.strategies.JavaBeanWrappingStrategy
