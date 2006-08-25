@@ -74,6 +74,15 @@ public class XsdGenerator implements GeneratorPlugin {
         String localName = element.getElementName();
 
         out.println("  <xs:element name='" + localName + "'>");
+
+        if (!isEmptyString(element.getDescription())) {
+            out.println("    <xs:annotation>");
+            out.println("      <xs:documentation><![CDATA[");
+            out.println("        " + element.getDescription());
+            out.println("      ]]></xs:documentation>");
+            out.println("    </xs:annotation>");
+        }
+
         out.println("    <xs:complexType>");
 
         int complexCount = 0;
@@ -110,6 +119,18 @@ public class XsdGenerator implements GeneratorPlugin {
         out.println();
     }
 
+    private boolean isEmptyString(String str) {
+        if (str == null) {
+            return true;
+        }
+        for (int i = 0; i < str.length(); i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void generateIDAttributeMapping(PrintWriter out, NamespaceMapping namespaceMapping, ElementMapping element) {
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
@@ -121,11 +142,31 @@ public class XsdGenerator implements GeneratorPlugin {
     }
 
     private void generateElementMappingSimpleProperty(PrintWriter out, AttributeMapping attributeMapping) {
-        out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='" + Utils.getXsdType(attributeMapping.getType()) + "'/>");
+        if (!isEmptyString(attributeMapping.getDescription())) {
+            out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='" + Utils.getXsdType(attributeMapping.getType()) + "'>");
+            out.println("        <xs:annotation>");
+            out.println("          <xs:documentation><![CDATA[");
+            out.println("            " + attributeMapping.getDescription());
+            out.println("          ]]></xs:documentation>");
+            out.println("        </xs:annotation>");
+            out.println("      </xs:attribute>");
+        } else {
+            out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='" + Utils.getXsdType(attributeMapping.getType()) + "'/>");
+        }
     }
 
     private void generateElementMappingComplexPropertyAsRef(PrintWriter out, AttributeMapping attributeMapping) {
-        out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='xs:string'/>");
+        if (!isEmptyString(attributeMapping.getDescription())) {
+            out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='xs:string'>");
+            out.println("        <xs:annotation>");
+            out.println("          <xs:documentation><![CDATA[");
+            out.println("            " + attributeMapping.getDescription());
+            out.println("          ]]></xs:documentation>");
+            out.println("        </xs:annotation>");
+            out.println("      </xs:attribute>");
+        } else {
+            out.println("      <xs:attribute name='" + attributeMapping.getAttributeName() + "' type='xs:string'/>");
+        }
     }
 
     private void generateElementMappingComplexProperty(PrintWriter out, NamespaceMapping namespaceMapping, AttributeMapping attributeMapping) {
@@ -140,6 +181,13 @@ public class XsdGenerator implements GeneratorPlugin {
         String maxOccurs = type.isCollection() ? "unbounded" : "1";
 
         out.println("        <xs:element name='" + attributeMapping.getAttributeName() + "' minOccurs='0' maxOccurs='1'>");
+        if (!isEmptyString(attributeMapping.getDescription())) {
+            out.println("          <xs:annotation>");
+            out.println("            <xs:documentation><![CDATA[");
+            out.println("              " + attributeMapping.getDescription());
+            out.println("            ]]></xs:documentation>");
+            out.println("          </xs:annotation>");
+        }
         out.println("          <xs:complexType>");
         if (types.isEmpty()) {
             out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any/></xs:sequence>");
