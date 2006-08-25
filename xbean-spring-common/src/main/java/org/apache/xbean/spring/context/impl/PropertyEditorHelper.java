@@ -32,6 +32,7 @@ public class PropertyEditorHelper {
     public static void registerCustomEditors() {
         registerEditor("java.io.File", "org.apache.xbean.spring.context.impl.FileEditor");
         registerEditor("java.net.URI", "org.apache.xbean.spring.context.impl.URIEditor");
+        registerEditor("java.util.Date", "org.apache.xbean.spring.context.impl.DateEditor");
         registerEditor("javax.management.ObjectName", "org.apache.xbean.spring.context.impl.ObjectNameEditor");
     }
 
