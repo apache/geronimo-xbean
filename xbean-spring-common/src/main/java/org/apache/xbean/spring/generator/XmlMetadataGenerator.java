@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
     private final String metaInfDir;
     private LogFacade log;
     private final File schema;
-    
+
     public static final String NAMESPACE_HANDLER = "org.apache.xbean.spring.context.v2.XBeanNamespaceHandler";
 
     public XmlMetadataGenerator(String metaInfDir, File schema) {
@@ -120,14 +119,14 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         if (factoryMethod != null) {
             out.println(element.getElementName() + ".factoryMethod = " + factoryMethod);
         }
-        
+
         for (Iterator iter = element.getAttributes().iterator(); iter.hasNext();) {
-			AttributeMapping attribute = (AttributeMapping) iter.next();
-			if( attribute.getPropertyEditor() !=null ) {
-	            out.println(element.getElementName() + "."+attribute.getPropertyName()+ ".propertyEditor = " + attribute.getPropertyEditor());
-			}
-		}
-        
+            AttributeMapping attribute = (AttributeMapping) iter.next();
+            if( attribute.getPropertyEditor() !=null ) {
+                out.println(element.getElementName() + "."+attribute.getPropertyName()+ ".propertyEditor = " + attribute.getPropertyEditor());
+            }
+        }
+
         List flatProperties = element.getFlatProperties();
         for (Iterator itr = flatProperties.iterator(); itr.hasNext();) {
             out.println(element.getElementName() + "." + itr.next() + ".flat");
@@ -140,7 +139,7 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             out.println(element.getElementName() + "." + entry.getKey() + ".map.entryName = " + mm.getEntryName());
             out.println(element.getElementName() + "." + entry.getKey() + ".map.keyName = " + mm.getKeyName());
         }
-        
+
         Map flatCollections = element.getFlatCollections();
         for (Iterator itr = flatCollections.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
@@ -154,7 +153,6 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         for (Iterator iterator = constructors.iterator(); iterator.hasNext();) {
             List args = (List) iterator.next();
             generatePropertiesFileConstructor(out, element, args);
-
         }
     }
 
@@ -195,11 +193,11 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         }
     }
 
-	public LogFacade getLog() {
-		return log;
-	}
+    public LogFacade getLog() {
+        return log;
+    }
 
-	public void setLog(LogFacade log) {
-		this.log = log;
-	}
+    public void setLog(LogFacade log) {
+        this.log = log;
+    }
 }

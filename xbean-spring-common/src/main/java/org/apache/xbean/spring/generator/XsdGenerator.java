@@ -202,11 +202,11 @@ public class XsdGenerator implements GeneratorPlugin {
         out.println("        </xs:element>");
     }
 
-	public LogFacade getLog() {
-		return log;
-	}
+    public LogFacade getLog() {
+        return log;
+    }
 
-	public void setLog(LogFacade log) {
-		this.log = log;
-	}
+    public void setLog(LogFacade log) {
+        this.log = log;
+    }
 }
