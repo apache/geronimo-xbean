@@ -251,6 +251,7 @@
     </build>
     
     <modules>
+        <module>xbean-classloader</module>
         <module>xbean-classpath</module>
         <module>xbean-kernel</module>
         <module>xbean-osgi</module>
