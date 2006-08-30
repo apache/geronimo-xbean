@@ -14,23 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.spring.context.v2;
+package org.apache.xbean.spring.context;
 
-import org.springframework.beans.factory.xml.DefaultNamespaceHandlerResolver;
-import org.springframework.beans.factory.xml.NamespaceHandler;
+public class Spring20RC3Test extends RestaurantUsingXBeanTest {
 
-
-public class XBeanNamespaceHandlerResolver extends DefaultNamespaceHandlerResolver {
-
-    public XBeanNamespaceHandlerResolver(ClassLoader classLoader) {
-        super(classLoader);
-    }
-
-    public NamespaceHandler resolve(String namespaceUri) {
-        NamespaceHandler handler = super.resolve(namespaceUri);
-        if (handler == null) {
-            handler = new XBeanNamespaceHandler();
-        }
-        return handler;
-    }
 }

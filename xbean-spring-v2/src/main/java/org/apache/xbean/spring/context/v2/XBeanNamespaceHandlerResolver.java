@@ -27,7 +27,12 @@ public class XBeanNamespaceHandlerResolver extends DefaultNamespaceHandlerResolv
     }
 
     public NamespaceHandler resolve(String namespaceUri) {
-        NamespaceHandler handler = super.resolve(namespaceUri);
+        NamespaceHandler handler = null;
+        try {
+            handler = super.resolve(namespaceUri);
+        } catch (IllegalArgumentException e) {
+            // ignore
+        }
         if (handler == null) {
             handler = new XBeanNamespaceHandler();
         }
