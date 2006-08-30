@@ -25,9 +25,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.geronimo.genesis.config</groupId>
-        <artifactId>project-config</artifactId>
-        <version>1.0</version>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>3</version>
     </parent>
 
     <groupId>org.apache.xbean</groupId>
@@ -229,7 +229,14 @@
         
     </dependencies>
     
+    <properties>
+        <performRelease>true</performRelease>
+    </properties>
+    
     <build>
+
+        <defaultGoal>install</defaultGoal>
+    
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -247,7 +254,20 @@
                     <tagBase>https://svn.apache.org/repos/asf/geronimo/xbean/tags</tagBase>
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
     </build>
     
     <modules>
@@ -260,6 +280,8 @@
         <module>xbean-spring-common</module>
         <module>xbean-spring-v1</module>
         <module>xbean-spring-v2</module>
+        <module>xbean-spring-v2a</module>
+        <module>xbean-spring-v2b</module>
         <module>xbean-spring</module>
         <module>xbean-spring-itests</module>
         <module>xbean-telnet</module>
@@ -293,13 +315,6 @@
             <id>geronimo-website</id>
             <url>scp://people.apache.org/www/geronimo.apache.org/maven/xbean</url>
         </site>
-        
-        <!--
-        <site>
-            <id>xbean</id>
-            <url>scp://people.apache.org/www/geronimo.apache.org/xbean/dist/xbean-2.6/site</url>
-        </site>
-        -->
     </distributionManagement>
     
     <profiles>
@@ -316,5 +331,21 @@
             </modules>
         </profile>
     </profiles>
-    
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jxr-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>surefire-report-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
+
 </project>

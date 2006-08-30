@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.spring.context.v2;
+package org.apache.xbean.spring.context.v2b;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
 import org.apache.xbean.spring.context.impl.QNameReflectionHelper;
-import org.springframework.beans.factory.ParseState;
+import org.apache.xbean.spring.context.v2.XBeanNamespaceHandler;
+import org.apache.xbean.spring.context.v2.XBeanQNameHelper;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.XmlReaderContext;
@@ -44,20 +45,20 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
         qnameHelper = new XBeanQNameHelper(readerContext);
     }
 
-    public Object parsePropertySubElement(Element ele, String defaultTypeClassName) {
+    public Object parsePropertySubElement(Element ele, BeanDefinition bd, String defaultTypeClassName) {
         if (!isDefaultNamespace(ele.getNamespaceURI())) {
-            return parseNestedCustomElement(ele);
+            return internalParseNestedCustomElement(ele);
         } 
         else if (ele.getTagName().equals(QNAME_ELEMENT)) {
             return parseQNameElement(ele);
         } 
         else {
-            return super.parsePropertySubElement(ele, defaultTypeClassName);
+            return super.parsePropertySubElement(ele, bd, defaultTypeClassName);
         }
     }
 
-    public BeanDefinition parseBeanDefinitionElement(Element ele, String beanName) {
-        BeanDefinition bd = super.parseBeanDefinitionElement(ele, beanName);
+    public BeanDefinition parseBeanDefinitionElement(Element ele, String beanName, BeanDefinition containingBean) {
+        BeanDefinition bd = super.parseBeanDefinitionElement(ele, beanName, containingBean);
         qnameHelper.coerceNamespaceAwarePropertyValues(bd, ele);
         return bd;
     }
@@ -85,25 +86,14 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
         return buffer.toString();
     }
     
-    private Object parseNestedCustomElement(Element candidateEle) {
-        BeanDefinition innerDefinition = parseCustomElement(candidateEle, true);
-        if(innerDefinition == null) {
-            error("Incorrect usage of element '" + candidateEle.getNodeName()
-                            + "' in a nested manner. This tag cannot be used nested inside <property>.", candidateEle);
-            return null;
-        }
-        return innerDefinition;
-    }
-
-    private void error(String message, Object source) {
-        ParseState parseState = null;
+    private Object internalParseNestedCustomElement(Element candidateEle) {
         try {
-            Field f = getClass().getField("parseState");
-            f.setAccessible(true);
-            ParseState ps = (ParseState) f.get(this);
-            parseState = ps.snapshot();
-        } catch (Exception e) {}
-        getReaderContext().error(message, source, parseState);
+            Method mth = getClass().getSuperclass().getDeclaredMethod("parseNestedCustomElement", new Class[] { Element.class });
+            mth.setAccessible(true);
+            return mth.invoke(this, new Object[] { candidateEle });
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to invoke parseNestedCustomElement method", e);
+        }
     }
 
 }

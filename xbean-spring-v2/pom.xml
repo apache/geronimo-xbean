@@ -85,44 +85,4 @@
         
     </dependencies>
 
-    <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-            <testResource>
-                <directory>target/test-generated</directory>
-            </testResource>
-        </testResources>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
-                                    <classpath>
-                                        <pathelement path="${basedir}/target/classes"></pathelement>
-                                        <pathelement path="${basedir}/target/test-classes"></pathelement>
-                                        <path refid="maven.runtime.classpath"></path>
-                                    </classpath>
-                                </taskdef>
-                                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/"></mapping>
-                                <copy todir="${basedir}/target/test-classes">
-                                    <fileset dir="${basedir}/target/test-generated"></fileset>
-                                </copy>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

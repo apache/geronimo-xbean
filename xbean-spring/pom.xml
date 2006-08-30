@@ -37,6 +37,13 @@
 
         <dependency>
             <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-common</artifactId>
+            <version>${pom.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring-v1</artifactId>
             <version>${pom.version}</version>
             <optional>true</optional>
@@ -45,6 +52,20 @@
         <dependency>
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring-v2</artifactId>
+            <version>${pom.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-v2a</artifactId>
+            <version>${pom.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-v2b</artifactId>
             <version>${pom.version}</version>
             <optional>true</optional>
         </dependency>
@@ -60,7 +81,7 @@
         </dependency>
 
     </dependencies>
-
+    
     <build>
         <plugins>
             <plugin>
@@ -75,6 +96,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>target/classes</outputDirectory>
+                            <unpackMarkersDirectory>target/classes-marker</unpackMarkersDirectory>
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.apache.xbean</groupId>
@@ -91,20 +113,73 @@
                                     <artifactId>xbean-spring-v2</artifactId>
                                     <version>${pom.version}</version>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2a</artifactId>
+                                    <version>${pom.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2b</artifactId>
+                                    <version>${pom.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>get-sources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/sources</outputDirectory>
+                            <unpackMarkersDirectory>target/sources-marker</unpackMarkersDirectory>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-common</artifactId>
+                                    <version>${pom.version}</version>
+                                    <classifier>sources</classifier>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v1</artifactId>
+                                    <version>${pom.version}</version>
+                                    <classifier>sources</classifier>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2</artifactId>
+                                    <version>${pom.version}</version>
+                                    <classifier>sources</classifier>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2a</artifactId>
+                                    <version>${pom.version}</version>
+                                    <classifier>sources</classifier>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2b</artifactId>
+                                    <version>${pom.version}</version>
+                                    <classifier>sources</classifier>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             
-            <!--
-            HACK: Need to copy classes for clover, since it deployes a -clover artifact
-                  and uses that for a dependency when other modules run (lame).
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <!--
+                    HACK: Need to copy classes for clover, since it deployes a -clover artifact
+                          and uses that for a dependency when other modules run (lame).
+                    -->
                     <execution>
                         <id>copy-classes-for-clover</id>
                         <phase>process-classes</phase>
@@ -122,7 +197,44 @@
                             </tasks>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>generate-source-jar</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <jar destfile="${pom.basedir}/target/${pom.artifactId}-${pom.version}-sources.jar" 
+                                     basedir="${pom.basedir}/target/sources" />
+                            </tasks>
+                        </configuration>
+                    </execution>
                 </executions>
+            </plugin>
+            
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>build-helper-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>attach-artifacts</id>
+                  <phase>package</phase>
+                  <goals>
+                    <goal>attach-artifact</goal>
+                  </goals>
+                  <configuration>
+                    <artifacts>
+                      <artifact>
+                        <file>${pom.basedir}/target/${pom.artifactId}-${pom.version}-sources.jar</file>
+                        <type>jar</type>
+                        <classifier>sources</classifier>
+                      </artifact>
+                    </artifacts>
+                  </configuration>
+                </execution>
+              </executions>
             </plugin>
         </plugins>
     </build>
