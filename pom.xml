@@ -35,7 +35,7 @@
     <name>XBean</name>
     <packaging>pom</packaging>
     
-    <version>2.6-SNAPSHOT</version>
+    <version>2.6</version>
     
     <description>
         XBean is a plugin based server architecture.
