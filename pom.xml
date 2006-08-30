@@ -229,7 +229,14 @@
         
     </dependencies>
     
+    <properties>
+        <performRelease>true</performRelease>
+    </properties>
+    
     <build>
+
+        <defaultGoal>install</defaultGoal>
+    
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -247,7 +254,20 @@
                     <tagBase>https://svn.apache.org/repos/asf/geronimo/xbean/tags</tagBase>
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
     </build>
     
     <modules>
