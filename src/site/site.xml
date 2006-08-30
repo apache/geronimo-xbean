@@ -24,6 +24,12 @@
     
     <body>
         
+        <links>
+            <item name="XBean" href="http://geronimo.apache.org/xbean/"/>
+            <item name="Geronimo" href="http://geronimo.apache.org/"/>
+            <item name="Apache" href="http://apache.org/"/>
+        </links>
+        
         ${modules}
         
         ${reports}
