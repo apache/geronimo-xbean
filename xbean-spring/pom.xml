@@ -37,6 +37,13 @@
 
         <dependency>
             <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-common</artifactId>
+            <version>${pom.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring-v1</artifactId>
             <version>${pom.version}</version>
             <optional>true</optional>
@@ -45,6 +52,20 @@
         <dependency>
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring-v2</artifactId>
+            <version>${pom.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-v2a</artifactId>
+            <version>${pom.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-v2b</artifactId>
             <version>${pom.version}</version>
             <optional>true</optional>
         </dependency>
@@ -89,6 +110,16 @@
                                 <artifactItem>
                                     <groupId>org.apache.xbean</groupId>
                                     <artifactId>xbean-spring-v2</artifactId>
+                                    <version>${pom.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2a</artifactId>
+                                    <version>${pom.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2b</artifactId>
                                     <version>${pom.version}</version>
                                 </artifactItem>
                             </artifactItems>

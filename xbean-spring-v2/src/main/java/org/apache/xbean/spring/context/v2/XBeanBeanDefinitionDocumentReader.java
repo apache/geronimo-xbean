@@ -25,7 +25,7 @@ import org.w3c.dom.Element;
 public class XBeanBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader {
 
     protected BeanDefinitionParserDelegate createHelper(XmlReaderContext readerContext, Element root) {
-        BeanDefinitionParserDelegate delegate = new XBeanBeanDefinitionParserDelegate(readerContext);
+        BeanDefinitionParserDelegate delegate = XBeanV2Helper.createParser(readerContext);
         delegate.initDefaults(root);
         return delegate;
     }

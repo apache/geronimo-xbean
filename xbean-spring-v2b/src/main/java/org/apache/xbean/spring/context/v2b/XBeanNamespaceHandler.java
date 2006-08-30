@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.spring.context.v2;
+package org.apache.xbean.spring.context.v2b;
 
 import java.beans.BeanInfo;
 import java.beans.PropertyDescriptor;
@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -41,6 +40,7 @@ import org.apache.xbean.spring.context.impl.MappingMetaData;
 import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
 import org.apache.xbean.spring.context.impl.NamespaceHelper;
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
+import org.apache.xbean.spring.context.v2.XBeanQNameHelper;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -202,7 +202,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         // lets assume the class name == the package name plus the
         element.setAttributeNS(null, "class", className);
         addSpringAttributeValues(className, element);
-        BeanDefinitionHolder definition = parserContext.getDelegate().parseBeanDefinitionElement(element, false);
+        BeanDefinitionHolder definition = parserContext.getDelegate().parseBeanDefinitionElement(element, null);
         addAttributeProperties(definition, metadata, className, original);
         addContentProperty(definition, metadata, element);
         addNestedPropertyElements(definition, metadata, className, element);
@@ -578,7 +578,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     protected Object parseListElement(Element element, String name) {
-        return parserContext.getDelegate().parseListElement(element);
+        return parserContext.getDelegate().parseListElement(element, null);
     }
 
     protected Object parseCustomMapElement(MappingMetaData metadata, Element element, String name) {
@@ -652,9 +652,9 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     uri.equals(SPRING_SCHEMA_COMPAT) ||
                     uri.equals(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI)) {
                     if (BeanDefinitionParserDelegate.BEAN_ELEMENT.equals(localName)) {
-                        return parserContext.getDelegate().parseBeanDefinitionElement(childElement, true);
+                        return parserContext.getDelegate().parseBeanDefinitionElement(childElement, null);
                     } else {
-                        return parserContext.getDelegate().parsePropertySubElement(childElement);
+                        return parserContext.getDelegate().parsePropertySubElement(childElement, null);
                     }
                 } else {
                     Object value = parseBeanFromExtensionElement(childElement);
