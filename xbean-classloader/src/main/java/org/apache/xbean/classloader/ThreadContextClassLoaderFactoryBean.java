@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.server.classloader;
+package org.apache.xbean.classloader;
 
 import org.springframework.beans.factory.FactoryBean;
 
 /**
  * A factory bean to expose the current thread context class loader.
  * 
- * * @org.apache.xbean.XBean namespace="http://xbean.apache.org/schemas/server"
+ * * @org.apache.xbean.XBean namespace="http://xbean.apache.org/schemas/classloader"
  *                         element="threadContextClassLoader" description="References the ClassLoader of the current thread context"
- * @version $Revision$
+ * @version $Revision: 380562 $
  */
 public class ThreadContextClassLoaderFactoryBean implements FactoryBean {
 

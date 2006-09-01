@@ -14,20 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.server.classloader;
+package org.apache.xbean.classloader;
+
+import java.net.URL;
 
 /**
- * DestroyableClassLoader is a mixin interface for a ClassLoader that add a destroy method to propertly cleanup a
- * classloader then dereferenced by the server.
+ * Test the JarFileClassLoader.
  *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 2.0
  */
-public interface DestroyableClassLoader {
-    /**
-     * Destroys the clasloader releasing all resources.  After this mehtod is called, the class loader will no longer
-     * load any classes or resources.
-     */
-    void destroy();
+public class JarFileClassLoaderTest extends MultiParentClassLoaderTest {
+    protected MultiParentClassLoader createClassLoader(String name, URL[] urls, ClassLoader[] parents) {
+        return new JarFileClassLoader(name, urls, parents);
+    }
 }

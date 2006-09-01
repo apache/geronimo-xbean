@@ -23,13 +23,12 @@ import org.apache.xbean.kernel.ServiceAlreadyExistsException;
 import org.apache.xbean.kernel.ServiceFactory;
 import org.apache.xbean.kernel.ServiceRegistrationException;
 import org.apache.xbean.kernel.StringServiceName;
-import org.apache.xbean.server.classloader.NamedClassLoader;
+import org.apache.xbean.classloader.NamedClassLoader;
 import org.apache.xbean.server.spring.configuration.SpringConfigurationServiceFactory;
 import org.apache.xbean.spring.context.ResourceXmlApplicationContext;
 import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.FileSystemResource;
@@ -46,7 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**

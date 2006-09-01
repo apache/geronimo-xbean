@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.server.classloader;
+package org.apache.xbean.classloader;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.xbean.server.classloader.MultiParentClassLoader;
+import org.apache.xbean.classloader.MultiParentClassLoader;
 import org.apache.xbean.server.repository.Repository;
 import org.apache.xbean.server.spring.loader.SpringLoader;
 import org.apache.xbean.spring.context.SpringXmlPreprocessor;

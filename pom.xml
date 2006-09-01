@@ -173,6 +173,7 @@
 
   <modules>
     <module>xbean-bootstrap</module>
+    <module>xbean-classloader</module>
     <module>xbean-classpath</module>
     <!--
     <module>xbean-jmx</module>
@@ -314,6 +315,11 @@
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-bootstrap</artifactId>
         <version>COL-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-classloader</artifactId>
+       <version>COL-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
