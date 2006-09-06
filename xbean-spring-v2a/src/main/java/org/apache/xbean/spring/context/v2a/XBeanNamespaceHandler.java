@@ -726,9 +726,15 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         // lets try the thread context class loader first
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
         if (in == null) {
-            in = getClass().getClassLoader().getResourceAsStream(uri);
+            ClassLoader cl = parserContext.getReaderContext().getReader().getBeanClassLoader();
+            if (cl != null) {
+                in = cl.getResourceAsStream(uri);
+            }
             if (in == null) {
-                log.debug("Could not find resource: " + uri);
+                in = getClass().getClassLoader().getResourceAsStream(uri);
+                if (in == null) {
+                    log.debug("Could not find resource: " + uri);
+                }
             }
         }
         return in;

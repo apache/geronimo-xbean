@@ -73,6 +73,10 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
     }
     
     public ResourceXmlApplicationContext(Resource resource,  List xmlPreprocessors, ApplicationContext parent, List beanPostProcessors) {
+        this(resource, xmlPreprocessors, parent, beanPostProcessors, true);
+    }
+
+    public ResourceXmlApplicationContext(Resource resource,  List xmlPreprocessors, ApplicationContext parent, List beanPostProcessors, boolean refresh) {
         super(parent);
         this.xmlPreprocessors = xmlPreprocessors;
         this.resource = resource;
@@ -80,7 +84,9 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
             BeanFactoryPostProcessor processor =  (BeanFactoryPostProcessor) iter.next();
             addBeanFactoryPostProcessor(processor);
         }
-        refresh();
+        if (refresh) {
+            refresh();
+        }
     }
 
     protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws IOException {

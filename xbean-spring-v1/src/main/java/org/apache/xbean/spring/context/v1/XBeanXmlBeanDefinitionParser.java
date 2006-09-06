@@ -698,9 +698,15 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         // lets try the thread context class loader first
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
         if (in == null) {
-            in = getClass().getClassLoader().getResourceAsStream(uri);
+            ClassLoader cl = getBeanDefinitionReader().getBeanClassLoader();
+            if (cl != null) {
+                in = cl.getResourceAsStream(uri);
+            }
             if (in == null) {
-                logger.debug("Could not find resource: " + uri);
+                in = getClass().getClassLoader().getResourceAsStream(uri);
+                if (in == null) {
+                    logger.debug("Could not find resource: " + uri);
+                }
             }
         }
         return in;

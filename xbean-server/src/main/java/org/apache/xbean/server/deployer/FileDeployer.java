@@ -339,8 +339,9 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
             Thread.currentThread().setContextClassLoader(classLoader);
             log.debug("Loading file: " + file + " using classLoader: " + classLoader);
             try {
-                SpringApplicationContext applicationContext = new ResourceXmlApplicationContext(new FileSystemResource(file), xmlPreprocessors, parentContext, beanFactoryPostProcessors);
+                SpringApplicationContext applicationContext = new ResourceXmlApplicationContext(new FileSystemResource(file), xmlPreprocessors, parentContext, beanFactoryPostProcessors, false);
                 applicationContext.setDisplayName(name);
+                applicationContext.setClassLoader(classLoader);
 
                 ServiceFactory serviceFactory = new SpringConfigurationServiceFactory(applicationContext);
 
