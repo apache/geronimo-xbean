@@ -151,9 +151,13 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         this.parserContext = parserContext;
         this.qnameHelper = new XBeanQNameHelper(parserContext.getReaderContext());
         BeanDefinitionHolder holder = parseBeanFromExtensionElement(element);
-        BeanDefinitionReaderUtils.registerBeanDefinition(holder, parserContext.getRegistry());
-        BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);
-        parserContext.getReaderContext().fireComponentRegistered(componentDefinition);
+        // Only register components: i.e. first level beans (or root element if no <beans> element
+        if (element.getParentNode() == element.getOwnerDocument() || 
+            element.getParentNode().getParentNode() == element.getOwnerDocument()) {
+            BeanDefinitionReaderUtils.registerBeanDefinition(holder, parserContext.getRegistry());
+            BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);
+            parserContext.getReaderContext().fireComponentRegistered(componentDefinition);
+        }
         return holder.getBeanDefinition();
     }
 
