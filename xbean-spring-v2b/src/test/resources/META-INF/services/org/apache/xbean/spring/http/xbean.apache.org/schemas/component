@@ -1,0 +1,2 @@
+container=org.apache.xbean.spring.example.ContainerBean
+inner=org.apache.xbean.spring.example.InnerBean
