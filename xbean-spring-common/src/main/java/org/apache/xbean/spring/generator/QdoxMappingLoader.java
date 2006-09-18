@@ -144,14 +144,20 @@ public class QdoxMappingLoader implements MappingLoader {
         JavaSource[] javaSources = builder.getSources();
         List elements = new ArrayList();
         for (int i = 0; i < javaSources.length; i++) {
-            JavaClass javaClass = javaSources[i].getClasses()[0];
-
-            ElementMapping element = loadElement(javaClass);
-            if (element != null && !javaClass.isAbstract()) {
-                elements.add(element);
-            } else {
-                log.debug("No XML annotation found for type: " + javaClass.getFullyQualifiedName());
-            }
+        	if( javaSources[i].getClasses().length == 0 ) {
+                log.warn("No Java Classes defined in: " + javaSources[i].getURL() );
+        	} else {
+        		JavaClass[] classes = javaSources[i].getClasses();
+        		for (int j = 0; j < classes.length; j++) {
+    	            JavaClass javaClass = classes[j];    	        	
+    	            ElementMapping element = loadElement(javaClass);
+    	            if (element != null && !javaClass.isAbstract()) {
+    	                elements.add(element);
+    	            } else {
+    	                log.debug("No XML annotation found for type: " + javaClass.getFullyQualifiedName());
+    	            }					
+				}
+        	}
         }
         return elements;
     }
