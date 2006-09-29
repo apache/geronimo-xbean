@@ -364,13 +364,17 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     protected abstract boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException;
 
     protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+        removeDeepBinding(name, pruneEmptyContexts, false);
+    }
+
+    protected void removeDeepBinding(Name name, boolean pruneEmptyContexts, boolean removeNotEmptyContext) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) {
             throw new InvalidNameException("Name is empty");
         }
 
         if (name.size() == 1) {
-            removeBinding(name.get(0), false);
+            removeBinding(name.get(0), removeNotEmptyContext);
             return;
         }
 
