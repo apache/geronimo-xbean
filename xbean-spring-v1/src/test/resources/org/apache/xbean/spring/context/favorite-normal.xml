@@ -26,6 +26,12 @@
          <entry key="Dan">
            <value>Grey Goose</value>
          </entry>
+         <entry key="IndecisiveDan">
+             <list>
+               <value>Malbec</value>
+               <value>Cognac</value>
+             </list>
+         </entry>
         </map>
     </property>
   </bean>

@@ -590,7 +590,14 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
 
                     Object keyValue = getValue(key, null);
 
-                    Object value = getValue(getElementText(childElement), null);
+                    Element valueElement = getFirstChildElement(childElement);
+                    
+                    Object value;
+                    if (valueElement != null) {
+                        value = parsePropertySubElement(valueElement, "");
+                    } else {
+                        value = getElementText(childElement);
+                    }
 
                     map.put(keyValue, value);
                 }
@@ -599,6 +606,17 @@ public class XBeanXmlBeanDefinitionParser extends DefaultXmlBeanDefinitionParser
         return map;
     }
 
+    protected Element getFirstChildElement(Element element)
+    {
+        NodeList nl = element.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                return (Element) node;
+            }
+        }
+        return null;
+    }
     protected boolean isMap(Class type) {
         return Map.class.isAssignableFrom(type);
     }
