@@ -487,7 +487,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     else {
                         propertyName = metadata.getFlatCollectionProperty(getLocalName(element), localName);
                         if (propertyName != null) {
-                            Object def = parseBeanFromExtensionElement(childElement);
+                            Object def = parserContext.getDelegate().parseCustomElement(childElement, true);
                             PropertyValue pv = definition.getBeanDefinition().getPropertyValues().getPropertyValue(propertyName);
                             if (pv != null) {
                                 Collection l = (Collection) pv.getValue();
@@ -661,7 +661,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                         return parserContext.getDelegate().parsePropertySubElement(childElement, null);
                     }
                 } else {
-                    Object value = parseBeanFromExtensionElement(childElement);
+                    Object value = parserContext.getDelegate().parseCustomElement(childElement, true);
                     if (value != null) {
                         return value;
                     }
