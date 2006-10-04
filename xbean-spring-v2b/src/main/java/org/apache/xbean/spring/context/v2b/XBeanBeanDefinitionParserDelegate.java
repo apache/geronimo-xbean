@@ -16,6 +16,7 @@
  */
 package org.apache.xbean.spring.context.v2b;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
@@ -92,6 +93,9 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
             mth.setAccessible(true);
             return mth.invoke(this, new Object[] { candidateEle });
         } catch (Exception e) {
+            if (e instanceof InvocationTargetException && e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            }
             throw new IllegalStateException("Unable to invoke parseNestedCustomElement method", e);
         }
     }
