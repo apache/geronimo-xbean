@@ -52,12 +52,17 @@ public class XBeanV2Helper {
     private static String getVersion() {
         if (version == null) {
             try {
-                Class cl = Class.forName("org.springframework.beans.factory.xml.BeanDefinitionParserDelegate");
                 try {
-                    cl.getMethod("parsePropertyElements", new Class[] { Element.class, BeanDefinition.class });
-                    version = "v2b";
-                } catch (NoSuchMethodException e) {
-                    version = "v2a";
+                    Class.forName("org.springframework.beans.factory.parsing.BeanComponentDefinition");
+                    version = "v2c";
+                } catch (ClassNotFoundException e) {
+                    Class cl = Class.forName("org.springframework.beans.factory.xml.BeanDefinitionParserDelegate");
+                    try {
+                        cl.getMethod("parsePropertyElements", new Class[] { Element.class, BeanDefinition.class });
+                        version = "v2b";
+                    } catch (NoSuchMethodException e2) {
+                        version = "v2a";
+                    }
                 }
             } catch (Throwable e) {
                 throw (IllegalStateException) new IllegalStateException("Could not create namespace handler for: " + version).initCause(e);

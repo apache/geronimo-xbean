@@ -16,6 +16,9 @@
  */
 package org.apache.xbean.spring.context.v2;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader;
 import org.springframework.beans.factory.xml.XmlReaderContext;
@@ -34,7 +37,28 @@ public class XBeanBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocu
         String namespaceUri = root.getNamespaceURI();
         if (!DomUtils.nodeNameEquals(root, "beans") && 
             !delegate.isDefaultNamespace(namespaceUri)) {
-            delegate.parseCustomElement(root, false);
+            try {
+                try {
+                    Method m = BeanDefinitionParserDelegate.class.getMethod("parseCustomElement", new Class[] { Element.class });
+                    m.invoke(delegate, new Object[] { root });
+                } catch (NoSuchMethodException e) {
+                    try {
+                        Method m = BeanDefinitionParserDelegate.class.getMethod("parseCustomElement", new Class[] { Element.class, boolean.class });
+                        m.invoke(delegate, new Object[] { root, Boolean.FALSE });
+                    } catch (NoSuchMethodException e2) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof RuntimeException) {
+                    throw (RuntimeException) e.getCause();
+                }
+                throw new RuntimeException(e);
+            }
         } else {
             super.parseBeanDefinitions(root, delegate);
         }

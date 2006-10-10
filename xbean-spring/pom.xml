@@ -71,6 +71,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-v2c</artifactId>
+            <version>${pom.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
         </dependency>
@@ -121,6 +128,11 @@
                                 <artifactItem>
                                     <groupId>org.apache.xbean</groupId>
                                     <artifactId>xbean-spring-v2b</artifactId>
+                                    <version>${pom.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.xbean</groupId>
+                                    <artifactId>xbean-spring-v2c</artifactId>
                                     <version>${pom.version}</version>
                                 </artifactItem>
                             </artifactItems>
