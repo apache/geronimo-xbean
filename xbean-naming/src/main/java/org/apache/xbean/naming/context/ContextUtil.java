@@ -66,16 +66,6 @@ public final class ContextUtil {
             }
         }
 
-        if (reference instanceof org.apache.geronimo.naming.reference.SimpleReference) {
-            try {
-                return ((org.apache.geronimo.naming.reference.SimpleReference) reference).getContent();
-            } catch (NamingException e) {
-                throw e;
-            } catch (Exception e) {
-                throw (NamingException) new NamingException("Could not look up : " + name).initCause(e);
-            }
-        }
-
         // for normal References we have to do it the slow way
         try {
             return NamingManager.getObjectInstance(reference, null, null, new Hashtable());
