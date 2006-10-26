@@ -461,9 +461,4 @@ public class ResourceFinder {
         }
     }
 
-
-    public Enumeration doFindCommands() throws IOException {
-        return Thread.currentThread().getContextClassLoader().getResources(path);
-    }
-
 }
