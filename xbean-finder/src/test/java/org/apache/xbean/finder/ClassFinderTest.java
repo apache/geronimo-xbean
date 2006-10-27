@@ -24,6 +24,7 @@ import java.lang.annotation.Annotation;
 
 import org.acme.foo.Holiday;
 import org.acme.foo.Color;
+import org.acme.foo.Primary;
 
 /**
  * @version $Rev$ $Date$
@@ -48,4 +49,12 @@ public class ClassFinderTest extends TestCase {
         assertNotNull("classes", classes);
         assertEquals("classes.size", 8, classes.size());
     }
+
+    public void testFindImplementingClasses() throws Exception {
+        ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
+        List<Class> classes = classFinder.findImplementingClasses(Primary.class);
+        assertNotNull("classes", classes);
+        assertEquals("classes.size", 4, classes.size());
+    }
+
 }

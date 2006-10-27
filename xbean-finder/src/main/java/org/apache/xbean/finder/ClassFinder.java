@@ -111,6 +111,17 @@ public class ClassFinder {
         return mappedClasses;
     }
 
+    public List<Class> findImplementingClasses(Class interfce){
+        List<Class> allClasses = getClasses();
+        List<Class> classes = new ArrayList<Class>();
+        for (Class clazz : allClasses) {
+            if (interfce.isAssignableFrom(clazz) && !interfce.getName().equals(clazz.getName())) {
+                classes.add(clazz);
+            }
+        }
+        return classes;
+    }
+
     public List<Class> getClasses() {
         return this.classes;
     }
