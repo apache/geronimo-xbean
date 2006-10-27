@@ -53,7 +53,6 @@ public class WikiDocumentationGenerator implements GeneratorPlugin {
     }
 
     private void generateDocumentation(PrintWriter out, NamespaceMapping namespaceMapping) {
-    	
         HashMap refercencedTypes = new HashMap();
     	
         // Build of map of types that are referenced by element types. 
@@ -63,7 +62,7 @@ public class WikiDocumentationGenerator implements GeneratorPlugin {
                 AttributeMapping attribute = (AttributeMapping) iterator.next();
                 Type type = getNestedType( attribute.getType() );
 				
-                if( Utils.isSimpleType( type) ) 
+                if( namespaceMapping.isSimpleType( type) )
                     continue;
 				
                 if( !refercencedTypes.containsKey(type.getName()) )

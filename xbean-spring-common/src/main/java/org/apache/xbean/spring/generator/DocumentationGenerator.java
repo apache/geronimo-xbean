@@ -124,7 +124,7 @@ public class DocumentationGenerator implements GeneratorPlugin {
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext() && (!hasAttributes || !hasElements);) {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
             Type type = attributeMapping.getType();
-            if (Utils.isSimpleType(type)) {
+            if (namespaceMapping.isSimpleType(type)) {
                 hasAttributes = true;
             } else {
                 hasElements = true;
@@ -137,7 +137,7 @@ public class DocumentationGenerator implements GeneratorPlugin {
             for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
                 AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
                 Type type = attributeMapping.getType();
-                if (Utils.isSimpleType(type)) {
+                if (namespaceMapping.isSimpleType(type)) {
                     out.println("  <tr><td>" + attributeMapping.getAttributeName() + "</td><td>" + Utils.getXsdType(type)
                             + "</td><td>" + attributeMapping.getDescription() + "</td></tr>");
                 }
@@ -152,7 +152,7 @@ public class DocumentationGenerator implements GeneratorPlugin {
             for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
                 AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
                 Type type = attributeMapping.getType();
-                if (!Utils.isSimpleType(type)) {
+                if (!namespaceMapping.isSimpleType(type)) {
                     out.print("  <tr><td>" + attributeMapping.getAttributeName() + "</td><td>");
                     printComplexPropertyTypeDocumentation(out, namespaceMapping, type);
                     out.println("</td><td>" + attributeMapping.getDescription() + "</td></tr>");

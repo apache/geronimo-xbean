@@ -77,4 +77,15 @@ public class NamespaceMapping implements Comparable {
     public int compareTo(Object obj) {
         return namespace.compareTo(((NamespaceMapping) obj).namespace);
     }
+
+    private final HashMap checkedTypes = new HashMap();
+
+    public boolean isSimpleType(Type type) {
+        Boolean b = (Boolean) checkedTypes.get(type);
+        if (b == null){
+            b = Utils.isSimpleType(type)? Boolean.TRUE: Boolean.FALSE;
+            checkedTypes.put(type, b);
+        }
+        return b.booleanValue();
+    }
 }
