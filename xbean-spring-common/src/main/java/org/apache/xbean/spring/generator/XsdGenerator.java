@@ -87,7 +87,7 @@ public class XsdGenerator implements GeneratorPlugin {
         int complexCount = 0;
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-            if (!Utils.isSimpleType(attributeMapping.getType())) {
+            if (!namespaceMapping.isSimpleType(attributeMapping.getType())) {
                 complexCount++;
             }
         }
@@ -95,7 +95,7 @@ public class XsdGenerator implements GeneratorPlugin {
             out.println("      <xs:sequence>");
             for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
                 AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-                if (!Utils.isSimpleType(attributeMapping.getType())) {
+                if (!namespaceMapping.isSimpleType(attributeMapping.getType())) {
                     generateElementMappingComplexProperty(out, namespaceMapping, attributeMapping);
                 }
             }
@@ -104,7 +104,7 @@ public class XsdGenerator implements GeneratorPlugin {
 
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
             AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-            if (Utils.isSimpleType(attributeMapping.getType())) {
+            if (namespaceMapping.isSimpleType(attributeMapping.getType())) {
                 generateElementMappingSimpleProperty(out, attributeMapping);
             } else if (!attributeMapping.getType().isCollection()) {
                 generateElementMappingComplexPropertyAsRef(out, attributeMapping);
