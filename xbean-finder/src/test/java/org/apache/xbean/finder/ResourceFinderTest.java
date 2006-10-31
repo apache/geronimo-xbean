@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 package org.apache.xbean.finder;
-/**
- * @version $Revision$ $Date$
- */
 
+/**
+ * @version $Rev$ $Date$
+ */
 import junit.framework.TestCase;
 import org.acme.BarUrlHandler;
 import org.acme.FooUrlHandler;

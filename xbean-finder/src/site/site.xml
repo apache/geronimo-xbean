@@ -18,7 +18,7 @@
 
 -->
 
-<!-- $Id$ -->
+<!-- $Id: site.xml 434369 2006-08-24 10:24:21Z gnodet $ -->
 
 <project name="${project.name}">
     
