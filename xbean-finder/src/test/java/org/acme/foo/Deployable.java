@@ -9,9 +9,7 @@ package org.acme.foo;
 /**
  * @version $Revision$ $Date$
  */
-@Color public class Green implements Primary {
-    @Color public static class Emerald extends Green {}
-
-    @Property public void myMethod(){
-    }
+@java.lang.annotation.Target(value = {java.lang.annotation.ElementType.PACKAGE})
+@java.lang.annotation.Retention(value = java.lang.annotation.RetentionPolicy.RUNTIME)
+public @interface Deployable {
 }
