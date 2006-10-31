@@ -36,12 +36,14 @@ import java.util.jar.JarFile;
 
 /**
  * @author David Blevins
+ * 
+ * @version $Rev$ $Date$
  */
 public class ResourceFinder {
 
     private final String path;
     private final ClassLoader classLoader;
-    private final List<String> resourcesNotLoaded = new ArrayList();
+    private final List<String> resourcesNotLoaded = new ArrayList<String>();
 
     public ResourceFinder(String path) {
         this(path, Thread.currentThread().getContextClassLoader());
@@ -53,15 +55,15 @@ public class ResourceFinder {
     }
 
     /**
-     * Returns a list of resources that could not be loaded in last invoked findAvailable* or
-     * mapAvailabl* method.
+     * Returns a list of resources that could not be loaded in the last invoked findAvailable* or
+     * mapAvailable* methods.
      * <p/>
-     * The list will only contain entries of resources that matched the requirements
-     * of last invoked findAvailable* or mapAvailabl* method, but were unable to be
-     * loaded and included in the results.
+     * The list will only contain entries of resources that match the requirements
+     * of the last invoked findAvailable* or mapAvailable* methods, but were unable to be
+     * loaded and included in their results.
      * <p/>
      * The list returned is unmodifiable and the results of this method will change
-     * after each invocation of a findAvailable* or mapAvailabl* method.
+     * after each invocation of a findAvailable* or mapAvailable* methods.
      * <p/>
      * This method is not thread safe.
      */
@@ -76,29 +78,31 @@ public class ResourceFinder {
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     /**
-     * Reads the contents of the found URL as a String and returns it.
+     * Reads the contents of the URL as a {@link String}'s and returns it.
      *
      * @param uri
-     * @return
-     * @throws IOException
+     * @return a stringified content of a resource
+     * @throws IOException if a resource pointed out by the uri param could not be find
+     * 
+     * @see ClassLoader#getResource(String)
      */
     public String findString(String uri) throws IOException {
         String fullUri = path + uri;
 
         URL resource = classLoader.getResource(fullUri);
         if (resource == null) {
-            throw new IOException("Could not find command in : " + fullUri);
+            throw new IOException("Could not find a resource in : " + fullUri);
         }
 
         return readContents(resource);
     }
 
     /**
-     * Reads the contents of the found URLs as a Strings and returns them.
+     * Reads the contents of the found URLs as a list of {@link String}'s and returns them.
      *
      * @param uri
      * @return a list of the content of each resource URL found
-     * @throws IOException if any of the URLs are unable to be read.
+     * @throws IOException if any of the found URLs are unable to be read.
      */
     public List<String> findAllStrings(String uri) throws IOException {
         String fulluri = path + uri;
@@ -146,7 +150,7 @@ public class ResourceFinder {
      * Reads the contents of all non-directory URLs immediately under the specified
      * location and returns them in a map keyed by the file name.
      *
-     * Any URLs that connot be read will cause an exception to be thrown.
+     * Any URLs that cannot be read will cause an exception to be thrown.
      *
      * Example classpath:
      *
@@ -230,7 +234,7 @@ public class ResourceFinder {
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     /**
-     * Executes findString assuming the contents URL found is the name of
+     * Executes {@link #findString(String)} assuming the contents URL found is the name of
      * a class that should be loaded and returned.
      *
      * @param uri
