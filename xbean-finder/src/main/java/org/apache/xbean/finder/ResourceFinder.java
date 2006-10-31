@@ -30,23 +30,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * @author David Blevins
+ */
 public class ResourceFinder {
 
     private final String path;
     private final ClassLoader classLoader;
+    private final List<String> resourcesNotLoaded = new ArrayList();
 
     public ResourceFinder(String path) {
         this(path, Thread.currentThread().getContextClassLoader());
     }
 
     public ResourceFinder(String path, ClassLoader classLoader) {
-        this.path = path;
+        this.path = (path == null)? "" : path;
         this.classLoader = classLoader;
     }
 
+    /**
+     * Returns a list of resources that could not be loaded in last invoked findAvailable* or
+     * mapAvailabl* method.
+     * <p/>
+     * The list will only contain entries of resources that matched the requirements
+     * of last invoked findAvailable* or mapAvailabl* method, but were unable to be
+     * loaded and included in the results.
+     * <p/>
+     * The list returned is unmodifiable and the results of this method will change
+     * after each invocation of a findAvailable* or mapAvailabl* method.
+     * <p/>
+     * This method is not thread safe.
+     */
+    public List<String> getResourcesNotLoaded() {
+        return Collections.unmodifiableList(resourcesNotLoaded);
+    }
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     //
@@ -54,23 +75,37 @@ public class ResourceFinder {
     //
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    public String findString(String key) throws IOException {
-        String uri = path + key;
+    /**
+     * Reads the contents of the found URL as a String and returns it.
+     *
+     * @param uri
+     * @return
+     * @throws IOException
+     */
+    public String findString(String uri) throws IOException {
+        String fullUri = path + uri;
 
-        URL resource = classLoader.getResource(uri);
+        URL resource = classLoader.getResource(fullUri);
         if (resource == null) {
-            throw new IOException("Could not find command in : " + uri);
+            throw new IOException("Could not find command in : " + fullUri);
         }
 
         return readContents(resource);
     }
 
-    public List<String> findAllStrings(String key) throws IOException {
-        String uri = path + key;
+    /**
+     * Reads the contents of the found URLs as a Strings and returns them.
+     *
+     * @param uri
+     * @return a list of the content of each resource URL found
+     * @throws IOException if any of the URLs are unable to be read.
+     */
+    public List<String> findAllStrings(String uri) throws IOException {
+        String fulluri = path + uri;
 
         List<String> strings = new ArrayList<String>();
 
-        Enumeration<URL> resources = classLoader.getResources(uri);
+        Enumeration<URL> resources = classLoader.getResources(fulluri);
         while (resources.hasMoreElements()) {
             URL url = resources.nextElement();
             String string = readContents(url);
@@ -79,26 +114,61 @@ public class ResourceFinder {
         return strings;
     }
 
-    public List<String> findAvailableStrings(String key) throws IOException {
-        String uri = path + key;
+    /**
+     * Reads the contents of the found URLs as a Strings and returns them.
+     * Individual URLs that cannot be read are skipped and added to the
+     * list of 'resourcesNotLoaded'
+     *
+     * @param uri
+     * @return a list of the content of each resource URL found
+     * @throws IOException if classLoader.getResources throws an exception
+     */
+    public List<String> findAvailableStrings(String uri) throws IOException {
+        resourcesNotLoaded.clear();
+        String fulluri = path + uri;
 
         List<String> strings = new ArrayList<String>();
 
-        Enumeration<URL> resources = classLoader.getResources(uri);
+        Enumeration<URL> resources = classLoader.getResources(fulluri);
         while (resources.hasMoreElements()) {
+            URL url = resources.nextElement();
             try {
-                URL url = resources.nextElement();
                 String string = readContents(url);
                 strings.add(string);
-            } catch (Exception notAvailable) {
+            } catch (IOException notAvailable) {
+                resourcesNotLoaded.add(url.toExternalForm());
             }
         }
         return strings;
     }
 
-    public Map<String,String> mapAllStrings(String key) throws IOException {
+    /**
+     * Reads the contents of all non-directory URLs immediately under the specified
+     * location and returns them in a map keyed by the file name.
+     *
+     * Any URLs that connot be read will cause an exception to be thrown.
+     *
+     * Example classpath:
+     *
+     * META-INF/serializables/one
+     * META-INF/serializables/two
+     * META-INF/serializables/three
+     * META-INF/serializables/four/foo.txt
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Map map = finder.mapAvailableStrings("serializables");
+     * map.contains("one");  // true
+     * map.contains("two");  // true
+     * map.contains("three");  // true
+     * map.contains("four");  // false
+     *
+     * @param uri
+     * @return a list of the content of each resource URL found
+     * @throws IOException if any of the urls cannot be read
+     */
+    public Map<String,String> mapAllStrings(String uri) throws IOException {
         Map<String,String> strings = new HashMap<String,String>();
-        Map<String, URL> resourcesMap = getResourcesMap(key);
+        Map<String, URL> resourcesMap = getResourcesMap(uri);
         for (Iterator iterator = resourcesMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
             String name = (String) entry.getKey();
@@ -109,17 +179,44 @@ public class ResourceFinder {
         return strings;
     }
 
-    public Map<String,String> mapAvailableStrings(String key) throws IOException {
+    /**
+     * Reads the contents of all non-directory URLs immediately under the specified
+     * location and returns them in a map keyed by the file name.
+     *
+     * Individual URLs that cannot be read are skipped and added to the
+     * list of 'resourcesNotLoaded'
+     *
+     * Example classpath:
+     *
+     * META-INF/serializables/one
+     * META-INF/serializables/two      # not readable
+     * META-INF/serializables/three
+     * META-INF/serializables/four/foo.txt
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Map map = finder.mapAvailableStrings("serializables");
+     * map.contains("one");  // true
+     * map.contains("two");  // false
+     * map.contains("three");  // true
+     * map.contains("four");  // false
+     *
+     * @param uri
+     * @return a list of the content of each resource URL found
+     * @throws IOException if classLoader.getResources throws an exception
+     */
+    public Map<String,String> mapAvailableStrings(String uri) throws IOException {
+        resourcesNotLoaded.clear();
         Map<String,String> strings = new HashMap<String,String>();
-        Map<String, URL> resourcesMap = getResourcesMap(key);
+        Map<String, URL> resourcesMap = getResourcesMap(uri);
         for (Iterator iterator = resourcesMap.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String name = (String) entry.getKey();
+            URL url = (URL) entry.getValue();
             try {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                String name = (String) entry.getKey();
-                URL url = (URL) entry.getValue();
                 String value = readContents(url);
                 strings.put(name,value);
-            } catch (Exception notAvailable) {
+            } catch (IOException notAvailable) {
+                resourcesNotLoaded.add(url.toExternalForm());
             }
         }
         return strings;
@@ -132,15 +229,34 @@ public class ResourceFinder {
     //
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    public Class findClass(String key) throws IOException, ClassNotFoundException {
-        String className = findString(key);
-        Class clazz = classLoader.loadClass(className);
-        return clazz;
+    /**
+     * Executes findString assuming the contents URL found is the name of
+     * a class that should be loaded and returned.
+     *
+     * @param uri
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public Class findClass(String uri) throws IOException, ClassNotFoundException {
+        String className = findString(uri);
+        return (Class)classLoader.loadClass(className);
     }
 
-    public List<Class> findAllClasses(String key) throws IOException, ClassNotFoundException {
+    /**
+     * Executes findAllStrings assuming the strings are
+     * the names of a classes that should be loaded and returned.
+     *
+     * Any URL or class that cannot be loaded will cause an exception to be thrown.
+     *
+     * @param uri
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public List<Class> findAllClasses(String uri) throws IOException, ClassNotFoundException {
         List<Class> classes = new ArrayList<Class>();
-        List<String> strings = findAllStrings(key);
+        List<String> strings = findAllStrings(uri);
         for (String className : strings) {
             Class clazz = classLoader.loadClass(className);
             classes.add(clazz);
@@ -148,22 +264,58 @@ public class ResourceFinder {
         return classes;
     }
 
-    public List<Class> findAvailableClasses(String key) throws IOException {
+    /**
+     * Executes findAvailableStrings assuming the strings are
+     * the names of a classes that should be loaded and returned.
+     *
+     * Any class that cannot be loaded will be skipped and placed in the
+     * 'resourcesNotLoaded' collection.
+     *
+     * @param uri
+     * @return
+     * @throws IOException if classLoader.getResources throws an exception
+     */
+    public List<Class> findAvailableClasses(String uri) throws IOException {
+        resourcesNotLoaded.clear();
         List<Class> classes = new ArrayList<Class>();
-        List<String> strings = findAvailableStrings(key);
+        List<String> strings = findAvailableStrings(uri);
         for (String className : strings) {
             try {
                 Class clazz = classLoader.loadClass(className);
                 classes.add(clazz);
             } catch (Exception notAvailable) {
+                resourcesNotLoaded.add(className);
             }
         }
         return classes;
     }
 
-    public Map<String, Class> mapAllClasses(String key) throws IOException, ClassNotFoundException {
+    /**
+     * Executes mapAllStrings assuming the value of each entry in the
+     * map is the name of a class that should be loaded.
+     *
+     * Any class that cannot be loaded will be cause an exception to be thrown.
+     *
+     * Example classpath:
+     *
+     * META-INF/xmlparsers/xerces
+     * META-INF/xmlparsers/crimson
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Map map = finder.mapAvailableStrings("xmlparsers");
+     * map.contains("xerces");  // true
+     * map.contains("crimson");  // true
+     * Class xercesClass = map.get("xerces");
+     * Class crimsonClass = map.get("crimson");
+     *
+     * @param uri
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public Map<String, Class> mapAllClasses(String uri) throws IOException, ClassNotFoundException {
         Map<String, Class> classes = new HashMap<String, Class>();
-        Map<String, String> map = mapAllStrings(key);
+        Map<String, String> map = mapAllStrings(uri);
         for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
             String string = (String) entry.getKey();
@@ -174,17 +326,42 @@ public class ResourceFinder {
         return classes;
     }
 
-    public Map<String, Class> mapAvailableClasses(String key) throws IOException {
+    /**
+     * Executes mapAvailableStrings assuming the value of each entry in the
+     * map is the name of a class that should be loaded.
+     *
+     * Any class that cannot be loaded will be skipped and placed in the
+     * 'resourcesNotLoaded' collection.
+     *
+     * Example classpath:
+     *
+     * META-INF/xmlparsers/xerces
+     * META-INF/xmlparsers/crimson
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Map map = finder.mapAvailableStrings("xmlparsers");
+     * map.contains("xerces");  // true
+     * map.contains("crimson");  // true
+     * Class xercesClass = map.get("xerces");
+     * Class crimsonClass = map.get("crimson");
+     *
+     * @param uri
+     * @return
+     * @throws IOException if classLoader.getResources throws an exception
+     */
+    public Map<String, Class> mapAvailableClasses(String uri) throws IOException {
+        resourcesNotLoaded.clear();
         Map<String, Class> classes = new HashMap<String, Class>();
-        Map<String, String> map = mapAvailableStrings(key);
+        Map<String, String> map = mapAvailableStrings(uri);
         for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String string = (String) entry.getKey();
+            String className = (String) entry.getValue();
             try {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                String string = (String) entry.getKey();
-                String className = (String) entry.getValue();
                 Class clazz = classLoader.loadClass(className);
                 classes.put(string, clazz);
             } catch (Exception notAvailable) {
+                resourcesNotLoaded.add(className);
             }
         }
         return classes;
@@ -196,6 +373,27 @@ public class ResourceFinder {
     //
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+    /**
+     * Assumes the class specified points to a file in the classpath that contains
+     * the name of a class that implements or is a subclass of the specfied class.
+     *
+     * Any class that cannot be loaded will be cause an exception to be thrown.
+     *
+     * Example classpath:
+     *
+     * META-INF/java.io.InputStream    # contains the classname org.acme.AcmeInputStream
+     * META-INF/java.io.OutputStream
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Class clazz = finder.findImplementation(java.io.InputStream.class);
+     * clazz.getName();  // returns "org.acme.AcmeInputStream"
+     *
+     * @param interfase a superclass or interface
+     * @return
+     * @throws IOException if the URL cannot be read
+     * @throws ClassNotFoundException if the class found is not loadable
+     * @throws ClassCastException if the class found is not assignable to the specified superclass or interface
+     */
     public Class findImplementation(Class interfase) throws IOException, ClassNotFoundException {
         String className = findString(interfase.getName());
         Class impl = classLoader.loadClass(className);
@@ -205,6 +403,31 @@ public class ResourceFinder {
         return impl;
     }
 
+    /**
+     * Assumes the class specified points to a file in the classpath that contains
+     * the name of a class that implements or is a subclass of the specfied class.
+     *
+     * Any class that cannot be loaded or assigned to the specified interface will be cause
+     * an exception to be thrown.
+     *
+     * Example classpath:
+     *
+     * META-INF/java.io.InputStream    # contains the classname org.acme.AcmeInputStream
+     * META-INF/java.io.InputStream    # contains the classname org.widget.NeatoInputStream
+     * META-INF/java.io.InputStream    # contains the classname com.foo.BarInputStream
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * List classes = finder.findAllImplementations(java.io.InputStream.class);
+     * classes.contains("org.acme.AcmeInputStream");  // true
+     * classes.contains("org.widget.NeatoInputStream");  // true
+     * classes.contains("com.foo.BarInputStream");  // true
+     *
+     * @param interfase a superclass or interface
+     * @return
+     * @throws IOException if the URL cannot be read
+     * @throws ClassNotFoundException if the class found is not loadable
+     * @throws ClassCastException if the class found is not assignable to the specified superclass or interface
+     */
     public List<Class> findAllImplementations(Class interfase) throws IOException, ClassNotFoundException {
         List<Class> implementations = new ArrayList<Class>();
         List<String> strings = findAllStrings(interfase.getName());
@@ -218,7 +441,31 @@ public class ResourceFinder {
         return implementations;
     }
 
+    /**
+     * Assumes the class specified points to a file in the classpath that contains
+     * the name of a class that implements or is a subclass of the specfied class.
+     *
+     * Any class that cannot be loaded or are not assignable to the specified class will be
+     * skipped and placed in the 'resourcesNotLoaded' collection.
+     *
+     * Example classpath:
+     *
+     * META-INF/java.io.InputStream    # contains the classname org.acme.AcmeInputStream
+     * META-INF/java.io.InputStream    # contains the classname org.widget.NeatoInputStream
+     * META-INF/java.io.InputStream    # contains the classname com.foo.BarInputStream
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * List classes = finder.findAllImplementations(java.io.InputStream.class);
+     * classes.contains("org.acme.AcmeInputStream");  // true
+     * classes.contains("org.widget.NeatoInputStream");  // true
+     * classes.contains("com.foo.BarInputStream");  // true
+     *
+     * @param interfase a superclass or interface
+     * @return
+     * @throws IOException if classLoader.getResources throws an exception
+     */
     public List<Class> findAvailableImplementations(Class interfase) throws IOException {
+        resourcesNotLoaded.clear();
         List<Class> implementations = new ArrayList<Class>();
         List<String> strings = findAvailableStrings(interfase.getName());
         for (String className : strings) {
@@ -226,13 +473,41 @@ public class ResourceFinder {
                 Class impl = classLoader.loadClass(className);
                 if (interfase.isAssignableFrom(impl)) {
                     implementations.add(impl);
+                } else {
+                    resourcesNotLoaded.add(className);
                 }
             } catch (Exception notAvailable) {
+                resourcesNotLoaded.add(className);
             }
         }
         return implementations;
     }
 
+    /**
+     * Assumes the class specified points to a directory in the classpath that holds files
+     * containing the name of a class that implements or is a subclass of the specfied class.
+     *
+     * Any class that cannot be loaded or assigned to the specified interface will be cause
+     * an exception to be thrown.
+     *
+     * Example classpath:
+     *
+     * META-INF/java.net.URLStreamHandler/jar
+     * META-INF/java.net.URLStreamHandler/file
+     * META-INF/java.net.URLStreamHandler/http
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Map map = finder.mapAllImplementations(java.net.URLStreamHandler.class);
+     * Class jarUrlHandler = map.get("jar");
+     * Class fileUrlHandler = map.get("file");
+     * Class httpUrlHandler = map.get("http");
+     *
+     * @param interfase a superclass or interface
+     * @return
+     * @throws IOException if the URL cannot be read
+     * @throws ClassNotFoundException if the class found is not loadable
+     * @throws ClassCastException if the class found is not assignable to the specified superclass or interface
+     */
     public Map<String, Class> mapAllImplementations(Class interfase) throws IOException, ClassNotFoundException {
         Map<String, Class> implementations = new HashMap<String, Class>();
         Map<String, String> map = mapAllStrings(interfase.getName());
@@ -249,19 +524,46 @@ public class ResourceFinder {
         return implementations;
     }
 
+    /**
+     * Assumes the class specified points to a directory in the classpath that holds files
+     * containing the name of a class that implements or is a subclass of the specfied class.
+     *
+     * Any class that cannot be loaded or are not assignable to the specified class will be
+     * skipped and placed in the 'resourcesNotLoaded' collection.
+     *
+     * Example classpath:
+     *
+     * META-INF/java.net.URLStreamHandler/jar
+     * META-INF/java.net.URLStreamHandler/file
+     * META-INF/java.net.URLStreamHandler/http
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Map map = finder.mapAllImplementations(java.net.URLStreamHandler.class);
+     * Class jarUrlHandler = map.get("jar");
+     * Class fileUrlHandler = map.get("file");
+     * Class httpUrlHandler = map.get("http");
+     *
+     * @param interfase a superclass or interface
+     * @return
+     * @throws IOException if classLoader.getResources throws an exception
+     */
     public Map<String, Class> mapAvailableImplementations(Class interfase) throws IOException {
+        resourcesNotLoaded.clear();
         Map<String, Class> implementations = new HashMap<String, Class>();
         Map<String, String> map = mapAvailableStrings(interfase.getName());
         for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String string = (String) entry.getKey();
+            String className = (String) entry.getValue();
             try {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                String string = (String) entry.getKey();
-                String className = (String) entry.getValue();
                 Class impl = classLoader.loadClass(className);
                 if (interfase.isAssignableFrom(impl)) {
                     implementations.put(string, impl);
+                } else {
+                    resourcesNotLoaded.add(className);
                 }
             } catch (Exception notAvailable) {
+                resourcesNotLoaded.add(className);
             }
         }
         return implementations;
@@ -274,23 +576,55 @@ public class ResourceFinder {
     //
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    public Properties findProperties(String key) throws IOException {
-        String uri = path + key;
+    /**
+     * Finds the corresponding resource and reads it in as a properties file
+     *
+     * Example classpath:
+     *
+     * META-INF/widget.properties
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * Properties widgetProps = finder.findProperties("widget.properties");
+     *
+     * @param uri
+     * @return
+     * @throws IOException if the URL cannot be read or is not in properties file format
+     */
+    public Properties findProperties(String uri) throws IOException {
+        String fulluri = path + uri;
 
-        URL resource = classLoader.getResource(uri);
+        URL resource = classLoader.getResource(fulluri);
         if (resource == null) {
-            throw new IOException("Could not find command in : " + uri);
+            throw new IOException("Could not find command in : " + fulluri);
         }
 
         return loadProperties(resource);
     }
 
-    public List<Properties> findAllProperties(String key) throws IOException {
-        String uri = path + key;
+    /**
+     * Finds the corresponding resources and reads them in as a properties files
+     *
+     * Any URL that cannot be read in as a properties file will cause an exception to be thrown.
+     *
+     * Example classpath:
+     *
+     * META-INF/app.properties
+     * META-INF/app.properties
+     * META-INF/app.properties
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * List<Properties> appProps = finder.findAllProperties("app.properties");
+     *
+     * @param uri
+     * @return
+     * @throws IOException if the URL cannot be read or is not in properties file format
+     */
+    public List<Properties> findAllProperties(String uri) throws IOException {
+        String fulluri = path + uri;
 
         List<Properties> properties = new ArrayList<Properties>();
 
-        Enumeration<URL> resources = classLoader.getResources(uri);
+        Enumeration<URL> resources = classLoader.getResources(fulluri);
         while (resources.hasMoreElements()) {
             URL url = resources.nextElement();
             Properties props = loadProperties(url);
@@ -299,26 +633,68 @@ public class ResourceFinder {
         return properties;
     }
 
-    public List<Properties> findAvailableProperties(String key) throws IOException {
-        String uri = path + key;
+    /**
+     * Finds the corresponding resources and reads them in as a properties files
+     *
+     * Any URL that cannot be read in as a properties file will be added to the
+     * 'resourcesNotLoaded' collection.
+     *
+     * Example classpath:
+     *
+     * META-INF/app.properties
+     * META-INF/app.properties
+     * META-INF/app.properties
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * List<Properties> appProps = finder.findAvailableProperties("app.properties");
+     *
+     * @param uri
+     * @return
+     * @throws IOException if classLoader.getResources throws an exception
+     */
+    public List<Properties> findAvailableProperties(String uri) throws IOException {
+        resourcesNotLoaded.clear();
+        String fulluri = path + uri;
 
         List<Properties> properties = new ArrayList<Properties>();
 
-        Enumeration<URL> resources = classLoader.getResources(uri);
+        Enumeration<URL> resources = classLoader.getResources(fulluri);
         while (resources.hasMoreElements()) {
+            URL url = resources.nextElement();
             try {
-                URL url = resources.nextElement();
                 Properties props = loadProperties(url);
                 properties.add(props);
             } catch (Exception notAvailable) {
+                resourcesNotLoaded.add(url.toExternalForm());
             }
         }
         return properties;
     }
 
-    public Map<String, Properties> mapAllProperties(String key) throws IOException {
+    /**
+     * Finds the corresponding resources and reads them in as a properties files
+     *
+     * Any URL that cannot be read in as a properties file will cause an exception to be thrown.
+     *
+     * Example classpath:
+     *
+     * META-INF/jdbcDrivers/oracle.properties
+     * META-INF/jdbcDrivers/mysql.props
+     * META-INF/jdbcDrivers/derby
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * List<Properties> driversList = finder.findAvailableProperties("jdbcDrivers");
+     * Properties oracleProps = driversList.get("oracle.properties");
+     * Properties mysqlProps = driversList.get("mysql.props");
+     * Properties derbyProps = driversList.get("derby");
+     *
+     * @param uri
+     * @return
+     * @throws IOException if the URL cannot be read or is not in properties file format
+     */
+    public Map<String, Properties> mapAllProperties(String uri) throws IOException {
         Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
-        Map<String, URL> map = getResourcesMap(key);
+        Map<String, URL> map = getResourcesMap(uri);
         for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
             String string = (String) entry.getKey();
@@ -329,17 +705,41 @@ public class ResourceFinder {
         return propertiesMap;
     }
 
-    public Map<String, Properties> mapAvailableProperties(String key) throws IOException {
+    /**
+     * Finds the corresponding resources and reads them in as a properties files
+     *
+     * Any URL that cannot be read in as a properties file will be added to the
+     * 'resourcesNotLoaded' collection.
+     *
+     * Example classpath:
+     *
+     * META-INF/jdbcDrivers/oracle.properties
+     * META-INF/jdbcDrivers/mysql.props
+     * META-INF/jdbcDrivers/derby
+     *
+     * ResourceFinder finder = new ResourceFinder("META-INF/");
+     * List<Properties> driversList = finder.findAvailableProperties("jdbcDrivers");
+     * Properties oracleProps = driversList.get("oracle.properties");
+     * Properties mysqlProps = driversList.get("mysql.props");
+     * Properties derbyProps = driversList.get("derby");
+     *
+     * @param uri
+     * @return
+     * @throws IOException if classLoader.getResources throws an exception
+     */
+    public Map<String, Properties> mapAvailableProperties(String uri) throws IOException {
+        resourcesNotLoaded.clear();
         Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
-        Map<String, URL> map = getResourcesMap(key);
+        Map<String, URL> map = getResourcesMap(uri);
         for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String string = (String) entry.getKey();
+            URL url = (URL) entry.getValue();
             try {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                String string = (String) entry.getKey();
-                URL url = (URL) entry.getValue();
                 Properties properties = loadProperties(url);
                 propertiesMap.put(string, properties);
             } catch (Exception notAvailable) {
+                resourcesNotLoaded.add(url.toExternalForm());
             }
         }
         return propertiesMap;
@@ -351,8 +751,8 @@ public class ResourceFinder {
     //
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    public Map<String, URL> getResourcesMap(String key) throws IOException {
-        String basePath = path + key;
+    public Map<String, URL> getResourcesMap(String uri) throws IOException {
+        String basePath = path + uri;
 
         Map<String, URL> resources = new HashMap<String, URL>();
         if (!basePath.endsWith("/")){
