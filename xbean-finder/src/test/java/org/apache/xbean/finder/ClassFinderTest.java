@@ -17,44 +17,105 @@
 package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
-
-import java.util.List;
-import java.util.Map;
-import java.lang.annotation.Annotation;
-
-import org.acme.foo.Holiday;
+import org.acme.bar.Get;
+import org.acme.bar.ParamA;
+import org.acme.bar.Construct;
+import org.acme.bar.Type;
+import org.acme.bar.AnnType;
+import org.acme.foo.Blue;
 import org.acme.foo.Color;
-import org.acme.foo.Primary;
+import org.acme.foo.Green;
+import org.acme.foo.Halloween;
+import org.acme.foo.Holiday;
+import org.acme.foo.Red;
+import org.acme.foo.Thanksgiving;
+import org.acme.foo.ValentinesDay;
+import org.acme.foo.Deployable;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.List;
 
 /**
+ * @author David Blevins
  * @version $Rev$ $Date$
  */
 public class ClassFinderTest extends TestCase {
 
+    public void testFindAnnotatedPackages() throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        ClassFinder classFinder = new ClassFinder(classLoader);
+
+        List<Package> packages = classFinder.findAnnotatedPackages(Deployable.class);
+
+        assertNotNull(packages);
+        assertEquals(1, packages.size());
+        assertTrue(packages.contains(Red.class.getPackage()));
+    }
+
     public void testFindAnnotatedClasses() throws Exception {
-        ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
-        List<Class> classes = classFinder.findAnnotatedClasses(Holiday.class);
-        assertNotNull("classes", classes);
-        assertEquals("classes.size", 3, classes.size());
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        ClassFinder classFinder = new ClassFinder(classLoader);
+
+        Class[] expected = {Halloween.class, Thanksgiving.class, ValentinesDay.class};
+        List<Class> actual = classFinder.findAnnotatedClasses(Holiday.class);
+
+        assertNotNull(actual);
+        assertEquals(expected.length, actual.size());
+        for (Class clazz : expected) {
+            assertTrue(clazz.getName(), actual.contains(clazz));
+        }
+
+        Class[] expected2 = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class, Red.CandyApple.class, Red.Pink.class};
+        actual = classFinder.findAnnotatedClasses(Color.class);
+
+        assertNotNull(actual);
+        assertEquals(expected2.length, actual.size());
+        for (Class clazz : expected2) {
+            assertTrue(clazz.getName(), actual.contains(clazz));
+        }
+
+        Class[] expected3 = {Type.class};
+        actual = classFinder.findAnnotatedClasses(AnnType.class);
+
+        assertNotNull(actual);
+        assertEquals(expected3.length, actual.size());
+        for (Class clazz : expected3) {
+            assertTrue(clazz.getName(), actual.contains(clazz));
+        }
     }
 
-    public void testMapAnnotatedClasses() throws Exception {
+    public void testFindAnnotatedMethods() throws Exception {
         ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
-        Map<Class<? extends Annotation>, List<Class>> map = classFinder.mapAnnotatedClasses();
-        List<Class> classes = map.get(Holiday.class);
-        assertNotNull("classes", classes);
-        assertEquals("classes.size", 3, classes.size());
+        List<Method> methods = classFinder.findAnnotatedMethods(Get.class);
+        assertNotNull("methods", methods);
+        assertEquals("methods.size", 5, methods.size());
 
-        classes = map.get(Color.class);
-        assertNotNull("classes", classes);
-        assertEquals("classes.size", 8, classes.size());
+        // Annotated parameters don't count
+        methods = classFinder.findAnnotatedMethods(ParamA.class);
+        assertNotNull("methods", methods);
+        assertEquals("methods.size", 0, methods.size());
+
+        // Neither do annotated constructors
+        methods = classFinder.findAnnotatedMethods(Construct.class);
+        assertNotNull("methods", methods);
+        assertEquals("methods.size", 0, methods.size());
     }
 
-    public void testFindImplementingClasses() throws Exception {
+    public void testFindAnnotatedConstructors() throws Exception {
         ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
-        List<Class> classes = classFinder.findImplementingClasses(Primary.class);
-        assertNotNull("classes", classes);
-        assertEquals("classes.size", 4, classes.size());
+        List<Constructor> constructors = classFinder.findAnnotatedConstructors(Construct.class);
+        assertNotNull("constructors", constructors);
+        assertEquals("constructors.size", 1, constructors.size());
     }
 
+    public void testFindAnnotatedFields() throws Exception {
+        ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
+        List<Field> fields = classFinder.findAnnotatedFields(org.acme.bar.Field.class);
+        assertNotNull("fields", fields);
+        assertEquals("fields.size", 7, fields.size());
+    }
 }
