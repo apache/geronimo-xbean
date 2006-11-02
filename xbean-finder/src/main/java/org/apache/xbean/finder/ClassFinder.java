@@ -29,6 +29,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.AnnotatedElement;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,7 @@ import java.util.jar.JarInputStream;
  */
 public class ClassFinder {
     private final Map<String, List<Info>> annotated = new HashMap();
+    private final List<ClassInfo> classInfos = new ArrayList();
 
     private final ClassLoader classLoader;
     private final List<String> classesNotLoaded = new ArrayList();
@@ -127,7 +129,44 @@ public class ClassFinder {
         for (String className : classNames) {
             readClassDef(className);
         }
+    }
 
+    public ClassFinder(Class... classes){
+        this(Arrays.asList(classes));
+    }
+
+    public ClassFinder(List<Class> classes){
+        this.classLoader = null;
+        List<Info> infos = new ArrayList();
+        List<Package> packages = new ArrayList();
+        for (Class clazz : classes) {
+            if (!packages.contains(clazz.getPackage())){
+                infos.add(new PackageInfo(clazz.getPackage()));
+                packages.add(clazz.getPackage());
+            }
+
+            ClassInfo classInfo = new ClassInfo(clazz);
+            infos.add(classInfo);
+            classInfos.add(classInfo);
+            for (Method method : clazz.getDeclaredMethods()) {
+                infos.add(new MethodInfo(classInfo, method));
+            }
+
+            for (Constructor constructor : clazz.getConstructors()) {
+                infos.add(new MethodInfo(classInfo, constructor));
+            }
+
+            for (Field field : clazz.getDeclaredFields()) {
+                infos.add(new FieldInfo(classInfo, field));
+            }
+        }
+
+        for (Info info : infos) {
+            for (AnnotationInfo annotation : info.getAnnotations()) {
+                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
+                annotationInfos.add(info);
+            }
+        }
     }
 
     /**
@@ -274,6 +313,23 @@ public class ClassFinder {
         return fields;
     }
 
+    public List<Class> findClassesInPackage(String packageName, boolean recursive) {
+        classesNotLoaded.clear();
+        List<Class> classes = new ArrayList();
+        for (ClassInfo classInfo : classInfos) {
+            try {
+                if (recursive && classInfo.getPackageName().startsWith(packageName)){
+                    classes.add(classInfo.get());
+                } else if (classInfo.getPackageName().equals(packageName)){
+                    classes.add(classInfo.get());
+                }
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(classInfo.getName());
+            }
+        }
+        return classes;
+    }
+
     private static Collection<URL> getUrls(ClassLoader classLoader, boolean excludeParent) throws IOException {
         return getUrls(classLoader, excludeParent? classLoader.getParent() : null);
     }
@@ -347,12 +403,22 @@ public class ClassFinder {
         return classNames;
     }
 
-    public static class Annotatable {
+    public class Annotatable {
         private final List<AnnotationInfo> annotations = new ArrayList();
+
+        public Annotatable(AnnotatedElement element) {
+            for (Annotation annotation : element.getAnnotations()) {
+                annotations.add(new AnnotationInfo(annotation.annotationType().getName()));
+            }
+        }
+
+        public Annotatable() {
+        }
 
         public List<AnnotationInfo> getAnnotations() {
             return annotations;
         }
+
     }
 
     public static interface Info {
@@ -362,38 +428,57 @@ public class ClassFinder {
     }
 
     public class PackageInfo extends Annotatable implements Info {
+        private final String name;
         private final ClassInfo info;
+        private final Package pkg;
+
+        public PackageInfo(Package pkg){
+            super(pkg);
+            this.pkg = pkg;
+            this.name = pkg.getName();
+            this.info = null;
+        }
 
         public PackageInfo(String name) {
             info = new ClassInfo(name, null);
+            this.name = name;
+            this.pkg = null;
         }
 
         public String getName() {
-            return info.getName();
+            return name;
         }
 
         public Package get() throws ClassNotFoundException {
-            return info.get().getPackage();
+            return (pkg != null)?pkg:info.get().getPackage();
         }
     }
 
     public class ClassInfo extends Annotatable implements Info {
         private final String name;
-        private final List<MethodInfo> methods;
-        private final List<MethodInfo> constructors;
+        private final List<MethodInfo> methods = new ArrayList();
+        private final List<MethodInfo> constructors = new ArrayList();
         private final String superType;
-        private final List<String> interfaces;
-        private final List<FieldInfo> fields;
+        private final List<String> interfaces = new ArrayList();
+        private final List<FieldInfo> fields = new ArrayList();
         private Class<?> clazz;
         private ClassNotFoundException notFound;
+
+        public ClassInfo(Class clazz) {
+            super(clazz);
+            this.clazz = clazz;
+            this.name = clazz.getName();
+            Class superclass = clazz.getSuperclass();
+            this.superType = superclass != null ? superclass.getName(): null;
+        }
 
         public ClassInfo(String name, String superType) {
             this.name = name;
             this.superType = superType;
-            this.methods = new ArrayList();
-            this.constructors = new ArrayList();
-            this.interfaces = new ArrayList();
-            this.fields = new ArrayList();
+        }
+
+        public String getPackageName(){
+            return name.substring(name.lastIndexOf(".")+1, name.length());
         }
 
         public List<MethodInfo> getConstructors() {
@@ -442,13 +527,26 @@ public class ClassFinder {
         private final ClassInfo declaringClass;
         private final String returnType;
         private final String name;
-        private final List<List<AnnotationInfo>> parameterAnnotations;
+        private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList();
+
+        public MethodInfo(ClassInfo info, Constructor constructor){
+            super(constructor);
+            this.declaringClass = info;
+            this.name = "<init>";
+            this.returnType = Void.TYPE.getName();
+        }
+
+        public MethodInfo(ClassInfo info, Method method){
+            super(method);
+            this.declaringClass = info;
+            this.name = method.getName();
+            this.returnType = method.getReturnType().getName();
+        }
 
         public MethodInfo(ClassInfo declarignClass, String name, String returnType) {
             this.declaringClass = declarignClass;
             this.name = name;
             this.returnType = returnType;
-            this.parameterAnnotations = new ArrayList();
         }
 
         public List<List<AnnotationInfo>> getParameterAnnotations() {
@@ -485,6 +583,13 @@ public class ClassFinder {
         private final String type;
         private final ClassInfo declaringClass;
 
+        public FieldInfo(ClassInfo info, Field field){
+            super(field);
+            this.declaringClass = info;
+            this.name = field.getName();
+            this.type = field.getType().getName();
+        }
+
         public FieldInfo(ClassInfo declaringClass, String name, String type) {
             this.declaringClass = declaringClass;
             this.name = name;
@@ -510,6 +615,10 @@ public class ClassFinder {
 
     public class AnnotationInfo extends Annotatable implements Info {
         private final String name;
+
+        public AnnotationInfo(Annotation annotation){
+            this(annotation.getClass().getName());
+        }
 
         public AnnotationInfo(Class<? extends Annotation> annotation) {
             this.name = annotation.getName().intern();
@@ -575,6 +684,7 @@ public class ClassFinder {
                     classInfo.getInterfaces().add(javaName(interfce));
                 }
                 info = classInfo;
+                classInfos.add(classInfo);
             }
         }
 

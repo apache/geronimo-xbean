@@ -22,6 +22,7 @@ import org.acme.bar.ParamA;
 import org.acme.bar.Construct;
 import org.acme.bar.Type;
 import org.acme.bar.AnnType;
+import org.acme.bar.FullyAnnotated;
 import org.acme.foo.Blue;
 import org.acme.foo.Color;
 import org.acme.foo.Green;
@@ -31,23 +32,29 @@ import org.acme.foo.Red;
 import org.acme.foo.Thanksgiving;
 import org.acme.foo.ValentinesDay;
 import org.acme.foo.Deployable;
+import org.acme.foo.Primary;
+import org.acme.foo.Property;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author David Blevins
  * @version $Rev$ $Date$
  */
 public class ClassFinderTest extends TestCase {
+    private ClassFinder classFinder;
+
+
+    public void setUp() throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        classFinder = new ClassFinder(classLoader);
+    }
 
     public void testFindAnnotatedPackages() throws Exception {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-        ClassFinder classFinder = new ClassFinder(classLoader);
-
         List<Package> packages = classFinder.findAnnotatedPackages(Deployable.class);
 
         assertNotNull(packages);
@@ -56,9 +63,6 @@ public class ClassFinderTest extends TestCase {
     }
 
     public void testFindAnnotatedClasses() throws Exception {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-        ClassFinder classFinder = new ClassFinder(classLoader);
 
         Class[] expected = {Halloween.class, Thanksgiving.class, ValentinesDay.class};
         List<Class> actual = classFinder.findAnnotatedClasses(Holiday.class);
@@ -89,7 +93,6 @@ public class ClassFinderTest extends TestCase {
     }
 
     public void testFindAnnotatedMethods() throws Exception {
-        ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
         List<Method> methods = classFinder.findAnnotatedMethods(Get.class);
         assertNotNull("methods", methods);
         assertEquals("methods.size", 5, methods.size());
@@ -106,16 +109,28 @@ public class ClassFinderTest extends TestCase {
     }
 
     public void testFindAnnotatedConstructors() throws Exception {
-        ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
         List<Constructor> constructors = classFinder.findAnnotatedConstructors(Construct.class);
         assertNotNull("constructors", constructors);
         assertEquals("constructors.size", 1, constructors.size());
     }
 
     public void testFindAnnotatedFields() throws Exception {
-        ClassFinder classFinder = new ClassFinder(Thread.currentThread().getContextClassLoader());
         List<Field> fields = classFinder.findAnnotatedFields(org.acme.bar.Field.class);
         assertNotNull("fields", fields);
         assertEquals("fields.size", 7, fields.size());
+    }
+
+    public void testClassListConstructor() throws Exception {
+        Class[] classes = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class,
+                Red.CandyApple.class, Red.Pink.class, Halloween.class, Holiday.class, Deployable.class, Primary.class,
+                Property.class, Thanksgiving.class, ValentinesDay.class, FullyAnnotated.class, Type.class};
+
+        classFinder = new ClassFinder(classes);
+
+        testFindAnnotatedClasses();
+        testFindAnnotatedConstructors();
+        testFindAnnotatedFields();
+        testFindAnnotatedMethods();
+        testFindAnnotatedPackages();
     }
 }
