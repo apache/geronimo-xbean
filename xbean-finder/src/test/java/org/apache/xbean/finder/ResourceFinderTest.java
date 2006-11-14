@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.ArrayList;
 
 public class ResourceFinderTest extends TestCase {
     ResourceFinder resourceFinder = new ResourceFinder("META-INF/");
@@ -367,6 +368,41 @@ public class ResourceFinderTest extends TestCase {
         assertEquals("son", "Chris", properties.getProperty("son"));
         assertEquals("daughter", "Meg", properties.getProperty("daughter"));
         assertEquals("baby", "Stewie", properties.getProperty("baby"));
+    }
+
+
+    public void testUrlConstructor() throws Exception {
+        List<URL> all = resourceFinder.findAll("MANIFEST.MF");
+
+        List<URL> urls = new ArrayList();
+        for (URL url : all) {
+            if (url.getPath().contains("xbean-finder")){
+                urls.add(url);
+            }
+        }
+
+        resourceFinder = new ResourceFinder("META-INF/", urls.toArray(new URL[]{}));
+        testGetResourcesMap1();
+        testGetResourcesMap2();
+        testFindString();
+        testFindAllStrings();
+        testFindAvailableStrings();
+        testMapAllStrings();
+        testMapAvailableStrings();
+        testFindClass();
+        testFindAllClasses();
+        testFindAvailableClasses();
+        testMapAllClasses();
+        testMapAvailableClasses();
+        testFindImplementation();
+        testFindAllImplementations();
+        testMapAllImplementations();
+        testMapAvailableImplementations();
+        testFindProperties();
+        testFindAllProperties();
+        testFindAvailableProperties();
+        testMapAllProperties();
+        testMapAvailableProperties();
     }
 
 
