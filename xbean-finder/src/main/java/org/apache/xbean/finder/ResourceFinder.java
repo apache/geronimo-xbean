@@ -123,7 +123,7 @@ public class ResourceFinder {
 
         URL resource = getResource(fullUri);
         if (resource == null) {
-            throw new IOException("Could not find a resource in : " + fullUri);
+            throw new IOException("Could not find resource '" + fullUri + "'");
         }
 
         return resource;
@@ -868,7 +868,8 @@ public class ResourceFinder {
 
     private static void readJarEntries(URL location, String basePath, Map<String, URL> resources) throws IOException {
         JarURLConnection conn = (JarURLConnection) location.openConnection();
-        JarFile jarfile = conn.getJarFile();
+        JarFile jarfile = null;
+        jarfile = conn.getJarFile();
 
         Enumeration<JarEntry> entries = jarfile.entries();
         while (entries != null && entries.hasMoreElements()) {
@@ -995,6 +996,9 @@ public class ResourceFinder {
                         sb.append(file.substring(sepIdx));
                         sb.append(resourceName);
                         entryName = sb.toString();
+                    }
+                    if (entryName.equals("META-INF/") && jarFile.getEntry("META-INF/MANIFEST.MF") != null){
+                        return targetURL(currentUrl, "META-INF/MANIFEST.MF");
                     }
                     if (jarFile.getEntry(entryName) != null) {
                         return targetURL(currentUrl, resourceName);
