@@ -18,7 +18,7 @@ package org.apache.xbean.propertyeditor;
 
 import java.beans.PropertyEditorSupport;
 
-import org.apache.xbean.ClassLoading;
+import org.apache.xbean.Classes;
 
 /**
  * A base class for converters.  This class handles all converter methods, and redirects all conversion requests to
@@ -66,7 +66,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
             super.setValue(null);
         }
         if (!type.isInstance(value)) {
-            throw new PropertyEditorException("Value is not an instance of " + ClassLoading.getClassName(type));
+            throw new PropertyEditorException("Value is not an instance of " + Classes.getClassName(type));
         }
         super.setValue(value);
     }
@@ -76,7 +76,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
             return null;
         }
         if (!type.isInstance(value)) {
-            throw new PropertyEditorException("Value is not an instance of " + ClassLoading.getClassName(type) + ": " + value.getClass().getName());
+            throw new PropertyEditorException("Value is not an instance of " + Classes.getClassName(type) + ": " + value.getClass().getName());
         }
         return toStringImpl(value);
     }

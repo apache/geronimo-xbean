@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.xbean.ClassLoading;
+import org.apache.xbean.Classes;
 
 /**
  * The property editor manager.  This orchestrates Geronimo usage of
@@ -127,7 +127,7 @@ public class PropertyEditors {
         // load using the ClassLoading utility, which also manages arrays and primitive classes.
         Class typeClass = null;
         try {
-            typeClass = ClassLoading.loadClass(type, classLoader);
+            typeClass = Class.forName(type, true, classLoader);
         } catch (ClassNotFoundException e) {
             throw new PropertyEditorException("Type class could not be found: " + type);
         }
@@ -166,7 +166,7 @@ public class PropertyEditors {
         // fall back to a property editor
         PropertyEditor editor = findEditor(type);
         if (editor == null) {
-            throw new PropertyEditorException("Unable to find PropertyEditor for " + ClassLoading.getClassName(type, true));
+            throw new PropertyEditorException("Unable to find PropertyEditor for " + Classes.getClassName(type, true));
         }
 
         // create the string value
@@ -175,8 +175,8 @@ public class PropertyEditors {
         try {
             textValue = editor.getAsText();
         } catch (Exception e) {
-            throw new PropertyEditorException("Error while converting a \"" + ClassLoading.getClassName(type, true) + "\" to text " +
-                    " using the property editor " + ClassLoading.getClassName(editor.getClass(), true), e);
+            throw new PropertyEditorException("Error while converting a \"" + Classes.getClassName(type, true) + "\" to text " +
+                    " using the property editor " + Classes.getClassName(editor.getClass(), true), e);
         }
         return textValue;
     }
@@ -189,7 +189,7 @@ public class PropertyEditors {
         // load using the ClassLoading utility, which also manages arrays and primitive classes.
         Class typeClass = null;
         try {
-            typeClass = ClassLoading.loadClass(type, classLoader);
+            typeClass = Class.forName(type, true, classLoader);
         } catch (ClassNotFoundException e) {
             throw new PropertyEditorException("Type class could not be found: " + type);
         }
@@ -211,7 +211,7 @@ public class PropertyEditors {
         // fall back to a property editor
         PropertyEditor editor = findEditor(type);
         if (editor == null) {
-            throw new PropertyEditorException("Unable to find PropertyEditor for " + ClassLoading.getClassName(type, true));
+            throw new PropertyEditorException("Unable to find PropertyEditor for " + Classes.getClassName(type, true));
         }
 
         // create the object value
@@ -220,8 +220,8 @@ public class PropertyEditors {
         try {
             objectValue = editor.getValue();
         } catch (Exception e) {
-            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + ClassLoading.getClassName(type, true) +
-                    " using the property editor " + ClassLoading.getClassName(editor.getClass(), true), e);
+            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + Classes.getClassName(type, true) +
+                    " using the property editor " + Classes.getClassName(editor.getClass(), true), e);
         }
         return objectValue;
     }

@@ -21,7 +21,7 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.xbean.ClassLoading;
+import org.apache.xbean.Classes;
 
 /**
  * Adapter for editing array types.
@@ -33,11 +33,11 @@ public final class ArrayConverter extends AbstractCollectionConverter {
         super(type, editor);
 
         if (!type.isArray()) {
-            throw new IllegalArgumentException("type is not an array " + ClassLoading.getClassName(type));
+            throw new IllegalArgumentException("type is not an array " + Classes.getClassName(type));
         }
 
         if (type.getComponentType().isArray()) {
-            throw new IllegalArgumentException("type is a multi-dimensional array " + ClassLoading.getClassName(type, true));
+            throw new IllegalArgumentException("type is a multi-dimensional array " + Classes.getClassName(type, true));
         }
 
         if (editor == null) throw new NullPointerException("editor is null");

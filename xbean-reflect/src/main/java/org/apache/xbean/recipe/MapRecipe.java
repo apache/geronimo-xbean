@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.xbean.ClassLoading;
-
 /**
  * @version $Rev: 6687 $ $Date: 2005-12-28T21:08:56.733437Z $
  */
@@ -89,7 +87,7 @@ public class MapRecipe implements Recipe {
     public Object create(ClassLoader classLoader) {
         Class mapType = null;
         try {
-            mapType = ClassLoading.loadClass(type, classLoader);
+            mapType = Class.forName(type, true, classLoader);
         } catch (ClassNotFoundException e) {
             throw new ConstructionException("Type class could not be found: " + type);
         }

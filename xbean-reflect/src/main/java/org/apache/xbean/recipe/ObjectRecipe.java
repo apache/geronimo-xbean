@@ -16,19 +16,22 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.ClassLoading;
+import org.apache.xbean.Classes;
 import org.apache.xbean.propertyeditor.PropertyEditors;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
@@ -39,6 +42,7 @@ public class ObjectRecipe implements Recipe {
     private final String[] constructorArgNames;
     private final Class[] constructorArgTypes;
     private final LinkedHashMap properties;
+    private final List options = new ArrayList();
 
     public ObjectRecipe(Class type) {
         this(type.getName());
@@ -101,6 +105,14 @@ public class ObjectRecipe implements Recipe {
         }
     }
 
+    public void allow(Option option){
+        options.add(option);
+    }
+
+    public void disallow(Option option){
+        options.remove(option);
+    }
+
     public Object getProperty(String name) {
         if (name == null) throw new NullPointerException("name is null");
         Object value = properties.get(name);
@@ -134,20 +146,20 @@ public class ObjectRecipe implements Recipe {
         // load the type class
         Class typeClass = null;
         try {
-            typeClass = ClassLoading.loadClass(type, classLoader);
+            typeClass = Class.forName(type, true, classLoader);
         } catch (ClassNotFoundException e) {
             throw new ConstructionException("Type class could not be found: " + type);
         }
 
-        // verify that is is a class we can construct
+        // verify that it is a class we can construct
         if (!Modifier.isPublic(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is not public: " + ClassLoading.getClassName(typeClass, true));
+            throw new ConstructionException("Class is not public: " + Classes.getClassName(typeClass, true));
         }
         if (Modifier.isInterface(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is an interface: " + ClassLoading.getClassName(typeClass, true));
+            throw new ConstructionException("Class is an interface: " + Classes.getClassName(typeClass, true));
         }
         if (Modifier.isAbstract(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is abstract: " + ClassLoading.getClassName(typeClass, true));
+            throw new ConstructionException("Class is abstract: " + Classes.getClassName(typeClass, true));
         }
 
         // get object values for all recipe properties
@@ -170,12 +182,36 @@ public class ObjectRecipe implements Recipe {
             Map.Entry entry = (Map.Entry) iterator.next();
             String propertyName = (String) entry.getKey();
             Object propertyValue = entry.getValue();
-            Method setter = findSetter(typeClass, propertyName, propertyValue);
+
+            MissingAccessorException missingSetter = null;
+            Method setter = null;
             try {
+                setter = findSetter(typeClass, propertyName, propertyValue, options.contains(Option.PRIVATE_PROPERTIES));
                 propertyValue = convert(setter.getParameterTypes()[0], propertyValue);
                 setter.invoke(instance, new Object[]{propertyValue});
+                continue;
+            } catch (MissingAccessorException e) {
+                if (!options.contains(Option.FIELD_INJECTION)){
+                    throw e;
+                }
+                missingSetter = e;
             } catch (Exception e) {
                 throw new ConstructionException("Error setting property: " + setter);
+            }
+
+            Field field = null;
+            try {
+                field = findField(typeClass, propertyName, propertyValue, options.contains(Option.PRIVATE_PROPERTIES));
+                propertyValue = convert(field.getType(), propertyValue);
+                field.set(instance, propertyValue);
+            } catch (MissingAccessorException missingField) {
+                if (missingField.getMatchLevel() > missingSetter.getMatchLevel()) {
+                    throw missingField;
+                } else {
+                    throw missingSetter;
+                }
+            } catch (Exception e) {
+                throw new ConstructionException("Error setting property: " + field);
             }
         }
         return instance;
@@ -194,8 +230,8 @@ public class ObjectRecipe implements Recipe {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +
                             "index=" + i + ", " +
-                            "expected=" + ClassLoading.getClassName(type, true) + ", " +
-                            "actual=" + ClassLoading.getClassName(value, true));
+                            "expected=" + Classes.getClassName(type, true) + ", " +
+                            "actual=" + Classes.getClassName(value, true));
                 }
                 value = convert(type, value);
             } else {
@@ -327,7 +363,7 @@ public class ObjectRecipe implements Recipe {
             }
 
             StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
-            buffer.append("public static Object ").append(ClassLoading.getClassName(typeClass, true)).append(".");
+            buffer.append("public static Object ").append(Classes.getClassName(typeClass, true)).append(".");
             buffer.append(factoryMethod).append(toParameterList(constructorArgTypes));
             throw new ConstructionException(buffer.toString());
         }
@@ -367,12 +403,12 @@ public class ObjectRecipe implements Recipe {
 
             if (matches.size() < 1) {
                 StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid constructor: ");
-                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+                buffer.append("constructor= public ").append(Classes.getClassName(typeClass, true));
                 buffer.append(toArgumentList(constructorArgNames));
                 throw new ConstructionException(buffer.toString());
             } else if (matches.size() > 1) {
                 StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid constructors: ");
-                buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+                buffer.append("constructor= public ").append(Classes.getClassName(typeClass, true));
                 buffer.append(toArgumentList(constructorArgNames));
                 throw new ConstructionException(buffer.toString());
             }
@@ -403,7 +439,7 @@ public class ObjectRecipe implements Recipe {
             }
 
             StringBuffer buffer = new StringBuffer("Unable to find a valid constructor: ");
-            buffer.append("constructor= public ").append(ClassLoading.getClassName(typeClass, true));
+            buffer.append("constructor= public ").append(Classes.getClassName(typeClass, true));
             buffer.append(toParameterList(constructorArgTypes));
             throw new ConstructionException(buffer.toString());
         }
@@ -415,7 +451,7 @@ public class ObjectRecipe implements Recipe {
         for (int i = 0; i < parameterTypes.length; i++) {
             Class type = parameterTypes[i];
             if (i > 0) buffer.append(", ");
-            buffer.append(ClassLoading.getClassName(type, true));
+            buffer.append(Classes.getClassName(type, true));
         }
         buffer.append(")");
         return buffer.toString();
@@ -433,7 +469,7 @@ public class ObjectRecipe implements Recipe {
         return buffer.toString();
     }
 
-    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue) {
+    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
@@ -442,8 +478,9 @@ public class ObjectRecipe implements Recipe {
             setterName += propertyName.substring(1);
         }
 
+
         int matchLevel = 0;
-        ConstructionException missException = null;
+        MissingAccessorException missException = null;
 
         List methods = new ArrayList(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
@@ -453,7 +490,7 @@ public class ObjectRecipe implements Recipe {
                 if (method.getParameterTypes().length == 0) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
-                        missException = new ConstructionException("Setter takes no parameters: " + method);
+                        missException = new MissingAccessorException("Setter takes no parameters: " + method, matchLevel);
                     }
                     continue;
                 }
@@ -461,7 +498,7 @@ public class ObjectRecipe implements Recipe {
                 if (method.getParameterTypes().length > 1) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
-                        missException = new ConstructionException("Setter takes more then one parameter: " + method);
+                        missException = new MissingAccessorException("Setter takes more then one parameter: " + method, matchLevel);
                     }
                     continue;
                 }
@@ -469,7 +506,7 @@ public class ObjectRecipe implements Recipe {
                 if (method.getReturnType() != Void.TYPE) {
                     if (matchLevel < 2) {
                         matchLevel = 2;
-                        missException = new ConstructionException("Setter returns a value: " + method);
+                        missException = new MissingAccessorException("Setter returns a value: " + method, matchLevel);
                     }
                     continue;
                 }
@@ -477,15 +514,15 @@ public class ObjectRecipe implements Recipe {
                 if (Modifier.isAbstract(method.getModifiers())) {
                     if (matchLevel < 3) {
                         matchLevel = 3;
-                        missException = new ConstructionException("Setter is abstract: " + method);
+                        missException = new MissingAccessorException("Setter is abstract: " + method, matchLevel);
                     }
                     continue;
                 }
 
-                if (!Modifier.isPublic(method.getModifiers())) {
+                if (!allowPrivate && !Modifier.isPublic(method.getModifiers())) {
                     if (matchLevel < 4) {
                         matchLevel = 4;
-                        missException = new ConstructionException("Setter is not public: " + method);
+                        missException = new MissingAccessorException("Setter is not public: " + method, matchLevel);
                     }
                     continue;
                 }
@@ -493,7 +530,7 @@ public class ObjectRecipe implements Recipe {
                 if (Modifier.isStatic(method.getModifiers())) {
                     if (matchLevel < 4) {
                         matchLevel = 4;
-                        missException = new ConstructionException("Setter is static: " + method);
+                        missException = new MissingAccessorException("Setter is static: " + method, matchLevel);
                     }
                     continue;
                 }
@@ -502,8 +539,8 @@ public class ObjectRecipe implements Recipe {
                 if (methodParameterType.isPrimitive() && propertyValue == null) {
                     if (matchLevel < 6) {
                         matchLevel = 6;
-                        missException = new ConstructionException("Null can not be assigned to " +
-                                ClassLoading.getClassName(methodParameterType, true) + ": " + method);
+                        missException = new MissingAccessorException("Null can not be assigned to " +
+                                Classes.getClassName(methodParameterType, true) + ": " + method, matchLevel);
                     }
                     continue;
                 }
@@ -512,11 +549,16 @@ public class ObjectRecipe implements Recipe {
                 if (!isInstance(methodParameterType, propertyValue) && !isConvertable(methodParameterType, propertyValue)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
-                        missException = new ConstructionException(ClassLoading.getClassName(propertyValue, true) + " can not be assigned or converted to " +
-                                ClassLoading.getClassName(methodParameterType, true) + ": " + method);
+                        missException = new MissingAccessorException(Classes.getClassName(propertyValue, true) + " can not be assigned or converted to " +
+                                Classes.getClassName(methodParameterType, true) + ": " + method, matchLevel);
                     }
                     continue;
                 }
+
+                if (allowPrivate && !Modifier.isPublic(method.getModifiers())) {
+                    setAccessible(method);
+                }
+
                 return method;
             }
 
@@ -526,9 +568,82 @@ public class ObjectRecipe implements Recipe {
             throw missException;
         } else {
             StringBuffer buffer = new StringBuffer("Unable to find a valid setter method: ");
-            buffer.append("public void ").append(ClassLoading.getClassName(typeClass, true)).append(".");
-            buffer.append(setterName).append("(").append(ClassLoading.getClassName(propertyValue, true)).append(")");
-            throw new ConstructionException(buffer.toString());
+            buffer.append("public void ").append(Classes.getClassName(typeClass, true)).append(".");
+            buffer.append(setterName).append("(").append(Classes.getClassName(propertyValue, true)).append(")");
+            throw new MissingAccessorException(buffer.toString(), -1);
+        }
+    }
+
+    public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate) {
+        if (propertyName == null) throw new NullPointerException("name is null");
+        if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
+
+        int matchLevel = 0;
+        MissingAccessorException missException = null;
+
+        List fields = new ArrayList(Arrays.asList(typeClass.getDeclaredFields()));
+        Class parent = typeClass.getSuperclass();
+        while (parent != null){
+            fields.addAll(Arrays.asList(parent.getDeclaredFields()));
+            parent = parent.getSuperclass();
+        }
+
+        for (Iterator iterator = fields.iterator(); iterator.hasNext();) {
+            Field field = (Field) iterator.next();
+            if (field.getName().equals(propertyName)) {
+
+                if (!allowPrivate && !Modifier.isPublic(field.getModifiers())) {
+                    if (matchLevel < 4) {
+                        matchLevel = 4;
+                        missException = new MissingAccessorException("Field is not public: " + field, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (Modifier.isStatic(field.getModifiers())) {
+                    if (matchLevel < 4) {
+                        matchLevel = 4;
+                        missException = new MissingAccessorException("Field is static: " + field, matchLevel);
+                    }
+                    continue;
+                }
+
+                Class fieldType = field.getType();
+                if (fieldType.isPrimitive() && propertyValue == null) {
+                    if (matchLevel < 6) {
+                        matchLevel = 6;
+                        missException = new MissingAccessorException("Null can not be assigned to " +
+                                Classes.getClassName(fieldType, true) + ": " + field, matchLevel);
+                    }
+                    continue;
+                }
+
+
+                if (!isInstance(fieldType, propertyValue) && !isConvertable(fieldType, propertyValue)) {
+                    if (matchLevel < 5) {
+                        matchLevel = 5;
+                        missException = new MissingAccessorException(Classes.getClassName(propertyValue, true) + " can not be assigned or converted to " +
+                                Classes.getClassName(fieldType, true) + ": " + field, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (allowPrivate && !Modifier.isPublic(field.getModifiers())) {
+                    setAccessible(field);
+                }
+
+                return field;
+            }
+
+        }
+
+        if (missException != null) {
+            throw missException;
+        } else {
+            StringBuffer buffer = new StringBuffer("Unable to find a valid field: ");
+            buffer.append("public ").append(" ").append(Classes.getClassName(propertyValue, true));
+            buffer.append(" ").append(propertyName).append(";");
+            throw new MissingAccessorException(buffer.toString(), -1);
         }
     }
 
@@ -607,5 +722,23 @@ public class ObjectRecipe implements Recipe {
             }
         }
         return true;
+    }
+
+    private static void setAccessible(final Method method) {
+        AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                method.setAccessible(true);
+                return null;
+            }
+        });
+    }
+
+    private static void setAccessible(final Field field) {
+        AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                field.setAccessible(true);
+                return null;
+            }
+        });
     }
 }
