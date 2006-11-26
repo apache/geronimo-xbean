@@ -43,7 +43,7 @@ public class ObjectRecipe implements Recipe {
     private final Class[] constructorArgTypes;
     private final LinkedHashMap properties;
     private final List options = new ArrayList();
-
+    private final Map unsetProperties = new LinkedHashMap();
     public ObjectRecipe(Class type) {
         this(type.getName());
     }
@@ -143,6 +143,7 @@ public class ObjectRecipe implements Recipe {
     }
 
     public Object create(ClassLoader classLoader) throws ConstructionException {
+        unsetProperties.clear();
         // load the type class
         Class typeClass = null;
         try {
@@ -177,6 +178,9 @@ public class ObjectRecipe implements Recipe {
         // create the instance
         Object instance = createInstance(typeClass, propertyValues);
 
+        boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
+        boolean ignoreMissingProperties = options.contains(Option.IGNORE_MISSING_PROPERTIES);
+
         // set remaining properties
         for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
@@ -186,35 +190,47 @@ public class ObjectRecipe implements Recipe {
             MissingAccessorException missingSetter = null;
             Method setter = null;
             try {
-                setter = findSetter(typeClass, propertyName, propertyValue, options.contains(Option.PRIVATE_PROPERTIES));
+                setter = findSetter(typeClass, propertyName, propertyValue, allowPrivate);
                 propertyValue = convert(setter.getParameterTypes()[0], propertyValue);
                 setter.invoke(instance, new Object[]{propertyValue});
                 continue;
             } catch (MissingAccessorException e) {
-                if (!options.contains(Option.FIELD_INJECTION)){
-                    throw e;
-                }
                 missingSetter = e;
             } catch (Exception e) {
                 throw new ConstructionException("Error setting property: " + setter);
             }
 
-            Field field = null;
-            try {
-                field = findField(typeClass, propertyName, propertyValue, options.contains(Option.PRIVATE_PROPERTIES));
-                propertyValue = convert(field.getType(), propertyValue);
-                field.set(instance, propertyValue);
-            } catch (MissingAccessorException missingField) {
-                if (missingField.getMatchLevel() > missingSetter.getMatchLevel()) {
+            MissingAccessorException missingField = null;
+            if (options.contains(Option.FIELD_INJECTION)){
+                Field field = null;
+                try {
+                    field = findField(typeClass, propertyName, propertyValue, allowPrivate);
+                    propertyValue = convert(field.getType(), propertyValue);
+                    field.set(instance, propertyValue);
+                    continue;
+                } catch (MissingAccessorException e) {
+                    missingField = e;
+                } catch (Exception e) {
+                    throw new ConstructionException("Error setting property: " + field);
+                }
+            }
+
+            if (ignoreMissingProperties){
+                unsetProperties.put(propertyName, propertyValue);
+            } else {
+                if (missingField != null && missingField.getMatchLevel() > missingSetter.getMatchLevel()) {
                     throw missingField;
                 } else {
                     throw missingSetter;
                 }
-            } catch (Exception e) {
-                throw new ConstructionException("Error setting property: " + field);
             }
+
         }
         return instance;
+    }
+
+    public Map getUnsetProperties() {
+        return new LinkedHashMap(unsetProperties);
     }
 
     private Object[] extractConstructorArgs(Map propertyValues, Class[] constructorArgTypes) {
