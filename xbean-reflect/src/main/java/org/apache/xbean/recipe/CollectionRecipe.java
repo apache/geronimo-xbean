@@ -25,8 +25,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.xbean.ClassLoading;
-
 /**
  * @version $Rev: 6685 $ $Date: 2005-12-28T00:29:37.967210Z $
  */
@@ -95,7 +93,7 @@ public class CollectionRecipe implements Recipe {
     public Object create(ClassLoader classLoader) {
         Class setType = null;
         try {
-            setType = ClassLoading.loadClass(type, classLoader);
+            setType = Class.forName(type, true, classLoader);
         } catch (ClassNotFoundException e) {
             throw new ConstructionException("Type class could not be found: " + type);
         }

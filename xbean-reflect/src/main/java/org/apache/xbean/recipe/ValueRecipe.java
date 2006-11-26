@@ -18,7 +18,7 @@ package org.apache.xbean.recipe;
 
 import org.apache.xbean.propertyeditor.PropertyEditors;
 import org.apache.xbean.propertyeditor.PropertyEditorException;
-import org.apache.xbean.ClassLoading;
+import org.apache.xbean.Classes;
 
 
 /**
@@ -31,7 +31,7 @@ public class ValueRecipe implements Recipe {
     public ValueRecipe(Class type, String value) {
         if (type == null) throw new NullPointerException("type is null");
         if (!PropertyEditors.canConvert(type)) {
-            throw new IllegalArgumentException("No converter available for " + ClassLoading.getClassName(type));
+            throw new IllegalArgumentException("No converter available for " + Classes.getClassName(type));
         }
         this.type = type.getName();
         this.value = value;

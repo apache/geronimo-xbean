@@ -20,6 +20,7 @@ package org.apache.xbean.recipe;
  * @version $Rev: 6680 $ $Date: 2005-12-24T04:38:27.427468Z $
  */
 public class ConstructionException extends RuntimeException {
+
     private String beanName;
     private String attributeName;
 
