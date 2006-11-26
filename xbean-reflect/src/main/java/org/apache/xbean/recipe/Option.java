@@ -22,7 +22,8 @@ package org.apache.xbean.recipe;
 public class Option {
 
     public static final Option PRIVATE_PROPERTIES = new Option("PRIVATE_PROPERTIES");
-    public static final Option FIELD_INJECTION = new Option("FIELD_INJECTION"); 
+    public static final Option FIELD_INJECTION = new Option("FIELD_INJECTION");
+    public static final Option IGNORE_MISSING_PROPERTIES = new Option("IGNORE_MISSING_PROPERTIES"); 
 
     private final String name;
 
