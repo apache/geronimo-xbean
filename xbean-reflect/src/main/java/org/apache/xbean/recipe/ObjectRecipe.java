@@ -120,12 +120,25 @@ public class ObjectRecipe implements Recipe {
     }
 
     public void setProperty(String name, Object value) {
-        if (name == null) throw new NullPointerException("name is null");
+        setProperty(new Property(name), value);
+    }
+
+    public void setFieldProperty(String name, Object value){
+        setProperty(new FieldProperty(name), value);
+        options.add(Option.FIELD_INJECTION);
+    }
+
+    public void setMethodProperty(String name, Object value){
+        setProperty(new SetterProperty(name), value);
+    }
+
+    private void setProperty(Property key, Object value) {
         if (!RecipeHelper.isSimpleType(value)) {
             value = new ValueRecipe(value);
         }
-        properties.put(name, value);
+        properties.put(key, value);
     }
+
 
     public void setAllProperties(Map map) {
         if (map == null) throw new NullPointerException("map is null");
@@ -184,47 +197,45 @@ public class ObjectRecipe implements Recipe {
         // set remaining properties
         for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
-            String propertyName = (String) entry.getKey();
+            Property propertyName = (Property) entry.getKey();
             Object propertyValue = entry.getValue();
 
-            MissingAccessorException missingSetter = null;
-            Method setter = null;
+            Member member;
             try {
-                setter = findSetter(typeClass, propertyName, propertyValue, allowPrivate);
-                propertyValue = convert(setter.getParameterTypes()[0], propertyValue);
-                setter.invoke(instance, new Object[]{propertyValue});
-                continue;
-            } catch (MissingAccessorException e) {
-                missingSetter = e;
-            } catch (Exception e) {
-                throw new ConstructionException("Error setting property: " + setter);
-            }
-
-            MissingAccessorException missingField = null;
-            if (options.contains(Option.FIELD_INJECTION)){
-                Field field = null;
-                try {
-                    field = findField(typeClass, propertyName, propertyValue, allowPrivate);
-                    propertyValue = convert(field.getType(), propertyValue);
-                    field.set(instance, propertyValue);
-                    continue;
-                } catch (MissingAccessorException e) {
-                    missingField = e;
-                } catch (Exception e) {
-                    throw new ConstructionException("Error setting property: " + field);
-                }
-            }
-
-            if (ignoreMissingProperties){
-                unsetProperties.put(propertyName, propertyValue);
-            } else {
-                if (missingField != null && missingField.getMatchLevel() > missingSetter.getMatchLevel()) {
-                    throw missingField;
+                if (propertyName instanceof SetterProperty){
+                    member = new MethodMember(findSetter(typeClass, propertyName.name, propertyValue, allowPrivate));
+                } else if (propertyName instanceof FieldProperty){
+                    member = new FieldMember(findField(typeClass, propertyName.name, propertyValue, allowPrivate));
                 } else {
-                    throw missingSetter;
+                    try {
+                        member = new MethodMember(findSetter(typeClass, propertyName.name, propertyValue, allowPrivate));
+                    } catch (MissingAccessorException noSetter) {
+                        if (!options.contains(Option.FIELD_INJECTION)) {
+                            throw noSetter;
+                        }
+
+                        try {
+                            member = new FieldMember(findField(typeClass, propertyName.name, propertyValue, allowPrivate));
+                        } catch (MissingAccessorException noField) {
+                            throw (noField.getMatchLevel() > noSetter.getMatchLevel())? noField: noSetter;
+                        }
+                    }
+                }
+            } catch (MissingAccessorException e) {
+                if (ignoreMissingProperties){
+                    unsetProperties.put(propertyName.name, propertyValue);
+                    continue;
+                } else {
+                    throw e;
                 }
             }
 
+            try {
+                propertyValue = convert(member.getType(), propertyValue);
+                member.setValue(instance, propertyValue);
+            } catch (Exception e) {
+                throw new ConstructionException("Error setting property: " + member);
+            }
         }
         return instance;
     }
@@ -756,5 +767,105 @@ public class ObjectRecipe implements Recipe {
                 return null;
             }
         });
+    }
+
+    public static interface Member {
+        Class getType();
+        void setValue(Object instance, Object value) throws Exception;
+    }
+
+    public static class MethodMember implements Member {
+        private final Method setter;
+
+        public MethodMember(Method method) {
+            this.setter = method;
+        }
+
+        public Class getType() {
+            return setter.getParameterTypes()[0];
+        }
+
+        public void setValue(Object instance, Object value) throws Exception {
+            setter.invoke(instance, new Object[]{value});
+        }
+
+        public String toString() {
+            return setter.toString();
+        }
+    }
+
+    public static class FieldMember implements Member {
+        private final Field field;
+
+        public FieldMember(Field field) {
+            this.field = field;
+        }
+
+        public Class getType() {
+            return field.getType();
+        }
+
+        public void setValue(Object instance, Object value) throws Exception {
+            field.set(instance, value);
+        }
+
+        public String toString() {
+            return field.toString();
+        }
+    }
+
+    private static class Property {
+        private final String name;
+
+        public Property(String name) {
+            if (name == null) throw new NullPointerException("name is null");
+            this.name = name;
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null) return false;
+            if (o instanceof String){
+                return this.name.equals(o);
+            }
+            if (o instanceof Property) {
+                Property property = (Property) o;
+                return this.name.equals(property.name);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        public String toString() {
+            return name;
+        }
+    }
+
+    private static class SetterProperty extends Property {
+        public SetterProperty(String name) {
+            super(name);
+        }
+        public int hashCode() {
+            return super.hashCode()+2;
+        }
+        public String toString() {
+            return "[setter] "+toString();
+        }
+
+    }
+    private static class FieldProperty extends Property {
+        public FieldProperty(String name) {
+            super(name);
+        }
+
+        public int hashCode() {
+            return super.hashCode()+1;
+        }
+        public String toString() {
+            return "[field] "+toString();
+        }
     }
 }
