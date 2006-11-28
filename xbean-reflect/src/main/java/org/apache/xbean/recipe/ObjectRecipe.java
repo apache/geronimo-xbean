@@ -114,8 +114,7 @@ public class ObjectRecipe implements Recipe {
     }
 
     public Object getProperty(String name) {
-        if (name == null) throw new NullPointerException("name is null");
-        Object value = properties.get(name);
+        Object value = properties.get(new Property(name));
         return value;
     }
 
@@ -247,7 +246,7 @@ public class ObjectRecipe implements Recipe {
     private Object[] extractConstructorArgs(Map propertyValues, Class[] constructorArgTypes) {
         Object[] parameters = new Object[constructorArgNames.length];
         for (int i = 0; i < constructorArgNames.length; i++) {
-            String name = constructorArgNames[i];
+            Property name = new Property(constructorArgNames[i]);
             Class type = constructorArgTypes[i];
 
             Object value;
