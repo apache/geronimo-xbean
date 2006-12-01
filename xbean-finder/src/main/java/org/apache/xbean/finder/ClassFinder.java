@@ -31,6 +31,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.AnnotatedElement;
 import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.URLConnection;
+import java.net.JarURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -119,7 +122,15 @@ public class ClassFinder {
                 if (location.getProtocol().equals("jar")) {
                     classNames.addAll(jar(location));
                 } else if (location.getProtocol().equals("file")) {
-                    classNames.addAll(file(location));
+                    try {
+                        // See if it's actually a jar
+                        URL jarUrl = new URL("jar", "", location.toExternalForm() + "!/");
+                        JarURLConnection juc = (JarURLConnection) jarUrl.openConnection();
+                        juc.getJarFile();
+                        classNames.addAll(jar(jarUrl));
+                    } catch (IOException e) {
+                        classNames.addAll(file(location));
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -382,12 +393,22 @@ public class ClassFinder {
     }
 
     private List<String> jar(URL location) throws IOException {
-        List<String> classNames = new ArrayList();
-
-        String jarPath = location.getFile().replaceFirst("./META-INF", "");
+        String jarPath = location.getFile();
+        if (jarPath.indexOf("!") > -1){
+            jarPath = jarPath.substring(0, jarPath.indexOf("!"));
+        }
         URL url = new URL(jarPath);
         InputStream in = url.openStream();
-        JarInputStream jarStream = new JarInputStream(in);
+        try {
+            JarInputStream jarStream = new JarInputStream(in);
+            return jar(jarStream);
+        } finally {
+            in.close();
+        }
+    }
+
+    private List<String> jar(JarInputStream jarStream) throws IOException {
+        List<String> classNames = new ArrayList();
 
         JarEntry entry;
         while ((entry = jarStream.getNextJarEntry()) != null) {
