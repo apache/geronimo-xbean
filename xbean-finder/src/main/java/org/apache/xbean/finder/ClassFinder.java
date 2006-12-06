@@ -576,8 +576,10 @@ public class ClassFinder {
 
         public List<AnnotationInfo> getParameterAnnotations(int index) {
             if (index >= parameterAnnotations.size()) {
-                List<AnnotationInfo> annotationInfos = new ArrayList<AnnotationInfo>();
-                parameterAnnotations.add(index, annotationInfos);
+                for (int i = parameterAnnotations.size(); i <= index; i++) {
+                    List<AnnotationInfo> annotationInfos = new ArrayList<AnnotationInfo>();
+                    parameterAnnotations.add(i, annotationInfos);
+                }
             }
             return parameterAnnotations.get(index);
         }
