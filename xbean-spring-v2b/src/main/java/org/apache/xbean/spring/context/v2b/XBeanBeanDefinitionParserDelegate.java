@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
 import org.apache.xbean.spring.context.impl.QNameReflectionHelper;
 import org.apache.xbean.spring.context.v2.XBeanNamespaceHandler;
-import org.apache.xbean.spring.context.v2.XBeanQNameHelper;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.XmlReaderContext;
