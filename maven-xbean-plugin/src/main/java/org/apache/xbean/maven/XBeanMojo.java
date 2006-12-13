@@ -18,14 +18,19 @@ package org.apache.xbean.maven;
 
 import java.beans.PropertyEditorManager;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -49,6 +54,7 @@ import org.apache.xbean.spring.generator.XsdGenerator;
  * @goal mapping
  * @description Creates xbean mapping file
  * @phase generate-sources
+ * @requiresDependencyResolution compile
  */
 public class XBeanMojo extends AbstractMojo implements LogFacade {
 
@@ -150,6 +156,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             };
 
             // load the mappings
+            Thread.currentThread().setContextClassLoader(getClassLoader());
             Set namespaces = mappingLoader.loadNamespaces();
             if (namespaces.isEmpty()) {
                 System.out.println("Warning: no namespaces found!");
@@ -195,4 +202,38 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
     public void log(String message, int level) {
         getLog().info(message);
     }
+
+    protected URLClassLoader getClassLoader() throws MojoExecutionException {
+        try {
+            Set urls = new HashSet();
+
+            URL mainClasses = new File(project.getBuild().getOutputDirectory())
+                    .toURL();
+            getLog().debug("Adding to classpath : " + mainClasses);
+            urls.add(mainClasses);
+
+            URL testClasses = new File(project.getBuild()
+                    .getTestOutputDirectory()).toURL();
+            getLog().debug("Adding to classpath : " + testClasses);
+            urls.add(testClasses);
+
+            Set dependencies = project.getArtifacts();
+            Iterator iter = dependencies.iterator();
+            while (iter.hasNext()) {
+                Artifact classPathElement = (Artifact) iter.next();
+                getLog().debug(
+                        "Adding artifact: " + classPathElement.getFile()
+                                + " to classpath");
+                urls.add(classPathElement.getFile().toURL());
+            }
+            URLClassLoader appClassloader = new URLClassLoader((URL[]) urls
+                    .toArray(new URL[urls.size()]), this.getClass()
+                    .getClassLoader());
+            return appClassloader;
+        } catch (MalformedURLException e) {
+            throw new MojoExecutionException(
+                    "Error during setting up classpath", e);
+        }
+    }
+
 }

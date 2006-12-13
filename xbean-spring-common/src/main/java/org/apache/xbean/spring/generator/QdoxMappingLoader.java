@@ -477,15 +477,18 @@ public class QdoxMappingLoader implements MappingLoader {
     }
 
     private org.apache.xbean.spring.generator.Type toMappingType(Type type, String nestedType) {
-        if (type.isArray()) {
-            return org.apache.xbean.spring.generator.Type.newArrayType(type.getValue(), type.getDimensions());
-        } else if (type.isA(listType)) {
-            if (nestedType == null) nestedType = "java.lang.Object";
-            return org.apache.xbean.spring.generator.Type.newCollectionType(type.getValue(),
-                    org.apache.xbean.spring.generator.Type.newSimpleType(nestedType));
-        } else {
-            return org.apache.xbean.spring.generator.Type.newSimpleType(type.getValue());
+        try {
+            if (type.isArray()) {
+                return org.apache.xbean.spring.generator.Type.newArrayType(type.getValue(), type.getDimensions());
+            } else if (type.isA(listType)) {
+                if (nestedType == null) nestedType = "java.lang.Object";
+                return org.apache.xbean.spring.generator.Type.newCollectionType(type.getValue(),
+                        org.apache.xbean.spring.generator.Type.newSimpleType(nestedType));
+            }
+        } catch (Throwable t){ 
+            log.debug("Could not load type mapping", t);
         }
+        return org.apache.xbean.spring.generator.Type.newSimpleType(type.getValue());
     }
 
     private static String toMethodLocator(JavaMethod method) {
