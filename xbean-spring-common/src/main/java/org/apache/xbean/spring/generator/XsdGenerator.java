@@ -99,6 +99,7 @@ public class XsdGenerator implements GeneratorPlugin {
                     generateElementMappingComplexProperty(out, namespaceMapping, attributeMapping);
                 }
             }
+            out.println("        <xs:any namespace='##other'/>");
             out.println("      </xs:sequence>");
         }
 
@@ -188,14 +189,14 @@ public class XsdGenerator implements GeneratorPlugin {
         }
         out.println("          <xs:complexType>");
         if (types.isEmpty()) {
-            out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any/></xs:sequence>");
+            out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any namespace='##other'/></xs:sequence>");
         } else {
             out.println("            <xs:choice minOccurs='0' maxOccurs='" + maxOccurs + "'>");
             for (Iterator iterator = types.iterator(); iterator.hasNext();) {
                 ElementMapping element = (ElementMapping) iterator.next();
                 out.println("              <xs:element ref='tns:" + element.getElementName() + "'/>");
             }
-            out.println("              <xs:any/>");
+            out.println("              <xs:any namespace='##other'/>");
             out.println("            </xs:choice>");
         }
         out.println("          </xs:complexType>");

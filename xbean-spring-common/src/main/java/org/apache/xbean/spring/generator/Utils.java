@@ -64,13 +64,13 @@ public final class Utils {
         Class theClass;
         try {
             theClass = loadClass(type);
-        } catch (ClassNotFoundException e) {
-            System.out.println("Warning, could not load class: " + type);
+            // lets see if we can find a property editor for this type
+            PropertyEditor editor = PropertyEditorManager.findEditor(theClass);
+            return editor != null;
+        } catch (Throwable e) {
+            System.out.println("Warning, could not load class: " + type + ": " + e);
             return false;
         }
-        // lets see if we can find a property editor for this type
-        PropertyEditor editor = PropertyEditorManager.findEditor(theClass);
-        return editor != null;
     }
 
     /**
