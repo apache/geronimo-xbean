@@ -40,7 +40,6 @@ import org.apache.xbean.spring.context.impl.MappingMetaData;
 import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
 import org.apache.xbean.spring.context.impl.NamespaceHelper;
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
-import org.apache.xbean.spring.context.v2.XBeanQNameHelper;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
