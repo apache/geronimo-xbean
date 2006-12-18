@@ -94,6 +94,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>dependency-maven-plugin</artifactId>
+                <version>1.0</version>
                 <executions>
                     <execution>
                         <id>copy-components</id>
@@ -193,6 +194,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.1</version>
                 <executions>
                     <!--
                     HACK: Need to copy classes for clover, since it deployes a -clover artifact
