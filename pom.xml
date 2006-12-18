@@ -33,6 +33,7 @@
     <artifactId>xbean</artifactId>
     <name>XBean</name>
     <packaging>pom</packaging>
+    <inceptionYear>2005</inceptionYear>
     
     <version>2.8-SNAPSHOT</version>
     
@@ -253,7 +254,7 @@
                     <tagBase>https://svn.apache.org/repos/asf/geronimo/xbean/tags</tagBase>
                 </configuration>
             </plugin>
-            
+            <!-- We need to build the source jars for xbean-spring uberjar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -265,9 +266,79 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Add NOTICE and LICENSE to jars -->
+            <plugin>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>1.0-alpha-1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <resourceBundles>
+                                <resourceBundle>org.apache:apache-jar-resource-bundle:1.0</resourceBundle>
+                            </resourceBundles>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
 
     </build>
+    
+    <profiles>
+        <profile>
+           <id>release-environment</id>
+
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>release</value>
+                </property>
+            </activation>
+
+            <build>
+                <plugins>
+                    <!-- We want to sign the artifact, the POM, and all attached artifacts -->
+                    <plugin>
+                        <inherited>true</inherited>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.0-alpha-1</version>
+                        <configuration>
+                            <passphrase>${gpg.passphrase}</passphrase>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- We want the JavaDoc JAR published with the release -->
+                    <plugin>
+                        <inherited>true</inherited>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.2</version>
+                        <configuration>
+                            <source>1.5</source>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     
     <modules>
         <module>xbean-classloader</module>
@@ -287,6 +358,7 @@
         <module>xbean-spring</module>
         <module>xbean-spring-itests</module>
         <module>xbean-telnet</module>
+        <module>xbean-tiger</module>
         <module>maven-xbean-plugin</module>
     </modules>
     
@@ -319,21 +391,6 @@
         </site>
     </distributionManagement>
     
-    <profiles>
-        <profile>
-            <id>jdk1.5</id>
-            
-            <activation>
-                <jdk>1.5</jdk>
-            </activation>
-            
-            <modules>
-                <module>xbean-tiger</module>
-                <module>xbean-finder</module>
-            </modules>
-        </profile>
-    </profiles>
-
     <reporting>
         <plugins>
             <plugin>
