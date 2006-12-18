@@ -45,12 +45,6 @@
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring-common</artifactId>
             <version>${pom.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         
         <dependency>
