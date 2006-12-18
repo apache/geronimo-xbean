@@ -50,7 +50,6 @@ public class MappingMetaData {
      */
     public MappingMetaData(Properties properties) {
         this.properties = properties;
-        this.packageName = properties.getProperty("package", "");
     }
 
     /**
@@ -58,7 +57,7 @@ public class MappingMetaData {
      */
     public String getClassName(String localName) {
         String className = properties.getProperty(localName);
-        if (className == null) {
+        if (className == null && packageName != null) {
             if (packageName.length() > 0) {
                 className = packageName + "." + localName;
             }
