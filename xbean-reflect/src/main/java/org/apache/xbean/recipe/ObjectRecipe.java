@@ -233,7 +233,14 @@ public class ObjectRecipe implements Recipe {
                 propertyValue = convert(member.getType(), propertyValue);
                 member.setValue(instance, propertyValue);
             } catch (Exception e) {
-                throw new ConstructionException("Error setting property: " + member);
+                Throwable t = e;
+                if (e instanceof InvocationTargetException) {
+                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                    if (invocationTargetException.getCause() != null) {
+                        t = invocationTargetException.getCause();
+                    }
+                }
+                throw new ConstructionException("Error setting property: " + member, t);
             }
         }
         return instance;
