@@ -31,8 +31,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.AnnotatedElement;
 import java.net.URL;
-import java.net.MalformedURLException;
-import java.net.URLConnection;
 import java.net.JarURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,6 +176,11 @@ public class ClassFinder {
                 annotationInfos.add(info);
             }
         }
+    }
+
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotation) {
+        List<Info> infos = annotated.get(annotation.getName());
+        return infos != null && !infos.isEmpty();
     }
 
     /**
