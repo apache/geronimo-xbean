@@ -149,9 +149,11 @@ public class ClassFinder {
         List<Info> infos = new ArrayList();
         List<Package> packages = new ArrayList();
         for (Class clazz : classes) {
-            if (!packages.contains(clazz.getPackage())){
-                infos.add(new PackageInfo(clazz.getPackage()));
-                packages.add(clazz.getPackage());
+
+            Package aPackage = clazz.getPackage();
+            if (aPackage != null && !packages.contains(aPackage)){
+                infos.add(new PackageInfo(aPackage));
+                packages.add(aPackage);
             }
 
             ClassInfo classInfo = new ClassInfo(clazz);
