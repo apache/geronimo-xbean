@@ -91,7 +91,7 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
             mth.setAccessible(true);
             return mth.invoke(this, new Object[] { candidateEle });
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to invoke parseNestedCustomElement method", e);
+            throw (IllegalStateException) new IllegalStateException("Unable to invoke parseNestedCustomElement method").initCause(e);
         }
     }
 
