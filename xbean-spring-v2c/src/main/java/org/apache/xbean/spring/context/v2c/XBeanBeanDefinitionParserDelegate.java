@@ -96,7 +96,7 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
             if (e instanceof InvocationTargetException && e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
             }
-            throw new IllegalStateException("Unable to invoke parseNestedCustomElement method", e);
+            throw (IllegalStateException) new IllegalStateException("Unable to invoke parseNestedCustomElement method").initCause(e);
         }
     }
 
