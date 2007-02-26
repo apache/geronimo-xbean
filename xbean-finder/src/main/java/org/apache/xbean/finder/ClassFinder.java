@@ -59,11 +59,11 @@ import java.util.jar.JarInputStream;
  * @version $Rev$ $Date$
  */
 public class ClassFinder {
-    private final Map<String, List<Info>> annotated = new HashMap();
-    private final List<ClassInfo> classInfos = new ArrayList();
+    private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
+    private final List<ClassInfo> classInfos = new ArrayList<ClassInfo>();
 
     private final ClassLoader classLoader;
-    private final List<String> classesNotLoaded = new ArrayList();
+    private final List<String> classesNotLoaded = new ArrayList<String>();
 
     /**
      * Creates a ClassFinder that will search the urls in the specified classloader
@@ -77,8 +77,8 @@ public class ClassFinder {
      *
      *    new ClassFinder(classLoader, classLoader.getParent().getParent());
      *
-     * @param classLoader
-     * @throws Exception
+     * @param classLoader source of classes to scan
+     * @throws Exception if something goes wrong
      */
     public ClassFinder(ClassLoader classLoader) throws Exception {
         this(classLoader, true);
@@ -87,9 +87,9 @@ public class ClassFinder {
     /**
      * Creates a ClassFinder that will search the urls in the specified classloader.
      *
-     * @param classLoader
-     * @param excludeParent
-     * @throws Exception
+     * @param classLoader source of classes to scan
+     * @param excludeParent Allegedly excludes classes from parent classloader, whatever that might mean
+     * @throws Exception if something goes wrong.
      */
     public ClassFinder(ClassLoader classLoader, boolean excludeParent) throws Exception {
         this(classLoader, getUrls(classLoader, excludeParent));
@@ -99,22 +99,22 @@ public class ClassFinder {
      * Creates a ClassFinder that will search the urls in the specified classloader excluding
      * the urls in the 'exclude' classloader.
      *
-     * @param classLoader
-     * @param exclude
-     * @throws Exception
+     * @param classLoader source of classes to scan
+     * @param exclude source of classes to exclude from scanning
+     * @throws Exception if something goes wrong
      */
     public ClassFinder(ClassLoader classLoader, ClassLoader exclude) throws Exception {
         this(classLoader, getUrls(classLoader, exclude));
     }
 
     public ClassFinder(ClassLoader classLoader, URL url) {
-        this(classLoader, Arrays.asList(new URL[]{url}));
+        this(classLoader, Arrays.asList(url));
     }
 
     public ClassFinder(ClassLoader classLoader, Collection<URL> urls) {
         this.classLoader = classLoader;
 
-        List<String> classNames = new ArrayList();
+        List<String> classNames = new ArrayList<String>();
         for (URL location : urls) {
             try {
                 if (location.getProtocol().equals("jar")) {
@@ -146,8 +146,8 @@ public class ClassFinder {
 
     public ClassFinder(List<Class> classes){
         this.classLoader = null;
-        List<Info> infos = new ArrayList();
-        List<Package> packages = new ArrayList();
+        List<Info> infos = new ArrayList<Info>();
+        List<Package> packages = new ArrayList<Package>();
         for (Class clazz : classes) {
 
             Package aPackage = clazz.getPackage();
@@ -191,10 +191,11 @@ public class ClassFinder {
      * The list will only contain entries of classes whose byte code matched the requirements
      * of last invoked find* method, but were unable to be loaded and included in the results.
      * <p/>
-     * The list returned is unmodifiable and the results of this method will change
-     * after each invocation of a findAnnotated* method.
+     * The list returned is unmodifiable.  Once obtained, the returned list will be a live view of the
+     * results from the last findAnnotated* method call.
      * <p/>
      * This method is not thread safe.
+     * @return an unmodifiable live view of classes that could not be loaded in previous findAnnotated* call.
      */
     public List<String> getClassesNotLoaded() {
         return Collections.unmodifiableList(classesNotLoaded);
@@ -331,7 +332,7 @@ public class ClassFinder {
 
     public List<Class> findClassesInPackage(String packageName, boolean recursive) {
         classesNotLoaded.clear();
-        List<Class> classes = new ArrayList();
+        List<Class> classes = new ArrayList<Class>();
         for (ClassInfo classInfo : classInfos) {
             try {
                 if (recursive && classInfo.getPackageName().startsWith(packageName)){
@@ -364,7 +365,7 @@ public class ClassFinder {
     }
 
     private static Map<String, URL> toMap(Enumeration<URL> enumeration) {
-        Map<String, URL> urls = new HashMap();
+        Map<String, URL> urls = new HashMap<String, URL>();
         while (enumeration.hasMoreElements()) {
             URL url = enumeration.nextElement();
             urls.put(url.toExternalForm(), url);
@@ -373,7 +374,7 @@ public class ClassFinder {
     }
 
     private List<String> file(URL location) {
-        List<String> classNames = new ArrayList();
+        List<String> classNames = new ArrayList<String>();
         File dir = new File(location.getPath());
         if (dir.getName().equals("META-INF")) {
             dir = dir.getParentFile(); // Scrape "META-INF" off
@@ -413,7 +414,7 @@ public class ClassFinder {
     }
 
     private List<String> jar(JarInputStream jarStream) throws IOException {
-        List<String> classNames = new ArrayList();
+        List<String> classNames = new ArrayList<String>();
 
         JarEntry entry;
         while ((entry = jarStream.getNextJarEntry()) != null) {
@@ -430,7 +431,7 @@ public class ClassFinder {
     }
 
     public class Annotatable {
-        private final List<AnnotationInfo> annotations = new ArrayList();
+        private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
 
         public Annotatable(AnnotatedElement element) {
             for (Annotation annotation : element.getAnnotations()) {
@@ -482,11 +483,11 @@ public class ClassFinder {
 
     public class ClassInfo extends Annotatable implements Info {
         private final String name;
-        private final List<MethodInfo> methods = new ArrayList();
-        private final List<MethodInfo> constructors = new ArrayList();
+        private final List<MethodInfo> methods = new ArrayList<MethodInfo>();
+        private final List<MethodInfo> constructors = new ArrayList<MethodInfo>();
         private final String superType;
-        private final List<String> interfaces = new ArrayList();
-        private final List<FieldInfo> fields = new ArrayList();
+        private final List<String> interfaces = new ArrayList<String>();
+        private final List<FieldInfo> fields = new ArrayList<FieldInfo>();
         private Class<?> clazz;
         private ClassNotFoundException notFound;
 
@@ -553,7 +554,7 @@ public class ClassFinder {
         private final ClassInfo declaringClass;
         private final String returnType;
         private final String name;
-        private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList();
+        private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList<List<AnnotationInfo>>();
 
         public MethodInfo(ClassInfo info, Constructor constructor){
             super(constructor);
@@ -663,14 +664,14 @@ public class ClassFinder {
         }
 
         public String toString() {
-            return name.toString();
+            return name;
         }
     }
 
     private List<Info> getAnnotationInfos(String name) {
         List<Info> infos = annotated.get(name);
         if (infos == null) {
-            infos = new ArrayList();
+            infos = new ArrayList<Info>();
             annotated.put(name, infos);
         }
         return infos;
@@ -680,16 +681,18 @@ public class ClassFinder {
         if (!className.endsWith(".class")) {
             className = className.replace('.', '/') + ".class";
         }
-        ClassReader classReader = null;
         try {
             URL resource = classLoader.getResource(className);
-            classReader = new ClassReader(resource.openStream());
+            if (resource != null) {
+                ClassReader classReader = new ClassReader(resource.openStream());
+                classReader.accept(new InfoBuildingVisitor(), true);
+            } else {
+                new Exception("Could not load " + className).printStackTrace();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-//        classReader.accept(new ASMifierClassVisitor(new PrintWriter(System.out)), true);
-        classReader.accept(new InfoBuildingVisitor(), true);
     }
 
     public class InfoBuildingVisitor extends EmptyVisitor {
