@@ -27,7 +27,7 @@ public class StaticRecipe extends AbstractRecipe {
     }
 
     public boolean canCreate(Class type, ClassLoader classLoader) {
-        return object == null || type.isAssignableFrom(object.getClass());
+        return RecipeHelper.isInstance(type, object);
     }
 
     public Object create(ClassLoader classLoader) throws ConstructionException {

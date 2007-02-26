@@ -290,7 +290,7 @@ public class ObjectRecipe extends AbstractRecipe {
             Object value;
             if (propertyValues.containsKey(name)) {
                 value = propertyValues.remove(name);
-                if (!isInstance(type, value) && !isConvertable(type, value, classLoader)) {
+                if (!RecipeHelper.isInstance(type, value) && !RecipeHelper.isConvertable(type, value, classLoader)) {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +
                             "index=" + i + ", " +
@@ -624,7 +624,7 @@ public class ObjectRecipe extends AbstractRecipe {
                 }
 
 
-                if (!isInstance(methodParameterType, propertyValue) && !isConvertable(methodParameterType, propertyValue, classLoader)) {
+                if (!RecipeHelper.isInstance(methodParameterType, propertyValue) && !RecipeHelper.isConvertable(methodParameterType, propertyValue, classLoader)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
                         missException = new MissingAccessorException(getClassName(propertyValue) + " can not be assigned or converted to " +
@@ -696,7 +696,7 @@ public class ObjectRecipe extends AbstractRecipe {
                 }
 
 
-                if (!isInstance(fieldType, propertyValue) && !isConvertable(fieldType, propertyValue, classLoader)) {
+                if (!RecipeHelper.isInstance(fieldType, propertyValue) && !RecipeHelper.isConvertable(fieldType, propertyValue, classLoader)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
                         missException = new MissingAccessorException(getClassName(propertyValue) + " can not be assigned or converted to " +
@@ -724,73 +724,6 @@ public class ObjectRecipe extends AbstractRecipe {
         }
     }
 
-    public static boolean isConvertable(Class type, Object propertyValue, ClassLoader classLoader) {
-        if (propertyValue instanceof Recipe) {
-            Recipe recipe = (Recipe) propertyValue;
-            return recipe.canCreate(type, classLoader);
-        }
-        return (propertyValue instanceof String && PropertyEditors.canConvert(type));
-    }
-
-    public static boolean isInstance(Class type, Object instance) {
-        if (type.isPrimitive()) {
-            // for primitives the insance can't be null
-            if (instance == null) {
-                return false;
-            }
-
-            // verify instance is the correct wrapper type
-            if (type.equals(boolean.class)) {
-                return instance instanceof Boolean;
-            } else if (type.equals(char.class)) {
-                return instance instanceof Character;
-            } else if (type.equals(byte.class)) {
-                return instance instanceof Byte;
-            } else if (type.equals(short.class)) {
-                return instance instanceof Short;
-            } else if (type.equals(int.class)) {
-                return instance instanceof Integer;
-            } else if (type.equals(long.class)) {
-                return instance instanceof Long;
-            } else if (type.equals(float.class)) {
-                return instance instanceof Float;
-            } else if (type.equals(double.class)) {
-                return instance instanceof Double;
-            } else {
-                throw new AssertionError("Invalid primitve type: " + type);
-            }
-        }
-
-        return instance == null || type.isInstance(instance);
-    }
-
-    public static boolean isAssignableFrom(Class expected, Class actual) {
-        if (expected.isPrimitive()) {
-            // verify actual is the correct wrapper type
-            if (expected.equals(boolean.class)) {
-                return actual.equals(Boolean.class);
-            } else if (expected.equals(char.class)) {
-                return actual.equals(Character.class);
-            } else if (expected.equals(byte.class)) {
-                return actual.equals(Byte.class);
-            } else if (expected.equals(short.class)) {
-                return actual.equals(Short.class);
-            } else if (expected.equals(int.class)) {
-                return actual.equals(Integer.class);
-            } else if (expected.equals(long.class)) {
-                return actual.equals(Long.class);
-            } else if (expected.equals(float.class)) {
-                return actual.equals(Float.class);
-            } else if (expected.equals(double.class)) {
-                return actual.equals(Double.class);
-            } else {
-                throw new AssertionError("Invalid primitve type: " + expected);
-            }
-        }
-
-        return expected.isAssignableFrom(actual);
-    }
-
     public static boolean isAssignableFrom(Class[] expectedTypes, Class[] actualTypes) {
         if (expectedTypes.length != actualTypes.length) {
             return false;
@@ -798,7 +731,7 @@ public class ObjectRecipe extends AbstractRecipe {
         for (int i = 0; i < expectedTypes.length; i++) {
             Class expectedType = expectedTypes[i];
             Class actualType = actualTypes[i];
-            if (expectedType != actualType && !isAssignableFrom(expectedType, actualType)) {
+            if (expectedType != actualType && !RecipeHelper.isAssignableFrom(expectedType, actualType)) {
                 return false;
             }
         }
