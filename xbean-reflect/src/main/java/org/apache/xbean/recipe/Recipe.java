@@ -22,5 +22,10 @@ import java.io.Serializable;
  * @version $Rev: 6680 $ $Date: 2005-12-24T04:38:27.427468Z $
  */
 public interface Recipe extends Serializable {
+    float getPriority();
+
+    boolean canCreate(Class type, ClassLoader classLoader);
+
+    Object create() throws ConstructionException;
     Object create(ClassLoader classLoader) throws ConstructionException;
 }

@@ -17,15 +17,19 @@
 package org.apache.xbean.recipe;
 
 import java.net.URL;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * @version $Rev$ $Date$
  */
 public class Person {
-
     private String name;
     private int age;
     private URL homePage;
+    private Map<String,Object> unsetMap;
+    private Properties unsetProperties;
 
     public Person() {
     }
@@ -68,15 +72,48 @@ public class Person {
         this.homePage = homePage;
     }
 
+    public Map<String, Object> getUnsetMap() {
+        return unsetMap;
+    }
+
+    public void setUnsetMap(Map<String, Object> unsetMap) {
+        this.unsetMap = new HashMap<String, Object>(unsetMap);
+    }
+
+    public Properties getUnsetProperties() {
+        return unsetProperties;
+    }
+
+    public void setUnsetProperties(Properties unsetProperties) {
+        this.unsetProperties = unsetProperties;
+    }
+
     public String toString() {
         return super.toString() + " (name=\"" + name + "\", age=\"" + age + "\", homePage=\"" + homePage + "\")";
     }
 
-    public boolean equals(Object obj) {
-        if (obj instanceof Person) {
-            Person that = (Person) obj;
-            return this.name.equals(that.name) && this.age == that.age && this.homePage.equals(that.homePage);
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Person person = (Person) o;
+
+        if (age != person.age) return false;
+        if (homePage != null ? !homePage.equals(person.homePage) : person.homePage != null) return false;
+        if (name != null ? !name.equals(person.name) : person.name != null) return false;
+        if (unsetMap != null ? !unsetMap.equals(person.unsetMap) : person.unsetMap != null) return false;
+        if (unsetProperties != null ? !unsetProperties.equals(person.unsetProperties) : person.unsetProperties != null) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = (name != null ? name.hashCode() : 0);
+        result = 31 * result + age;
+        result = 31 * result + (homePage != null ? homePage.hashCode() : 0);
+        result = 31 * result + (unsetMap != null ? unsetMap.hashCode() : 0);
+        result = 31 * result + (unsetProperties != null ? unsetProperties.hashCode() : 0);
+        return result;
     }
 }

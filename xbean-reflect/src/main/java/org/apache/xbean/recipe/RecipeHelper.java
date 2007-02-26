@@ -18,6 +18,11 @@ package org.apache.xbean.recipe;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Constructor;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 /**
  * @version $Rev: 6687 $ $Date: 2005-12-28T21:08:56.733437Z $
@@ -54,5 +59,26 @@ public final class RecipeHelper {
                 o instanceof String ||
                 o instanceof Recipe;
 
+    }
+
+    public static <K,V> List<Map.Entry<K,V>> prioritizeProperties(Map<K,V> properties) {
+        ArrayList<Map.Entry<K,V>> entries = new ArrayList<Map.Entry<K,V>>(properties.entrySet());
+        Collections.sort(entries, new RecipeComparator());
+        return entries;
+    }
+
+    public static class RecipeComparator implements Comparator<Object> {
+        public int compare(Object left, Object right) {
+            if (!(left instanceof Recipe) && !(right instanceof Recipe)) return 0;
+            if (left instanceof Recipe && !(right instanceof Recipe)) return 1;
+            if (!(left instanceof Recipe) && right instanceof Recipe) return -1;
+
+            float leftPriority = ((Recipe) left).getPriority();
+            float rightPriority = ((Recipe) right).getPriority();
+
+            if (leftPriority > rightPriority) return 1;
+            if (leftPriority < rightPriority) return -1;
+            return 0;
+        }
     }
 }

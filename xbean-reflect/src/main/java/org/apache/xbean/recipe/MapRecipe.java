@@ -27,30 +27,30 @@ import java.util.TreeMap;
 /**
  * @version $Rev: 6687 $ $Date: 2005-12-28T21:08:56.733437Z $
  */
-public class MapRecipe implements Recipe {
-    private final List entries;
+public class MapRecipe extends AbstractRecipe {
+    private final List<Object[]> entries;
     private final String type;
 
     public MapRecipe() {
         type = LinkedHashMap.class.getName();
-        entries = new ArrayList();
+        entries = new ArrayList<Object[]>();
     }
 
     public MapRecipe(String type) {
         this.type = type;
-        entries = new ArrayList();
+        entries = new ArrayList<Object[]>();
     }
 
     public MapRecipe(Class type) {
         this.type = type.getName();
         if (!RecipeHelper.hasDefaultConstructor(type)) throw new IllegalArgumentException("Type does not have a default constructor " + type);
-        entries = new ArrayList();
+        entries = new ArrayList<Object[]>();
     }
 
     public MapRecipe(Map map) {
         if (map == null) throw new NullPointerException("map is null");
 
-        entries = new ArrayList(map.size());
+        entries = new ArrayList<Object[]>(map.size());
 
         // If the specified set has a default constructor we will recreate the set, otherwise we use a LinkedHashMap or TreeMap
         if (RecipeHelper.hasDefaultConstructor(map.getClass())) {
@@ -66,7 +66,7 @@ public class MapRecipe implements Recipe {
     public MapRecipe(String type, Map map) {
         if (map == null) throw new NullPointerException("map is null");
         this.type = type;
-        entries = new ArrayList(map.size());
+        entries = new ArrayList<Object[]>(map.size());
         putAll(map);
     }
 
@@ -74,23 +74,23 @@ public class MapRecipe implements Recipe {
         if (map == null) throw new NullPointerException("map is null");
         if (!RecipeHelper.hasDefaultConstructor(type)) throw new IllegalArgumentException("Type does not have a default constructor " + type);
         this.type = type.getName();
-        entries = new ArrayList(map.size());
+        entries = new ArrayList<Object[]>(map.size());
         putAll(map);
     }
 
     public MapRecipe(MapRecipe mapRecipe) {
         if (mapRecipe == null) throw new NullPointerException("mapRecipe is null");
         this.type = mapRecipe.type;
-        entries = new ArrayList(mapRecipe.entries);
+        entries = new ArrayList<Object[]>(mapRecipe.entries);
     }
 
-    public Object create(ClassLoader classLoader) {
-        Class mapType = null;
-        try {
-            mapType = Class.forName(type, true, classLoader);
-        } catch (ClassNotFoundException e) {
-            throw new ConstructionException("Type class could not be found: " + type);
-        }
+    public boolean canCreate(Class type, ClassLoader classLoader) {
+        Class myType = getType(classLoader);
+        return type.isAssignableFrom(myType);
+    }
+
+    public Map create(ClassLoader classLoader) {
+        Class mapType = getType(classLoader);
 
         if (!RecipeHelper.hasDefaultConstructor(mapType)) {
             throw new ConstructionException("Type does not have a default constructor " + type);
@@ -108,9 +108,7 @@ public class MapRecipe implements Recipe {
         }
 
         Map instance = (Map) o;
-        for (Iterator iterator = entries.iterator(); iterator.hasNext();) {
-            Object[] entry = (Object[]) iterator.next();
-
+        for (Object[] entry : entries) {
             Object key = entry[0];
             if (key instanceof Recipe) {
                 Recipe recipe = (Recipe) key;
@@ -133,9 +131,20 @@ public class MapRecipe implements Recipe {
                 }
             }
 
+            //noinspection unchecked
             instance.put(key, value);
         }
         return instance;
+    }
+
+    private Class getType(ClassLoader classLoader) {
+        Class mapType = null;
+        try {
+            mapType = Class.forName(type, true, classLoader);
+        } catch (ClassNotFoundException e) {
+            throw new ConstructionException("Type class could not be found: " + type);
+        }
+        return mapType;
     }
 
     public void put(Object key, Object value) {

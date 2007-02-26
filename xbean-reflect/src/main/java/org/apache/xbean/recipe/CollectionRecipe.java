@@ -28,31 +28,31 @@ import java.util.TreeSet;
 /**
  * @version $Rev: 6685 $ $Date: 2005-12-28T00:29:37.967210Z $
  */
-public class CollectionRecipe implements Recipe {
-    private final List list;
+public class CollectionRecipe extends AbstractRecipe {
+    private final List<Object> list;
     private final String type;
 
     public CollectionRecipe() {
-        list = new ArrayList();
+        list = new ArrayList<Object>();
         type = ArrayList.class.getName();
     }
 
     public CollectionRecipe(String type) {
-        list = new ArrayList();
+        list = new ArrayList<Object>();
         this.type = type;
     }
 
     public CollectionRecipe(Class type) {
         if (type == null) throw new NullPointerException("type is null");
         if (!RecipeHelper.hasDefaultConstructor(type)) throw new IllegalArgumentException("Type does not have a default constructor " + type);
-        this.list = new ArrayList();
+        this.list = new ArrayList<Object>();
         this.type = type.getName();
     }
 
     public CollectionRecipe(Collection collection) {
         if (collection == null) throw new NullPointerException("collection is null");
 
-        this.list = new ArrayList(collection.size());
+        this.list = new ArrayList<Object>(collection.size());
 
         // If the specified set has a default constructor we will recreate the set, otherwise we use a the default
         if (RecipeHelper.hasDefaultConstructor(collection.getClass())) {
@@ -70,7 +70,7 @@ public class CollectionRecipe implements Recipe {
     public CollectionRecipe(String type, Collection collection) {
         if (type == null) throw new NullPointerException("type is null");
         if (collection == null) throw new NullPointerException("collection is null");
-        this.list = new ArrayList(collection.size());
+        this.list = new ArrayList<Object>(collection.size());
         this.type = type;
         addAll(collection);
     }
@@ -79,7 +79,7 @@ public class CollectionRecipe implements Recipe {
         if (type == null) throw new NullPointerException("type is null");
         if (!RecipeHelper.hasDefaultConstructor(type)) throw new IllegalArgumentException("Type does not have a default constructor " + type);
         if (collection == null) throw new NullPointerException("collection is null");
-        this.list = new ArrayList(collection.size());
+        this.list = new ArrayList<Object>(collection.size());
         this.type = type.getName();
         addAll(collection);
     }
@@ -87,16 +87,16 @@ public class CollectionRecipe implements Recipe {
     public CollectionRecipe(CollectionRecipe collectionRecipe) {
         if (collectionRecipe == null) throw new NullPointerException("setRecipe is null");
         this.type = collectionRecipe.type;
-        list = new ArrayList(collectionRecipe.list);
+        list = new ArrayList<Object>(collectionRecipe.list);
     }
 
-    public Object create(ClassLoader classLoader) {
-        Class setType = null;
-        try {
-            setType = Class.forName(type, true, classLoader);
-        } catch (ClassNotFoundException e) {
-            throw new ConstructionException("Type class could not be found: " + type);
-        }
+    public boolean canCreate(Class type, ClassLoader classLoader) {
+        Class myType = getType(classLoader);
+        return type.isAssignableFrom(myType);
+    }
+
+    public Collection create(ClassLoader classLoader) {
+        Class setType = getType(classLoader);
 
         if (!RecipeHelper.hasDefaultConstructor(setType)) {
             throw new ConstructionException("Type does not have a default constructor " + type);
@@ -126,10 +126,21 @@ public class CollectionRecipe implements Recipe {
                     throw e;
                 }
             }
+            //noinspection unchecked
             instance.add(value);
             i++;
         }
         return instance;
+    }
+
+    private Class getType(ClassLoader classLoader) {
+        Class setType = null;
+        try {
+            setType = Class.forName(type, true, classLoader);
+        } catch (ClassNotFoundException e) {
+            throw new ConstructionException("Type class could not be found: " + type);
+        }
+        return setType;
     }
 
     public void add(Boolean value) {
