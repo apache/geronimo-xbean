@@ -49,21 +49,39 @@ public class ObjectRecipeTest extends TestCase {
         doTest(objectRecipe);
     }
 
-    public void testFactoryMethodAndSetters() throws Exception {
+    public void testStaticFactoryMethodAndSetters() throws Exception {
 
         ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance");
         doTest(objectRecipe);
     }
 
-    public void testFactoryMethodWithParams() throws Exception {
+    public void testStaticFactoryMethodWithParams() throws Exception {
 
         ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance", new String[]{"name", "age", "homePage"}, new Class[]{String.class, Integer.TYPE, URL.class});
         doTest(objectRecipe);
     }
 
-    public void testFactoryMethodWithImpliedTypes() throws Exception {
+    public void testStaticFactoryMethodWithImpliedTypes() throws Exception {
 
         ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance", new String[]{"name", "age", "homePage"}, null);
+        doTest(objectRecipe);
+    }
+
+    public void testInstanceFactorySetters() throws Exception {
+
+        ObjectRecipe objectRecipe = new ObjectRecipe(PersonFactory.class, "create");
+        doTest(objectRecipe);
+    }
+
+    public void testInstanceFactoryConstructor() throws Exception {
+
+        ObjectRecipe objectRecipe = new ObjectRecipe(PersonFactory.class, "create", new String[]{"name", "age", "homePage"}, new Class[]{String.class, Integer.TYPE, URL.class});
+        doTest(objectRecipe);
+    }
+
+    public void testInstanceFactoryConstructorWithImpliedTypes() throws Exception {
+
+        ObjectRecipe objectRecipe = new ObjectRecipe(PersonFactory.class, "create", new String[]{"name", "age", "homePage"}, null);
         doTest(objectRecipe);
     }
 

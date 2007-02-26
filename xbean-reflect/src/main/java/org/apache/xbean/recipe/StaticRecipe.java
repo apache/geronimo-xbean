@@ -19,12 +19,15 @@ package org.apache.xbean.recipe;
 /**
  * @version $Rev$ $Date$
  */
-public class StaticRecipe implements Recipe {
-
+public class StaticRecipe extends AbstractRecipe {
     private final Object object;
 
     public StaticRecipe(Object object) {
         this.object = object;
+    }
+
+    public boolean canCreate(Class type, ClassLoader classLoader) {
+        return object == null || type.isAssignableFrom(object.getClass());
     }
 
     public Object create(ClassLoader classLoader) throws ConstructionException {

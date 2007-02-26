@@ -16,8 +16,6 @@
  */
 package org.apache.xbean.propertyeditor;
 
-import org.apache.xbean.Classes;
-
 /**
  * A property editor for converting class names into class object instances
  *
@@ -47,8 +45,8 @@ public class ClassEditor extends AbstractConverter {
     }
 
     protected String toStringImpl(Object value) {
-        Class clazz = (Class) value;
-        String text = Classes.getClassName(clazz);
+        Class type = (Class) value;
+        String text = type.getSimpleName();
         return text;
     }
 }

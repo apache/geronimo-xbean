@@ -22,8 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.xbean.Classes;
-
 /**
  * The property editor manager.  This orchestrates Geronimo usage of
  * property editors, allowing additional search paths to be added and
@@ -166,7 +164,7 @@ public class PropertyEditors {
         // fall back to a property editor
         PropertyEditor editor = findEditor(type);
         if (editor == null) {
-            throw new PropertyEditorException("Unable to find PropertyEditor for " + Classes.getClassName(type, true));
+            throw new PropertyEditorException("Unable to find PropertyEditor for " + type.getSimpleName());
         }
 
         // create the string value
@@ -175,8 +173,8 @@ public class PropertyEditors {
         try {
             textValue = editor.getAsText();
         } catch (Exception e) {
-            throw new PropertyEditorException("Error while converting a \"" + Classes.getClassName(type, true) + "\" to text " +
-                    " using the property editor " + Classes.getClassName(editor.getClass(), true), e);
+            throw new PropertyEditorException("Error while converting a \"" + type.getSimpleName() + "\" to text " +
+                    " using the property editor " + editor.getClass().getSimpleName(), e);
         }
         return textValue;
     }
@@ -211,7 +209,7 @@ public class PropertyEditors {
         // fall back to a property editor
         PropertyEditor editor = findEditor(type);
         if (editor == null) {
-            throw new PropertyEditorException("Unable to find PropertyEditor for " + Classes.getClassName(type, true));
+            throw new PropertyEditorException("Unable to find PropertyEditor for " + type.getSimpleName());
         }
 
         // create the object value
@@ -220,8 +218,8 @@ public class PropertyEditors {
         try {
             objectValue = editor.getValue();
         } catch (Exception e) {
-            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + Classes.getClassName(type, true) +
-                    " using the property editor " + Classes.getClassName(editor.getClass(), true), e);
+            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + type.getSimpleName() +
+                    " using the property editor " + editor.getClass().getSimpleName(), e);
         }
         return objectValue;
     }

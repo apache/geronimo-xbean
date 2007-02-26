@@ -18,20 +18,19 @@ package org.apache.xbean.recipe;
 
 import org.apache.xbean.propertyeditor.PropertyEditors;
 import org.apache.xbean.propertyeditor.PropertyEditorException;
-import org.apache.xbean.Classes;
 
 
 /**
  * @version $Rev: 6689 $ $Date: 2006-01-02T06:48:49.815187Z $
  */
-public class ValueRecipe implements Recipe {
+public class ValueRecipe extends AbstractRecipe {
     private final String type;
     private final String value;
 
     public ValueRecipe(Class type, String value) {
         if (type == null) throw new NullPointerException("type is null");
         if (!PropertyEditors.canConvert(type)) {
-            throw new IllegalArgumentException("No converter available for " + Classes.getClassName(type));
+            throw new IllegalArgumentException("No converter available for " + type.getSimpleName());
         }
         this.type = type.getName();
         this.value = value;
@@ -53,6 +52,15 @@ public class ValueRecipe implements Recipe {
         if (valueRecipe == null) throw new NullPointerException("valueRecipe is null");
         this.type = valueRecipe.type;
         this.value = valueRecipe.value;
+    }
+
+    public boolean canCreate(Class type, ClassLoader classLoader) {
+        try {
+            Class myType = Class.forName(this.type, true, classLoader);
+            return type.isAssignableFrom(myType);
+        } catch (ClassNotFoundException e) {
+            throw new ConstructionException("Type class could not be found: " + type);
+        }
     }
 
     public String getType() {

@@ -16,7 +16,6 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.Classes;
 import org.apache.xbean.propertyeditor.PropertyEditors;
 
 import java.lang.reflect.Constructor;
@@ -26,24 +25,25 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
  */
-public class ObjectRecipe implements Recipe {
+public class ObjectRecipe extends AbstractRecipe {
     private final String type;
     private final String factoryMethod;
     private final String[] constructorArgNames;
     private final Class[] constructorArgTypes;
-    private final LinkedHashMap properties;
-    private final List options = new ArrayList();
-    private final Map unsetProperties = new LinkedHashMap();
+    private final LinkedHashMap<Property,Object> properties;
+    private final List<Option> options = new ArrayList<Option>();
+    private final Map<String,Object> unsetProperties = new LinkedHashMap<String,Object>();
+
     public ObjectRecipe(Class type) {
         this(type.getName());
     }
@@ -52,7 +52,7 @@ public class ObjectRecipe implements Recipe {
         this(type.getName(), factoryMethod);
     }
 
-    public ObjectRecipe(Class type, Map properties) {
+    public ObjectRecipe(Class type, Map<String,Object> properties) {
         this(type.getName(), properties);
     }
 
@@ -72,7 +72,7 @@ public class ObjectRecipe implements Recipe {
         this(typeName, factoryMethod, null, null, null);
     }
 
-    public ObjectRecipe(String typeName, Map properties) {
+    public ObjectRecipe(String typeName, Map<String,Object> properties) {
         this(typeName, null, null, null, properties);
     }
 
@@ -84,7 +84,9 @@ public class ObjectRecipe implements Recipe {
         this(typeName, factoryMethod, constructorArgNames, constructorArgTypes, null);
     }
 
-    public ObjectRecipe(String type, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes, Map properties) {
+    public ObjectRecipe(String type, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes, Map<String,Object> properties) {
+        options.add(Option.FIELD_INJECTION);
+        
         this.type = type;
         this.factoryMethod = factoryMethod;
         if (constructorArgNames != null) {
@@ -98,10 +100,10 @@ public class ObjectRecipe implements Recipe {
             this.constructorArgTypes = new Class[0];
         }
         if (properties != null) {
-            this.properties = new LinkedHashMap(properties);
+            this.properties = new LinkedHashMap<Property,Object>();
             setAllProperties(properties);
         } else {
-            this.properties = new LinkedHashMap();
+            this.properties = new LinkedHashMap<Property,Object>();
         }
     }
 
@@ -132,8 +134,8 @@ public class ObjectRecipe implements Recipe {
     }
 
     private void setProperty(Property key, Object value) {
-        if (!RecipeHelper.isSimpleType(value)) {
-            value = new ValueRecipe(value);
+        if (value instanceof UnsetPropertiesRecipe) {
+            allow(Option.IGNORE_MISSING_PROPERTIES);
         }
         properties.put(key, value);
     }
@@ -149,89 +151,65 @@ public class ObjectRecipe implements Recipe {
         }
     }
 
-    public Object create() throws ConstructionException {
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        return create(contextClassLoader);
+    public Map<String,Object> getUnsetProperties() {
+        return unsetProperties;
+    }
+
+    public boolean canCreate(Class type, ClassLoader classLoader) {
+        Class myType = getType(classLoader);
+        return type.isAssignableFrom(myType);
     }
 
     public Object create(ClassLoader classLoader) throws ConstructionException {
         unsetProperties.clear();
         // load the type class
-        Class typeClass = null;
-        try {
-            typeClass = Class.forName(type, true, classLoader);
-        } catch (ClassNotFoundException e) {
-            throw new ConstructionException("Type class could not be found: " + type);
-        }
+        Class typeClass = getType(classLoader);
 
         // verify that it is a class we can construct
         if (!Modifier.isPublic(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is not public: " + Classes.getClassName(typeClass, true));
+            throw new ConstructionException("Class is not public: " + typeClass.getName());
         }
         if (Modifier.isInterface(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is an interface: " + Classes.getClassName(typeClass, true));
+            throw new ConstructionException("Class is an interface: " + typeClass.getName());
         }
         if (Modifier.isAbstract(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is abstract: " + Classes.getClassName(typeClass, true));
+            throw new ConstructionException("Class is abstract: " + typeClass.getName());
         }
 
-        // get object values for all recipe properties
-        Map propertyValues = new LinkedHashMap(properties);
-        for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            Object value = entry.getValue();
-            if (value instanceof Recipe) {
-                Recipe recipe = ((Recipe) value);
-                value = recipe.create(classLoader);
-                entry.setValue(value);
-            }
+        // clone the properties so they can be used again
+        Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
+
+        // find the factory method is one is declared
+        Method factoryMethod = null;
+        if (this.factoryMethod != null) {
+            factoryMethod = findFactoryMethod(typeClass, this.factoryMethod);
         }
 
         // create the instance
-        Object instance = createInstance(typeClass, propertyValues);
+        Object result;
+        if (factoryMethod != null && Modifier.isStatic(factoryMethod.getModifiers())) {
+            result = createInstance(factoryMethod, propertyValues, classLoader);
+        } else {
+            Constructor constructor = selectConstructor(typeClass);
+            result = createInstance(constructor, propertyValues, classLoader);
+        }
+        Object instance = result;
 
         boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
         boolean ignoreMissingProperties = options.contains(Option.IGNORE_MISSING_PROPERTIES);
 
         // set remaining properties
-        for (Iterator iterator = propertyValues.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            Property propertyName = (Property) entry.getKey();
+        for (Map.Entry<Property, Object> entry : RecipeHelper.prioritizeProperties(propertyValues)) {
+            Property propertyName = entry.getKey();
             Object propertyValue = entry.getValue();
 
-            Member member;
-            try {
-                if (propertyName instanceof SetterProperty){
-                    member = new MethodMember(findSetter(typeClass, propertyName.name, propertyValue, allowPrivate));
-                } else if (propertyName instanceof FieldProperty){
-                    member = new FieldMember(findField(typeClass, propertyName.name, propertyValue, allowPrivate));
-                } else {
-                    try {
-                        member = new MethodMember(findSetter(typeClass, propertyName.name, propertyValue, allowPrivate));
-                    } catch (MissingAccessorException noSetter) {
-                        if (!options.contains(Option.FIELD_INJECTION)) {
-                            throw noSetter;
-                        }
+            setProperty(instance, propertyName, propertyValue, allowPrivate, ignoreMissingProperties, classLoader);
+        }
 
-                        try {
-                            member = new FieldMember(findField(typeClass, propertyName.name, propertyValue, allowPrivate));
-                        } catch (MissingAccessorException noField) {
-                            throw (noField.getMatchLevel() > noSetter.getMatchLevel())? noField: noSetter;
-                        }
-                    }
-                }
-            } catch (MissingAccessorException e) {
-                if (ignoreMissingProperties){
-                    unsetProperties.put(propertyName.name, propertyValue);
-                    continue;
-                } else {
-                    throw e;
-                }
-            }
-
+        // call instance factory method
+        if (factoryMethod != null && !Modifier.isStatic(factoryMethod.getModifiers())) {
             try {
-                propertyValue = convert(member.getType(), propertyValue);
-                member.setValue(instance, propertyValue);
+                instance = factoryMethod.invoke(instance);
             } catch (Exception e) {
                 Throwable t = e;
                 if (e instanceof InvocationTargetException) {
@@ -240,17 +218,70 @@ public class ObjectRecipe implements Recipe {
                         t = invocationTargetException.getCause();
                     }
                 }
-                throw new ConstructionException("Error setting property: " + member, t);
+                throw new ConstructionException("Error calling factory method: " + factoryMethod, t);
             }
         }
+
         return instance;
     }
 
-    public Map getUnsetProperties() {
-        return new LinkedHashMap(unsetProperties);
+    private Class getType(ClassLoader classLoader) {
+        Class typeClass = null;
+        try {
+            typeClass = Class.forName(type, true, classLoader);
+        } catch (ClassNotFoundException e) {
+            throw new ConstructionException("Type class could not be found: " + type);
+        }
+        return typeClass;
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues, Class[] constructorArgTypes) {
+    private void setProperty(Object instance, Property propertyName, Object propertyValue, boolean allowPrivate, boolean ignoreMissingProperties, ClassLoader classLoader) {
+        Member member;
+        try {
+            if (propertyName instanceof SetterProperty){
+                member = new MethodMember(findSetter(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+            } else if (propertyName instanceof FieldProperty){
+                member = new FieldMember(findField(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+            } else {
+                try {
+                    member = new MethodMember(findSetter(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+                } catch (MissingAccessorException noSetter) {
+                    if (!options.contains(Option.FIELD_INJECTION)) {
+                        throw noSetter;
+                    }
+
+                    try {
+                        member = new FieldMember(findField(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+                    } catch (MissingAccessorException noField) {
+                        throw (noField.getMatchLevel() > noSetter.getMatchLevel())? noField: noSetter;
+                    }
+                }
+            }
+        } catch (MissingAccessorException e) {
+            if (ignoreMissingProperties){
+                unsetProperties.put(propertyName.name, propertyValue);
+                return;
+            } else {
+                throw e;
+            }
+        }
+
+        try {
+            propertyValue = convert(member.getType(), propertyValue, classLoader);
+            member.setValue(instance, propertyValue);
+        } catch (Exception e) {
+            Throwable t = e;
+            if (e instanceof InvocationTargetException) {
+                InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                if (invocationTargetException.getCause() != null) {
+                    t = invocationTargetException.getCause();
+                }
+            }
+            throw new ConstructionException("Error setting property: " + member, t);
+        }
+    }
+
+    private Object[] extractConstructorArgs(Map propertyValues, Class[] constructorArgTypes, ClassLoader classLoader) {
         Object[] parameters = new Object[constructorArgNames.length];
         for (int i = 0; i < constructorArgNames.length; i++) {
             Property name = new Property(constructorArgNames[i]);
@@ -259,14 +290,14 @@ public class ObjectRecipe implements Recipe {
             Object value;
             if (propertyValues.containsKey(name)) {
                 value = propertyValues.remove(name);
-                if (!isInstance(type, value) && !isConvertable(type, value)) {
+                if (!isInstance(type, value) && !isConvertable(type, value, classLoader)) {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +
                             "index=" + i + ", " +
-                            "expected=" + Classes.getClassName(type, true) + ", " +
-                            "actual=" + Classes.getClassName(value, true));
+                            "expected=" + type.getName() + ", " +
+                            "actual=" + getClassName(value));
                 }
-                value = convert(type, value);
+                value = convert(type, value, classLoader);
             } else {
                 value = getDefaultValue(type);
             }
@@ -277,7 +308,23 @@ public class ObjectRecipe implements Recipe {
         return parameters;
     }
 
-    private static Object convert(Class type, Object value) {
+    private static String getClassName(Object value) {
+        if (value == null) return "null";
+
+        return value.getClass().getName();
+    }
+
+    private Object convert(Class type, Object value, ClassLoader classLoader) {
+        if (value instanceof Recipe) {
+            if (value instanceof SecretRecipe) {
+                SecretRecipe recipe = (SecretRecipe) value;
+                value = recipe.create(this, classLoader);
+            } else {
+                Recipe recipe = (Recipe) value;
+                value = recipe.create(classLoader);
+            }
+        }
+
         if (value instanceof String && (type != Object.class)) {
             String stringValue = (String) value;
             value = PropertyEditors.getValue(type, stringValue);
@@ -306,129 +353,50 @@ public class ObjectRecipe implements Recipe {
         return null;
     }
 
-    private Object createInstance(Class typeClass, Map propertyValues) {
-        if (factoryMethod != null) {
-            Method method = selectFactory(typeClass);
-            // get the constructor parameters
-            Object[] parameters = extractConstructorArgs(propertyValues, method.getParameterTypes());
-
-            try {
-                Object object = method.invoke(null, parameters);
-                return object;
-            } catch (Exception e) {
-                Throwable t = e;
-                if (e instanceof InvocationTargetException) {
-                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
-                    if (invocationTargetException.getCause() != null) {
-                        t = invocationTargetException.getCause();
-                    }
-                }
-                throw new ConstructionException("Error invoking factory method: " + method, t);
-            }
-        } else {
-            Constructor constructor = selectConstructor(typeClass);
-            // get the constructor parameters
-            Object[] parameters = extractConstructorArgs(propertyValues, constructor.getParameterTypes());
-
-            try {
-                Object object = constructor.newInstance(parameters);
-                return object;
-            } catch (Exception e) {
-                Throwable t = e;
-                if (e instanceof InvocationTargetException) {
-                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
-                    if (invocationTargetException.getCause() != null) {
-                        t = invocationTargetException.getCause();
-                    }
-                }
-                throw new ConstructionException("Error invoking constructor: " + constructor, t);
-            }
-        }
-    }
-
-    private Method selectFactory(Class typeClass) {
-        if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
-            ArrayList matches = new ArrayList();
-
-            Method[] methods = typeClass.getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                if (method.getName().equals(factoryMethod) && method.getParameterTypes().length == constructorArgNames.length) {
-                    try {
-                        checkFactory(method);
-                        matches.add(method);
-                    } catch (Exception dontCare) {
-                    }
-                }
-            }
-
-            if (matches.size() < 1) {
-                StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid factory method: ");
-                buffer.append("public static Object ").append(factoryMethod);
-                buffer.append(toArgumentList(constructorArgNames));
-                throw new ConstructionException(buffer.toString());
-            } else if (matches.size() > 1) {
-                StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid factory methods: ");
-                buffer.append("public static Object ").append(factoryMethod);
-                buffer.append(toArgumentList(constructorArgNames));
-                throw new ConstructionException(buffer.toString());
-            }
-
-            return (Method) matches.get(0);
-        }
+    private Object createInstance(Constructor constructor, Map propertyValues, ClassLoader classLoader) {
+        // get the constructor parameters
+        Object[] parameters = extractConstructorArgs(propertyValues, constructor.getParameterTypes(), classLoader);
 
         try {
-            Method method = typeClass.getMethod(factoryMethod, constructorArgTypes);
-
-            checkFactory(method);
-
-            return method;
-        } catch (NoSuchMethodException e) {
-            // try to find a matching private method
-            Method[] methods = typeClass.getDeclaredMethods();
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                if (method.getName().equals(factoryMethod) && isAssignableFrom(constructorArgTypes, method.getParameterTypes())) {
-                    if (!Modifier.isPublic(method.getModifiers())) {
-                        throw new ConstructionException("Factory method is not public: " + method);
-                    }
+            Object object = constructor.newInstance(parameters);
+            return object;
+        } catch (Exception e) {
+            Throwable t = e;
+            if (e instanceof InvocationTargetException) {
+                InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                if (invocationTargetException.getCause() != null) {
+                    t = invocationTargetException.getCause();
                 }
             }
-
-            StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
-            buffer.append("public static Object ").append(Classes.getClassName(typeClass, true)).append(".");
-            buffer.append(factoryMethod).append(toParameterList(constructorArgTypes));
-            throw new ConstructionException(buffer.toString());
+            throw new ConstructionException("Error invoking constructor: " + constructor, t);
         }
     }
 
-    private void checkFactory(Method method) {
-        if (!Modifier.isPublic(method.getModifiers())) {
-            // this will never occur since private methods are not returned from
-            // getMethod, but leave this here anyway, just to be safe
-            throw new ConstructionException("Factory method is not public: " + method);
-        }
+    private Object createInstance(Method method, Map propertyValues, ClassLoader classLoader) {
+        // get the constructor parameters
+        Object[] parameters = extractConstructorArgs(propertyValues, method.getParameterTypes(), classLoader);
 
-        if (!Modifier.isStatic(method.getModifiers())) {
-            throw new ConstructionException("Factory method is not static: " + method);
-        }
-
-        if (method.getReturnType().equals(Void.TYPE)) {
-            throw new ConstructionException("Factory method does not return anything: " + method);
-        }
-
-        if (method.getReturnType().isPrimitive()) {
-            throw new ConstructionException("Factory method returns a primitive type: " + method);
+        try {
+            Object object = method.invoke(null, parameters);
+            return object;
+        } catch (Exception e) {
+            Throwable t = e;
+            if (e instanceof InvocationTargetException) {
+                InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                if (invocationTargetException.getCause() != null) {
+                    t = invocationTargetException.getCause();
+                }
+            }
+            throw new ConstructionException("Error invoking factory method: " + method, t);
         }
     }
 
     private Constructor selectConstructor(Class typeClass) {
         if (constructorArgNames.length > 0 && constructorArgTypes.length == 0) {
-            ArrayList matches = new ArrayList();
+            ArrayList<Constructor> matches = new ArrayList<Constructor>();
 
             Constructor[] constructors = typeClass.getConstructors();
-            for (int i = 0; i < constructors.length; i++) {
-                Constructor constructor = constructors[i];
+            for (Constructor constructor : constructors) {
                 if (constructor.getParameterTypes().length == constructorArgNames.length) {
                     matches.add(constructor);
                 }
@@ -436,17 +404,17 @@ public class ObjectRecipe implements Recipe {
 
             if (matches.size() < 1) {
                 StringBuffer buffer = new StringBuffer("No parameter types supplied; unable to find a potentially valid constructor: ");
-                buffer.append("constructor= public ").append(Classes.getClassName(typeClass, true));
+                buffer.append("constructor= public ").append(typeClass.getName());
                 buffer.append(toArgumentList(constructorArgNames));
                 throw new ConstructionException(buffer.toString());
             } else if (matches.size() > 1) {
                 StringBuffer buffer = new StringBuffer("No parameter types supplied; found too many potentially valid constructors: ");
-                buffer.append("constructor= public ").append(Classes.getClassName(typeClass, true));
+                buffer.append("constructor= public ").append(typeClass.getName());
                 buffer.append(toArgumentList(constructorArgNames));
                 throw new ConstructionException(buffer.toString());
             }
 
-            return (Constructor) matches.get(0);
+            return matches.get(0);
         }
 
         try {
@@ -462,8 +430,7 @@ public class ObjectRecipe implements Recipe {
         } catch (NoSuchMethodException e) {
             // try to find a matching private method
             Constructor[] constructors = typeClass.getDeclaredConstructors();
-            for (int i = 0; i < constructors.length; i++) {
-                Constructor constructor = constructors[i];
+            for (Constructor constructor : constructors) {
                 if (isAssignableFrom(constructorArgTypes, constructor.getParameterTypes())) {
                     if (!Modifier.isPublic(constructor.getModifiers())) {
                         throw new ConstructionException("Constructor is not public: " + constructor);
@@ -472,7 +439,7 @@ public class ObjectRecipe implements Recipe {
             }
 
             StringBuffer buffer = new StringBuffer("Unable to find a valid constructor: ");
-            buffer.append("constructor= public ").append(Classes.getClassName(typeClass, true));
+            buffer.append("constructor= public ").append(typeClass.getName());
             buffer.append(toParameterList(constructorArgTypes));
             throw new ConstructionException(buffer.toString());
         }
@@ -484,7 +451,7 @@ public class ObjectRecipe implements Recipe {
         for (int i = 0; i < parameterTypes.length; i++) {
             Class type = parameterTypes[i];
             if (i > 0) buffer.append(", ");
-            buffer.append(Classes.getClassName(type, true));
+            buffer.append(type.getName());
         }
         buffer.append(")");
         return buffer.toString();
@@ -502,7 +469,86 @@ public class ObjectRecipe implements Recipe {
         return buffer.toString();
     }
 
-    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate) {
+    public Method findFactoryMethod(Class typeClass, String factoryMethod) {
+        if (factoryMethod == null) throw new NullPointerException("name is null");
+        if (factoryMethod.length() == 0) throw new IllegalArgumentException("name is an empty string");
+
+        int matchLevel = 0;
+        MissingFactoryMethodException missException = null;
+
+        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
+        for (Method method : methods) {
+            if (method.getName().equals(factoryMethod)) {
+                if (Modifier.isStatic(method.getModifiers())) {
+                    if (method.getParameterTypes().length != constructorArgNames.length) {
+                        if (matchLevel < 1) {
+                            matchLevel = 1;
+                            missException = new MissingFactoryMethodException("Static factory method has " + method.getParameterTypes().length + " arugments " +
+                                    "but expected " + constructorArgNames.length + " arguments: " + method);
+                        }
+                        continue;
+                    }
+
+                    if (constructorArgTypes.length > 0 && !isAssignableFrom(constructorArgTypes, method.getParameterTypes())) {
+                        if (matchLevel < 2) {
+                            matchLevel = 2;
+                            missException = new MissingFactoryMethodException("Static factory method has signature " +
+                                    "public static " + typeClass.getName() + "." + factoryMethod + toParameterList(method.getParameterTypes()) +
+                                    " but expected signature " +
+                                    "public static " + typeClass.getName() + "." + factoryMethod + toParameterList(constructorArgTypes));
+                        }
+                        continue;
+                    }
+                } else {
+                    if (method.getParameterTypes().length != 0) {
+                        if (matchLevel < 1) {
+                            matchLevel = 1;
+                            missException = new MissingFactoryMethodException("Instance factory method has parameters: " + method);
+                        }
+                        continue;
+                    }
+                }
+
+                if (method.getReturnType() == Void.TYPE) {
+                    if (matchLevel < 3) {
+                        matchLevel = 3;
+                        missException = new MissingFactoryMethodException("Factory method does not return a value: " + method);
+                    }
+                    continue;
+                }
+
+                if (Modifier.isAbstract(method.getModifiers())) {
+                    if (matchLevel < 4) {
+                        matchLevel = 4;
+                        missException = new MissingFactoryMethodException("Factory method is abstract: " + method);
+                    }
+                    continue;
+                }
+
+                if (!Modifier.isPublic(method.getModifiers())) {
+                    if (matchLevel < 5) {
+                        matchLevel = 5;
+                        missException = new MissingFactoryMethodException("Factory method is not public: " + method);
+                    }
+                    continue;
+                }
+
+                return method;
+            }
+        }
+
+        if (missException != null) {
+            throw missException;
+        } else {
+            StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
+            buffer.append("public void ").append(typeClass.getName()).append(".");
+            buffer.append(factoryMethod).append("()");
+            throw new MissingFactoryMethodException(buffer.toString());
+        }
+    }
+
+    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, ClassLoader classLoader) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
@@ -515,10 +561,9 @@ public class ObjectRecipe implements Recipe {
         int matchLevel = 0;
         MissingAccessorException missException = null;
 
-        List methods = new ArrayList(Arrays.asList(typeClass.getMethods()));
+        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
-        for (Iterator iterator = methods.iterator(); iterator.hasNext();) {
-            Method method = (Method) iterator.next();
+        for (Method method : methods) {
             if (method.getName().equals(setterName)) {
                 if (method.getParameterTypes().length == 0) {
                     if (matchLevel < 1) {
@@ -573,17 +618,17 @@ public class ObjectRecipe implements Recipe {
                     if (matchLevel < 6) {
                         matchLevel = 6;
                         missException = new MissingAccessorException("Null can not be assigned to " +
-                                Classes.getClassName(methodParameterType, true) + ": " + method, matchLevel);
+                                methodParameterType.getName() + ": " + method, matchLevel);
                     }
                     continue;
                 }
 
 
-                if (!isInstance(methodParameterType, propertyValue) && !isConvertable(methodParameterType, propertyValue)) {
+                if (!isInstance(methodParameterType, propertyValue) && !isConvertable(methodParameterType, propertyValue, classLoader)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
-                        missException = new MissingAccessorException(Classes.getClassName(propertyValue, true) + " can not be assigned or converted to " +
-                                Classes.getClassName(methodParameterType, true) + ": " + method, matchLevel);
+                        missException = new MissingAccessorException(getClassName(propertyValue) + " can not be assigned or converted to " +
+                                methodParameterType.getName() + ": " + method, matchLevel);
                     }
                     continue;
                 }
@@ -601,28 +646,27 @@ public class ObjectRecipe implements Recipe {
             throw missException;
         } else {
             StringBuffer buffer = new StringBuffer("Unable to find a valid setter method: ");
-            buffer.append("public void ").append(Classes.getClassName(typeClass, true)).append(".");
-            buffer.append(setterName).append("(").append(Classes.getClassName(propertyValue, true)).append(")");
+            buffer.append("public void ").append(typeClass.getName()).append(".");
+            buffer.append(setterName).append("(").append(getClassName(propertyValue)).append(")");
             throw new MissingAccessorException(buffer.toString(), -1);
         }
     }
 
-    public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate) {
+    public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, ClassLoader classLoader) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
         int matchLevel = 0;
         MissingAccessorException missException = null;
 
-        List fields = new ArrayList(Arrays.asList(typeClass.getDeclaredFields()));
+        List<Field> fields = new ArrayList<Field>(Arrays.asList(typeClass.getDeclaredFields()));
         Class parent = typeClass.getSuperclass();
         while (parent != null){
             fields.addAll(Arrays.asList(parent.getDeclaredFields()));
             parent = parent.getSuperclass();
         }
 
-        for (Iterator iterator = fields.iterator(); iterator.hasNext();) {
-            Field field = (Field) iterator.next();
+        for (Field field : fields) {
             if (field.getName().equals(propertyName)) {
 
                 if (!allowPrivate && !Modifier.isPublic(field.getModifiers())) {
@@ -646,17 +690,17 @@ public class ObjectRecipe implements Recipe {
                     if (matchLevel < 6) {
                         matchLevel = 6;
                         missException = new MissingAccessorException("Null can not be assigned to " +
-                                Classes.getClassName(fieldType, true) + ": " + field, matchLevel);
+                                fieldType.getName() + ": " + field, matchLevel);
                     }
                     continue;
                 }
 
 
-                if (!isInstance(fieldType, propertyValue) && !isConvertable(fieldType, propertyValue)) {
+                if (!isInstance(fieldType, propertyValue) && !isConvertable(fieldType, propertyValue, classLoader)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
-                        missException = new MissingAccessorException(Classes.getClassName(propertyValue, true) + " can not be assigned or converted to " +
-                                Classes.getClassName(fieldType, true) + ": " + field, matchLevel);
+                        missException = new MissingAccessorException(getClassName(propertyValue) + " can not be assigned or converted to " +
+                                fieldType.getName() + ": " + field, matchLevel);
                     }
                     continue;
                 }
@@ -674,14 +718,18 @@ public class ObjectRecipe implements Recipe {
             throw missException;
         } else {
             StringBuffer buffer = new StringBuffer("Unable to find a valid field: ");
-            buffer.append("public ").append(" ").append(Classes.getClassName(propertyValue, true));
+            buffer.append("public ").append(" ").append(getClassName(propertyValue));
             buffer.append(" ").append(propertyName).append(";");
             throw new MissingAccessorException(buffer.toString(), -1);
         }
     }
 
-    public static boolean isConvertable(Class methodParameterType, Object propertyValue) {
-        return (propertyValue instanceof String && PropertyEditors.canConvert(methodParameterType));
+    public static boolean isConvertable(Class type, Object propertyValue, ClassLoader classLoader) {
+        if (propertyValue instanceof Recipe) {
+            Recipe recipe = (Recipe) propertyValue;
+            return recipe.canCreate(type, classLoader);
+        }
+        return (propertyValue instanceof String && PropertyEditors.canConvert(type));
     }
 
     public static boolean isInstance(Class type, Object instance) {
@@ -750,7 +798,7 @@ public class ObjectRecipe implements Recipe {
         for (int i = 0; i < expectedTypes.length; i++) {
             Class expectedType = expectedTypes[i];
             Class actualType = actualTypes[i];
-            if (!isAssignableFrom(expectedType, actualType)) {
+            if (expectedType != actualType && !isAssignableFrom(expectedType, actualType)) {
                 return false;
             }
         }
@@ -758,7 +806,7 @@ public class ObjectRecipe implements Recipe {
     }
 
     private static void setAccessible(final Method method) {
-        AccessController.doPrivileged(new PrivilegedAction() {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
             public Object run() {
                 method.setAccessible(true);
                 return null;
@@ -767,7 +815,7 @@ public class ObjectRecipe implements Recipe {
     }
 
     private static void setAccessible(final Field field) {
-        AccessController.doPrivileged(new PrivilegedAction() {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
             public Object run() {
                 field.setAccessible(true);
                 return null;
@@ -792,7 +840,7 @@ public class ObjectRecipe implements Recipe {
         }
 
         public void setValue(Object instance, Object value) throws Exception {
-            setter.invoke(instance, new Object[]{value});
+            setter.invoke(instance, value);
         }
 
         public String toString() {

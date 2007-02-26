@@ -29,8 +29,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 
-import org.apache.xbean.Classes;
-
 /**
  * @version $Rev: 6680 $ $Date: 2005-12-24T04:38:27.427468Z $
  */
@@ -140,7 +138,7 @@ public final class CollectionUtil {
             Converter converter = (Converter) componentEditor;
             Class type = converter.getType();
             if (!type.isInstance(value)) {
-                throw new PropertyEditorException("Value is not an instance of " + Classes.getClassName(type) + ": " + value.getClass().getName());
+                throw new PropertyEditorException("Value is not an instance of " + type.getSimpleName() + ": " + value.getClass().getName());
             }
             return converter.toString(value);
         } else {

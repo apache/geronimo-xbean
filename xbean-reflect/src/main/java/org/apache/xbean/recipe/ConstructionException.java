@@ -21,7 +21,7 @@ package org.apache.xbean.recipe;
  */
 public class ConstructionException extends RuntimeException {
 
-    private String beanName;
+    private String className;
     private String attributeName;
 
     public ConstructionException() {
@@ -39,12 +39,12 @@ public class ConstructionException extends RuntimeException {
         super(cause);
     }
 
-    public String getBeanName() {
-        return beanName;
+    public String getClassName() {
+        return className;
     }
 
-    public void setBeanName(String beanName) {
-        this.beanName = beanName;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public String getAttributeName() {
@@ -56,11 +56,17 @@ public class ConstructionException extends RuntimeException {
     }
 
     public void setPrependAttributeName(String attributeName) {
-        this.attributeName += attributeName;
     }
 
     public String getMessage() {
-        return "Unable to create bean " + beanName + " attribute " + attributeName + ": "  + super.getMessage();
+        if (className == null) {
+            return super.getMessage();
+        }
 
+        if (attributeName == null) {
+            return "Unable to create bean of type " + className + ": "  + super.getMessage();
+        }
+
+        return "Unable to create bean of type " + className + " for attribute " + attributeName + ": "  + super.getMessage();
     }
 }
