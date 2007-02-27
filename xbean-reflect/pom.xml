@@ -32,15 +32,6 @@
     <artifactId>xbean-reflect</artifactId>
     <name>XBean :: Reflect</name>
 
-    <dependencies>
-        
-        <dependency>
-            <groupId>mx4j</groupId>
-            <artifactId>mx4j</artifactId>
-        </dependency>
-        
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
