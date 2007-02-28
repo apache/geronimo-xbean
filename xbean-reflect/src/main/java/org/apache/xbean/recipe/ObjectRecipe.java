@@ -195,17 +195,7 @@ public class ObjectRecipe extends AbstractRecipe {
         }
         Object instance = result;
 
-        boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
-        boolean ignoreMissingProperties = options.contains(Option.IGNORE_MISSING_PROPERTIES);
-
-        // set remaining properties
-        for (Map.Entry<Property, Object> entry : RecipeHelper.prioritizeProperties(propertyValues)) {
-            Property propertyName = entry.getKey();
-            Object propertyValue = entry.getValue();
-
-            setProperty(instance, propertyName, propertyValue, allowPrivate, ignoreMissingProperties, classLoader);
-        }
-
+        setProperties(propertyValues, instance, classLoader);
         // call instance factory method
         if (factoryMethod != null && !Modifier.isStatic(factoryMethod.getModifiers())) {
             try {
@@ -223,6 +213,44 @@ public class ObjectRecipe extends AbstractRecipe {
         }
 
         return instance;
+    }
+    
+    public Class setStaticProperties(ClassLoader classLoader) throws ConstructionException {
+        unsetProperties.clear();
+        // load the type class
+        Class typeClass = getType(classLoader);
+
+        // verify that it is a class we can construct
+        if (!Modifier.isPublic(typeClass.getModifiers())) {
+            throw new ConstructionException("Class is not public: " + typeClass.getName());
+        }
+        if (Modifier.isInterface(typeClass.getModifiers())) {
+            throw new ConstructionException("Class is an interface: " + typeClass.getName());
+        }
+        if (Modifier.isAbstract(typeClass.getModifiers())) {
+            throw new ConstructionException("Class is abstract: " + typeClass.getName());
+        }
+
+        // clone the properties so they can be used again
+        Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
+
+        setProperties(propertyValues, null, classLoader);
+
+        return typeClass;
+    }
+
+    private void setProperties(Map<Property, Object> propertyValues, Object instance, ClassLoader classLoader) {
+        boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
+        boolean ignoreMissingProperties = options.contains(Option.IGNORE_MISSING_PROPERTIES);
+
+        // set remaining properties
+        for (Map.Entry<Property, Object> entry : RecipeHelper.prioritizeProperties(propertyValues)) {
+            Property propertyName = entry.getKey();
+            Object propertyValue = entry.getValue();
+
+            setProperty(instance, propertyName, propertyValue, allowPrivate, ignoreMissingProperties, classLoader);
+        }
+
     }
 
     private Class getType(ClassLoader classLoader) {
