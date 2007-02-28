@@ -48,4 +48,10 @@
 
     </dependencies>
 
+
+    <scm>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk/xbean-spring-itests/2.0-rc2</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk/xbean-spring-itests/2.0-rc2</developerConnection>
+    </scm>
+
 </project>
