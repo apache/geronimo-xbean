@@ -99,7 +99,7 @@ public class XsdGenerator implements GeneratorPlugin {
                     generateElementMappingComplexProperty(out, namespaceMapping, attributeMapping);
                 }
             }
-            out.println("        <xs:any namespace='##other'/>");
+            out.println("        <xs:any namespace='##other' minOccurs='0' maxOccurs='unbounded'/>");
             out.println("      </xs:sequence>");
         }
 
