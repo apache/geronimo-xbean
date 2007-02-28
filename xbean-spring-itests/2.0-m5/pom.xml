@@ -47,4 +47,10 @@
 
     </dependencies>
 
+
+    <scm>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk/xbean-spring-itests/2.0-m5</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk/xbean-spring-itests/2.0-m5</developerConnection>
+    </scm>
+
 </project>
