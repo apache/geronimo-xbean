@@ -150,7 +150,7 @@ public class QdoxMappingLoader implements MappingLoader {
         		JavaClass[] classes = javaSources[i].getClasses();
         		for (int j = 0; j < classes.length; j++) {
     	            JavaClass javaClass = classes[j];    	        	
-    	            ElementMapping element = loadElement(javaClass);
+    	            ElementMapping element = loadElement(builder, javaClass);
     	            if (element != null && !javaClass.isAbstract()) {
     	                elements.add(element);
     	            } else {
@@ -162,7 +162,7 @@ public class QdoxMappingLoader implements MappingLoader {
         return elements;
     }
 
-    private ElementMapping loadElement(JavaClass javaClass) {
+    private ElementMapping loadElement(JavaDocBuilder builder, JavaClass javaClass) {
         DocletTag xbeanTag = javaClass.getTagByName(XBEAN_ANNOTATION);
         if (xbeanTag == null) {
             return null;
@@ -177,6 +177,10 @@ public class QdoxMappingLoader implements MappingLoader {
         String namespace = getProperty(xbeanTag, "namespace", defaultNamespace);
         boolean root = getBooleanProperty(xbeanTag, "rootElement");
         String contentProperty = getProperty(xbeanTag, "contentProperty");
+        String factoryClass = getProperty(xbeanTag, "factoryClass");
+        if (factoryClass != null) {
+            System.out.println("FactoryClass: " + factoryClass);
+        }
 
         Map mapsByPropertyName = new HashMap();
         List flatProperties = new ArrayList();
@@ -271,8 +275,22 @@ public class QdoxMappingLoader implements MappingLoader {
 
         System.out.println("Checking: "+javaClass.getFullyQualifiedName());
 
+        JavaClass actualClass = javaClass;
+        if (factoryClass != null) {
+            JavaClass clazz = builder.getClassByName(factoryClass);
+            if (clazz != null) {
+                log.info("Detected factory: using " + factoryClass + " instead of " + javaClass.getFullyQualifiedName());
+                actualClass = clazz;
+            } else {
+                log.info("Could not load class built by factory: " + factoryClass);
+            }
+        }
+        
         ArrayList superClasses = new ArrayList();
-        JavaClass p = javaClass;
+        JavaClass p = actualClass;
+        if (actualClass != javaClass) {
+            superClasses.add(actualClass.getFullyQualifiedName());
+        }
         while( true ) {
             JavaClass s = p.getSuperJavaClass();
             if( s==null || s.equals(p) || "java.lang.Object".equals(s.getFullyQualifiedName()) ) {
