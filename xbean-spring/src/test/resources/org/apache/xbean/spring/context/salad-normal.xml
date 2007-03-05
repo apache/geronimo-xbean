@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,18 +17,13 @@
     limitations under the License.
 
 -->
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
 
-<!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
+  <bean id="saladService" class="org.apache.xbean.spring.example.SaladService">
+    <constructor-arg index="0" value="Cesar"/>
+    <constructor-arg index="1" value="Small"/>
+    <constructor-arg index="2" value="true"/>
+  </bean>
 
-    <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <artifactId>xbean</artifactId>
-        <groupId>org.apache.xbean</groupId>
-        <version>3.0-SNAPSHOT</version>
-    </parent>
-
-    <artifactId>xbean-classpath</artifactId>
-    <name>XBean :: ClassPath</name>
-
-</project>
+</beans>
