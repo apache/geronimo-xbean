@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,18 +17,24 @@
     limitations under the License.
 
 -->
+<!-- START SNIPPET: xml -->
+<beans xmlns:s="http://xbean.apache.org/schemas/soup">
 
-<!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
+  <s:soup id="soupService" type="French Onion"/>
 
-    <modelVersion>4.0.0</modelVersion>
+  <s:soup id="nestedBean">
+    <s:type>
+      <bean class="java.lang.String">
+        <constructor-arg index="0" value="French Onion"/>
+      </bean>
+    </s:type>
+  </s:soup>
 
-    <parent>
-        <artifactId>xbean</artifactId>
-        <groupId>org.apache.xbean</groupId>
-        <version>3.0-SNAPSHOT</version>
-    </parent>
+  <s:soup id="nestedValue">
+    <s:type>
+      <value>French Onion</value>
+    </s:type>
+  </s:soup>
+</beans>
+<!-- END SNIPPET: xml -->
 
-    <artifactId>xbean-classpath</artifactId>
-    <name>XBean :: ClassPath</name>
-
-</project>
