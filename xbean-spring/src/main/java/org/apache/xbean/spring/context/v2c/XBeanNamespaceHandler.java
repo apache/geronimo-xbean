@@ -618,13 +618,43 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
                     Object keyValue = getValue(key, null);
 
-                    Object value = getValue(getElementText(childElement), null);
+                    Element valueElement = getFirstChildElement(childElement);
+                    Object value;
+                    if (valueElement != null) {
+                        String valueElUri = valueElement.getNamespaceURI();
+                        String valueElLocalName = valueElement.getLocalName();
+                        if (valueElUri == null || 
+                            valueElUri.equals(SPRING_SCHEMA) || 
+                            valueElUri.equals(SPRING_SCHEMA_COMPAT) ||
+                            valueElUri.equals(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI)) {
+                            if (BeanDefinitionParserDelegate.BEAN_ELEMENT.equals(valueElLocalName)) {
+                                value = parserContext.getDelegate().parseBeanDefinitionElement(valueElement, null);
+                            } else {
+                                value = parserContext.getDelegate().parsePropertySubElement(valueElement, null);
+                            }
+                        } else {
+                            value = parserContext.getDelegate().parseCustomElement(valueElement);
+                        }
+                    } else {
+                        value = getElementText(childElement);
+                    }
 
                     map.put(keyValue, value);
                 }
             }
         }
         return map;
+    }
+
+    protected Element getFirstChildElement(Element element) {
+        NodeList nl = element.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                return (Element) node;
+            }
+        }
+        return null;
     }
 
     protected boolean isMap(Class type) {

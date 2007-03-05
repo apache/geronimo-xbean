@@ -16,6 +16,7 @@
  */
 package org.apache.xbean.spring.context;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -33,9 +34,14 @@ public class FavoriteUsingSpringTest extends SpringTestSupport {
   
         Map favorites = fs.getFavorites();
         assertNotNull(favorites);
-        assertEquals(1, favorites.size());
+        assertEquals(2, favorites.size());
         
         assertEquals("Grey Goose", favorites.get("Dan"));
+        Object object = favorites.get("IndecisiveDan");
+        System.out.println(object.getClass());
+        assertTrue(object instanceof List);
+        List l = (List) object;
+        assertEquals(2, l.size());
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {

@@ -22,11 +22,17 @@
 
   <bean id="favoriteService" class="org.apache.xbean.spring.example.FavoriteService">
     <property name="favorites"> 
-        <map> 
-         <entry key="Dan">
-           <value>Grey Goose</value>
-         </entry>
-        </map>
+      <map> 
+        <entry key="Dan">
+          <value>Grey Goose</value>
+        </entry>
+        <entry key="IndecisiveDan">
+          <list>
+            <value>Malbec</value>
+            <value>Cognac</value>
+          </list>
+        </entry>
+      </map>
     </property>
   </bean>
 
