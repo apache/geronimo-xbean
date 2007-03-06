@@ -195,7 +195,7 @@ public class ObjectRecipe extends AbstractRecipe {
         }
         Object instance = result;
 
-        setProperties(propertyValues, instance, classLoader);
+        setProperties(propertyValues, instance, instance.getClass(), classLoader);
         // call instance factory method
         if (factoryMethod != null && !Modifier.isStatic(factoryMethod.getModifiers())) {
             try {
@@ -234,21 +234,21 @@ public class ObjectRecipe extends AbstractRecipe {
         // clone the properties so they can be used again
         Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
 
-        setProperties(propertyValues, null, classLoader);
+        setProperties(propertyValues, null, typeClass, classLoader);
 
         return typeClass;
     }
 
-    private void setProperties(Map<Property, Object> propertyValues, Object instance, ClassLoader classLoader) {
+    private void setProperties(Map<Property, Object> propertyValues, Object instance, Class clazz, ClassLoader classLoader) {
         boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
+        boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
         boolean ignoreMissingProperties = options.contains(Option.IGNORE_MISSING_PROPERTIES);
-
         // set remaining properties
         for (Map.Entry<Property, Object> entry : RecipeHelper.prioritizeProperties(propertyValues)) {
             Property propertyName = entry.getKey();
             Object propertyValue = entry.getValue();
 
-            setProperty(instance, propertyName, propertyValue, allowPrivate, ignoreMissingProperties, classLoader);
+            setProperty(instance, clazz, propertyName, propertyValue, allowPrivate, allowStatic, ignoreMissingProperties, classLoader);
         }
 
     }
@@ -263,23 +263,23 @@ public class ObjectRecipe extends AbstractRecipe {
         return typeClass;
     }
 
-    private void setProperty(Object instance, Property propertyName, Object propertyValue, boolean allowPrivate, boolean ignoreMissingProperties, ClassLoader classLoader) {
+    private void setProperty(Object instance, Class clazz, Property propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, boolean ignoreMissingProperties, ClassLoader classLoader) {
         Member member;
         try {
             if (propertyName instanceof SetterProperty){
-                member = new MethodMember(findSetter(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+                member = new MethodMember(findSetter(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
             } else if (propertyName instanceof FieldProperty){
-                member = new FieldMember(findField(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+                member = new FieldMember(findField(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
             } else {
                 try {
-                    member = new MethodMember(findSetter(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+                    member = new MethodMember(findSetter(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
                 } catch (MissingAccessorException noSetter) {
                     if (!options.contains(Option.FIELD_INJECTION)) {
                         throw noSetter;
                     }
 
                     try {
-                        member = new FieldMember(findField(instance.getClass(), propertyName.name, propertyValue, allowPrivate, classLoader));
+                        member = new FieldMember(findField(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
                     } catch (MissingAccessorException noField) {
                         throw (noField.getMatchLevel() > noSetter.getMatchLevel())? noField: noSetter;
                     }
@@ -576,7 +576,20 @@ public class ObjectRecipe extends AbstractRecipe {
         }
     }
 
+    /**
+     * @deprecated use the method with allowStatic
+     * @param typeClass
+     * @param propertyName
+     * @param propertyValue
+     * @param allowPrivate
+     * @param classLoader
+     * @return
+     */
     public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, ClassLoader classLoader) {
+        return findSetter(typeClass, propertyName,  propertyValue, allowPrivate, false, classLoader);
+    }
+
+    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, ClassLoader classLoader) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
@@ -633,7 +646,7 @@ public class ObjectRecipe extends AbstractRecipe {
                     continue;
                 }
 
-                if (Modifier.isStatic(method.getModifiers())) {
+                if (!allowStatic && Modifier.isStatic(method.getModifiers())) {
                     if (matchLevel < 4) {
                         matchLevel = 4;
                         missException = new MissingAccessorException("Setter is static: " + method, matchLevel);
@@ -680,7 +693,20 @@ public class ObjectRecipe extends AbstractRecipe {
         }
     }
 
+    /**
+     * @deprecated use the method with allowStatic
+     * @param typeClass
+     * @param propertyName
+     * @param propertyValue
+     * @param allowPrivate
+     * @param classLoader
+     * @return
+     */
     public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, ClassLoader classLoader) {
+        return findField(typeClass, propertyName,  propertyValue, allowPrivate, false, classLoader);
+    }
+
+    public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, ClassLoader classLoader) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
@@ -705,7 +731,7 @@ public class ObjectRecipe extends AbstractRecipe {
                     continue;
                 }
 
-                if (Modifier.isStatic(field.getModifiers())) {
+                if (!allowStatic && Modifier.isStatic(field.getModifiers())) {
                     if (matchLevel < 4) {
                         matchLevel = 4;
                         missException = new MissingAccessorException("Field is static: " + field, matchLevel);
