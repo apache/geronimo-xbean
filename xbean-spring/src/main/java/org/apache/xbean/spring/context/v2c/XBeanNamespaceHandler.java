@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xbean.spring.context.impl.MappingMetaData;
@@ -161,6 +163,9 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     public BeanDefinitionHolder decorate(Node node, BeanDefinitionHolder definition, ParserContext parserContext) {
+        if (node instanceof org.w3c.dom.Attr && XMLConstants.XMLNS_ATTRIBUTE.equals(node.getLocalName())) {
+            return definition; // Ignore xmlns="xxx" attributes
+        }
         throw new IllegalArgumentException("Cannot locate BeanDefinitionDecorator for "
                         + (node instanceof Element ? "element" : "attribute") + " [" +
                         node.getLocalName() + "].");
