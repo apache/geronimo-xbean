@@ -24,7 +24,7 @@
               serviceName="foo:xyz">
     <dinnerMenu>
       <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
-      <bean xmlns="http://xbean.apache.org/schemas/spring/1.0" class="org.apache.xbean.spring.example.PizzaService">
+      <bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.xbean.spring.example.PizzaService">
         <property name="topping" value="Eggs"/>
         <property name="cheese" value="Mozzarella"/>
         <property name="size" value="16"/>
