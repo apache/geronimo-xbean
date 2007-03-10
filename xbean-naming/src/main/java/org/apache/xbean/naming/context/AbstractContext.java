@@ -40,6 +40,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     private final Name parsedNameInNamespace;
     private final ContextAccess contextAccess;
     private final boolean modifiable;
+    private final ThreadLocal inCall = new ThreadLocal();
 
     protected AbstractContext(String nameInNamespace) {
         this(nameInNamespace, ContextAccess.MODIFIABLE);
@@ -171,12 +172,15 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * @return the value or null if no fault value could be found
      */
     protected Object faultLookup(String stringName, Name parsedName) {
-        if (stringName.indexOf(':') > 0) {
+        if (!stringName.startsWith(nameInNamespace) && stringName.indexOf(':') > 0 && inCall.get() == null) {
+            inCall.set(parsedName);
             try {
                 Context ctx = new InitialContext();
                 return ctx.lookup(parsedName);
             } catch (NamingException ignored) {
                 // thrown below
+            } finally {
+                inCall.set(null);                
             }
         }
         return null;
