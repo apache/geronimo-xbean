@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.apache.xbean.spring.example.FavoriteService;
+import org.apache.xbean.spring.example.GinService;
 
 /**
  * @author James Strachan
@@ -34,7 +35,7 @@ public class FavoriteUsingSpringTest extends SpringTestSupport {
   
         Map favorites = fs.getFavorites();
         assertNotNull(favorites);
-        assertEquals(2, favorites.size());
+        assertEquals(3, favorites.size());
         
         assertEquals("Grey Goose", favorites.get("Dan"));
         Object object = favorites.get("IndecisiveDan");
@@ -42,6 +43,15 @@ public class FavoriteUsingSpringTest extends SpringTestSupport {
         assertTrue(object instanceof List);
         List l = (List) object;
         assertEquals(2, l.size());
+        object = l.get(0);
+        System.out.println(object.getClass());
+        assertTrue(object instanceof String);
+        object = l.get(1);
+        System.out.println(object.getClass());
+        assertTrue(object instanceof Integer);
+        object = favorites.get("WithInnerBean");
+        System.out.println(object.getClass());
+        assertTrue(object instanceof GinService);
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {

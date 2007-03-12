@@ -52,6 +52,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.ManagedList;
+import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader;
@@ -590,7 +591,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     protected Object parseCustomMapElement(MappingMetaData metadata, Element element, String name) {
-        Map map = new HashMap();
+        Map map = new ManagedMap();
 
         Element parent = (Element) element.getParentNode();
         String entryName = metadata.getMapEntryName(getLocalName(parent), name);
