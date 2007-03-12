@@ -190,6 +190,18 @@ public class MappingMetaData {
         return properties.getProperty(elementName + "." + property + ".map.keyName");
     }
 
+    public boolean isFlatMap(String elementName, String property) {
+        return properties.getProperty(elementName + "." + property + ".map.flat") != null;
+    }
+    
+    public String getMapDupsMode(String elementName, String property) {
+        return properties.getProperty(elementName + "." + property + ".map.dups");
+    }
+    
+    public String getMapDefaultKey(String elementName, String property) {
+        return properties.getProperty(elementName + "." + property + ".map.defaultKey");
+    }
+    
     public String getFlatCollectionProperty(String elementName, String property)
     {
         return properties.getProperty(elementName + "." + property + ".flatCollection");

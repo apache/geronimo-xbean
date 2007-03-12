@@ -19,10 +19,20 @@ package org.apache.xbean.spring.generator;
 public class MapMapping {
     private String entryName;
     private String keyName;
+    private boolean flat;
+    private String dupsMode;
+    private String defaultKey;
 
-    public MapMapping(String entryName, String keyName) {
+    public MapMapping(String entryName, 
+                      String keyName, 
+                      boolean flat, 
+                      String dupsMode, 
+                      String defaultKey) {
         this.entryName = entryName;
         this.keyName = keyName;
+        this.flat = flat;
+        this.dupsMode = dupsMode;
+        this.defaultKey = defaultKey;
     }
 
     public String getEntryName() {
@@ -31,5 +41,17 @@ public class MapMapping {
 
     public String getKeyName() {
         return keyName;
+    }
+
+    public boolean isFlat() {
+        return flat;
+    }
+
+    public String getDupsMode() {
+        return dupsMode;
+    }
+
+    public String getDefaultKey() {
+        return defaultKey;
     }
 }

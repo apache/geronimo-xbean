@@ -136,8 +136,21 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
         for (Iterator itr = maps.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
             MapMapping mm = (MapMapping) entry.getValue();
-            out.println(element.getElementName() + "." + entry.getKey() + ".map.entryName = " + mm.getEntryName());
-            out.println(element.getElementName() + "." + entry.getKey() + ".map.keyName = " + mm.getKeyName());
+            if (mm.getEntryName() != null) {
+                out.println(element.getElementName() + "." + entry.getKey() + ".map.entryName = " + mm.getEntryName());
+            }
+            if (mm.getKeyName() != null) {
+                out.println(element.getElementName() + "." + entry.getKey() + ".map.keyName = " + mm.getKeyName());
+            }
+            if (mm.isFlat()) {
+                out.println(element.getElementName() + "." + entry.getKey() + ".map.flat = " + Boolean.toString(mm.isFlat()));
+            }
+            if (mm.getDupsMode() != null) {
+                out.println(element.getElementName() + "." + entry.getKey() + ".map.dups = " + mm.getDupsMode());
+            }
+            if (mm.getDefaultKey() != null) {
+                out.println(element.getElementName() + "." + entry.getKey() + ".map.defaultKey = " + mm.getDefaultKey());
+            }
         }
 
         Map flatCollections = element.getFlatCollections();

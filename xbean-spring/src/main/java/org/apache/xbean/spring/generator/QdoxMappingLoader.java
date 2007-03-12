@@ -204,8 +204,12 @@ public class QdoxMappingLoader implements MappingLoader {
                     if (acc != null) {
                         DocletTag mapTag = acc.getTagByName(MAP_ANNOTATION);
                         if (mapTag != null) {
-                            MapMapping mm = new MapMapping(mapTag.getNamedParameter("entryName"), 
-                                    mapTag.getNamedParameter("keyName"));
+                            MapMapping mm = new MapMapping(
+                                    mapTag.getNamedParameter("entryName"), 
+                                    mapTag.getNamedParameter("keyName"),
+                                    Boolean.valueOf(mapTag.getNamedParameter("flat")).booleanValue(),
+                                    mapTag.getNamedParameter("dups"),
+                                    mapTag.getNamedParameter("defaultKey"));
                             mapsByPropertyName.put(beanProperty.getName(), mm);
                         }
                         
