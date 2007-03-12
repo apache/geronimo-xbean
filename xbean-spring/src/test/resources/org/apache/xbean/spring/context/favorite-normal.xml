@@ -29,8 +29,15 @@
         <entry key="IndecisiveDan">
           <list>
             <value>Malbec</value>
-            <value>Cognac</value>
+            <bean class="java.lang.Integer">
+              <constructor-arg value="0"/>
+            </bean>
           </list>
+        </entry>
+        <entry key="WithInnerBean">
+          <bean class="org.apache.xbean.spring.example.GinService">
+            <property name="name" value="name"/>
+          </bean>
         </entry>
       </map>
     </property>
