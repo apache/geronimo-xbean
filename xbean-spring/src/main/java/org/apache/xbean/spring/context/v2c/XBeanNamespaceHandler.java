@@ -28,8 +28,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -596,9 +596,13 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         Element parent = (Element) element.getParentNode();
         String entryName = metadata.getMapEntryName(getLocalName(parent), name);
         String keyName = metadata.getMapKeyName(getLocalName(parent), name);
+        String dups = metadata.getMapDupsMode(getLocalName(parent), name);
+        boolean flat = metadata.isFlatMap(getLocalName(parent), name);
+        String defaultKey = metadata.getMapDefaultKey(getLocalName(parent), name);
 
         if (entryName == null) entryName = "property";
         if (keyName == null) keyName = "key";
+        if (dups == null) dups = "replace";
 
         // TODO : support further customizations
         //String valueName = "value";
@@ -618,9 +622,14 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
                 // we could use namespaced attributes to differentiate real spring
                 // attributes from namespace-specific attributes
-                if (!isEmpty(uri) && localName.equals(entryName)) {
+                if (!flat && !isEmpty(uri) && localName.equals(entryName)) {
                     String key = childElement.getAttribute(keyName);
-                    if (key == null) throw new RuntimeException("No key defined for map " + entryName);
+                    if (key == null || key.length() == 0) {
+                        key = defaultKey;
+                    }
+                    if (key == null) {
+                        throw new RuntimeException("No key defined for map " + entryName);
+                    }
 
                     Object keyValue = getValue(key, null);
 
@@ -645,11 +654,52 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                         value = getElementText(childElement);
                     }
 
-                    map.put(keyValue, value);
+                    addValueToMap(map, keyValue, value, dups);
+                } else if (flat && !isEmpty(uri)) {
+                    String key = childElement.getAttribute(keyName);
+                    if (key == null || key.length() == 0) {
+                        key = defaultKey;
+                    }
+                    if (key == null) {
+                        throw new RuntimeException("No key defined for map " + entryName);
+                    }
+                    Object keyValue = getValue(key, null);
+                    childElement.removeAttribute(keyName);
+                    BeanDefinitionHolder bdh = parseBeanFromExtensionElement(childElement);
+                    addValueToMap(map, keyValue, bdh, dups);
                 }
             }
         }
         return map;
+    }
+    
+    protected void addValueToMap(Map map, Object keyValue, Object value, String dups) {
+        if (map.containsKey(keyValue)) {
+            if ("discard".equalsIgnoreCase(dups)) {
+                // Do nothing
+            } else if ("replace".equalsIgnoreCase(dups)) {
+                map.put(keyValue, value);
+            } else if ("allow".equalsIgnoreCase(dups)) {
+                List l = new ManagedList();
+                l.add(map.get(keyValue));
+                l.add(value);
+                map.put(keyValue, l);
+            } else if ("always".equalsIgnoreCase(dups)) {
+                List l = (List) map.get(keyValue);
+                l.add(value);
+            }
+        } else {
+            if ("always".equalsIgnoreCase(dups)) {
+                List l = (List) map.get(keyValue);
+                if (l == null) {
+                    l = new ManagedList();
+                    map.put(keyValue, l);
+                }
+                l.add(value);
+            } else {
+                map.put(keyValue, value);
+            }
+        }
     }
 
     protected Element getFirstChildElement(Element element) {
