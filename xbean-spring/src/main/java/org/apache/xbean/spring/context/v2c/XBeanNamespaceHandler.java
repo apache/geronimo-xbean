@@ -661,7 +661,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                         key = defaultKey;
                     }
                     if (key == null) {
-                        throw new RuntimeException("No key defined for map " + entryName);
+                        throw new RuntimeException("No key defined for map entry " + entryName);
                     }
                     Object keyValue = getValue(key, null);
                     childElement.removeAttribute(keyName);
