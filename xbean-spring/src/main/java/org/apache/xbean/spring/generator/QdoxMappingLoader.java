@@ -121,7 +121,7 @@ public class QdoxMappingLoader implements MappingLoader {
             namespaceElements.add(element);
             if (element.isRootElement()) {
                 if (namespaceRoots.containsKey(namespace)) {
-                    log.warn("Multiple root elements found for namespace " + namespace);
+                    log.info("Multiple root elements found for namespace " + namespace);
                 }
                 namespaceRoots.put(namespace, element);
             }
@@ -145,7 +145,7 @@ public class QdoxMappingLoader implements MappingLoader {
         List elements = new ArrayList();
         for (int i = 0; i < javaSources.length; i++) {
         	if( javaSources[i].getClasses().length == 0 ) {
-                log.warn("No Java Classes defined in: " + javaSources[i].getURL() );
+                log.info("No Java Classes defined in: " + javaSources[i].getURL() );
         	} else {
         		JavaClass[] classes = javaSources[i].getClasses();
         		for (int j = 0; j < classes.length; j++) {
@@ -178,9 +178,6 @@ public class QdoxMappingLoader implements MappingLoader {
         boolean root = getBooleanProperty(xbeanTag, "rootElement");
         String contentProperty = getProperty(xbeanTag, "contentProperty");
         String factoryClass = getProperty(xbeanTag, "factoryClass");
-        if (factoryClass != null) {
-            System.out.println("FactoryClass: " + factoryClass);
-        }
 
         Map mapsByPropertyName = new HashMap();
         List flatProperties = new ArrayList();
@@ -276,8 +273,6 @@ public class QdoxMappingLoader implements MappingLoader {
 
         HashSet interfaces = new HashSet();
         interfaces.addAll( getFullyQualifiedNames( javaClass.getImplementedInterfaces() ) );
-
-        System.out.println("Checking: "+javaClass.getFullyQualifiedName());
 
         JavaClass actualClass = javaClass;
         if (factoryClass != null) {
