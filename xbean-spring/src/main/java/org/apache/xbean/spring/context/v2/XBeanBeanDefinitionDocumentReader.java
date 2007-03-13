@@ -24,6 +24,8 @@ import org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader
 import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class XBeanBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader {
 
@@ -59,9 +61,36 @@ public class XBeanBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocu
                 }
                 throw new RuntimeException(e);
             }
+        } else if (DomUtils.nodeNameEquals(root, "beans")) {
+            NodeList nl = root.getChildNodes();
+            for (int i = 0; i < nl.getLength(); i++) {
+                Node node = nl.item(i);
+                if (node instanceof Element) {
+                    Element ele = (Element) node;
+                    String childNamespaceUri = ele.getNamespaceURI();
+                    if (delegate.isDefaultNamespace(childNamespaceUri)) {
+                        parseDefaultElement(ele, delegate);
+                    }
+                    else {
+                        delegate.parseCustomElement(ele);
+                    }
+                }
+            }
         } else {
             super.parseBeanDefinitions(root, delegate);
         }
     }
     
+    private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
+        if (DomUtils.nodeNameEquals(ele, IMPORT_ELEMENT)) {
+            importBeanDefinitionResource(ele);
+        }
+        else if (DomUtils.nodeNameEquals(ele, ALIAS_ELEMENT)) {
+            processAliasRegistration(ele);
+        }
+        else if (DomUtils.nodeNameEquals(ele, BEAN_ELEMENT)) {
+            processBeanDefinition(ele, delegate);
+        }
+    }
+
 }
