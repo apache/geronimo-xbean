@@ -16,12 +16,21 @@
  */
 package org.apache.xbean.spring.context.v2;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.parsing.BeanComponentDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader;
 import org.springframework.beans.factory.xml.XmlReaderContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.util.SystemPropertyUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -92,5 +101,85 @@ public class XBeanBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocu
             processBeanDefinition(ele, delegate);
         }
     }
+
+    /**
+     * Parse an "import" element and load the bean definitions
+     * from the given resource into the bean factory.
+     */
+    protected void importBeanDefinitionResource(Element ele) {
+        String location = ele.getAttribute(RESOURCE_ATTRIBUTE);
+        if (!StringUtils.hasText(location)) {
+            getReaderContext().error("Resource location must not be empty", ele);
+            return;
+        }
+
+        // Resolve system properties: e.g. "${user.dir}"
+        location = SystemPropertyUtils.resolvePlaceholders(location);
+
+        if (ResourcePatternUtils.isUrl(location)) {
+            int importCount = getReaderContext().getReader().loadBeanDefinitions(location);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Imported " + importCount + " bean definitions from URL location [" + location + "]");
+            }
+        }
+        else {
+            // No URL -> considering resource location as relative to the current file.
+            try {
+                Resource relativeResource = getReaderContext().getResource().createRelative(location);
+                int importCount = getReaderContext().getReader().loadBeanDefinitions(relativeResource);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Imported " + importCount + " bean definitions from relative location [" + location + "]");
+                }
+            }
+            catch (IOException ex) {
+                getReaderContext().error(
+                        "Invalid relative resource location [" + location + "] to import bean definitions from", ele, null, ex);
+            }
+        }
+
+        getReaderContext().fireImportProcessed(location, extractSource(ele));
+    }
+
+    /**
+     * Process the given alias element, registering the alias with the registry.
+     */
+    protected void processAliasRegistration(Element ele) {
+        String name = ele.getAttribute(NAME_ATTRIBUTE);
+        String alias = ele.getAttribute(ALIAS_ATTRIBUTE);
+        boolean valid = true;
+        if (!StringUtils.hasText(name)) {
+            getReaderContext().error("Name must not be empty", ele);
+            valid = false;
+        }
+        if (!StringUtils.hasText(alias)) {
+            getReaderContext().error("Alias must not be empty", ele);
+            valid = false;
+        }
+        if (valid) {
+            try {
+                getReaderContext().getRegistry().registerAlias(name, alias);
+            }
+            catch (BeanDefinitionStoreException ex) {
+                getReaderContext().error(ex.getMessage(), ele);
+            }
+            getReaderContext().fireAliasRegistered(name, alias, extractSource(ele));
+        }
+    }
+
+    /**
+     * Process the given bean element, parsing the bean definition
+     * and registering it with the registry.
+     */
+    protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+        BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
+        if (bdHolder != null) {
+            bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
+            // Register the final decorated instance.
+            BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
+            // Send registration event.
+            getReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));
+        }
+    }
+
 
 }
