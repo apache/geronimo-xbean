@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.ManagedList;
 import org.w3c.dom.Element;
@@ -97,6 +98,9 @@ public class QNameHelper {
                 if (value instanceof String) {
                     propertyValues.removePropertyValue(propertyValue);
                     addPropertyValue(propertyValues, name, createQName(element, (String) value));
+                } else if (value instanceof TypedStringValue) {
+                    propertyValues.removePropertyValue(propertyValue);
+                    addPropertyValue(propertyValues, name, createQName(element, ((TypedStringValue) value).getValue()));
                 }
             }
         } else if (descriptor.getPropertyType().isAssignableFrom(QName[].class)) {
