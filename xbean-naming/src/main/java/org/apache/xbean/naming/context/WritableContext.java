@@ -78,11 +78,11 @@ public class WritableContext extends AbstractFederatedContext {
             return true;
         }
 
-        addBinding(bindingsRef, name, value, rebind);
+        addBinding(bindingsRef, name, getNameInNamespace(name), value, rebind);
         return true;
     }
 
-    protected void addBinding(AtomicReference bindingsRef, String name, Object value, boolean rebind) throws NamingException {
+    protected void addBinding(AtomicReference bindingsRef, String name, String nameInNamespace, Object value, boolean rebind) throws NamingException {
         writeLock.lock();
         try {
             Map bindings = (Map) bindingsRef.get();
@@ -98,14 +98,13 @@ public class WritableContext extends AbstractFederatedContext {
             newBindings.put(name,value);
             bindingsRef.set(newBindings);
 
-            Map newIndex = addToIndex(name, value);
-            indexRef.set(newIndex);
+            addToIndex(nameInNamespace, value);
         } finally {
             writeLock.unlock();
         }
     }
 
-    private Map addToIndex(String name, Object value) {
+    private void addToIndex(String name, Object value) {
         Map index = (Map) indexRef.get();
         Map newIndex = new HashMap(index);
         newIndex.put(name, value);
@@ -114,7 +113,7 @@ public class WritableContext extends AbstractFederatedContext {
             Map newIndexValues = buildIndex(name, (Map) nestedcontext.bindingsRef.get());
             newIndex.putAll(newIndexValues);
         }
-        return newIndex;
+        indexRef.set(newIndex);
     }
 
     protected boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
@@ -233,7 +232,7 @@ public class WritableContext extends AbstractFederatedContext {
                 return true;
             }
 
-            WritableContext.this.addBinding(bindingsRef, name, value, rebind);
+            WritableContext.this.addBinding(bindingsRef, name, getNameInNamespace(name), value, rebind);
             return true;
         }
 
