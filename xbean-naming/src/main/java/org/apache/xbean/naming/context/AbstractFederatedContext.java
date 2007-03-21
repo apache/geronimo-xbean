@@ -59,6 +59,14 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         return super.faultLookup(stringName, parsedName);
     }
 
+    protected Object getBinding(String name) throws NamingException {
+        Object value = contextFederation.getFederatedBinding(name);
+        if (value == null) {
+            value = getWrapperBindings().get(name);
+        }
+        return value;
+    }
+
     protected final Map getBindings() throws NamingException {
         Map bindings = contextFederation.getFederatedBindings();
         bindings.putAll(getWrapperBindings());

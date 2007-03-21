@@ -63,6 +63,22 @@ public class ContextFederation {
         return (Set) federatedContextRef.get();
     }
 
+    public Object getFederatedBinding(String name) throws NamingException {
+        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
+            Context context = (Context) iterator.next();
+
+            try {
+                Object value = context.lookup(name);
+                if (value != null) {
+                    return value;
+                }
+            } catch (NamingException e) {
+                // ignore
+            }
+        }
+        return null;
+    }
+
     public Map getFederatedBindings() throws NamingException {
         Map bindings = new HashMap();
         for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
