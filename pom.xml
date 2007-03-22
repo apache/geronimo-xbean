@@ -215,12 +215,6 @@
                 <artifactId>stax-api</artifactId>
                 <version>1.0</version>
             </dependency>
-
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.12</version>
-            </dependency>
             
         </dependencies>
     </dependencyManagement>
@@ -360,7 +354,6 @@
         <module>xbean-telnet</module>
         <module>xbean-tiger</module>
         <module>maven-xbean-plugin</module>
-        <module>xbean-log4j</module>
     </modules>
     
     <repositories>
