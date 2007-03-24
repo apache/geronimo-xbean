@@ -16,8 +16,8 @@
  */
 package org.apache.xbean.kernel.standard;
 
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Condition;
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.kernel.ServiceConditionContext;
 import org.apache.xbean.kernel.ServiceName;

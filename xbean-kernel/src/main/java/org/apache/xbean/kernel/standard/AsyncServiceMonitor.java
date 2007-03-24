@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.kernel.standard;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executor;
+import java.util.concurrent.Executor;
 import org.apache.xbean.kernel.ServiceEvent;
 import org.apache.xbean.kernel.ServiceMonitor;
 

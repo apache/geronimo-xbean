@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.naming.context;
 
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.naming.Context;
 import javax.naming.Name;

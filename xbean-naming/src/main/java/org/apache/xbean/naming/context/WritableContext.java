@@ -16,9 +16,9 @@
  */
 package org.apache.xbean.naming.context;
 
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
-import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import org.apache.xbean.naming.reference.CachingReference;
 
 import javax.naming.Context;

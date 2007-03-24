@@ -16,8 +16,8 @@
  */
 package org.apache.xbean.kernel.standard;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executor;
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.kernel.ServiceFactory;
 import org.apache.xbean.kernel.ServiceName;

@@ -16,8 +16,8 @@
  */
 package org.apache.xbean.kernel.standard;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Callable;
-import edu.emory.mathcs.backport.java.util.concurrent.FutureTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import org.apache.xbean.kernel.ServiceName;
 import org.apache.xbean.kernel.StopStrategy;
 
