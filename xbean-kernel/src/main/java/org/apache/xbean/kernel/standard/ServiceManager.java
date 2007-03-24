@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Collections;
 
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
-import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import org.apache.xbean.kernel.ForcedStopException;
 import org.apache.xbean.kernel.IllegalServiceStateException;
 import org.apache.xbean.kernel.Kernel;

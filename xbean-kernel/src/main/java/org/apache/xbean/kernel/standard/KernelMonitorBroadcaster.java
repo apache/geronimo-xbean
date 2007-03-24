@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.xbean.kernel.KernelMonitor;
 import org.apache.xbean.kernel.ServiceMonitor;
 import org.apache.xbean.kernel.ServiceEvent;

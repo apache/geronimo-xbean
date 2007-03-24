@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.Lock;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.kernel.ServiceCondition;
 import org.apache.xbean.kernel.ServiceFactory;

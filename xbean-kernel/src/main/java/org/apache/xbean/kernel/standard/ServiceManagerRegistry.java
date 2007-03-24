@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.xbean.kernel.IllegalServiceStateException;
 import org.apache.xbean.kernel.KernelErrorsError;
 import org.apache.xbean.kernel.KernelOperationInterruptedException;
