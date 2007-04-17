@@ -36,7 +36,7 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
     
-    <version>3.0-SNAPSHOT</version>
+    <version>3.0</version>
     
     <description>
         XBean is a plugin based server architecture.
@@ -45,9 +45,9 @@
     <url>http://geronimo.apache.org/xbean</url>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
-        <url>http://svn.apache.org/viewvc/geronimo/xbean/trunk</url>
+        <connection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.0</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.0</developerConnection>
+        <url>https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.0</url>
     </scm>
     
     <properties>
@@ -293,7 +293,7 @@
             <!-- Add NOTICE and LICENSE to jars -->
             <plugin>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>1.0-alpha-1</version>
+                <version>1.0-alpha-3</version>
                 <executions>
                     <execution>
                         <goals>
@@ -327,7 +327,7 @@
                     <plugin>
                         <inherited>true</inherited>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.0-alpha-1</version>
+                        <version>1.0-alpha-3</version>
                         <configuration>
                             <passphrase>${gpg.passphrase}</passphrase>
                         </configuration>
@@ -338,6 +338,16 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <!-- We want to deploy the artifact to a staging location for perusal -->
+                    <plugin>
+                        <inherited>true</inherited>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>2.3</version>
+                        <configuration>
+                            <altDeploymentRepository>${deploy.altRepository}</altDeploymentRepository>
+                            <updateReleaseInfo>true</updateReleaseInfo>
+                        </configuration>
                     </plugin>
                     <!-- We want the JavaDoc JAR published with the release -->
                     <plugin>
