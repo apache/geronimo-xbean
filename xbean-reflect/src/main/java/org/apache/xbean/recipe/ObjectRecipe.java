@@ -593,6 +593,26 @@ public class ObjectRecipe extends AbstractRecipe {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
+        if (propertyName.contains("/")){
+            String[] strings = propertyName.split("/");
+            if (strings == null || strings.length != 2) throw new IllegalArgumentException("badly formed <class>/<attribute> property name: " + propertyName);
+
+            String className = strings[0];
+            propertyName = strings[1];
+
+            boolean found = false;
+            while(!typeClass.equals(Object.class) && !found){
+                if (typeClass.getName().equals(className)){
+                    found = true;
+                    break;
+                } else {
+                    typeClass = typeClass.getSuperclass();
+                }
+            }
+
+            if (!found) throw new MissingAccessorException("Type not assignable to class: " + className, -1);
+        }
+
         String setterName = "set" + Character.toUpperCase(propertyName.charAt(0));
         if (propertyName.length() > 0) {
             setterName += propertyName.substring(1);
@@ -713,6 +733,26 @@ public class ObjectRecipe extends AbstractRecipe {
         int matchLevel = 0;
         MissingAccessorException missException = null;
 
+        if (propertyName.contains("/")){
+            String[] strings = propertyName.split("/");
+            if (strings == null || strings.length != 2) throw new IllegalArgumentException("badly formed <class>/<attribute> property name: " + propertyName);
+
+            String className = strings[0];
+            propertyName = strings[1];
+
+            boolean found = false;
+            while(!typeClass.equals(Object.class) && !found){
+                if (typeClass.getName().equals(className)){
+                    found = true;
+                    break;
+                } else {
+                    typeClass = typeClass.getSuperclass();
+                }
+            }
+
+            if (!found) throw new MissingAccessorException("Type not assignable to class: " + className, -1);
+        }
+        
         List<Field> fields = new ArrayList<Field>(Arrays.asList(typeClass.getDeclaredFields()));
         Class parent = typeClass.getSuperclass();
         while (parent != null){
