@@ -106,6 +106,12 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
         if (stringName == null) stringName = parsedName.toString();
 
+        // If the name starts with our name in namespace strip it off
+        // This works because the name in namespace is assumed to be absolute
+        if (stringName.startsWith(nameInNamespace)) {
+            stringName = stringName.substring(nameInNamespace.length());
+        }
+
         // try to look up the name directly (this is the fastest path)
         Object directLookup = getDeepBinding(stringName);
         if (directLookup != null) {
