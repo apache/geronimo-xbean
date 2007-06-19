@@ -31,6 +31,11 @@
       </bean>
     </dinnerMenu>
 
+    <snackMenu>
+      <pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
+      <pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
+    </snackMenu>
+
     <lunchMenu>
       <bean xmlns="" class="org.apache.xbean.spring.example.PizzaService">
         <property name="topping" value="Chicken"/>

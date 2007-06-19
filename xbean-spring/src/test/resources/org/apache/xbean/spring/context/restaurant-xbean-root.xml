@@ -24,6 +24,11 @@
       <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
     </dinnerMenu>
 
+    <snackMenu>
+      <pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
+      <pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
+    </snackMenu>
+
     <lunchMenu>
       <pizza myTopping="Chicken" cheese="Brie" size="17"/>
     </lunchMenu>

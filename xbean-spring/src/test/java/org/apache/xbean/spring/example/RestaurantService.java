@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An owner POJO used for testing out nested properties
@@ -36,6 +37,7 @@ public class RestaurantService {
     private PizzaService favourite;
     private List dinnerMenu;
     private PizzaService[] lunchMenu;
+    private Set<PizzaService> snackMenu;
     private QName serviceName;
     private URI uri;
 
@@ -56,6 +58,14 @@ public class RestaurantService {
 
     public void setLunchMenu(PizzaService[] lunchMenu) {
         this.lunchMenu = lunchMenu;
+    }
+
+    public Set<PizzaService> getSnackMenu() {
+        return snackMenu;
+    }
+
+    public void setSnackMenu(Set<PizzaService> snackMenu) {
+        this.snackMenu = snackMenu;
     }
 
     public PizzaService getFavourite() {
