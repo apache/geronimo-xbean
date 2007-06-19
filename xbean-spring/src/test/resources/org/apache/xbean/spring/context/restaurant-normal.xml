@@ -51,6 +51,20 @@
         </bean>
       </list>
     </property>
+    <property name="snackMenu">
+      <set>
+        <bean class="org.apache.xbean.spring.example.PizzaService">
+          <property name="topping" value="Tofu" />
+          <property name="cheese" value="Parmesan" />
+          <property name="size" value="6" />
+        </bean>
+        <bean class="org.apache.xbean.spring.example.PizzaService">
+          <property name="topping" value="Prosciutto" />
+          <property name="cheese" value="Blue" />
+          <property name="size" value="8" />
+        </bean>
+      </set>
+    </property>
     <property name="lunchMenu">
       <list>
         <bean class="org.apache.xbean.spring.example.PizzaService">

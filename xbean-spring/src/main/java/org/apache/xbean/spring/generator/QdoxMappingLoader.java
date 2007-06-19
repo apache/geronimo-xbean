@@ -61,7 +61,7 @@ public class QdoxMappingLoader implements MappingLoader {
     private final String defaultNamespace;
     private final File[] srcDirs;
     private final String[] excludedClasses;
-    private Type listType;
+    private Type collectionType;
 
     public QdoxMappingLoader(String defaultNamespace, File[] srcDirs, String[] excludedClasses) {
         this.defaultNamespace = defaultNamespace;
@@ -97,7 +97,7 @@ public class QdoxMappingLoader implements MappingLoader {
             }
         }
 
-        listType = builder.getClassByName("java.util.List").asType();
+        collectionType = builder.getClassByName("java.util.Collection").asType();
         Set namespaces = loadNamespaces(builder);
         return namespaces;
     }
@@ -497,7 +497,7 @@ public class QdoxMappingLoader implements MappingLoader {
         try {
             if (type.isArray()) {
                 return org.apache.xbean.spring.generator.Type.newArrayType(type.getValue(), type.getDimensions());
-            } else if (type.isA(listType)) {
+            } else if (type.isA(collectionType)) {
                 if (nestedType == null) nestedType = "java.lang.Object";
                 return org.apache.xbean.spring.generator.Type.newCollectionType(type.getValue(),
                         org.apache.xbean.spring.generator.Type.newSimpleType(nestedType));

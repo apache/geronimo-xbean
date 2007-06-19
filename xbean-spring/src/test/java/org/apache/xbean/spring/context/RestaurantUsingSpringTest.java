@@ -16,13 +16,14 @@
  */
 package org.apache.xbean.spring.context;
 
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.PizzaService;
-import org.apache.xbean.spring.example.RestaurantService;
-
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
+
+import org.apache.xbean.spring.example.PizzaService;
+import org.apache.xbean.spring.example.RestaurantService;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
  * @author James Strachan
@@ -36,7 +37,7 @@ public class RestaurantUsingSpringTest extends SpringTestSupport {
 
         QName service = restaurant.getServiceName();
         assertEquals(new QName("http://acme.com", "xyz"), service);
-        
+
         // dinners (1-many using list)
         List dinners = restaurant.getDinnerMenu();
         assertNotNull("dinners is null!", dinners);
@@ -46,12 +47,28 @@ public class RestaurantUsingSpringTest extends SpringTestSupport {
         assertEquals("topping", "Ham", pizza.getTopping());
         assertEquals("cheese", "Mozzarella", pizza.getCheese());
         assertEquals("size", 15, pizza.getSize());
-        
-         pizza = (PizzaService) dinners.get(1);
+
+        pizza = (PizzaService) dinners.get(1);
         assertEquals("topping", "Eggs", pizza.getTopping());
         assertEquals("cheese", "Mozzarella", pizza.getCheese());
         assertEquals("size", 16, pizza.getSize());
 
+        // dinners (1-many using Set)
+        Set<PizzaService> snacks = restaurant.getSnackMenu();
+        assertNotNull("dinners is null!", snacks);
+        assertEquals("dinners size: " + snacks, 2, snacks.size());
+        for (PizzaService snack : snacks) {
+            String topping = snack.getTopping();
+            if ("Tofu".equals(topping)) {
+                assertEquals("cheese", "Parmesan", snack.getCheese());
+                assertEquals("size", 6, snack.getSize());
+            } else if ("Prosciutto".equals(topping)) {
+                assertEquals("cheese", "Blue", snack.getCheese());
+                assertEquals("size", 8, snack.getSize());
+            } else {
+                fail("wrong topping: " + snack);
+            }
+        }
         // lunches (1-many using array)
         PizzaService[] lunches = restaurant.getLunchMenu();
         assertNotNull("lunches is null!", lunches);
@@ -61,7 +78,6 @@ public class RestaurantUsingSpringTest extends SpringTestSupport {
         assertEquals("topping", "Chicken", pizza.getTopping());
         assertEquals("cheese", "Brie", pizza.getCheese());
         assertEquals("size", 17, pizza.getSize());
-
 
         // favourite (1-1)
         pizza = restaurant.getFavourite();
