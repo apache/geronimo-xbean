@@ -49,6 +49,7 @@ public class SpringLoader implements Loader {
     private File baseDir = new File(".").getAbsoluteFile();
     private List beanFactoryPostProcessors = Collections.EMPTY_LIST;
     private List xmlPreprocessors = Collections.EMPTY_LIST;
+    private AbstractXmlApplicationContext applicationContext;  
 
     /**
      * Creates an empty SpringLoader.  Note this loader is not usable until a kernel is specified.
@@ -130,7 +131,7 @@ public class SpringLoader implements Loader {
     public ServiceName load(String location) throws Exception {
         String resolvedLocation = baseDir.toURI().resolve(location).getPath();
         String configLocation = "/" + resolvedLocation + ".xml";
-        AbstractXmlApplicationContext applicationContext = createXmlApplicationContext(configLocation);
+        applicationContext = createXmlApplicationContext(configLocation);
 
         for (Iterator iter = beanFactoryPostProcessors.iterator(); iter.hasNext();) {
             BeanFactoryPostProcessor processor = (BeanFactoryPostProcessor) iter.next();
@@ -150,6 +151,13 @@ public class SpringLoader implements Loader {
         ServiceFactory springConfigurationServiceFactory = new SpringConfigurationServiceFactory(applicationContext);
         kernel.registerService(serviceName, springConfigurationServiceFactory);
         return serviceName;
+    }
+
+    /**
+     * Returns the last Spring application context that was read via the call to {@link #load(String)}
+     */
+    public AbstractXmlApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
     /**
