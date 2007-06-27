@@ -30,7 +30,7 @@ import org.apache.xbean.kernel.ServiceConditionContext;
 import org.apache.xbean.kernel.ServiceContext;
 import org.apache.xbean.kernel.ServiceFactory;
 import org.apache.xbean.kernel.ServiceName;
-import org.apache.xbean.spring.context.SpringApplicationContext;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
  * SpringConfigurationServiceFactory is manages the creation and destruction of a SpringConfiguration.
@@ -40,7 +40,7 @@ import org.apache.xbean.spring.context.SpringApplicationContext;
  * @since 2.0
  */
 public class SpringConfigurationServiceFactory extends AbstractServiceFactory {
-    private final SpringApplicationContext applicationContext;
+    private final AbstractXmlApplicationContext applicationContext;
     private final ConfigurationStopCondition configurationStopCondition;
     private SpringConfiguration springConfiguration;
 
@@ -48,7 +48,7 @@ public class SpringConfigurationServiceFactory extends AbstractServiceFactory {
      * Creates a SpringConfigurationServiceFactory that wraps the specified application context.
      * @param applicationContext the application context for this configuration
      */
-    public SpringConfigurationServiceFactory(SpringApplicationContext applicationContext) {
+    public SpringConfigurationServiceFactory(AbstractXmlApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         configurationStopCondition = new ConfigurationStopCondition();
         addStopCondition(configurationStopCondition);
@@ -67,7 +67,7 @@ public class SpringConfigurationServiceFactory extends AbstractServiceFactory {
      * effect the running state of services.
      * @return the application context wrapped by this configuration
      */
-    public SpringApplicationContext getApplicationContext() {
+    public AbstractXmlApplicationContext getApplicationContext() {
         return applicationContext;
     }
 

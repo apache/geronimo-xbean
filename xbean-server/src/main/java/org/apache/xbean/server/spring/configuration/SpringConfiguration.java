@@ -32,6 +32,7 @@ import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.apache.xbean.server.spring.loader.SpringLoader;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
  * SpringConfiguration that registers and unregisters services that have been defined in a SpringApplicationContext.
@@ -41,7 +42,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
  * @since 2.0
  */
 public class SpringConfiguration {
-    private final SpringApplicationContext applicationContext;
+    private final AbstractXmlApplicationContext applicationContext;
     private final Map serviceFactories;
     private final Kernel kernel;
 
@@ -51,7 +52,7 @@ public class SpringConfiguration {
      * @param kernel the kernel in which services are registered and unregistered
      * @throws Exception if a problem occurs while registering the services from the application context
      */
-    public SpringConfiguration(SpringApplicationContext applicationContext, Kernel kernel) throws Exception {
+    public SpringConfiguration(AbstractXmlApplicationContext applicationContext, Kernel kernel) throws Exception {
         this.applicationContext = applicationContext;
         this.kernel = kernel;
 
@@ -143,7 +144,7 @@ public class SpringConfiguration {
         }
     }
 
-    private static Map buildServiceNameIndex(SpringApplicationContext applicationContext) {
+    private static Map buildServiceNameIndex(AbstractXmlApplicationContext applicationContext) {
         BeanDefinitionRegistry registry = null;
         if (applicationContext instanceof BeanDefinitionRegistry) {
             registry = (BeanDefinitionRegistry) applicationContext;
@@ -174,7 +175,7 @@ public class SpringConfiguration {
         }
     }
 
-    protected static ClassLoader getClassLoader(SpringApplicationContext applicationContext) {
+    protected static ClassLoader getClassLoader(AbstractXmlApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         if (classLoader == null) {
             classLoader = Thread.currentThread().getContextClassLoader();

@@ -31,6 +31,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 
 import java.io.File;
@@ -339,7 +340,7 @@ public class FileDeployer implements Runnable, InitializingBean, ApplicationCont
             Thread.currentThread().setContextClassLoader(classLoader);
             log.debug("Loading file: " + file + " using classLoader: " + classLoader);
             try {
-                SpringApplicationContext applicationContext = new ResourceXmlApplicationContext(new FileSystemResource(file), xmlPreprocessors, parentContext, beanFactoryPostProcessors, false);
+                AbstractXmlApplicationContext applicationContext = new ResourceXmlApplicationContext(new FileSystemResource(file), xmlPreprocessors, parentContext, beanFactoryPostProcessors, false);
                 applicationContext.setDisplayName(name);
                 applicationContext.setClassLoader(classLoader);
 

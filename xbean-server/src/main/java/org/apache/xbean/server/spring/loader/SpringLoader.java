@@ -30,7 +30,7 @@ import org.apache.xbean.server.spring.configuration.SpringConfigurationServiceFa
 import org.apache.xbean.spring.context.FileSystemXmlApplicationContext;
 import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
  * SpringLoader loads Spring xml configurations into a Kernel.  This service uses the XBean version of
@@ -130,10 +130,7 @@ public class SpringLoader implements Loader {
     public ServiceName load(String location) throws Exception {
         String resolvedLocation = baseDir.toURI().resolve(location).getPath();
         String configLocation = "/" + resolvedLocation + ".xml";
-        SpringApplicationContext applicationContext = new FileSystemXmlApplicationContext(
-                new String[] {configLocation},
-                false,
-                xmlPreprocessors);
+        AbstractXmlApplicationContext applicationContext = createXmlApplicationContext(configLocation);
 
         for (Iterator iter = beanFactoryPostProcessors.iterator(); iter.hasNext();) {
             BeanFactoryPostProcessor processor = (BeanFactoryPostProcessor) iter.next();
@@ -153,5 +150,15 @@ public class SpringLoader implements Loader {
         ServiceFactory springConfigurationServiceFactory = new SpringConfigurationServiceFactory(applicationContext);
         kernel.registerService(serviceName, springConfigurationServiceFactory);
         return serviceName;
+    }
+
+    /**
+     * A factory method for creating the application context
+     */
+    protected AbstractXmlApplicationContext createXmlApplicationContext(String configLocation) {
+        return new FileSystemXmlApplicationContext(
+                new String[] {configLocation},
+                false,
+                xmlPreprocessors);
     }
 }
