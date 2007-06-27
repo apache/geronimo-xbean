@@ -28,14 +28,13 @@ import org.apache.xbean.kernel.ServiceNotFoundException;
 import org.apache.xbean.kernel.ServiceRegistrationException;
 import org.apache.xbean.kernel.StaticServiceFactory;
 import org.apache.xbean.kernel.StringServiceName;
-import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.apache.xbean.server.spring.loader.SpringLoader;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
- * SpringConfiguration that registers and unregisters services that have been defined in a SpringApplicationContext.
+ * SpringConfiguration that registers and unregisters services that have been defined in a Spring ApplicationContext.
  *
  * @author Dain Sundstrom
  * @version $Id$
