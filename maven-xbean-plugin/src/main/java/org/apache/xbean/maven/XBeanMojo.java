@@ -21,6 +21,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -115,7 +116,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      *
      * @parameter
      */
-    private List generatorPlugins = Collections.EMPTY_LIST;
+    private List<GeneratorPlugin> generatorPlugins = Collections.emptyList();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug( " ======= XBeanMojo settings =======" );
@@ -132,10 +133,12 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         }
 
         if (propertyEditorPaths != null) {
-            List editorSearchPath = new LinkedList(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
-            StringTokenizer paths = new StringTokenizer(propertyEditorPaths, " ,");
-            editorSearchPath.addAll(Collections.list(paths));
-            PropertyEditorManager.setEditorSearchPath((String[]) editorSearchPath.toArray(new String[editorSearchPath.size()]));
+            List<String> editorSearchPath = new LinkedList<String>(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
+            for (StringTokenizer paths = new StringTokenizer(propertyEditorPaths, " ,"); paths.hasMoreElements(); ) {
+                //StringTokenizer implements Enumeration<Object>, not Enumeration<String> !!
+                editorSearchPath.add((String) paths.nextElement());
+            }
+            PropertyEditorManager.setEditorSearchPath( editorSearchPath.toArray(new String[editorSearchPath.size()]));
         }
 
         ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
@@ -147,7 +150,17 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             if (this.excludedClasses != null) {
                 excludedClasses = this.excludedClasses.split(" *, *");
             }
-            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, new File[] { srcDir }, excludedClasses);
+            Set<Artifact> dependencies = project.getDependencyArtifacts();
+            List<File> sourceJars = new ArrayList<File>();
+            sourceJars.add(srcDir);
+            for (Artifact dependency : dependencies) {
+                if ("sources".equals(dependency.getClassifier())) {
+                    File file = dependency.getFile();
+                    sourceJars.add(file);
+                }
+            }
+            File[] srcJars = sourceJars.toArray(new File[sourceJars.size()]);
+            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, srcJars, excludedClasses);
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
                 new XmlMetadataGenerator(outputDir.getAbsolutePath(), schema),
                 new DocumentationGenerator(schema),
@@ -157,21 +170,18 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
 
             // load the mappings
             Thread.currentThread().setContextClassLoader(getClassLoader());
-            Set namespaces = mappingLoader.loadNamespaces();
+            Set<NamespaceMapping> namespaces = mappingLoader.loadNamespaces();
             if (namespaces.isEmpty()) {
                 System.out.println("Warning: no namespaces found!");
             }
 
             // generate the files
-            for (Iterator iterator = namespaces.iterator(); iterator.hasNext();) {
-                NamespaceMapping namespaceMapping = (NamespaceMapping) iterator.next();
-                for (int i = 0; i < plugins.length; i++) {
-                    GeneratorPlugin plugin = plugins[i];
+            for (NamespaceMapping namespaceMapping : namespaces) {
+                for (GeneratorPlugin plugin : plugins) {
                     plugin.setLog(this);
                     plugin.generate(namespaceMapping);
-                }                
-                for (Iterator iter = generatorPlugins.iterator(); iter.hasNext();) {
-                    GeneratorPlugin plugin = (GeneratorPlugin) iter.next();
+                }
+                for (GeneratorPlugin plugin : generatorPlugins) {
                     plugin.setLog(this);
                     plugin.generate(namespaceMapping);
                 }
@@ -205,7 +215,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
 
     protected URLClassLoader getClassLoader() throws MojoExecutionException {
         try {
-            Set urls = new HashSet();
+            Set<URL> urls = new HashSet<URL>();
 
             URL mainClasses = new File(project.getBuild().getOutputDirectory())
                     .toURL();
@@ -217,18 +227,16 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             getLog().debug("Adding to classpath : " + testClasses);
             urls.add(testClasses);
 
-            Set dependencies = project.getArtifacts();
+            Set<Artifact> dependencies = project.getArtifacts();
             Iterator iter = dependencies.iterator();
-            while (iter.hasNext()) {
-                Artifact classPathElement = (Artifact) iter.next();
+            for (Artifact classPathElement : dependencies) {
                 getLog().debug(
                         "Adding artifact: " + classPathElement.getFile()
                                 + " to classpath");
                 urls.add(classPathElement.getFile().toURL());
             }
-            URLClassLoader appClassloader = new URLClassLoader((URL[]) urls
-                    .toArray(new URL[urls.size()]), this.getClass()
-                    .getClassLoader());
+            URLClassLoader appClassloader = new URLClassLoader(urls.toArray(new URL[urls.size()]), 
+                    this.getClass().getClassLoader());
             return appClassloader;
         } catch (MalformedURLException e) {
             throw new MojoExecutionException(
