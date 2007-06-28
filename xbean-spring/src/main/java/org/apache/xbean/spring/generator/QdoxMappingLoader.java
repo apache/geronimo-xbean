@@ -18,19 +18,18 @@ package org.apache.xbean.spring.generator;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.LinkedHashMap;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import com.thoughtworks.qdox.JavaDocBuilder;
 import com.thoughtworks.qdox.model.BeanProperty;
@@ -40,6 +39,8 @@ import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
 import com.thoughtworks.qdox.model.JavaSource;
 import com.thoughtworks.qdox.model.Type;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Dain Sundstrom
@@ -56,7 +57,7 @@ public class QdoxMappingLoader implements MappingLoader {
     public static final String FLAT_PROPERTY_ANNOTATION = "org.apache.xbean.Flat";
     public static final String FLAT_COLLECTION_ANNOTATION = "org.apache.xbean.FlatCollection";
     public static final String ELEMENT_ANNOTATION = "org.apache.xbean.Element";
-    
+
     private static final Log log = LogFactory.getLog(QdoxMappingLoader.class);
     private final String defaultNamespace;
     private final File[] srcDirs;
@@ -77,45 +78,36 @@ public class QdoxMappingLoader implements MappingLoader {
         return srcDirs;
     }
 
-    public Set loadNamespaces() throws IOException {
+    public Set<NamespaceMapping> loadNamespaces() throws IOException {
         JavaDocBuilder builder = new JavaDocBuilder();
 
         log.debug("Source directories: ");
 
-        for (int it = 0; it < srcDirs.length; it++) {
-            File sourceDirectory = srcDirs[it];
-
-            if (!sourceDirectory.isDirectory()) {
-                log.warn("Specified source directory isn't a directory: '" + sourceDirectory.getAbsolutePath() + "'.");
+        for (File sourceDirectory : srcDirs) {
+            if (!sourceDirectory.isDirectory() && !sourceDirectory.toString().endsWith(".jar")) {
+                log.warn("Specified source directory isn't a directory or a jar file: '" + sourceDirectory.getAbsolutePath() + "'.");
             }
             log.debug(" - " + sourceDirectory.getAbsolutePath());
 
-            Map sourceFiles = getSourceFiles(sourceDirectory, excludedClasses);
-            for (Iterator iterator = sourceFiles.values().iterator(); iterator.hasNext();) {
-                File file = (File) iterator.next();
-                builder.addSource(file);
-            }
+            getSourceFiles(sourceDirectory, excludedClasses, builder);
         }
 
         collectionType = builder.getClassByName("java.util.Collection").asType();
-        Set namespaces = loadNamespaces(builder);
-        return namespaces;
+        return loadNamespaces(builder);
     }
 
-    private Set loadNamespaces(JavaDocBuilder builder) {
+    private Set<NamespaceMapping> loadNamespaces(JavaDocBuilder builder) {
         // load all of the elements
-        List elements = loadElements(builder);
-
+        List<ElementMapping> elements = loadElements(builder);
 
         // index the elements by namespace and find the root element of each namespace
-        Map elementsByNamespace = new HashMap();
-        Map namespaceRoots = new HashMap();
-        for (Iterator iterator = elements.iterator(); iterator.hasNext();) {
-            ElementMapping element = (ElementMapping) iterator.next();
+        Map<String, Set<ElementMapping>> elementsByNamespace = new HashMap<String, Set<ElementMapping>>();
+        Map<String, ElementMapping> namespaceRoots = new HashMap<String, ElementMapping>();
+        for (ElementMapping element : elements) {
             String namespace = element.getNamespace();
-            Set namespaceElements = (Set) elementsByNamespace.get(namespace);
+            Set<ElementMapping> namespaceElements = elementsByNamespace.get(namespace);
             if (namespaceElements == null) {
-                namespaceElements = new HashSet();
+                namespaceElements = new HashSet<ElementMapping>();
                 elementsByNamespace.put(namespace, namespaceElements);
             }
             namespaceElements.add(element);
@@ -128,36 +120,34 @@ public class QdoxMappingLoader implements MappingLoader {
         }
 
         // build the NamespaceMapping objects
-        Set namespaces = new TreeSet();
-        for (Iterator iterator = elementsByNamespace.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String namespace = (String) entry.getKey();
-            Set namespaceElements = (Set) entry.getValue();
-            ElementMapping rootElement = (ElementMapping) namespaceRoots.get(namespace);
+        Set<NamespaceMapping> namespaces = new TreeSet<NamespaceMapping>();
+        for (Map.Entry<String, Set<ElementMapping>> entry : elementsByNamespace.entrySet()) {
+            String namespace = entry.getKey();
+            Set namespaceElements = entry.getValue();
+            ElementMapping rootElement = namespaceRoots.get(namespace);
             NamespaceMapping namespaceMapping = new NamespaceMapping(namespace, namespaceElements, rootElement);
             namespaces.add(namespaceMapping);
         }
         return Collections.unmodifiableSet(namespaces);
     }
 
-    private List loadElements(JavaDocBuilder builder) {
+    private List<ElementMapping> loadElements(JavaDocBuilder builder) {
         JavaSource[] javaSources = builder.getSources();
-        List elements = new ArrayList();
-        for (int i = 0; i < javaSources.length; i++) {
-        	if( javaSources[i].getClasses().length == 0 ) {
-                log.info("No Java Classes defined in: " + javaSources[i].getURL() );
-        	} else {
-        		JavaClass[] classes = javaSources[i].getClasses();
-        		for (int j = 0; j < classes.length; j++) {
-    	            JavaClass javaClass = classes[j];    	        	
-    	            ElementMapping element = loadElement(builder, javaClass);
-    	            if (element != null && !javaClass.isAbstract()) {
-    	                elements.add(element);
-    	            } else {
-    	                log.debug("No XML annotation found for type: " + javaClass.getFullyQualifiedName());
-    	            }					
-				}
-        	}
+        List<ElementMapping> elements = new ArrayList<ElementMapping>();
+        for (JavaSource javaSource : javaSources) {
+            if (javaSource.getClasses().length == 0) {
+                log.info("No Java Classes defined in: " + javaSource.getURL());
+            } else {
+                JavaClass[] classes = javaSource.getClasses();
+                for (JavaClass javaClass : classes) {
+                    ElementMapping element = loadElement(builder, javaClass);
+                    if (element != null && !javaClass.isAbstract()) {
+                        elements.add(element);
+                    } else {
+                        log.debug("No XML annotation found for type: " + javaClass.getFullyQualifiedName());
+                    }
+                }
+            }
         }
         return elements;
     }
@@ -179,17 +169,15 @@ public class QdoxMappingLoader implements MappingLoader {
         String contentProperty = getProperty(xbeanTag, "contentProperty");
         String factoryClass = getProperty(xbeanTag, "factoryClass");
 
-        Map mapsByPropertyName = new HashMap();
-        List flatProperties = new ArrayList();
-        Map flatCollections = new HashMap();
-        Set attributes = new HashSet();
-        Map attributesByPropertyName = new HashMap();
-        
+        Map<String, MapMapping> mapsByPropertyName = new HashMap<String, MapMapping>();
+        List<String> flatProperties = new ArrayList<String>();
+        Map<String, String> flatCollections = new HashMap<String, String>();
+        Set<AttributeMapping> attributes = new HashSet<AttributeMapping>();
+        Map<String, AttributeMapping> attributesByPropertyName = new HashMap<String, AttributeMapping>();
+
         for (JavaClass jClass = javaClass; jClass != null; jClass = jClass.getSuperJavaClass()) {
             BeanProperty[] beanProperties = jClass.getBeanProperties();
-            for (int i = 0; i < beanProperties.length; i++) {
-                BeanProperty beanProperty = beanProperties[i];
-    
+            for (BeanProperty beanProperty : beanProperties) {
                 // we only care about properties with a setter
                 if (beanProperty.getMutator() != null) {
                     AttributeMapping attributeMapping = loadAttribute(beanProperty, "");
@@ -202,14 +190,14 @@ public class QdoxMappingLoader implements MappingLoader {
                         DocletTag mapTag = acc.getTagByName(MAP_ANNOTATION);
                         if (mapTag != null) {
                             MapMapping mm = new MapMapping(
-                                    mapTag.getNamedParameter("entryName"), 
+                                    mapTag.getNamedParameter("entryName"),
                                     mapTag.getNamedParameter("keyName"),
-                                    Boolean.valueOf(mapTag.getNamedParameter("flat")).booleanValue(),
+                                    Boolean.valueOf(mapTag.getNamedParameter("flat")),
                                     mapTag.getNamedParameter("dups"),
                                     mapTag.getNamedParameter("defaultKey"));
                             mapsByPropertyName.put(beanProperty.getName(), mm);
                         }
-                        
+
                         DocletTag flatColTag = acc.getTagByName(FLAT_COLLECTION_ANNOTATION);
                         if (flatColTag != null) {
                             String childName = flatColTag.getNamedParameter("childElement");
@@ -217,7 +205,7 @@ public class QdoxMappingLoader implements MappingLoader {
                                 throw new InvalidModelException("Flat collections must specify the childElement attribute.");
                             flatCollections.put(beanProperty.getName(), childName);
                         }
-                        
+
                         DocletTag flatPropTag = acc.getTagByName(FLAT_PROPERTY_ANNOTATION);
                         if (flatPropTag != null) {
                             flatProperties.add(beanProperty.getName());
@@ -232,8 +220,7 @@ public class QdoxMappingLoader implements MappingLoader {
         String factoryMethod = null;
         for (JavaClass jClass = javaClass; jClass != null; jClass = jClass.getSuperJavaClass()) {
             JavaMethod[] methods = javaClass.getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                JavaMethod method = methods[i];
+            for (JavaMethod method : methods) {
                 if (method.isPublic() && !method.isConstructor()) {
                     if (initMethod == null && method.getTagByName(INIT_METHOD_ANNOTATION) != null) {
                         initMethod = method.getName();
@@ -244,21 +231,19 @@ public class QdoxMappingLoader implements MappingLoader {
                     if (factoryMethod == null && method.getTagByName(FACTORY_METHOD_ANNOTATION) != null) {
                         factoryMethod = method.getName();
                     }
-                    
+
                 }
             }
         }
 
-        List constructorArgs = new ArrayList();
+        List<List<ParameterMapping>> constructorArgs = new ArrayList<List<ParameterMapping>>();
         JavaMethod[] methods = javaClass.getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            JavaMethod method = methods[i];
+        for (JavaMethod method : methods) {
             JavaParameter[] parameters = method.getParameters();
             if (isValidConstructor(factoryMethod, method, parameters)) {
-                List args = new ArrayList(parameters.length);
-                for (int j = 0; j < parameters.length; j++) {
-                    JavaParameter parameter = parameters[j];
-                    AttributeMapping attributeMapping = (AttributeMapping) attributesByPropertyName.get(parameter.getName());
+                List<ParameterMapping> args = new ArrayList<ParameterMapping>(parameters.length);
+                for (JavaParameter parameter : parameters) {
+                    AttributeMapping attributeMapping = attributesByPropertyName.get(parameter.getName());
                     if (attributeMapping == null) {
                         attributeMapping = loadParameter(parameter);
 
@@ -271,8 +256,8 @@ public class QdoxMappingLoader implements MappingLoader {
             }
         }
 
-        HashSet interfaces = new HashSet();
-        interfaces.addAll( getFullyQualifiedNames( javaClass.getImplementedInterfaces() ) );
+        HashSet<String> interfaces = new HashSet<String>();
+        interfaces.addAll(getFullyQualifiedNames(javaClass.getImplementedInterfaces()));
 
         JavaClass actualClass = javaClass;
         if (factoryClass != null) {
@@ -284,20 +269,20 @@ public class QdoxMappingLoader implements MappingLoader {
                 log.info("Could not load class built by factory: " + factoryClass);
             }
         }
-        
-        ArrayList superClasses = new ArrayList();
+
+        ArrayList<String> superClasses = new ArrayList<String>();
         JavaClass p = actualClass;
         if (actualClass != javaClass) {
             superClasses.add(actualClass.getFullyQualifiedName());
         }
-        while( true ) {
+        while (true) {
             JavaClass s = p.getSuperJavaClass();
-            if( s==null || s.equals(p) || "java.lang.Object".equals(s.getFullyQualifiedName()) ) {
+            if (s == null || s.equals(p) || "java.lang.Object".equals(s.getFullyQualifiedName())) {
                 break;
             }
             p = s;
             superClasses.add(p.getFullyQualifiedName());
-            interfaces.addAll( getFullyQualifiedNames( p.getImplementedInterfaces() ) );
+            interfaces.addAll(getFullyQualifiedNames(p.getImplementedInterfaces()));
         }
 
         return new ElementMapping(namespace,
@@ -318,10 +303,10 @@ public class QdoxMappingLoader implements MappingLoader {
                 interfaces);
     }
 
-    private List getFullyQualifiedNames(JavaClass[] implementedInterfaces) {
-        ArrayList l = new ArrayList();
-        for (int i = 0; i < implementedInterfaces.length; i++) {
-            l.add( implementedInterfaces[i].getFullyQualifiedName() );
+    private List<String> getFullyQualifiedNames(JavaClass[] implementedInterfaces) {
+        ArrayList<String> l = new ArrayList<String>();
+        for (JavaClass implementedInterface : implementedInterfaces) {
+            l.add(implementedInterface.getFullyQualifiedName());
         }
         return l;
     }
@@ -442,8 +427,7 @@ public class QdoxMappingLoader implements MappingLoader {
     private String getParameterDescription(JavaParameter parameter) {
         String parameterName = parameter.getName();
         DocletTag[] tags = parameter.getParentMethod().getTagsByName("param");
-        for (int k = 0; k < tags.length; k++) {
-            DocletTag tag = tags[k];
+        for (DocletTag tag : tags) {
             if (tag.getParameters()[0].equals(parameterName)) {
                 String parameterDescription = tag.getValue().trim();
                 if (parameterDescription.startsWith(parameterName)) {
@@ -488,7 +472,7 @@ public class QdoxMappingLoader implements MappingLoader {
 
     private static boolean toBoolean(String value) {
         if (value != null) {
-            return new Boolean(value).booleanValue();
+            return Boolean.valueOf(value);
         }
         return false;
     }
@@ -502,7 +486,7 @@ public class QdoxMappingLoader implements MappingLoader {
                 return org.apache.xbean.spring.generator.Type.newCollectionType(type.getValue(),
                         org.apache.xbean.spring.generator.Type.newSimpleType(nestedType));
             }
-        } catch (Throwable t){ 
+        } catch (Throwable t) {
             log.debug("Could not load type mapping", t);
         }
         return org.apache.xbean.spring.generator.Type.newSimpleType(type.getValue());
@@ -527,28 +511,40 @@ public class QdoxMappingLoader implements MappingLoader {
         return buf.toString();
     }
 
-    private static Map getSourceFiles(File base, String[] excludedClasses) {
-        return listAllFileNames(base, "", excludedClasses);
+    private static void getSourceFiles(File base, String[] excludedClasses, JavaDocBuilder builder) throws IOException {
+        if (base.isDirectory()) {
+            listAllFileNames(base, "", excludedClasses, builder);
+        } else {
+            listAllJarEntries(base, excludedClasses, builder);
+        }
     }
 
-    private static Map listAllFileNames(File base, String prefix, String[] excludedClasses) {
+    private static void listAllFileNames(File base, String prefix, String[] excludedClasses, JavaDocBuilder builder) throws IOException {
         if (!base.canRead() || !base.isDirectory()) {
             throw new IllegalArgumentException(base.getAbsolutePath());
         }
-        Map map = new LinkedHashMap();
         File[] hits = base.listFiles();
-        for (int i = 0; i < hits.length; i++) {
-            File hit = hits[i];
+        for (File hit : hits) {
             String name = prefix.equals("") ? hit.getName() : prefix + "/" + hit.getName();
             if (hit.canRead() && !isExcluded(name, excludedClasses)) {
                 if (hit.isDirectory()) {
-                    map.putAll(listAllFileNames(hit, name, excludedClasses));
+                    listAllFileNames(hit, name, excludedClasses, builder);
                 } else if (name.endsWith(".java")) {
-                    map.put(name, hit);
+                    builder.addSource(hit);
                 }
             }
         }
-        return map;
+    }
+
+    private static void listAllJarEntries(File base, String[] excludedClasses, JavaDocBuilder builder) throws IOException {
+        JarFile jarFile = new JarFile(base);
+        for (Enumeration entries = jarFile.entries(); entries.hasMoreElements(); ) {
+            JarEntry entry = (JarEntry) entries.nextElement();
+            String name = entry.getName();
+            if (name.endsWith(".java") && !isExcluded(name, excludedClasses) && !name.endsWith("/package-info.java")) {
+                builder.addSource(new URL("jar:" + base.toURL().toString() + "!/" + name));
+            }
+        }
     }
 
     private static boolean isExcluded(String sourceName, String[] excludedClasses) {
@@ -561,8 +557,7 @@ public class QdoxMappingLoader implements MappingLoader {
             className = className.substring(0, className.length() - ".java".length());
         }
         className = className.replace('/', '.');
-        for (int i = 0; i < excludedClasses.length; i++) {
-            String excludedClass = excludedClasses[i];
+        for (String excludedClass : excludedClasses) {
             if (className.equals(excludedClass)) {
                 return true;
             }

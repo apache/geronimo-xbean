@@ -25,5 +25,5 @@ import java.util.Set;
  * @since 1.0
  */
 public interface MappingLoader {
-    Set loadNamespaces() throws IOException;
+    Set<NamespaceMapping> loadNamespaces() throws IOException;
 }
