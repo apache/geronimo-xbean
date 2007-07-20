@@ -40,7 +40,19 @@
             <artifactId>xbean-spring</artifactId>
             <version>${version}</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+          <version>2.0.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+          <version>2.0.5</version>
+        </dependency>
+ 
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-project</artifactId>
