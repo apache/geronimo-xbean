@@ -17,7 +17,6 @@
 package org.apache.xbean.propertyeditor;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * A property editor for {@link File}.
@@ -36,10 +35,6 @@ public class FileEditor extends AbstractConverter {
      * @throws PropertyEditorException An IOException occured.
      */
     protected Object toObjectImpl(String text) {
-        try {
-            return new File(text).getCanonicalFile();
-        } catch (IOException e) {
-            throw new PropertyEditorException(e);
-        }
+        return new File(text);
     }
 }
