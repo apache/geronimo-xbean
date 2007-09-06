@@ -106,16 +106,17 @@ public class UrlSet {
      * @throws MalformedURLException
      */
     public UrlSet excludeJavaExtDirs() throws MalformedURLException {
-        return excludePaths(System.getProperty("java.ext.dirs"));
+        return excludePaths(System.getProperty("java.ext.dirs", ""));
     }
 
     /**
      * Calls excludePaths(System.getProperty("java.endorsed.dirs"))
+     *
      * @return
      * @throws MalformedURLException
      */
     public UrlSet excludeJavaEndorsedDirs() throws MalformedURLException {
-        return excludePaths(System.getProperty("java.endorsed.dirs"));
+        return excludePaths(System.getProperty("java.endorsed.dirs", ""));
     }
 
     public UrlSet excludeJavaHome() throws MalformedURLException {
