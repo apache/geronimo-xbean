@@ -60,12 +60,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
     }
 
     public final void setValue(Object value) {
-        if (value == null) {
-            super.setValue(null);
-        }
-        if (!type.isInstance(value)) {
-            throw new PropertyEditorException("Value is not an instance of " + type.getSimpleName());
-        }
+        // Don't validate the type. Type validation is not required by spec and some setters (e.g. Spring) expect this.
         super.setValue(value);
     }
 
@@ -73,9 +68,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
         if (value == null) {
             return null;
         }
-        if (!type.isInstance(value)) {
-            throw new PropertyEditorException("Value is not an instance of " + type.getSimpleName() + ": " + value.getClass().getName());
-        }
+        // Don't validate the type. Type validation is not required by spec and some setters (e.g. Spring) expect this.
         return toStringImpl(value);
     }
 
