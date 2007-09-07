@@ -109,7 +109,17 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      * @parameter schemaAsArtifact
      */
     private boolean schemaAsArtifact = true;
+    
+    /**
+     * @parameter 
+     */
+    private boolean generateSpringSchemasFile = true;
 
+    /**
+     * @parameter 
+     */
+    private boolean generateSpringHandlersFile = true;
+    
     /**
      * A list of additional GeneratorPlugins that should get used executed
      * when generating output.
@@ -127,7 +137,9 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         getLog().debug( "outputDir[" + outputDir + "]" );
         getLog().debug( "propertyEditorPaths[" + propertyEditorPaths + "]" );
         getLog().debug( "schemaAsArtifact[" + schemaAsArtifact + "]");
-
+        getLog().debug( "generateSpringSchemasFile[" + generateSpringSchemasFile + "]");
+        getLog().debug( "generateSpringHandlersFile[" + generateSpringHandlersFile + "]");
+        
         if (schema == null) {
             schema = new File(outputDir, project.getArtifactId() + ".xsd");
         }
@@ -162,7 +174,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             File[] srcJars = sourceJars.toArray(new File[sourceJars.size()]);
             MappingLoader mappingLoader = new QdoxMappingLoader(namespace, srcJars, excludedClasses);
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(outputDir.getAbsolutePath(), schema),
+                new XmlMetadataGenerator(outputDir.getAbsolutePath(), schema, generateSpringSchemasFile, generateSpringHandlersFile),
                 new DocumentationGenerator(schema),
                 new XsdGenerator(schema),
                 new WikiDocumentationGenerator(schema),

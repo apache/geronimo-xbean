@@ -39,10 +39,18 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
     private final File schema;
 
     public static final String NAMESPACE_HANDLER = "org.apache.xbean.spring.context.v2.XBeanNamespaceHandler";
+	private final boolean generateSpringSchemasFile;
+	private final boolean generateSpringHandlersFile;
 
     public XmlMetadataGenerator(String metaInfDir, File schema) {
+    	this(metaInfDir, schema, true, true);
+    }
+    
+    public XmlMetadataGenerator(String metaInfDir, File schema, boolean generateSpringSchemasFile, boolean generateSpringHandlersFile) {
         this.metaInfDir = metaInfDir;
         this.schema = schema;
+		this.generateSpringSchemasFile = generateSpringSchemasFile;
+		this.generateSpringHandlersFile = generateSpringHandlersFile;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
@@ -61,17 +69,20 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             out.close();
         }
         
-        // Generate spring 2.0 mapping
-        file = new File(metaInfDir, "META-INF/spring.handlers");
-        log.log("Generating Spring 2.0 handler mapping: " + file + " for namespace: " + namespace);
-        out = new PrintWriter(new FileWriter(file));
-        try {
-            out.println(namespace.replaceAll(":", "\\\\:") + "=" + NAMESPACE_HANDLER);
-        } finally {
-            out.close();
+        if( generateSpringHandlersFile ) {
+        	
+            // Generate spring 2.0 mapping
+	        file = new File(metaInfDir, "META-INF/spring.handlers");
+	        log.log("Generating Spring 2.0 handler mapping: " + file + " for namespace: " + namespace);
+	        out = new PrintWriter(new FileWriter(file));
+	        try {
+	            out.println(namespace.replaceAll(":", "\\\\:") + "=" + NAMESPACE_HANDLER);
+	        } finally {
+	            out.close();
+	        }
         }
 
-        if (schema != null) {
+        if (schema != null && generateSpringSchemasFile ) {
             String cp = new File(metaInfDir).toURI().relativize(schema.toURI()).toString();
             file = new File(metaInfDir, "META-INF/spring.schemas");
             log.log("Generating Spring 2.0 schema mapping: " + file + " for namespace: " + namespace);
