@@ -58,7 +58,7 @@
               element, and it will need to be changed manually before a release,
               as the maven-release-plugin will not update this value.
         -->
-        <version>3.2-SNAPSHOT</version>
+        <version>3.2</version>
     </properties>
     
     <issueManagement>
@@ -228,9 +228,9 @@
             </dependency>
             
             <dependency>
-                <groupId>qdox</groupId>
+                <groupId>com.thoughtworks.qdox</groupId>
                 <artifactId>qdox</artifactId>
-                <version>1.6.1</version>
+                <version>1.6.3</version>
             </dependency>
             
             <dependency>
