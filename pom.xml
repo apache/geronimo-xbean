@@ -35,7 +35,7 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
     
-    <version>3.3-SNAPSHOT</version>
+    <version>3.2-SNAPSHOT</version>
     
     <description>
         XBean is a plugin based server architecture.
@@ -58,7 +58,7 @@
               element, and it will need to be changed manually before a release,
               as the maven-release-plugin will not update this value.
         -->
-        <version>3.3-SNAPSHOT</version>
+        <version>3.2-SNAPSHOT</version>
     </properties>
     
     <issueManagement>
