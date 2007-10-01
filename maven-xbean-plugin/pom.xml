@@ -84,7 +84,7 @@
         </dependency>
         
         <dependency>
-            <groupId>qdox</groupId>
+            <groupId>com.thoughtworks.qdox</groupId>
             <artifactId>qdox</artifactId>
         </dependency>
         
