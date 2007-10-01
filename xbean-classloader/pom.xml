@@ -26,12 +26,12 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>3.2-SNAPSHOT</version>
+        <version>3.2</version>
     </parent>
 
     <artifactId>xbean-classloader</artifactId>
     <name>XBean :: Classloader</name>
-    <version>3.2-SNAPSHOT</version>
+    <version>3.2</version>
 
     <build>
         <plugins>
