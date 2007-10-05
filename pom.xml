@@ -58,7 +58,7 @@
               element, and it will need to be changed manually before a release,
               as the maven-release-plugin will not update this value.
         -->
-        <version>3.2</version>
+        <version>3.3-SNAPSHOT</version>
     </properties>
     
     <issueManagement>
@@ -465,7 +465,6 @@
                         <!-- Libraries -->
                         <link>http://jakarta.apache.org/commons/collections/apidocs</link>
                         <link>http://jakarta.apache.org/commons/logging/apidocs/</link>
-                        <link>http://www.junit.org/junit/javadoc/</link>
                         <link>http://logging.apache.org/log4j/docs/api/</link>
                         <link>http://jakarta.apache.org/regexp/apidocs/</link>
                         <link>http://jakarta.apache.org/velocity/api/</link>
