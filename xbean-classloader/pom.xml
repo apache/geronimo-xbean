@@ -30,6 +30,7 @@
     </parent>
 
     <artifactId>xbean-classloader</artifactId>
+    <packaging>bundle</packaging>
     <name>XBean :: Classloader</name>
     <version>3.3-SNAPSHOT</version>
 
