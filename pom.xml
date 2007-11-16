@@ -59,7 +59,23 @@
               as the maven-release-plugin will not update this value.
         -->
         <version>3.3-SNAPSHOT</version>
+
+	    <!--
+	     |
+	     | Geronimo OSGi properties
+	     | 
+	     | Note: when modules can override these properties.
+	     |
+	     -->
+	    <xbean.osgi.import.pkg>*</xbean.osgi.import.pkg>
+	    <xbean.osgi.export.pkg>org.apache.xbean*</xbean.osgi.export.pkg>
+	    <xbean.osgi.private.pkg></xbean.osgi.private.pkg>
+	    <xbean.osgi.export>!META-INF*,${xbean.osgi.export.pkg}*;version=${xbean.osgi.export.version}</xbean.osgi.export>
+	    <xbean.osgi.export.version>${project.version}</xbean.osgi.export.version>
+	    <xbean.osgi.import>!META-INF*,${xbean.osgi.import.pkg}</xbean.osgi.import>
+	    <xbean.osgi.symbolic.name>${groupId}.${artifactId}</xbean.osgi.symbolic.name>
     </properties>
+
     
     <issueManagement>
         <system>jira</system>
@@ -311,6 +327,25 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- OSGi bundles plugin -->
+	        <plugin>
+	            <groupId>org.apache.felix</groupId>
+	            <artifactId>maven-bundle-plugin</artifactId>
+                <version>1.0.0</version>
+	            <extensions>true</extensions>
+	            <configuration>
+		            <instructions>
+		                <Bundle-Name>${artifactId}</Bundle-Name>
+		                <Bundle-SymbolicName>${xbean.osgi.symbolic.name}</Bundle-SymbolicName>
+		                <Export-Package>${xbean.osgi.export}</Export-Package>
+		                <Import-Package>${xbean.osgi.import}</Import-Package>
+		                <Private-Package>${xbean.osgi.private.pkg}</Private-Package>
+		                <Implementation-Title>Apache XBean</Implementation-Title>
+		                <Implementation-Version>${project.version}</Implementation-Version>
+		           </instructions>
+		        </configuration>
+	        </plugin>
         </plugins>
     </build>
     
@@ -490,6 +525,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>surefire-report-maven-plugin</artifactId>
             </plugin>
+
         </plugins>
     </reporting>
 

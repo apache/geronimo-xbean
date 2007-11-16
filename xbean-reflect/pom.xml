@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>xbean-reflect</artifactId>
+  <packaging>bundle</packaging>
   <name>XBean :: Reflect</name>
 
   <profiles>

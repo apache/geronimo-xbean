@@ -30,6 +30,7 @@
     </parent>
 
     <artifactId>xbean-classpath</artifactId>
+    <packaging>bundle</packaging>
     <name>XBean :: ClassPath</name>
 
 </project>

@@ -30,6 +30,7 @@
     </parent>
 
     <artifactId>xbean-osgi</artifactId>
+    <packaging>bundle</packaging>
     <name>XBean :: OSGi</name>
     
     <dependencies>
