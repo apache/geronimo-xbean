@@ -32,7 +32,15 @@
     <artifactId>xbean-spring</artifactId>
     <packaging>bundle</packaging>
     <name>XBean :: Spring</name>
-
+	
+	<properties>
+		<xbean.osgi.import.pkg>
+			com.thoughtworks.qdox*;resolution:=optional,
+			org.apache.tools.ant*;resolution:=optional,
+			*
+		</xbean.osgi.import.pkg>
+	</properties>
+	
     <dependencies>
 
         <dependency>
