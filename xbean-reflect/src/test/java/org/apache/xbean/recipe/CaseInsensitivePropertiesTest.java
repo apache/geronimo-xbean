@@ -16,24 +16,23 @@
  */
 package org.apache.xbean.recipe;
 
-/**
- * @version $Rev$ $Date$
- */
-public class Option {
+import junit.framework.TestCase;
 
-    public static final Option PRIVATE_PROPERTIES = new Option("PRIVATE_PROPERTIES");
-    public static final Option STATIC_PROPERTIES = new Option("STATIC_PROPERTIES");
-    public static final Option FIELD_INJECTION = new Option("FIELD_INJECTION");
-    public static final Option IGNORE_MISSING_PROPERTIES = new Option("IGNORE_MISSING_PROPERTIES"); 
-    public static final Option CASE_INSENSITIVE_PROPERTIES = new Option("CASE_INSENSITIVE_PROPERTIES"); 
+import java.net.URL;
 
-    private final String name;
+public class CaseInsensitivePropertiesTest extends TestCase {
 
-    public Option(String name) {
-        this.name = name;
+    public void testSetters() throws Exception {
+        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class);
+        objectRecipe.allow(Option.CASE_INSENSITIVE_PROPERTIES);
+        Person expected = new Person("Joe", 21, new URL("http://www.acme.org"));
+
+        objectRecipe.setProperty("naMe", "Joe");
+        objectRecipe.setProperty("aGe", "21");
+        objectRecipe.setProperty("homepage", "http://www.acme.org");
+
+        Person actual = (Person) objectRecipe.create(Person.class.getClassLoader());
+        assertEquals("person", expected, actual);
     }
 
-    public String toString() {
-        return name;
-    }
 }
