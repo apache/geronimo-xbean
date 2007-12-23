@@ -243,12 +243,13 @@ public class ObjectRecipe extends AbstractRecipe {
         boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
         boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
         boolean ignoreMissingProperties = options.contains(Option.IGNORE_MISSING_PROPERTIES);
+        boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_PROPERTIES);
         // set remaining properties
         for (Map.Entry<Property, Object> entry : RecipeHelper.prioritizeProperties(propertyValues)) {
             Property propertyName = entry.getKey();
             Object propertyValue = entry.getValue();
 
-            setProperty(instance, clazz, propertyName, propertyValue, allowPrivate, allowStatic, ignoreMissingProperties, classLoader);
+            setProperty(instance, clazz, propertyName, propertyValue, allowPrivate, allowStatic, ignoreMissingProperties, caseInsesnitive, classLoader);
         }
 
     }
@@ -263,23 +264,23 @@ public class ObjectRecipe extends AbstractRecipe {
         return typeClass;
     }
 
-    private void setProperty(Object instance, Class clazz, Property propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, boolean ignoreMissingProperties, ClassLoader classLoader) {
+    private void setProperty(Object instance, Class clazz, Property propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, boolean ignoreMissingProperties, boolean caseInsesnitive, ClassLoader classLoader) {
         Member member;
         try {
             if (propertyName instanceof SetterProperty){
-                member = new MethodMember(findSetter(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
+                member = new MethodMember(findSetter(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, caseInsesnitive, classLoader));
             } else if (propertyName instanceof FieldProperty){
-                member = new FieldMember(findField(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
+                member = new FieldMember(findField(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, caseInsesnitive, classLoader));
             } else {
                 try {
-                    member = new MethodMember(findSetter(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
+                    member = new MethodMember(findSetter(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, caseInsesnitive, classLoader));
                 } catch (MissingAccessorException noSetter) {
                     if (!options.contains(Option.FIELD_INJECTION)) {
                         throw noSetter;
                     }
 
                     try {
-                        member = new FieldMember(findField(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, classLoader));
+                        member = new FieldMember(findField(clazz, propertyName.name, propertyValue, allowPrivate, allowStatic, caseInsesnitive, classLoader));
                     } catch (MissingAccessorException noField) {
                         throw (noField.getMatchLevel() > noSetter.getMatchLevel())? noField: noSetter;
                     }
@@ -583,13 +584,13 @@ public class ObjectRecipe extends AbstractRecipe {
      * @param propertyValue
      * @param allowPrivate
      * @param classLoader
-     * @return
+     * @return field
      */
     public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, ClassLoader classLoader) {
-        return findSetter(typeClass, propertyName,  propertyValue, allowPrivate, false, classLoader);
+        return findSetter(typeClass, propertyName,  propertyValue, allowPrivate, false, false, classLoader);
     }
 
-    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, ClassLoader classLoader) {
+    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, boolean caseInsesnitive, ClassLoader classLoader) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
@@ -625,7 +626,7 @@ public class ObjectRecipe extends AbstractRecipe {
         List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
-            if (method.getName().equals(setterName)) {
+            if (method.getName().equals(setterName) || (caseInsesnitive && method.getName().equalsIgnoreCase(setterName))) {
                 if (method.getParameterTypes().length == 0) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
@@ -720,13 +721,13 @@ public class ObjectRecipe extends AbstractRecipe {
      * @param propertyValue
      * @param allowPrivate
      * @param classLoader
-     * @return
+     * @return field
      */
     public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, ClassLoader classLoader) {
-        return findField(typeClass, propertyName,  propertyValue, allowPrivate, false, classLoader);
+        return findField(typeClass, propertyName,  propertyValue, allowPrivate, false, false, classLoader);
     }
 
-    public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, ClassLoader classLoader) {
+    public static Field findField(Class typeClass, String propertyName, Object propertyValue, boolean allowPrivate, boolean allowStatic, boolean caseInsesnitive, ClassLoader classLoader) {
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
 
@@ -761,7 +762,7 @@ public class ObjectRecipe extends AbstractRecipe {
         }
 
         for (Field field : fields) {
-            if (field.getName().equals(propertyName)) {
+            if (field.getName().equals(propertyName) || (caseInsesnitive && field.getName().equalsIgnoreCase(propertyName))) {
 
                 if (!allowPrivate && !Modifier.isPublic(field.getModifiers())) {
                     if (matchLevel < 4) {
