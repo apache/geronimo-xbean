@@ -684,8 +684,13 @@ public class ClassFinder {
         try {
             URL resource = classLoader.getResource(className);
             if (resource != null) {
-                ClassReader classReader = new ClassReader(resource.openStream());
-                classReader.accept(new InfoBuildingVisitor(), true);
+                InputStream in = resource.openStream();
+                try {
+                    ClassReader classReader = new ClassReader(in);
+                    classReader.accept(new InfoBuildingVisitor(), true);
+                } finally {
+                    in.close();
+                }
             } else {
                 new Exception("Could not load " + className).printStackTrace();
             }
