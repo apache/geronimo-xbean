@@ -32,4 +32,11 @@ public class DateEditorTest extends TestCase {
         assertEquals(expected, actual);
     }
 
+    public void testFallbackFormats() throws Exception {
+        DateEditor editor = new DateEditor();
+
+        editor.toObjectImpl("2007-10-31");
+        editor.toObjectImpl("2007-10-31T19:19:19PDT");
+    }
+
 }

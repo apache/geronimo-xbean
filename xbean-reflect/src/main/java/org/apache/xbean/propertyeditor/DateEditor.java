@@ -18,8 +18,11 @@ package org.apache.xbean.propertyeditor;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A property editor for Date typed properties.
@@ -27,10 +30,16 @@ import java.util.Locale;
  * @version $Rev$ $Date$
  */
 public class DateEditor extends AbstractConverter {
-    private DateFormat formatter;
+
+    private List<DateFormat> formats = new ArrayList<DateFormat>();
 
     public DateEditor() {
         super(Date.class);
+
+        formats.add(DateFormat.getInstance());
+        formats.add(DateFormat.getDateInstance());
+        formats.add(new SimpleDateFormat("yyyy-MM-dd")); // Atom (ISO 8601))) -- short version;
+        formats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz")); // Atom (ISO 8601)));
     }
 
     /**
@@ -41,47 +50,15 @@ public class DateEditor extends AbstractConverter {
      *                 Unable to parse the string value into a Date.
      */
     protected Object toObjectImpl(String text) {
-        try {
-            // find out whether the first token is a locale id and style in that
-            // order
-            // if there's locale, style is mandatory
-            Locale locale = Locale.getDefault();
-            int style = DateFormat.MEDIUM;
-            int firstSpaceIndex = text.indexOf(' ');
-            if (firstSpaceIndex != -1) {
-                String token = text.substring(0, firstSpaceIndex).intern();
-                if (token.startsWith("locale")) {
-                    String localeStr = token.substring(token.indexOf('=') + 1);
-                    int underscoreIndex = localeStr.indexOf('_');
-                    if (underscoreIndex != -1) {
-                        String language = localeStr.substring(0, underscoreIndex);
-                        String country = localeStr.substring(underscoreIndex + 1);
-                        locale = new Locale(language, country);
-                    } else {
-                        locale = new Locale(localeStr);
-                    }
-                    // locale is followed by mandatory style
-                    int nextSpaceIndex = text.indexOf(' ', firstSpaceIndex + 1);
-                    token = text.substring(firstSpaceIndex + 1, nextSpaceIndex);
-                    String styleStr = token.substring(token.indexOf('=') + 1);
-                    if (styleStr.equalsIgnoreCase("SHORT")) {
-                        style = DateFormat.SHORT;
-                    } else if (styleStr.equalsIgnoreCase("MEDIUM")) {
-                        style = DateFormat.MEDIUM;
-                    } else if (styleStr.equalsIgnoreCase("LONG")) {
-                        style = DateFormat.LONG;
-                    } else if (styleStr.equalsIgnoreCase("FULL")) {
-                        style = DateFormat.FULL;
-                    } else {
-                        // unknown style name
-                        // throw exception or assume default?
-                        style = DateFormat.MEDIUM;
-                    }
-                    text = text.substring(nextSpaceIndex + 1);
-                }
+        for (DateFormat format : formats) {
+            try {
+                return format.parse(text);
+            } catch (ParseException e) {
             }
-            formatter = DateFormat.getDateInstance(style, locale);
-            return formatter.parse(text);
+        }
+
+        try {
+            return complexParse(text);
         } catch (ParseException e) {
             // any format errors show up as a ParseException, which we turn into
             // a PropertyEditorException.
@@ -89,9 +66,52 @@ public class DateEditor extends AbstractConverter {
         }
     }
 
+    private Object complexParse(String text) throws ParseException {
+        // find out whether the first token is a locale id and style in that
+        // order
+        // if there's locale, style is mandatory
+        Locale locale = Locale.getDefault();
+        int style = DateFormat.MEDIUM;
+        int firstSpaceIndex = text.indexOf(' ');
+        if (firstSpaceIndex != -1) {
+            String token = text.substring(0, firstSpaceIndex).intern();
+            if (token.startsWith("locale")) {
+                String localeStr = token.substring(token.indexOf('=') + 1);
+                int underscoreIndex = localeStr.indexOf('_');
+                if (underscoreIndex != -1) {
+                    String language = localeStr.substring(0, underscoreIndex);
+                    String country = localeStr.substring(underscoreIndex + 1);
+                    locale = new Locale(language, country);
+                } else {
+                    locale = new Locale(localeStr);
+                }
+                // locale is followed by mandatory style
+                int nextSpaceIndex = text.indexOf(' ', firstSpaceIndex + 1);
+                token = text.substring(firstSpaceIndex + 1, nextSpaceIndex);
+                String styleStr = token.substring(token.indexOf('=') + 1);
+                if (styleStr.equalsIgnoreCase("SHORT")) {
+                    style = DateFormat.SHORT;
+                } else if (styleStr.equalsIgnoreCase("MEDIUM")) {
+                    style = DateFormat.MEDIUM;
+                } else if (styleStr.equalsIgnoreCase("LONG")) {
+                    style = DateFormat.LONG;
+                } else if (styleStr.equalsIgnoreCase("FULL")) {
+                    style = DateFormat.FULL;
+                } else {
+                    // unknown style name
+                    // throw exception or assume default?
+                    style = DateFormat.MEDIUM;
+                }
+                text = text.substring(nextSpaceIndex + 1);
+            }
+        }
+        DateFormat formats = DateFormat.getDateInstance(style, locale);
+        return formats.parse(text);
+    }
+
     protected String toStringImpl(Object value) {
         Date date = (Date) value;
-        String text = formatter.format(date);
+        String text = formats.get(0).format(date);
         return text;
     }
 }
