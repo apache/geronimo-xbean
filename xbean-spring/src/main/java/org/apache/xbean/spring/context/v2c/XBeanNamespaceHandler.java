@@ -50,9 +50,11 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.ChildBeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader;
@@ -428,8 +430,13 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
         if( propertyEditor!=null ) {
         	PropertyEditor p = createPropertyEditor(propertyEditor);
-        	p.setAsText(value);
-        	return p.getValue();
+        	
+        	RootBeanDefinition def = new RootBeanDefinition();
+        	def.setBeanClass(PropertyEditorFactory.class);
+        	def.getPropertyValues().addPropertyValue("propertyEditor", p);
+        	def.getPropertyValues().addPropertyValue("value", value);
+        	
+        	return def;
         }
         
         //
