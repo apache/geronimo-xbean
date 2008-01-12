@@ -35,7 +35,7 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
     
-    <version>3.3-SNAPSHOT</version>
+    <version>3.3</version>
     
     <description>
         XBean is a plugin based server architecture.
@@ -44,9 +44,9 @@
     <url>http://geronimo.apache.org/xbean</url>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
-        <url>http://svn.apache.org/viewvc/geronimo/xbean/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.3</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.3</developerConnection>
+        <url>http://svn.apache.org/viewvc/geronimo/xbean/tags/xbean-3.3</url>
     </scm>
     
     <properties>
@@ -69,7 +69,7 @@
 	     -->
 	    <xbean.osgi.import.pkg>*</xbean.osgi.import.pkg>
 	    <xbean.osgi.export.pkg>org.apache.xbean*</xbean.osgi.export.pkg>
-	    <xbean.osgi.private.pkg></xbean.osgi.private.pkg>
+	    <xbean.osgi.private.pkg />
 	    <xbean.osgi.export>!META-INF*,${xbean.osgi.export.pkg}*;version=${xbean.osgi.export.version}</xbean.osgi.export>
 	    <xbean.osgi.export.version>${project.version}</xbean.osgi.export.version>
 	    <xbean.osgi.import>!META-INF*,${xbean.osgi.import.pkg}</xbean.osgi.import>
