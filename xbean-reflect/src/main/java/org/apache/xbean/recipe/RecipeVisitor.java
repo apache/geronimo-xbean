@@ -1,4 +1,5 @@
 /**
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +17,6 @@
  */
 package org.apache.xbean.recipe;
 
-import junit.framework.TestCase;
-
-import java.net.URL;
-
-public class CaseInsensitivePropertiesTest extends TestCase {
-
-    public void testSetters() throws Exception {
-        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class);
-        objectRecipe.allow(Option.CASE_INSENSITIVE_PROPERTIES);
-        Person expected = new Person("Joe", 21, new URL("http://www.acme.org"), null);
-
-        objectRecipe.setProperty("naMe", "Joe");
-        objectRecipe.setProperty("aGe", "21");
-        objectRecipe.setProperty("homepage", "http://www.acme.org");
-
-        Person actual = (Person) objectRecipe.create(Person.class.getClassLoader());
-        assertEquals("person", expected, actual);
-    }
-
+public interface RecipeVisitor {
+    void visit(Recipe recipe);
 }

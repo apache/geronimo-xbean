@@ -20,23 +20,51 @@ package org.apache.xbean.recipe;
  * @version $Rev$ $Date$
  */
 public class Car {
+    public String make;
+    public String model;
+    public int year;
 
-    private final Person driver;
-    private Person passenger;
+    public Car(String make, String model, int year) {
+        if (make == null) throw new NullPointerException("make is null");
+        if (model == null) throw new NullPointerException("model is null");
 
-    public Car(Person driver) {
-        this.driver = driver;
+        this.make = make;
+        this.model = model;
+        this.year = year;
     }
 
-    public Person getDriver() {
-        return driver;
+    public String getMake() {
+        return make;
     }
 
-    public Person getPassenger() {
-        return passenger;
+    public String getModel() {
+        return model;
     }
 
-    public void setPassenger(Person passenger) {
-        this.passenger = passenger;
+    public int getYear() {
+        return year;
+    }
+
+    public String toString() {
+        return "[Car: make=\"" + make + "\", model=\"" + model + "\", year=\"" + year + "\"]";
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Car car = (Car) o;
+
+        return year == car.year &&
+                make.equals(car.make) &&
+                model.equals(car.model);
+    }
+
+    public int hashCode() {
+        int result;
+        result = make.hashCode();
+        result = 31 * result + model.hashCode();
+        result = 31 * result + year;
+        return result;
     }
 }

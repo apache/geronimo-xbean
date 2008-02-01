@@ -39,13 +39,13 @@ public class ObjectRecipeTest extends TestCase {
 
     public void testConstructor() throws Exception {
 
-        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, new String[]{"name", "age", "homePage"}, new Class[]{String.class, Integer.TYPE, URL.class});
+        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, new String[]{"name", "age", "homePage", "car"}, new Class[]{String.class, Integer.TYPE, URL.class, Car.class});
         doTest(objectRecipe);
     }
 
     public void testConstructorWithImpliedTypes() throws Exception {
 
-        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, new String[]{"name", "age", "homePage"}, null);
+        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, new String[]{"name", "age", "homePage", "car"}, null);
         doTest(objectRecipe);
     }
 
@@ -57,13 +57,13 @@ public class ObjectRecipeTest extends TestCase {
 
     public void testStaticFactoryMethodWithParams() throws Exception {
 
-        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance", new String[]{"name", "age", "homePage"}, new Class[]{String.class, Integer.TYPE, URL.class});
+        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance", new String[]{"name", "age", "homePage", "car"}, new Class[]{String.class, Integer.TYPE, URL.class, Car.class});
         doTest(objectRecipe);
     }
 
     public void testStaticFactoryMethodWithImpliedTypes() throws Exception {
 
-        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance", new String[]{"name", "age", "homePage"}, null);
+        ObjectRecipe objectRecipe = new ObjectRecipe(Person.class, "newInstance", new String[]{"name", "age", "homePage", "car"});
         doTest(objectRecipe);
     }
 
@@ -75,22 +75,28 @@ public class ObjectRecipeTest extends TestCase {
 
     public void testInstanceFactoryConstructor() throws Exception {
 
-        ObjectRecipe objectRecipe = new ObjectRecipe(PersonFactory.class, "create", new String[]{"name", "age", "homePage"}, new Class[]{String.class, Integer.TYPE, URL.class});
+        ObjectRecipe objectRecipe = new ObjectRecipe(PersonFactory.class, "create", new String[]{"name", "age", "homePage", "car"}, new Class[]{String.class, Integer.TYPE, URL.class, Car.class});
         doTest(objectRecipe);
     }
 
     public void testInstanceFactoryConstructorWithImpliedTypes() throws Exception {
 
-        ObjectRecipe objectRecipe = new ObjectRecipe(PersonFactory.class, "create", new String[]{"name", "age", "homePage"}, null);
+        ObjectRecipe objectRecipe = new ObjectRecipe(PersonFactory.class, "create", new String[]{"name", "age", "homePage", "car"});
         doTest(objectRecipe);
     }
 
     private void doTest(ObjectRecipe objectRecipe) throws Exception {
-        Person expected = new Person("Joe", 21, new URL("http://www.acme.org"));
+        Person expected = new Person("Joe", 21, new URL("http://www.acme.org"), new Car("Mini", "Cooper", 2008));
 
         objectRecipe.setProperty("name", "Joe");
         objectRecipe.setProperty("age", "21");
         objectRecipe.setProperty("homePage", "http://www.acme.org");
+        
+        ObjectRecipe carRecipe = new ObjectRecipe(Car.class, new String[]{"make", "model", "year"});
+        carRecipe.setProperty("make", "Mini");
+        carRecipe.setProperty("model", "Cooper");
+        carRecipe.setProperty("year", "2008");
+        objectRecipe.setProperty("car", carRecipe);
 
         Person actual = (Person) objectRecipe.create(Person.class.getClassLoader());
         assertEquals("person", expected, actual);

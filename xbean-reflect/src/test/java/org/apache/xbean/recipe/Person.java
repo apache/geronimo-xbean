@@ -17,8 +17,8 @@
 package org.apache.xbean.recipe;
 
 import java.net.URL;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -28,24 +28,28 @@ public class Person {
     private String name;
     private int age;
     private URL homePage;
-    private Map<String,Object> unsetMap;
+    private Car car;
+    private Map<String, Object> unsetMap;
     private Properties unsetProperties;
+    private Map<String, Object> allMap;
+    private Properties allProperties;
 
     public Person() {
     }
 
-    public Person(String name, int age, URL homePage) {
+    public Person(String name, int age, URL homePage, Car car) {
         this.name = name;
         this.age = age;
         this.homePage = homePage;
+        this.car = car;
     }
 
-    public static Person newInstance(){
+    public static Person newInstance() {
         return new Person();
     }
 
-    public static Person newInstance(String name, int age, URL homePage){
-        return new Person(name, age, homePage);        
+    public static Person newInstance(String name, int age, URL homePage, Car car) {
+        return new Person(name, age, homePage, car);
     }
 
     public String getName() {
@@ -72,6 +76,14 @@ public class Person {
         this.homePage = homePage;
     }
 
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
+
     public Map<String, Object> getUnsetMap() {
         return unsetMap;
     }
@@ -88,8 +100,24 @@ public class Person {
         this.unsetProperties = unsetProperties;
     }
 
+    public Map<String, Object> getAllMap() {
+        return allMap;
+    }
+
+    public void setAllMap(Map<String, Object> allMap) {
+        this.allMap = allMap;
+    }
+
+    public Properties getAllProperties() {
+        return allProperties;
+    }
+
+    public void setAllProperties(Properties allProperties) {
+        this.allProperties = allProperties;
+    }
+
     public String toString() {
-        return super.toString() + " (name=\"" + name + "\", age=\"" + age + "\", homePage=\"" + homePage + "\")";
+        return "[Person: name=\"" + name + "\", age=\"" + age + "\", homePage=\"" + homePage +"\", car=\"" + car + "\"]";
     }
 
     public boolean equals(Object o) {
@@ -101,8 +129,11 @@ public class Person {
         if (age != person.age) return false;
         if (homePage != null ? !homePage.equals(person.homePage) : person.homePage != null) return false;
         if (name != null ? !name.equals(person.name) : person.name != null) return false;
+        if (car != null ? !car.equals(person.car) : person.car != null) return false;
         if (unsetMap != null ? !unsetMap.equals(person.unsetMap) : person.unsetMap != null) return false;
         if (unsetProperties != null ? !unsetProperties.equals(person.unsetProperties) : person.unsetProperties != null) return false;
+        if (allMap != null ? !allMap.equals(person.allMap) : person.allMap != null) return false;
+        if (allProperties != null ? !allProperties.equals(person.allProperties) : person.allProperties != null) return false;
 
         return true;
     }
@@ -112,8 +143,11 @@ public class Person {
         result = (name != null ? name.hashCode() : 0);
         result = 31 * result + age;
         result = 31 * result + (homePage != null ? homePage.hashCode() : 0);
+        result = 31 * result + (car != null ? car.hashCode() : 0);
         result = 31 * result + (unsetMap != null ? unsetMap.hashCode() : 0);
         result = 31 * result + (unsetProperties != null ? unsetProperties.hashCode() : 0);
+        result = 31 * result + (allMap != null ? allMap.hashCode() : 0);
+        result = 31 * result + (allProperties != null ? allProperties.hashCode() : 0);
         return result;
     }
 }

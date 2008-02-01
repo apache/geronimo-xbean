@@ -19,21 +19,14 @@ package org.apache.xbean.recipe;
 /**
  * @version $Rev$ $Date$
  */
-public class Option {
-
-    public static final Option PRIVATE_PROPERTIES = new Option("PRIVATE_PROPERTIES");
-    public static final Option STATIC_PROPERTIES = new Option("STATIC_PROPERTIES");
-    public static final Option FIELD_INJECTION = new Option("FIELD_INJECTION");
-    public static final Option IGNORE_MISSING_PROPERTIES = new Option("IGNORE_MISSING_PROPERTIES"); 
-    public static final Option CASE_INSENSITIVE_PROPERTIES = new Option("CASE_INSENSITIVE_PROPERTIES"); 
-
-    private final String name;
-
-    public Option(String name) {
-        this.name = name;
-    }
-
-    public String toString() {
-        return name;
-    }
+public enum Option {
+    PRIVATE_PROPERTIES,
+    STATIC_PROPERTIES,
+    FIELD_INJECTION,
+    IGNORE_MISSING_PROPERTIES,
+    CASE_INSENSITIVE_PROPERTIES,
+    LAZY_ASSIGNMENT,
+    PRIVATE_CONSTRUCTOR,
+    PRIVATE_FACTORY,
+    CASE_INSENSITIVE_FACTORY,    
 }

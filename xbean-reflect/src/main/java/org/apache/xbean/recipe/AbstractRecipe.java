@@ -17,14 +17,128 @@
  */
 package org.apache.xbean.recipe;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
 public abstract class AbstractRecipe implements Recipe {
+    private static final AtomicLong ID = new AtomicLong(1);
+    private long id;
+    private String name;
+
+    protected AbstractRecipe() {
+        id = ID.getAndIncrement();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        if (name == null) throw new NullPointerException("name is null");
+        this.name = name;
+    }
+
     public float getPriority() {
         return 0;
     }
 
     public Object create() throws ConstructionException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader == null) classLoader = getClass().getClassLoader();
-        return create(classLoader);
+        return create(null);
+    }
+
+    public final Object create(ClassLoader classLoader) throws ConstructionException {
+        // if classloader was passed in, set it on the thread
+        ClassLoader oldClassLoader = null;
+        if (classLoader != null) {
+            oldClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(classLoader);
+        }
+
+        try {
+            return create(Object.class, false);
+        } finally {
+            // if we set a thread context class loader, reset it
+            if (classLoader != null) {
+                Thread.currentThread().setContextClassLoader(oldClassLoader);
+            }
+        }
+    }
+
+    public final Object create(Class expectedType, boolean lazyRefAllowed) throws ConstructionException {
+        if (expectedType == null) throw new NullPointerException("expectedType is null");
+
+        // assure there is a valid thread context class loader
+        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+        if (oldClassLoader == null) {
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+        }
+
+        // if there is no execution context, create one
+        boolean createNewContext = !ExecutionContext.isContextSet();
+        if (createNewContext) {
+            ExecutionContext.setContext(new DefaultExecutionContext());
+        }
+
+        try {
+            ExecutionContext context = ExecutionContext.getContext();
+
+            // if this recipe has already been executed in this context, return the currently registered value
+            if (getName() != null && context.containsObject(getName()) && !(context.getObject(getName()) instanceof Recipe)) {
+                return context.getObject(getName());
+            }
+
+            // execute the recipe
+            context.push(this);
+            try {
+                return internalCreate(expectedType, lazyRefAllowed);
+            } finally {
+                Recipe popped = context.pop();
+                if (popped != this) {
+                    //noinspection ThrowFromFinallyBlock
+                    throw new IllegalStateException("Internal Error: recipe stack is corrupt:" +
+                            " Expected " + this + " to be popped of the stack but " + popped + " was");
+                }
+            }
+        } finally {
+            // if we set a new execution context, remove it from the thread
+            if (createNewContext) {
+                ExecutionContext context = ExecutionContext.getContext();
+                ExecutionContext.setContext(null);
+
+                Map<String,List<Reference>> unresolvedRefs = context.getUnresolvedRefs();
+                if (!unresolvedRefs.isEmpty()) {
+                    throw new UnresolvedReferencesException(unresolvedRefs);
+                }
+            }
+
+            // if we set a thread context class loader, clear it
+            if (oldClassLoader == null) {
+                Thread.currentThread().setContextClassLoader(null);
+            }
+        }
+    }
+
+    protected abstract Object internalCreate(Class expectedType, boolean lazyRefAllowed) throws ConstructionException;
+
+    public List<Recipe> getNestedRecipes() {
+        return Collections.emptyList();
+    }
+
+    public List<Recipe> getConstructorRecipes() {
+        return Collections.emptyList();
+    }
+
+    public String toString() {
+        if (name != null) {
+            return name;
+        }
+
+        String string = getClass().getSimpleName();
+        if (string.endsWith("Recipe")) {
+            string = string.substring(0, string.length() - "Recipe".length());
+        }
+        return string + "@" + id;
     }
 }

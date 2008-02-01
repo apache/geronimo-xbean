@@ -17,8 +17,16 @@
  */
 package org.apache.xbean.recipe;
 
-public abstract class AbstractSecretRecipe extends AbstractRecipe implements SecretRecipe {
-    public Object create(ClassLoader classLoader) throws ConstructionException {
-        return create(null, classLoader);
-    }
+import java.util.List;
+
+public interface Construction {
+    List<String> getParameterNames();
+
+    List<Class> getParameterTypes();
+
+    Object create(Object... parameters) throws ConstructionException;
+
+    Object callInstanceFactory(Object instance) throws ConstructionException;
+
+    boolean hasInstanceFactory();
 }
