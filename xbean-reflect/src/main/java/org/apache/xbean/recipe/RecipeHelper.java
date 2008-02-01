@@ -20,11 +20,15 @@ import org.apache.xbean.propertyeditor.PropertyEditors;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.TypeVariable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * @version $Rev: 6687 $ $Date: 2005-12-28T21:08:56.733437Z $
@@ -33,13 +37,26 @@ public final class RecipeHelper {
     private RecipeHelper() {
     }
 
+    public static Recipe getCaller() {
+        LinkedList<Recipe> stack = ExecutionContext.getContext().getStack();
+        if (stack.size() < 2) {
+            return null;
+        }
+        return stack.get(stack.size() - 2);
+    }
+
+    public static Class loadClass(String name) throws ClassNotFoundException {
+        ClassLoader classLoader = ExecutionContext.getContext().getClassLoader();
+        Class<?> type = Class.forName(name, true, classLoader);
+        return type;
+    }
+
     public static boolean hasDefaultConstructor(Class type) {
         if (!Modifier.isPublic(type.getModifiers())) {
             return false;
         }
         Constructor[] constructors = type.getConstructors();
-        for (int i = 0; i < constructors.length; i++) {
-            Constructor constructor = constructors[i];
+        for (Constructor constructor : constructors) {
             if (Modifier.isPublic(constructor.getModifiers()) &&
                     constructor.getParameterTypes().length == 0) {
                 return true;
@@ -101,15 +118,17 @@ public final class RecipeHelper {
         return instance == null || type.isInstance(instance);
     }
 
-    public static boolean isConvertable(Class type, Object propertyValue, ClassLoader classLoader) {
+    public static boolean isConvertable(Class type, Object propertyValue) {
         if (propertyValue instanceof Recipe) {
             Recipe recipe = (Recipe) propertyValue;
-            return recipe.canCreate(type, classLoader);
+            return recipe.canCreate(type);
         }
         return (propertyValue instanceof String && PropertyEditors.canConvert(type));
     }
 
     public static boolean isAssignableFrom(Class expected, Class actual) {
+        if (expected == null) return true;
+
         if (expected.isPrimitive()) {
             // verify actual is the correct wrapper type
             if (expected.equals(boolean.class)) {
@@ -136,6 +155,33 @@ public final class RecipeHelper {
         return expected.isAssignableFrom(actual);
     }
 
+    public static Object convert(Class expectedType, Object value, boolean lazyRefAllowed) {
+        if (value instanceof Recipe) {
+            Recipe recipe = (Recipe) value;
+            value = recipe.create(expectedType, lazyRefAllowed);
+        }
+
+        if (value instanceof String && (expectedType != Object.class)) {
+            String stringValue = (String) value;
+            value = PropertyEditors.getValue(expectedType, stringValue);
+        }
+        return value;
+    }
+
+    public static boolean isAssignableFrom(Class[] expectedTypes, Class[] actualTypes) {
+        if (expectedTypes.length != actualTypes.length) {
+            return false;
+        }
+        for (int i = 0; i < expectedTypes.length; i++) {
+            Class expectedType = expectedTypes[i];
+            Class actualType = actualTypes[i];
+            if (expectedType != actualType && !isAssignableFrom(expectedType, actualType)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static class RecipeComparator implements Comparator<Object> {
         public int compare(Object left, Object right) {
             if (!(left instanceof Recipe) && !(right instanceof Recipe)) return 0;
@@ -149,5 +195,50 @@ public final class RecipeHelper {
             if (leftPriority < rightPriority) return -1;
             return 0;
         }
+    }
+
+    public static Type[] getTypeParameters(Class desiredType, Type type) {
+        if (type instanceof Class) {
+            Class rawClass = (Class) type;
+
+            // if this is the collection class we're done
+            if (desiredType.equals(type)) {
+                return null;
+            }
+
+            for (Type intf : rawClass.getGenericInterfaces()) {
+                Type[] collectionType = getTypeParameters(desiredType, intf);
+                if (collectionType != null) {
+                    return collectionType;
+                }
+            }
+
+            Type[] collectionType = getTypeParameters(desiredType, rawClass.getGenericSuperclass());
+            return collectionType;
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+
+            Type rawType = parameterizedType.getRawType();
+            if (desiredType.equals(rawType)) {
+                Type[] argument = parameterizedType.getActualTypeArguments();
+                return argument;
+            }
+            Type[] collectionTypes = getTypeParameters(desiredType,rawType);
+            if (collectionTypes != null) {
+                for (int i = 0; i < collectionTypes.length; i++) {
+                    if (collectionTypes[i] instanceof TypeVariable) {
+                        TypeVariable typeVariable = (TypeVariable) collectionTypes[i];
+                        TypeVariable[] rawTypeParams = ((Class) rawType).getTypeParameters();
+                        for (int j = 0; j < rawTypeParams.length; j++) {
+                            if (typeVariable.getName().equals(rawTypeParams[j].getName())) {
+                                collectionTypes[i] = parameterizedType.getActualTypeArguments()[j];
+                            }
+                        }
+                    }
+                }
+            }
+            return collectionTypes;
+        }
+        return null;
     }
 }

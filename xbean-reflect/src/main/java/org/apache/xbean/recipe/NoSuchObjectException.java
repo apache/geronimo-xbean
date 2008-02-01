@@ -17,6 +17,20 @@
  */
 package org.apache.xbean.recipe;
 
-public interface SecretRecipe extends Recipe {
-    Object create(Recipe outerRecipe, ClassLoader classLoader) throws ConstructionException;
+public class NoSuchObjectException extends ConstructionException {
+    private String name;
+
+    public NoSuchObjectException(String name) {
+        super("No object named " + name + " exists");
+        this.name = name;
+    }
+
+    public NoSuchObjectException(Throwable cause, String name) {
+        super("No object named " + name + " exists", cause);
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

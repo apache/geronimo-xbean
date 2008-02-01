@@ -20,11 +20,7 @@ package org.apache.xbean.recipe;
 import java.util.Map;
 import java.util.Properties;
 
-public class UnsetPropertiesRecipe extends AbstractRecipe {
-    public float getPriority() {
-        return 100;
-    }
-
+public class AllPropertiesRecipe extends AbstractRecipe {
     public boolean canCreate(Class type) {
         return type.isAssignableFrom(Properties.class);
     }
@@ -35,11 +31,11 @@ public class UnsetPropertiesRecipe extends AbstractRecipe {
             throw new ConstructionException("UnsetPropertiesRecipe can only be nested in an ObjectRecipe: outerRecipe=" + outerRecipe);
         }
         ObjectRecipe objectRecipe = (ObjectRecipe) outerRecipe;
-        Map<String,Object> unsetProperties = objectRecipe.getUnsetProperties();
+        Map<String,Object> allProperties = objectRecipe.getProperties();
 
         // copy to a properties object
         Properties properties = new Properties();
-        for (Map.Entry<String, Object> entry : unsetProperties.entrySet()) {
+        for (Map.Entry<String, Object> entry : allProperties.entrySet()) {
             properties.put(entry.getKey(), entry.getValue());
         }
 
@@ -47,7 +43,7 @@ public class UnsetPropertiesRecipe extends AbstractRecipe {
         if (getName() != null) {
             ExecutionContext.getContext().addObject(getName(), properties);
         }
-
+        
         return properties;
     }
 }

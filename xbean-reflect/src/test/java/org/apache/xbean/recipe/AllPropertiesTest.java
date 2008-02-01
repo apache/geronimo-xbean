@@ -17,13 +17,13 @@
  */
 package org.apache.xbean.recipe;
 
-import junit.framework.TestCase;
-
 import java.net.URL;
-import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
-public class UnsetPropertiesTest extends TestCase {
+import junit.framework.TestCase;
+
+public class AllPropertiesTest extends TestCase {
     public void testSetters() throws Exception {
         ObjectRecipe objectRecipe = new ObjectRecipe(Person.class);
         doTest(objectRecipe);
@@ -31,21 +31,30 @@ public class UnsetPropertiesTest extends TestCase {
 
     private void doTest(ObjectRecipe objectRecipe) throws Exception {
         Person expected = new Person("Joe", 21, new URL("http://www.acme.org"), null);
-        expected.setUnsetMap(Collections.<String,Object>singletonMap("Fake Property", "Fake Value"));
+
+        AllPropertiesRecipe allPropertiesRecipe = new AllPropertiesRecipe();
+
         Properties properties = new Properties();
+        properties.setProperty("name", "Joe");
+        properties.setProperty("age", "21");
+        properties.setProperty("homePage", "http://www.acme.org");
         properties.setProperty("Fake Property", "Fake Value");
-        expected.setUnsetProperties(properties);
+        properties.put("allMap", allPropertiesRecipe);
+        properties.put("allProperties", allPropertiesRecipe);
+        expected.setAllProperties(properties);
+        expected.setAllMap((Map)properties);
 
         objectRecipe.setProperty("name", "Joe");
         objectRecipe.setProperty("age", "21");
         objectRecipe.setProperty("homePage", "http://www.acme.org");
         objectRecipe.setProperty("Fake Property", "Fake Value");
-        objectRecipe.setProperty("unsetMap", new UnsetPropertiesRecipe());
-        objectRecipe.setProperty("unsetProperties", new UnsetPropertiesRecipe());
+        objectRecipe.setProperty("allMap", allPropertiesRecipe);
+        objectRecipe.setProperty("allProperties", allPropertiesRecipe);
+        objectRecipe.allow(Option.IGNORE_MISSING_PROPERTIES);
 
         Person actual = (Person) objectRecipe.create(Person.class.getClassLoader());
-        assertEquals("person.getUnsetProperties()", properties, actual.getUnsetProperties());
-        assertEquals("person.getUnsetMap()", properties, actual.getUnsetMap());
+        assertEquals(properties, actual.getAllProperties());
+        assertEquals(properties, actual.getAllMap());
         assertEquals("person", expected, actual);
     }
 }

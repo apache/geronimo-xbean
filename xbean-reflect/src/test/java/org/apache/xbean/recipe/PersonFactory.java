@@ -23,14 +23,16 @@ public class PersonFactory {
     private String name;
     private int age;
     private URL homePage;
+    private Car car;
 
     public PersonFactory() {
     }
 
-    public PersonFactory(String name, int age, URL homePage) {
+    public PersonFactory(String name, int age, URL homePage, Car car) {
         this.name = name;
         this.age = age;
         this.homePage = homePage;
+        this.car = car;
     }
 
     public String getName() {
@@ -57,7 +59,15 @@ public class PersonFactory {
         this.homePage = homePage;
     }
 
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
+
     public Person create() {
-        return new Person(name, age, homePage);
+        return new Person(name, age, homePage, car);
     }
 }
