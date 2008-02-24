@@ -20,9 +20,10 @@ package org.apache.xbean.recipe;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 
 public class ExplicitConstructionStrategy implements ConstructionStrategy {
-    public Construction getConstruction(ObjectRecipe recipe, Class expectedType) throws ConstructionException {
+    public Construction getConstruction(ObjectRecipe recipe, Type expectedType) throws ConstructionException {
         Class type = recipe.getType();
 
         //
@@ -59,8 +60,8 @@ public class ExplicitConstructionStrategy implements ConstructionStrategy {
         // if expectedType is a subclass of the assigned type, we create
         // the sub class instead
         Class consturctorClass;
-        if (type.isAssignableFrom(expectedType)) {
-            consturctorClass = expectedType;
+        if (RecipeHelper.isAssignable(type, expectedType)) {
+            consturctorClass = RecipeHelper.toClass(expectedType);
         } else {
             consturctorClass = type;
         }

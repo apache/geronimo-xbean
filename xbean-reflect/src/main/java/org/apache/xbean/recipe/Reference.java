@@ -26,9 +26,26 @@ package org.apache.xbean.recipe;
  * property on the source object of the reference.
  */
 public class Reference {
+    private final String name;
     private boolean resolved;
     private Object instance;
     private Action action;
+
+    /**
+     * Create a reference to the specified name.
+     * @param name the name of the referenced object
+     */
+    public Reference(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the name of the referenced object.
+     * @return name the name of the referenced object
+     */
+    public String getName() {
+        return name;
+    }
 
     /**
      * Has this reference been resolved?

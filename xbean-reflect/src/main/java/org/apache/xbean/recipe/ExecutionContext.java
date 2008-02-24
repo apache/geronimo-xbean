@@ -90,14 +90,13 @@ public abstract class ExecutionContext {
     public abstract void addObject(String name, Object object);
 
     /**
-     * Adds a reference to an object with the specified name.  If an object is already registered under
-     * the specified name, the reference will immedately be set.  Otherwise, the reference will be set
-     * when an object is added with the specified name.
+     * Adds a reference to an object to this context.  If an object is already registered under
+     * the referenced name, the reference will immedately be set.  Otherwise, the reference will be set
+     * when an object is added with the referenced name.
      *
-     * @param name the name of the referenced object instance
      * @param reference the reference to set
      */
-    public abstract void addReference(String name, Reference reference);
+    public abstract void addReference(Reference reference);
 
     /**
      * Gets the unresolved references by name.

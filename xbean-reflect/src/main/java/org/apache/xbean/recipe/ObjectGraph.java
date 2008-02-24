@@ -111,12 +111,13 @@ public class ObjectGraph {
         // construct the graph
         Map<String, Node> nodes = new LinkedHashMap<String, Node>();
         for (String name : names) {
-            if (!nodes.containsKey(name)) {
-                Object object = repository.get(name);
-                if (object instanceof Recipe) {
-                    Recipe recipe = (Recipe) object;
-                    createNode(name, recipe,  nodes);
+            Object object = repository.get(name);
+            if (object instanceof Recipe) {
+                Recipe recipe = (Recipe) object;
+                if (!recipe.getName().equals(name)) {
+                    throw new ConstructionException("Recipe '" + name + "' returned from the repository has name '" + name + "'");
                 }
+                createNode(name, recipe,  nodes);
             }
         }
 
@@ -188,21 +189,29 @@ public class ObjectGraph {
     }
 
     private Node createNode(String name, Recipe recipe, Map<String, Node> nodes) {
+        // if node already exists, verify that the exact same recipe instnace is used for both
+        if (nodes.containsKey(name)) {
+            Node node = nodes.get(name);
+            if (node.recipe != recipe) {
+                throw new ConstructionException("The name '" + name +"' is assigned to multiple recipies");
+            }
+            return node;
+        }
+
+        // create the node
         Node node = new Node();
         node.name = name;
         node.recipe = recipe;
         nodes.put(name, node);
 
+        // link in the references
         LinkedList<Recipe> nestedRecipes = new LinkedList<Recipe>(recipe.getNestedRecipes());
         LinkedList<Recipe> constructorRecipes = new LinkedList<Recipe>(recipe.getConstructorRecipes());
         while (!nestedRecipes.isEmpty()) {
             Recipe nestedRecipe = nestedRecipes.removeFirst();
             String nestedName = nestedRecipe.getName();
             if (nestedName != null) {
-                Node nestedNode = nodes.get(nestedName);
-                if (nestedNode == null) {
-                    nestedNode = createNode(nestedName, nestedRecipe, nodes);
-                }
+                Node nestedNode = createNode(nestedName, nestedRecipe, nodes);
 
                 // if this is a constructor recipe, we need to add a reference link
                 if (constructorRecipes.contains(nestedRecipe)) {
@@ -262,8 +271,8 @@ public class ObjectGraph {
             constructedObject.put(name, object);
         }
 
-        public void addReference(String name, Reference reference) {
-            executionContext.addReference(name, reference);
+        public void addReference(Reference reference) {
+            executionContext.addReference(reference);
         }
 
         public Map<String, List<Reference>> getUnresolvedRefs() {

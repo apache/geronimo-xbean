@@ -23,6 +23,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Array;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.List;
@@ -86,7 +88,8 @@ public final class RecipeHelper {
         return entries;
     }
 
-    public static boolean isInstance(Class type, Object instance) {
+    public static boolean isInstance(Type t, Object instance) {
+        Class type = toClass(t);
         if (type.isPrimitive()) {
             // for primitives the insance can't be null
             if (instance == null) {
@@ -118,12 +121,12 @@ public final class RecipeHelper {
         return instance == null || type.isInstance(instance);
     }
 
-    public static boolean isConvertable(Class type, Object propertyValue) {
+    public static boolean isConvertable(Type type, Object propertyValue) {
         if (propertyValue instanceof Recipe) {
             Recipe recipe = (Recipe) propertyValue;
             return recipe.canCreate(type);
         }
-        return (propertyValue instanceof String && PropertyEditors.canConvert(type));
+        return (propertyValue instanceof String && PropertyEditors.canConvert(toClass(type)));
     }
 
     public static boolean isAssignableFrom(Class expected, Class actual) {
@@ -155,7 +158,7 @@ public final class RecipeHelper {
         return expected.isAssignableFrom(actual);
     }
 
-    public static Object convert(Class expectedType, Object value, boolean lazyRefAllowed) {
+    public static Object convert(Type expectedType, Object value, boolean lazyRefAllowed) {
         if (value instanceof Recipe) {
             Recipe recipe = (Recipe) value;
             value = recipe.create(expectedType, lazyRefAllowed);
@@ -163,7 +166,7 @@ public final class RecipeHelper {
 
         if (value instanceof String && (expectedType != Object.class)) {
             String stringValue = (String) value;
-            value = PropertyEditors.getValue(expectedType, stringValue);
+            value = PropertyEditors.getValue(toClass(expectedType), stringValue);
         }
         return value;
     }
@@ -180,6 +183,29 @@ public final class RecipeHelper {
             }
         }
         return true;
+    }
+
+    public static boolean isAssignable(Type expectedType, Type actualType) {
+        Class expectedClass = toClass(expectedType);
+        Class actualClass = toClass(actualType);
+        return expectedClass.isAssignableFrom(actualClass);
+    }
+
+    public static Class toClass(Type type) {
+        // GenericArrayType, ParameterizedType, TypeVariable<D>, WildcardType
+        if (type instanceof Class) {
+            Class clazz = (Class) type;
+            return clazz;
+        } else if (type instanceof GenericArrayType) {
+            GenericArrayType arrayType = (GenericArrayType) type;
+            Class componentType = toClass(arrayType.getGenericComponentType());
+            return Array.newInstance(componentType, 0).getClass();
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return toClass(parameterizedType.getRawType());
+        } else {
+            return Object.class;
+        }
     }
 
     public static class RecipeComparator implements Comparator<Object> {

@@ -19,17 +19,18 @@ package org.apache.xbean.recipe;
 
 import java.util.Map;
 import java.util.Properties;
+import java.lang.reflect.Type;
 
 public class UnsetPropertiesRecipe extends AbstractRecipe {
     public float getPriority() {
         return 100;
     }
 
-    public boolean canCreate(Class type) {
-        return type.isAssignableFrom(Properties.class);
+    public boolean canCreate(Type type) {
+        return RecipeHelper.isAssignable(type, Properties.class);
     }
 
-    protected Object internalCreate(Class expectedType, boolean lazyRefAllowed) throws ConstructionException {
+    protected Object internalCreate(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
         Recipe outerRecipe = RecipeHelper.getCaller();
         if (!(outerRecipe instanceof ObjectRecipe)) {
             throw new ConstructionException("UnsetPropertiesRecipe can only be nested in an ObjectRecipe: outerRecipe=" + outerRecipe);

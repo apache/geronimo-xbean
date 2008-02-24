@@ -111,12 +111,12 @@ public class MapRecipe extends AbstractRecipe {
         return Collections.emptyList();
     }
 
-    public boolean canCreate(Class type) {
+    public boolean canCreate(Type type) {
         Class myType = getType(type);
-        return type.isAssignableFrom(myType);
+        return RecipeHelper.isAssignable(type, myType);
     }
 
-    protected Object internalCreate(Class expectedType, boolean lazyRefAllowed) throws ConstructionException {
+    protected Object internalCreate(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
         Class mapType = getType(expectedType);
 
         if (!RecipeHelper.hasDefaultConstructor(mapType)) {
@@ -136,15 +136,15 @@ public class MapRecipe extends AbstractRecipe {
         Map instance = (Map) o;
 
         // get component type
-        Class<?> keyType = Object.class;
-        Class<?> valueType = Object.class;
+        Type keyType = Object.class;
+        Type valueType = Object.class;
         Type[] typeParameters = RecipeHelper.getTypeParameters(Collection.class, expectedType);
         if (typeParameters != null && typeParameters.length == 2) {
             if (typeParameters[0] instanceof Class) {
-                keyType = (Class<?>) typeParameters[0];
+                keyType = typeParameters[0];
             }
             if (typeParameters[1] instanceof Class) {
-                valueType = (Class<?>) typeParameters[1];
+                valueType = typeParameters[1];
             }
         }
 
@@ -182,7 +182,8 @@ public class MapRecipe extends AbstractRecipe {
         return instance;
     }
 
-    private Class getType(Class expectedType) {
+    private Class getType(Type expectedType) {
+        Class expectedClass = RecipeHelper.toClass(expectedType);
         if (typeClass != null || typeName != null) {
             Class type = typeClass;
             if (type == null) {
@@ -195,18 +196,17 @@ public class MapRecipe extends AbstractRecipe {
 
             // if expectedType is a subclass of the assigned type,
             // we use it assuming it has a default constructor
-            if (type.isAssignableFrom(expectedType) && RecipeHelper.hasDefaultConstructor(expectedType)) {
-                return expectedType;
+            if (type.isAssignableFrom(expectedClass) && RecipeHelper.hasDefaultConstructor(expectedClass)) {
+                return expectedClass;
             }
-            return type;
         }
 
         // no type explicitly set
-        if (RecipeHelper.hasDefaultConstructor(expectedType)) {
-            return expectedType;
-        } else if (expectedType.isAssignableFrom(SortedMap.class)) {
+        if (RecipeHelper.hasDefaultConstructor(expectedClass)) {
+            return expectedClass;
+        } else if (expectedClass.isAssignableFrom(SortedMap.class)) {
             return TreeMap.class;
-        } else if (expectedType.isAssignableFrom(ConcurrentMap.class)) {
+        } else if (expectedClass.isAssignableFrom(ConcurrentMap.class)) {
             return ConcurrentHashMap.class;
         } else {
             return LinkedHashMap.class;
