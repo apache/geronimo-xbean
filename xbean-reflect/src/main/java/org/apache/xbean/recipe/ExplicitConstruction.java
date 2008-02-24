@@ -20,6 +20,7 @@ package org.apache.xbean.recipe;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,15 +50,15 @@ public class ExplicitConstruction implements Construction {
         return new ArrayList<String>(Arrays.asList(parameterNames));
     }
 
-    public List<Class> getParameterTypes() {
+    public List<Type> getParameterTypes() {
         if (constructor == null && staticFactory == null) {
             throw new ConstructionException("InstanceFactory has not been initialized");
         }
 
         if (staticFactory != null) {
-            return new ArrayList<Class>(Arrays.asList(staticFactory.getParameterTypes()));
+            return new ArrayList<Type>(Arrays.asList(staticFactory.getGenericParameterTypes()));
         }
-        return new ArrayList<Class>(Arrays.asList(constructor.getParameterTypes()));
+        return new ArrayList<Type>(Arrays.asList(constructor.getGenericParameterTypes()));
     }
 
     public Object create(Object... parameters) throws ConstructionException {

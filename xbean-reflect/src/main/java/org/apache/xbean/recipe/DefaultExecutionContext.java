@@ -106,15 +106,15 @@ public class DefaultExecutionContext extends ExecutionContext {
         }
     }
 
-    public void addReference(String name, Reference reference) {
-        Object value = repository.get(name);
+    public void addReference(Reference reference) {
+        Object value = repository.get(reference.getName());
         if (value != null && !(value instanceof Recipe)) {
             reference.set(value);
         } else {
-            List<Reference> list = unresolvedRefs.get(name);
+            List<Reference> list = unresolvedRefs.get(reference.getName());
             if (list == null) {
                 list = new ArrayList<Reference>();
-                unresolvedRefs.put(name, list);
+                unresolvedRefs.put(reference.getName(), list);
             }
             list.add(reference);
         }

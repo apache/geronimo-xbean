@@ -19,6 +19,7 @@ package org.apache.xbean.recipe;
 
 import java.util.Collections;
 import java.util.List;
+import java.lang.reflect.Type;
 
 public class ReferenceRecipe extends AbstractRecipe {
     private String referenceName;
@@ -56,7 +57,7 @@ public class ReferenceRecipe extends AbstractRecipe {
         return getNestedRecipes();
     }
 
-    public boolean canCreate(Class type) {
+    public boolean canCreate(Type type) {
         if (referenceName == null) {
             throw new ConstructionException("Reference name has not been set");
         }
@@ -72,7 +73,7 @@ public class ReferenceRecipe extends AbstractRecipe {
         }
     }
 
-    protected Object internalCreate(Class expectedType, boolean lazyRefAllowed) throws ConstructionException {
+    protected Object internalCreate(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
         if (referenceName == null) {
             throw new ConstructionException("Reference name has not been set");
         }
@@ -86,15 +87,15 @@ public class ReferenceRecipe extends AbstractRecipe {
                         " and a lazy reference not allowed");
             }
 
-            Reference reference = new Reference();
-            context.addReference(referenceName, reference);
+            Reference reference = new Reference(referenceName);
+            context.addReference(reference);
             object = reference;
         } else {
             object = context.getObject(referenceName);
             if (object instanceof Recipe) {
                 if (lazyRefAllowed) {
-                    Reference reference = new Reference();
-                    context.addReference(referenceName, reference);
+                    Reference reference = new Reference(referenceName);
+                    context.addReference(reference);
                     object = reference;
                 } else {
                     Recipe recipe = (Recipe) object;
@@ -117,11 +118,10 @@ public class ReferenceRecipe extends AbstractRecipe {
     }
 
     private static class WrapperReference extends Reference {
-        private final String name;
         private final Reference delegate;
 
         private WrapperReference(String name, Reference delegate) {
-            this.name = name;
+            super(name);
             this.delegate = delegate;
         }
 
@@ -139,7 +139,7 @@ public class ReferenceRecipe extends AbstractRecipe {
             }
 
             // add to execution context
-            ExecutionContext.getContext().addObject(name, object);
+            ExecutionContext.getContext().addObject(getName(), object);
 
             delegate.set(object);
         }

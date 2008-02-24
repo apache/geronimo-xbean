@@ -18,6 +18,7 @@ package org.apache.xbean.recipe;
 
 import java.io.Serializable;
 import java.util.List;
+import java.lang.reflect.Type;
 
 /**
  * @version $Rev: 6680 $ $Date: 2005-12-24T04:38:27.427468Z $
@@ -27,11 +28,11 @@ public interface Recipe extends Serializable {
 
     float getPriority();
 
-    boolean canCreate(Class type);
+    boolean canCreate(Type type);
 
     Object create() throws ConstructionException;
     Object create(ClassLoader classLoader) throws ConstructionException;
-    Object create(Class expectedType, boolean lazyRefAllowed) throws ConstructionException;
+    Object create(Type expectedType, boolean lazyRefAllowed) throws ConstructionException;
 
     List<Recipe> getNestedRecipes();
 

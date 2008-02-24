@@ -17,12 +17,13 @@
  */
 package org.apache.xbean.recipe;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 public interface Construction {
     List<String> getParameterNames();
 
-    List<Class> getParameterTypes();
+    List<Type> getParameterTypes();
 
     Object create(Object... parameters) throws ConstructionException;
 

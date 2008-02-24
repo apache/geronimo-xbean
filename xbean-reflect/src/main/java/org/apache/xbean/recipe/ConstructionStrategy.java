@@ -17,6 +17,8 @@
  */
 package org.apache.xbean.recipe;
 
+import java.lang.reflect.Type;
+
 public interface ConstructionStrategy {
-    Construction getConstruction(ObjectRecipe recipe, Class expectedType) throws ConstructionException;
+    Construction getConstruction(ObjectRecipe recipe, Type expectedType) throws ConstructionException;
 }

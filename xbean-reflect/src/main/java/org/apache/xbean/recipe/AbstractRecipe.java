@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.lang.reflect.Type;
 
 public abstract class AbstractRecipe implements Recipe {
     private static final AtomicLong ID = new AtomicLong(1);
@@ -66,7 +67,7 @@ public abstract class AbstractRecipe implements Recipe {
         }
     }
 
-    public final Object create(Class expectedType, boolean lazyRefAllowed) throws ConstructionException {
+    public final Object create(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
         if (expectedType == null) throw new NullPointerException("expectedType is null");
 
         // assure there is a valid thread context class loader
@@ -120,7 +121,7 @@ public abstract class AbstractRecipe implements Recipe {
         }
     }
 
-    protected abstract Object internalCreate(Class expectedType, boolean lazyRefAllowed) throws ConstructionException;
+    protected abstract Object internalCreate(Type expectedType, boolean lazyRefAllowed) throws ConstructionException;
 
     public List<Recipe> getNestedRecipes() {
         return Collections.emptyList();

@@ -105,12 +105,12 @@ public class CollectionRecipe extends AbstractRecipe {
         return Collections.emptyList();
     }
 
-    public boolean canCreate(Class expectedType) {
+    public boolean canCreate(Type expectedType) {
         Class myType = getType(expectedType);
-        return expectedType.isAssignableFrom(myType);
+        return RecipeHelper.isAssignable(expectedType, myType);
     }
 
-    protected Object internalCreate(Class expectedType, boolean lazyRefAllowed) throws ConstructionException {
+    protected Object internalCreate(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
         Class type = getType(expectedType);
 
         if (!RecipeHelper.hasDefaultConstructor(type)) {
@@ -135,10 +135,10 @@ public class CollectionRecipe extends AbstractRecipe {
         }
 
         // get component type
-        Class<?> componentType = Object.class;
+        Type componentType = Object.class;
         Type[] typeParameters = RecipeHelper.getTypeParameters(Collection.class, expectedType);
         if (typeParameters != null && typeParameters.length == 1 && typeParameters[0] instanceof Class) {
-            componentType = (Class<?>) typeParameters[0];
+            componentType = typeParameters[0];
         }
 
         boolean refAllowed = options.contains(Option.LAZY_ASSIGNMENT);
@@ -166,8 +166,9 @@ public class CollectionRecipe extends AbstractRecipe {
         return instance;
     }
 
-    private Class getType(Class expectedType) {
-        Class type = expectedType;
+    private Class getType(Type expectedType) {
+        Class expectedClass = RecipeHelper.toClass(expectedType);
+        Class type = expectedClass;
         if (typeClass != null || typeName != null) {
             type = typeClass;
             if (type == null) {
@@ -180,19 +181,19 @@ public class CollectionRecipe extends AbstractRecipe {
 
             // if expectedType is a subclass of the assigned type,
             // we use it assuming it has a default constructor
-            if (type.isAssignableFrom(expectedType) && RecipeHelper.hasDefaultConstructor(expectedType)) {
-                type = expectedType;
+            if (type.isAssignableFrom(expectedClass) && RecipeHelper.hasDefaultConstructor(expectedClass)) {
+                type = expectedClass;
             }
         }
 
         // no type explicitly set
         if (RecipeHelper.hasDefaultConstructor(type)) {
-            return expectedType;
-        } else if (expectedType.isAssignableFrom(SortedSet.class)) {
+            return expectedClass;
+        } else if (expectedClass.isAssignableFrom(SortedSet.class)) {
             return TreeSet.class;
-        } else if (expectedType.isAssignableFrom(Set.class)) {
+        } else if (expectedClass.isAssignableFrom(Set.class)) {
             return LinkedHashSet.class;
-        } else if (expectedType.isAssignableFrom(List.class)) {
+        } else if (expectedClass.isAssignableFrom(List.class)) {
             return ArrayList.class;
         } else {
             return ArrayList.class;

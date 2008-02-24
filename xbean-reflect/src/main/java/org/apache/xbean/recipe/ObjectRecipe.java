@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -249,12 +250,12 @@ public class ObjectRecipe extends AbstractRecipe {
         }
     }
 
-    public boolean canCreate(Class type) {
+    public boolean canCreate(Type type) {
         Class myType = getType();
-        return type.isAssignableFrom(myType) || type.isAssignableFrom(myType);
+        return RecipeHelper.isAssignable(type, myType) || RecipeHelper.isAssignable(type, myType);
     }
 
-    protected Object internalCreate(Class expectedType, boolean lazyRefAllowed) throws ConstructionException {
+    protected Object internalCreate(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
         unsetProperties.clear();
         // load the type class
         Class typeClass = getType();
@@ -402,11 +403,11 @@ public class ObjectRecipe extends AbstractRecipe {
         }
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues, List<String> argNames, List<Class> argTypes) {
+    private Object[] extractConstructorArgs(Map propertyValues, List<String> argNames, List<Type> argTypes) {
         Object[] parameters = new Object[argNames.size()];
         for (int i = 0; i < argNames.size(); i++) {
             Property name = new Property(argNames.get(i));
-            Class type = argTypes.get(i);
+            Type type = argTypes.get(i);
 
             Object value;
             if (propertyValues.containsKey(name)) {
@@ -415,12 +416,12 @@ public class ObjectRecipe extends AbstractRecipe {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +
                             "index=" + i + ", " +
-                            "expected=" + type.getName() + ", " +
+                            "expected=" + RecipeHelper.toClass(type).getName() + ", " +
                             "actual=" + (value == null ? "null" : value.getClass().getName()));
                 }
                 value = RecipeHelper.convert(type, value, false);
             } else {
-                value = getDefaultValue(type);
+                value = getDefaultValue(RecipeHelper.toClass(type));
             }
 
 
@@ -451,7 +452,7 @@ public class ObjectRecipe extends AbstractRecipe {
     }
 
     public static interface Member {
-        Class getType();
+        Type getType();
         void setValue(Object instance, Object value) throws Exception;
     }
 
@@ -462,8 +463,8 @@ public class ObjectRecipe extends AbstractRecipe {
             this.setter = method;
         }
 
-        public Class getType() {
-            return setter.getParameterTypes()[0];
+        public Type getType() {
+            return setter.getGenericParameterTypes()[0];
         }
 
         public void setValue(Object instance, Object value) throws Exception {
@@ -482,8 +483,8 @@ public class ObjectRecipe extends AbstractRecipe {
             this.field = field;
         }
 
-        public Class getType() {
-            return field.getType();
+        public Type getType() {
+            return field.getGenericType();
         }
 
         public void setValue(Object instance, Object value) throws Exception {

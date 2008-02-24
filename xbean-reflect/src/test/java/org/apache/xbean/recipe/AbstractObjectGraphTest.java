@@ -17,17 +17,17 @@
  */
 package org.apache.xbean.recipe;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import junit.framework.TestCase;
 
-public class ObjectGraphTest extends TestCase {
+public abstract class AbstractObjectGraphTest extends TestCase {
     public void testCreateSingle() {
         Repository repository = createNewRepository();
         ObjectGraph graph = new ObjectGraph(repository);
@@ -177,72 +177,48 @@ public class ObjectGraphTest extends TestCase {
             assertCircularity(Arrays.asList(repository.get("Bends"), repository.get("Radiohead"), repository.get("Bends")),
                     expected.getCircularDependency());
         }
-
-
     }
 
-    private Repository createNewRepository() {
-        Repository repository = new DefaultRepository();
+    public void testInvalidGraph() {
+        Repository repository = createNewRepository();
+        ObjectRecipe bends = (ObjectRecipe) repository.get("Bends");
+        bends.setName("Other");
 
-        ObjectRecipe bends = new ObjectRecipe(Album.class, new String[]{"name", "artist"});
-        bends.setName("Bends");
-        bends.setProperty("name", "Bends");
-        bends.setProperty("artist", new ReferenceRecipe("radiohead"));
-        bends.setProperty("songs", new CollectionRecipe(Arrays.asList(
-                new ReferenceRecipe("High and Dry"),
-                new ReferenceRecipe("Fake Plastic Trees"))));
-        bends.setProperty("artist", new ReferenceRecipe("Radiohead"));
-        repository.add("Bends", bends);
+        ObjectGraph graph = new ObjectGraph(repository);
+        try {
+//            graph.create("Bends");
+//            fail("Expected ConstructionException");
+        } catch (ConstructionException expected) {
+        }
+
+        //
+        // Multiple recipies with the same name
+        //
+        repository = createNewRepository();
 
         ObjectRecipe radiohead = new ObjectRecipe(Artist.class, new String[]{"name"});
         radiohead.setName("Radiohead");
         radiohead.setProperty("name", "Radiohead");
         repository.add("Radiohead", radiohead);
+        bends = (ObjectRecipe) repository.get("Bends");
+        bends.setProperty("artist", radiohead);
 
-        ObjectRecipe highAndDry = new ObjectRecipe(Song.class, new String[]{"name", "composer"});
-        highAndDry.setName("High and Dry");
-        highAndDry.setProperty("name", "High and Dry");
-        highAndDry.setProperty("composer", new ReferenceRecipe("Radiohead"));
-        repository.add("High and Dry", highAndDry);
-
-        ObjectRecipe fakePlasticTrees = new ObjectRecipe(Song.class, new String[]{"name", "composer"});
-        fakePlasticTrees.setName("Fake Plastic Trees");
-        fakePlasticTrees.setProperty("name", "Fake Plastic Trees");
-        fakePlasticTrees.setProperty("composer", new ReferenceRecipe("Radiohead"));
-        repository.add("Fake Plastic Trees", fakePlasticTrees);
-        return repository;
-    }
-
-    private Repository XcreateNewRepository() {
-        Repository repository = new DefaultRepository();
-
-        ObjectRecipe radiohead = new ObjectRecipe(Artist.class, new String[]{"name"});
+        radiohead = new ObjectRecipe(Artist.class, new String[]{"name"});
         radiohead.setName("Radiohead");
         radiohead.setProperty("name", "Radiohead");
         repository.add("Radiohead", radiohead);
-
-        ObjectRecipe highAndDry = new ObjectRecipe(Song.class, new String[]{"name", "composer"});
-        highAndDry.setName("High and Dry");
-        highAndDry.setProperty("name", "High and Dry");
+        ObjectRecipe highAndDry = (ObjectRecipe) repository.get("High and Dry");
         highAndDry.setProperty("composer", radiohead);
-        repository.add("High and Dry", highAndDry);
 
-        ObjectRecipe fakePlasticTrees = new ObjectRecipe(Song.class, new String[]{"name", "composer"});
-        fakePlasticTrees.setName("Fake Plastic Trees");
-        fakePlasticTrees.setProperty("name", "Fake Plastic Trees");
-        fakePlasticTrees.setProperty("composer", radiohead);
-        repository.add("Fake Plastic Trees", fakePlasticTrees);
-
-        ObjectRecipe bends = new ObjectRecipe(Album.class, new String[]{"name", "artist"});
-        bends.setName("Bends");
-        bends.setProperty("name", "Bends");
-        bends.setProperty("artist", radiohead);
-        bends.setProperty("songs", new CollectionRecipe(Arrays.asList(highAndDry, fakePlasticTrees)));
-        bends.setProperty("artist", radiohead);
-        repository.add("Bends", bends);
-
-        return repository;
+        graph = new ObjectGraph(repository);
+        try {
+            graph.create("Bends");
+            fail("Expected ConstructionException");
+        } catch (ConstructionException expected) {
+        }
     }
+
+    protected abstract Repository createNewRepository();
 
     private Album createBends() {
         Artist radiohead = new Artist("Radiohead");
@@ -253,6 +229,36 @@ public class ObjectGraphTest extends TestCase {
         bends.setSongs(Arrays.asList(highAndDry, fakePlasticTrees));
 
         return bends;
+    }
+
+    public static void assertCircularity(List<?> expected, List<?> actual) {
+//        if (expected.size() != actual.size()) {
+//            // this will fail, with nice message
+//            assertEquals(expected, actual);
+//        }
+
+        List<Object> newActual = new ArrayList<Object>(actual.subList(0, actual.size() -1));
+
+        Object start = expected.get(0);
+        int index = actual.indexOf(start);
+        if (index > 0) Collections.rotate(newActual, index);
+        newActual.add(start);
+
+
+        assertEquals(expected, newActual);
+//
+//
+//        if (index < 1) {
+//            // acutal list already starts at the same object as the expected list
+//            assertEquals(expected, actual);
+//        } else {
+//            // create a new actual list rotated at the
+////            List<Object> newActual = new ArrayList<Object>(actual.size());
+////            newActual.addAll(actual.subList(index, actual.size()));
+////            newActual.addAll(actual.subList(1, index));
+////            newActual.add(start);
+////            assertEquals(expected, newActual);
+//        }
     }
 
     public static class Album {
@@ -392,35 +398,5 @@ public class ObjectGraphTest extends TestCase {
         public int hashCode() {
             return name.hashCode();
         }
-    }
-
-    public static void assertCircularity(List<?> expected, List<?> actual) {
-//        if (expected.size() != actual.size()) {
-//            // this will fail, with nice message
-//            assertEquals(expected, actual);
-//        }
-
-        List<Object> newActual = new ArrayList<Object>(actual.subList(0, actual.size() -1));
-
-        Object start = expected.get(0);
-        int index = actual.indexOf(start);
-        if (index > 0) Collections.rotate(newActual, index);
-        newActual.add(start);
-
-
-        assertEquals(expected, newActual);
-//
-//
-//        if (index < 1) {
-//            // acutal list already starts at the same object as the expected list
-//            assertEquals(expected, actual);
-//        } else {
-//            // create a new actual list rotated at the
-////            List<Object> newActual = new ArrayList<Object>(actual.size());
-////            newActual.addAll(actual.subList(index, actual.size()));
-////            newActual.addAll(actual.subList(1, index));
-////            newActual.add(start);
-////            assertEquals(expected, newActual);
-//        }
     }
 }

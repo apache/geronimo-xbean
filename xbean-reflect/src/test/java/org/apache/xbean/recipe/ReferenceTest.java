@@ -24,7 +24,7 @@ import junit.framework.TestCase;
 
 public class ReferenceTest extends TestCase {
     public void testReference() {
-        Reference reference = new Reference();
+        Reference reference = new Reference("fruit");
         TestAction action = new TestAction();
         reference.setAction(action);
 
@@ -50,7 +50,7 @@ public class ReferenceTest extends TestCase {
     }
 
     public void testNullReference() {
-        Reference reference = new Reference();
+        Reference reference = new Reference("fruit");
         TestAction action = new TestAction();
         reference.setAction(action);
 
@@ -77,11 +77,11 @@ public class ReferenceTest extends TestCase {
 
     public void testContext() {
         DefaultExecutionContext context = new DefaultExecutionContext();
-        Reference reference = new Reference();
+        Reference reference = new Reference("fruit");
         TestAction action = new TestAction();
         reference.setAction(action);
 
-        context.addReference("fruit", reference);
+        context.addReference(reference);
 
         assertFalse(reference.isResolved());
         assertNull(reference.get());
@@ -100,11 +100,11 @@ public class ReferenceTest extends TestCase {
 
     public void testNullContext() {
         DefaultExecutionContext context = new DefaultExecutionContext();
-        Reference reference = new Reference();
+        Reference reference = new Reference("fruit");
         TestAction action = new TestAction();
         reference.setAction(action);
 
-        context.addReference("fruit", reference);
+        context.addReference(reference);
 
         assertFalse(reference.isResolved());
         assertNull(reference.get());
