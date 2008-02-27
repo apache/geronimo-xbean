@@ -35,7 +35,7 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
     
-    <version>3.3</version>
+    <version>3.3.1-SNAPSHOT</version>
     
     <description>
         XBean is a plugin based server architecture.
@@ -44,9 +44,9 @@
     <url>http://geronimo.apache.org/xbean</url>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.3</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.3</developerConnection>
-        <url>http://svn.apache.org/viewvc/geronimo/xbean/tags/xbean-3.3</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/branches/xbean-3.3.x</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/branches/xbean-3.3.x</developerConnection>
+        <url>http://svn.apache.org/viewvc/geronimo/xbean/branches/xbean-3.3.x</url>
     </scm>
     
     <properties>
@@ -58,7 +58,7 @@
               element, and it will need to be changed manually before a release,
               as the maven-release-plugin will not update this value.
         -->
-        <version>3.3</version>
+        <version>3.3.1-SNAPSHOT</version>
 
 	    <!--
 	     |

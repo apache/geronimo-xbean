@@ -24,7 +24,7 @@
   <parent>
     <artifactId>xbean</artifactId>
     <groupId>org.apache.xbean</groupId>
-    <version>3.3</version>
+    <version>3.3.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>xbean-reflect</artifactId>
