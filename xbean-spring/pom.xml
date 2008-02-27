@@ -37,6 +37,7 @@
 		<xbean.osgi.import.pkg>
 			com.thoughtworks.qdox*;resolution:=optional,
 			org.apache.tools.ant*;resolution:=optional,
+            org.springframework.core;resolution:=optional,
 			*
 		</xbean.osgi.import.pkg>
 	</properties>
