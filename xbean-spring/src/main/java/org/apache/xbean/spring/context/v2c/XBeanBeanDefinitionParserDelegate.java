@@ -37,10 +37,6 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
     
     private XBeanQNameHelper qnameHelper;
     
-    static {
-        PropertyEditorHelper.registerCustomEditors();
-    }
-    
     public XBeanBeanDefinitionParserDelegate(XmlReaderContext readerContext) {
         super(readerContext);
         qnameHelper = new XBeanQNameHelper(readerContext);

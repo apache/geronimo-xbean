@@ -43,6 +43,8 @@ import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
 import org.apache.xbean.spring.context.impl.NamespaceHelper;
 import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyEditorRegistrar;
+import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -80,10 +82,6 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
     public static final String SPRING_SCHEMA = "http://xbean.apache.org/schemas/spring/1.0";
     public static final String SPRING_SCHEMA_COMPAT = "http://xbean.org/schemas/spring/1.0";
-
-    static {
-        PropertyEditorHelper.registerCustomEditors();
-    }
 
     private static final Log log = LogFactory.getLog(XBeanNamespaceHandler.class);
 
@@ -187,7 +185,16 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
      * Registers whatever custom editors we need
      */
     public static void registerCustomEditors(DefaultListableBeanFactory beanFactory) {
-        PropertyEditorHelper.registerCustomEditors();
+        PropertyEditorRegistrar registrar = new PropertyEditorRegistrar() {
+            public void registerCustomEditors(PropertyEditorRegistry registry) {
+                registry.registerCustomEditor(java.io.File.class, new org.apache.xbean.spring.context.impl.FileEditor());
+                registry.registerCustomEditor(java.net.URI.class, new org.apache.xbean.spring.context.impl.URIEditor());
+                registry.registerCustomEditor(java.util.Date.class, new org.apache.xbean.spring.context.impl.DateEditor());
+                registry.registerCustomEditor(javax.management.ObjectName.class, new org.apache.xbean.spring.context.impl.ObjectNameEditor());
+            }
+        };
+
+        beanFactory.addPropertyEditorRegistrar(registrar);
     }
 
     /**
