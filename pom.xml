@@ -427,14 +427,10 @@
         <module>xbean-classloader</module>
         <module>xbean-classpath</module>
         <module>xbean-finder</module>
-        <module>xbean-kernel</module>
         <module>xbean-naming</module>
-        <module>xbean-osgi</module>
         <module>xbean-reflect</module>
-        <module>xbean-server</module>
         <module>xbean-spring</module>
         <module>xbean-telnet</module>
-        <module>xbean-tiger</module>
         <module>maven-xbean-plugin</module>
     </modules>
     
