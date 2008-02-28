@@ -16,21 +16,21 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.propertyeditor.PropertyEditors;
-
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Array;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.List;
-import java.util.Collections;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.xbean.propertyeditor.PropertyEditors;
 
 /**
  * @version $Rev: 6687 $ $Date: 2005-12-28T21:08:56.733437Z $
@@ -171,13 +171,13 @@ public final class RecipeHelper {
         return value;
     }
 
-    public static boolean isAssignableFrom(Class[] expectedTypes, Class[] actualTypes) {
-        if (expectedTypes.length != actualTypes.length) {
+    public static boolean isAssignableFrom(List<? extends Class<?>> expectedTypes, List<? extends Class<?>> actualTypes) {
+        if (expectedTypes.size() != actualTypes.size()) {
             return false;
         }
-        for (int i = 0; i < expectedTypes.length; i++) {
-            Class expectedType = expectedTypes[i];
-            Class actualType = actualTypes[i];
+        for (int i = 0; i < expectedTypes.size(); i++) {
+            Class expectedType = expectedTypes.get(i);
+            Class actualType = actualTypes.get(i);
             if (expectedType != actualType && !isAssignableFrom(expectedType, actualType)) {
                 return false;
             }

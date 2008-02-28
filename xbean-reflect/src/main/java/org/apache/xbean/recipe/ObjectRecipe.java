@@ -22,10 +22,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.apache.xbean.recipe.ReflectionUtil.*;
 
 /**
  * @version $Rev: 6688 $ $Date: 2005-12-29T02:08:29.200064Z $
@@ -33,10 +37,9 @@ import java.util.Map;
 public class ObjectRecipe extends AbstractRecipe {
     private String typeName;
     private Class typeClass;
-    private ConstructionStrategy constructionStrategy;
     private String factoryMethod;
-    private String[] constructorArgNames;
-    private Class[] constructorArgTypes;
+    private List<String> constructorArgNames;
+    private List<Class<?>> constructorArgTypes;
     private final LinkedHashMap<Property,Object> properties = new LinkedHashMap<Property,Object>();
     private final EnumSet<Option> options = EnumSet.of(Option.FIELD_INJECTION);
     private final Map<String,Object> unsetProperties = new LinkedHashMap<String,Object>();
@@ -72,9 +75,8 @@ public class ObjectRecipe extends AbstractRecipe {
     public ObjectRecipe(Class typeClass, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes, Map<String,Object> properties) {
         this.typeClass = typeClass;
         this.factoryMethod = factoryMethod;
-        this.constructorArgNames = constructorArgNames;
-        this.constructorArgTypes = constructorArgTypes;
-        constructionStrategy = new ExplicitConstructionStrategy();
+        this.constructorArgNames = constructorArgNames != null ? Arrays.asList(constructorArgNames) : null;
+        this.constructorArgTypes = constructorArgTypes != null ? Arrays.<Class<?>>asList(constructorArgTypes) : null;
         if (properties != null) {
             setAllProperties(properties);
         }
@@ -111,9 +113,8 @@ public class ObjectRecipe extends AbstractRecipe {
     public ObjectRecipe(String typeName, String factoryMethod, String[] constructorArgNames, Class[] constructorArgTypes, Map<String,Object> properties) {
         this.typeName = typeName;
         this.factoryMethod = factoryMethod;
-        this.constructorArgNames = constructorArgNames;
-        this.constructorArgTypes = constructorArgTypes;
-        constructionStrategy = new ExplicitConstructionStrategy();
+        this.constructorArgNames = constructorArgNames != null ? Arrays.asList(constructorArgNames) : null;
+        this.constructorArgTypes = constructorArgTypes != null ? Arrays.<Class<?>>asList(constructorArgTypes) : null;
         if (properties != null) {
             setAllProperties(properties);
         }
@@ -127,28 +128,32 @@ public class ObjectRecipe extends AbstractRecipe {
         options.remove(option);
     }
 
-    public ConstructionStrategy getConstructionStrategy() {
-        return constructionStrategy;
+    public Set<Option> getOptions() {
+        return Collections.unmodifiableSet(options);
     }
 
-    public void setConstructionStrategy(ConstructionStrategy constructionStrategy) {
-        this.constructionStrategy = constructionStrategy;
-    }
-
-    public String[] getConstructorArgNames() {
+    public List<String> getConstructorArgNames() {
         return constructorArgNames;
     }
 
     public void setConstructorArgNames(String[] constructorArgNames) {
+        this.constructorArgNames = constructorArgNames != null ? Arrays.asList(constructorArgNames) : null;
+    }
+
+    public void setConstructorArgNames(List<String> constructorArgNames) {
         this.constructorArgNames = constructorArgNames;
     }
 
-    public Class[] getConstructorArgTypes() {
+    public List<Class<?>> getConstructorArgTypes() {
         return constructorArgTypes;
     }
 
     public void setConstructorArgTypes(Class[] constructorArgTypes) {
-        this.constructorArgTypes = constructorArgTypes;
+        this.constructorArgTypes = constructorArgTypes != null ? Arrays.<Class<?>>asList(constructorArgTypes) : null;
+    }
+
+    public void setConstructorArgTypes(List<? extends Class<?>> constructorArgTypes) {
+        this.constructorArgTypes = new ArrayList<Class<?>>(constructorArgTypes);
     }
 
     /**
@@ -232,10 +237,14 @@ public class ObjectRecipe extends AbstractRecipe {
     }
 
     public List<Recipe> getConstructorRecipes() {
-        Construction construction = constructionStrategy.getConstruction(this, Object.class);
-        if (!construction.hasInstanceFactory()) {
+        // find the factory that will be used to create the class instance
+        Factory factory = findFactory(Object.class);
+
+        // if we are NOT using an instance factory to create the object
+        // (we have a factory method and it is not a static factory method)
+        if (factoryMethod != null && !(factory instanceof StaticFactory)) {
             // only include recipes used in the construcor args
-            List<String> parameterNames = construction.getParameterNames();
+            List<String> parameterNames = factory.getParameterNames();
             List<Recipe> nestedRecipes = new ArrayList<Recipe>(parameterNames.size());
             for (Map.Entry<Property, Object> entry : properties.entrySet()) {
                 if (parameterNames.contains(entry.getKey().name) && entry.getValue() instanceof Recipe) {
@@ -257,40 +266,53 @@ public class ObjectRecipe extends AbstractRecipe {
 
     protected Object internalCreate(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
         unsetProperties.clear();
+
+        //
         // load the type class
         Class typeClass = getType();
 
-        // verify that it is a class we can construct
-        if (!Modifier.isPublic(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is not public: " + typeClass.getName());
-        }
-        if (Modifier.isInterface(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is an interface: " + typeClass.getName());
-        }
-        if (Modifier.isAbstract(typeClass.getModifiers())) {
-            throw new ConstructionException("Class is abstract: " + typeClass.getName());
-        }
-
+        //
         // clone the properties so they can be used again
         Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
 
+        //
         // create the instance
-        Construction construction = constructionStrategy.getConstruction(this, expectedType);
-        Object[] parameters = extractConstructorArgs(propertyValues,
-                construction.getParameterNames(),
-                construction.getParameterTypes());
-        Object instance = construction.create(parameters);
+        Factory factory = findFactory(expectedType);
+        Object[] parameters = extractConstructorArgs(propertyValues, factory);
+        Object instance = factory.create(parameters);
 
+        //
         // add to execution context if name is specified
         if (getName() != null) {
             ExecutionContext.getContext().addObject(getName(), instance);
         }
-       
+
+        //
         // set the properties
         setProperties(propertyValues, instance, instance.getClass());
 
+        //
         // call instance factory method
-        instance = construction.callInstanceFactory(instance);
+
+        // if we have a factory method name and did not find a static factory,
+        // then we have an instance factory
+        if (factoryMethod != null && !(factory instanceof StaticFactory)) {
+            // find the instance factory method
+            Method instanceFactory = ReflectionUtil.findInstanceFactory(instance.getClass(), factoryMethod, null);
+
+            try {
+                instance = instanceFactory.invoke(instance);
+            } catch (Exception e) {
+                Throwable t = e;
+                if (e instanceof InvocationTargetException) {
+                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                    if (invocationTargetException.getCause() != null) {
+                        t = invocationTargetException.getCause();
+                    }
+                }
+                throw new ConstructionException("Error calling instance factory method: " + instanceFactory, t);
+            }
+        }
 
         return instance;
     }
@@ -403,11 +425,56 @@ public class ObjectRecipe extends AbstractRecipe {
         }
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues, List<String> argNames, List<Type> argTypes) {
-        Object[] parameters = new Object[argNames.size()];
-        for (int i = 0; i < argNames.size(); i++) {
-            Property name = new Property(argNames.get(i));
-            Type type = argTypes.get(i);
+    private Factory findFactory(Type expectedType) {
+        Class type = getType();
+
+        //
+        // attempt to find a static factory
+        if (factoryMethod != null) {
+            try {
+                StaticFactory staticFactory = ReflectionUtil.findStaticFactory(
+                        type,
+                        factoryMethod,
+                        constructorArgNames,
+                        constructorArgTypes,
+                        getProperties().keySet(),
+                        options);
+                return staticFactory;
+            } catch (MissingFactoryMethodException ignored) {
+            }
+
+        }
+
+        //
+        // factory was not found, look for a constuctor
+
+        // if expectedType is a subclass of the assigned type, we create
+        // the sub class instead
+        Class consturctorClass;
+        if (RecipeHelper.isAssignable(type, expectedType)) {
+            consturctorClass = RecipeHelper.toClass(expectedType);
+        } else {
+            consturctorClass = type;
+        }
+
+        ConstructorFactory constructor = ReflectionUtil.findConstructor(
+                consturctorClass,
+                constructorArgNames,
+                constructorArgTypes,
+                getProperties().keySet(),
+                options);
+
+        return constructor;
+    }
+
+    private Object[] extractConstructorArgs(Map propertyValues, Factory factory) {
+        List<String> parameterNames = factory.getParameterNames();
+        List<Type> parameterTypes = factory.getParameterTypes();
+
+        Object[] parameters = new Object[parameterNames.size()];
+        for (int i = 0; i < parameterNames.size(); i++) {
+            Property name = new Property(parameterNames.get(i));
+            Type type = parameterTypes.get(i);
 
             Object value;
             if (propertyValues.containsKey(name)) {
