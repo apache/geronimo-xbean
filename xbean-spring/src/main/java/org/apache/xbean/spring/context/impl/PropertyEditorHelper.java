@@ -44,6 +44,19 @@ public class PropertyEditorHelper {
         }
     }
 
+    public static void unregisterCustomEditors() {
+        unregisterEditor("java.io.File");
+        unregisterEditor("java.net.URI");
+        unregisterEditor("java.util.Date");
+        unregisterEditor("javax.management.ObjectName");
+    }
+
+    protected static void unregisterEditor(String typeName) {
+        Class type = loadClass(typeName);
+        if (type != null) {
+            PropertyEditorManager.registerEditor(type, null);
+        }
+    }
     public static Class loadClass(String name) {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         if (contextClassLoader != null) {
