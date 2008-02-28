@@ -15,7 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.parameter;
+package org.apache.xbean.recipe;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.Arrays;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Label;
@@ -36,12 +37,12 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 
 /**
- * Implementation of ParameterNames that uses ASM to read the parameter names from the local variable table in the
+ * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the
  * class byte code.
  *
  * This wonderful piece of code was taken from org.springframework.core.LocalVariableTableParameterNameDiscover
  */
-public class AsmParameterNames implements ParameterNames {
+public class AsmParameterNameLoader implements ParameterNameLoader {
     /**
      * Weak map from Constructor to List&lt;String&gt;.
      */
@@ -89,13 +90,14 @@ public class AsmParameterNames implements ParameterNames {
      */
     public Map<Constructor,List<String>> getAllConstructorParameters(Class clazz) {
         // Determine the constructors?
-        Constructor[] constructors = clazz.getConstructors();
-        if (constructors.length == 0) {
+        List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(clazz.getConstructors()));
+        constructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
+        if (constructors.isEmpty()) {
             return Collections.emptyMap();
         }
 
         // Check the cache
-        if (constructorCache.containsKey(constructors[0])) {
+        if (constructorCache.containsKey(constructors.get(0))) {
             Map<Constructor,List<String>> constructorParameters = new HashMap<Constructor,List<String>>();
             for (Constructor constructor : constructors) {
                 constructorParameters.put(constructor, constructorCache.get(constructor));
@@ -106,9 +108,9 @@ public class AsmParameterNames implements ParameterNames {
         // Load the parameter names using ASM
         Map<Constructor,List<String>> constructorParameters = new HashMap<Constructor,List<String>> ();
         try {
-            ClassReader reader = AsmParameterNames.createClassReader(clazz);
+            ClassReader reader = AsmParameterNameLoader.createClassReader(clazz);
 
-            AsmParameterNames.AllParameterNamesDiscoveringVisitor visitor = new AsmParameterNames.AllParameterNamesDiscoveringVisitor(clazz);
+            AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor visitor = new AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor(clazz);
             reader.accept(visitor, false);
 
             Map exceptions = visitor.getExceptions();
@@ -155,9 +157,9 @@ public class AsmParameterNames implements ParameterNames {
         // Load the parameter names using ASM
         Map<Method,List<String>>  methodParameters = new HashMap<Method,List<String>>();
         try {
-            ClassReader reader = AsmParameterNames.createClassReader(clazz);
+            ClassReader reader = AsmParameterNameLoader.createClassReader(clazz);
 
-            AsmParameterNames.AllParameterNamesDiscoveringVisitor visitor = new AsmParameterNames.AllParameterNamesDiscoveringVisitor(clazz, methodName);
+            AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor visitor = new AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor(clazz, methodName);
             reader.accept(visitor, false);
 
             Map exceptions = visitor.getExceptions();
@@ -180,8 +182,9 @@ public class AsmParameterNames implements ParameterNames {
     }
 
     private Method[] getMethods(Class clazz, String methodName) {
-        Method[] methods = clazz.getMethods();
-        List<Method> matchingMethod = new ArrayList<Method>(methods.length);
+        List<Method> methods = new ArrayList<Method>(Arrays.asList(clazz.getMethods()));
+        methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+        List<Method> matchingMethod = new ArrayList<Method>(methods.size());
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
                 matchingMethod.add(method);
@@ -218,7 +221,8 @@ public class AsmParameterNames implements ParameterNames {
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
             this.methodName = methodName;
 
-            Method[] methods = type.getMethods();
+            List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
+            methods.addAll(Arrays.asList(type.getDeclaredMethods()));
             for (Method method : methods) {
                 if (method.getName().equals(methodName)) {
                     methodMap.put(Type.getMethodDescriptor(method), method);
@@ -229,7 +233,8 @@ public class AsmParameterNames implements ParameterNames {
         public AllParameterNamesDiscoveringVisitor(Class type) {
             this.methodName = "<init>";
 
-            Constructor[] constructors = type.getConstructors();
+            List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
+            constructors.addAll(Arrays.asList(type.getDeclaredConstructors()));
             for (Constructor constructor : constructors) {
                 Type[] types = new Type[constructor.getParameterTypes().length];
                 for (int j = 0; j < types.length; j++) {

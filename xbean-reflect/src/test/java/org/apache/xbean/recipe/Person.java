@@ -21,10 +21,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import junit.framework.Assert;
+import static org.apache.xbean.recipe.Person.ConstructionCalled.*;
+
 /**
  * @version $Rev$ $Date$
  */
 public class Person {
+    public static enum ConstructionCalled {
+        CONSTRUCTOR,
+        CONSTRUCTOR_4_ARG,
+        NEW_INSTANCE,
+        NEW_INSTANCE_4_ARG,
+        PERSON_FACTORY,
+        PERSON_FACTORY_4_ARG,
+    }
+
     private String name;
     private int age;
     private URL homePage;
@@ -34,22 +46,52 @@ public class Person {
     private Map<String, Object> allMap;
     private Properties allProperties;
 
+    private ConstructionCalled constructionCalled;
+
     public Person() {
+        this(null, 0, null, null, CONSTRUCTOR);
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public Person(String name, int age, URL homePage) {
+        Assert.fail("3 arg constructor should never be called");
     }
 
     public Person(String name, int age, URL homePage, Car car) {
+        this(name, age, homePage, car, CONSTRUCTOR_4_ARG);
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public Person(String name, int age, URL homePage, Car car, String unused) {
+        Assert.fail("5 arg constructor should never be called");
+    }
+
+    Person(String name, int age, URL homePage, Car car, ConstructionCalled constructionCalled) {
         this.name = name;
         this.age = age;
         this.homePage = homePage;
         this.car = car;
+        this.constructionCalled = constructionCalled;
     }
 
     public static Person newInstance() {
-        return new Person();
+        return new Person(null, 0, null, null, NEW_INSTANCE);
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static Person newInstance(String name, int age, URL homePage) {
+        Assert.fail("3 arg static factory should never be called");
+        return null;
     }
 
     public static Person newInstance(String name, int age, URL homePage, Car car) {
-        return new Person(name, age, homePage, car);
+        return new Person(name, age, homePage, car, NEW_INSTANCE_4_ARG);
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static Person newInstance(String name, int age, URL homePage, Car car, String unused) {
+        Assert.fail("5 arg static factory should never be called");
+        return null;
     }
 
     public String getName() {
@@ -114,6 +156,10 @@ public class Person {
 
     public void setAllProperties(Properties allProperties) {
         this.allProperties = allProperties;
+    }
+
+    public ConstructionCalled getConstructionCalled() {
+        return constructionCalled;
     }
 
     public String toString() {

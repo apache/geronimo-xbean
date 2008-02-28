@@ -19,13 +19,24 @@ package org.apache.xbean.recipe;
 
 import java.net.URL;
 
+import static org.apache.xbean.recipe.Person.ConstructionCalled;
+import static org.apache.xbean.recipe.Person.ConstructionCalled.*;
+import junit.framework.Assert;
+
 public class PersonFactory {
     private String name;
     private int age;
     private URL homePage;
     private Car car;
+    private ConstructionCalled constructionCalled;
 
     public PersonFactory() {
+        constructionCalled = PERSON_FACTORY;
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public PersonFactory(String name, int age, URL homePage) {
+        Assert.fail("3 arg instance factory constructor should never be called");
     }
 
     public PersonFactory(String name, int age, URL homePage, Car car) {
@@ -33,6 +44,12 @@ public class PersonFactory {
         this.age = age;
         this.homePage = homePage;
         this.car = car;
+        constructionCalled = PERSON_FACTORY_4_ARG;
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public PersonFactory(String name, int age, URL homePage, Car car, String unused) {
+        Assert.fail("3 arg instance factory constructor should never be called");
     }
 
     public String getName() {
@@ -68,6 +85,6 @@ public class PersonFactory {
     }
 
     public Person create() {
-        return new Person(name, age, homePage, car);
+        return new Person(name, age, homePage, car, constructionCalled);
     }
 }

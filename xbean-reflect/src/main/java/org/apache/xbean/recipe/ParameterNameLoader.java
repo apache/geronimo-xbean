@@ -15,7 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.parameter;
+package org.apache.xbean.recipe;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,7 @@ import java.lang.reflect.Constructor;
 /**
  * Determines the parameter names of Constructors or Methods.
  */
-public interface ParameterNames {
+public interface ParameterNameLoader {
     /**
      * Gets the parameter names of the specified method or null if the class was compiled without debug symbols on.
      * @param method the method for which the parameter names should be retrieved
@@ -39,19 +39,4 @@ public interface ParameterNames {
      * @return the parameter names or null if the class was compiled without debug symbols on
      */
     List<String> get(Constructor constructor);
-
-    /**
-     * Gets the parameter names of all constructoror null if the class was compiled without debug symbols on.
-     * @param clazz the class for which the constructor parameter names should be retrieved
-     * @return a map from Constructor object to the parameter names or null if the class was compiled without debug symbols on
-     */
-    Map<Constructor,List<String>> getAllConstructorParameters(Class clazz);
-
-    /**
-     * Gets the parameter names of all methods with the specified name or null if the class was compiled without debug symbols on.
-     * @param clazz the class for which the method parameter names should be retrieved
-     * @param methodName the of the method for which the parameters should be retrieved
-     * @return a map from Method object to the parameter names or null if the class was compiled without debug symbols on
-     */
-    Map<Method,List<String>> getAllMethodParameters(Class clazz, String methodName);
 }
