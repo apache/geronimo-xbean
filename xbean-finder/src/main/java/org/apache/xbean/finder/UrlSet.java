@@ -17,7 +17,6 @@
 package org.apache.xbean.finder;
 
 import java.net.URL;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.List;
@@ -121,7 +120,14 @@ public class UrlSet {
 
     public UrlSet excludeJavaHome() throws MalformedURLException {
         String path = System.getProperty("java.home");
-        return exclude(new File(path));
+
+        File java = new File(path);
+
+        if (path.matches("/System/Library/Frameworks/JavaVM.framework/Versions/[^/]+/Home")){
+            java = java.getParentFile();
+        }
+
+        return exclude(java);
     }
 
     public UrlSet excludePaths(String pathString) throws MalformedURLException {

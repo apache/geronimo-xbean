@@ -352,25 +352,11 @@ public class ClassFinder {
     }
 
     private static Collection<URL> getUrls(ClassLoader classLoader, ClassLoader excludeParent) throws IOException {
-        Map<String, URL> urls = toMap(classLoader.getResources("META-INF"));
-
-        if (excludeParent != null) {
-            Map<String, URL> parentUrls = toMap(excludeParent.getResources("META-INF"));
-            for (String url : parentUrls.keySet()) {
-                urls.remove(url);
-            }
+        UrlSet urlSet = new UrlSet(classLoader);
+        if (excludeParent != null){
+            urlSet = urlSet.exclude(excludeParent);
         }
-
-        return urls.values();
-    }
-
-    private static Map<String, URL> toMap(Enumeration<URL> enumeration) {
-        Map<String, URL> urls = new HashMap<String, URL>();
-        while (enumeration.hasMoreElements()) {
-            URL url = enumeration.nextElement();
-            urls.put(url.toExternalForm(), url);
-        }
-        return urls;
+        return urlSet.getUrls();
     }
 
     private List<String> file(URL location) {

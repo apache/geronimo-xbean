@@ -51,7 +51,16 @@ public class ClassFinderTest extends TestCase {
 
     public void setUp() throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        classFinder = new ClassFinder(classLoader);
+
+        UrlSet urlSet = new UrlSet(classLoader);
+
+        if (classLoader.getParent() != null){
+            urlSet = urlSet.exclude(classLoader.getParent());
+        }
+
+        urlSet = urlSet.excludeJavaHome();
+
+        classFinder = new ClassFinder(classLoader, urlSet.getUrls());
     }
 
     public void testFindAnnotatedPackages() throws Exception {
