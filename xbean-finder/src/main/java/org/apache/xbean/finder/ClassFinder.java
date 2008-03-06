@@ -32,6 +32,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.AnnotatedElement;
 import java.net.URL;
 import java.net.JarURLConnection;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -361,7 +362,7 @@ public class ClassFinder {
 
     private List<String> file(URL location) {
         List<String> classNames = new ArrayList<String>();
-        File dir = new File(location.getPath());
+        File dir = new File(URLDecoder.decode(location.getPath()));
         if (dir.getName().equals("META-INF")) {
             dir = dir.getParentFile(); // Scrape "META-INF" off
         }
