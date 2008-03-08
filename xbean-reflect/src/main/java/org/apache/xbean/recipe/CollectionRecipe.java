@@ -135,8 +135,8 @@ public class CollectionRecipe extends AbstractRecipe {
         }
 
         // get component type
-        Type componentType = Object.class;
         Type[] typeParameters = RecipeHelper.getTypeParameters(Collection.class, expectedType);
+        Type componentType = Object.class;
         if (typeParameters != null && typeParameters.length == 1 && typeParameters[0] instanceof Class) {
             componentType = typeParameters[0];
         }

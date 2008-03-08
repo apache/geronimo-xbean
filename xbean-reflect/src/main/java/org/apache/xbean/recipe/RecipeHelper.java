@@ -57,6 +57,9 @@ public final class RecipeHelper {
         if (!Modifier.isPublic(type.getModifiers())) {
             return false;
         }
+        if (Modifier.isAbstract(type.getModifiers())) {
+            return false;
+        }
         Constructor[] constructors = type.getConstructors();
         for (Constructor constructor : constructors) {
             if (Modifier.isPublic(constructor.getModifiers()) &&
@@ -166,7 +169,7 @@ public final class RecipeHelper {
 
         if (value instanceof String && (expectedType != Object.class)) {
             String stringValue = (String) value;
-            value = PropertyEditors.getValue(toClass(expectedType), stringValue);
+            value = PropertyEditors.getValue(expectedType, stringValue);
         }
         return value;
     }
