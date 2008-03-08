@@ -16,11 +16,27 @@
  */
 package org.apache.xbean.propertyeditor;
 
+import static org.apache.xbean.recipe.RecipeHelper.getTypeParameters;
+import static org.apache.xbean.recipe.RecipeHelper.*;
+import org.apache.xbean.recipe.RecipeHelper;
+
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.LinkedHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.lang.reflect.Type;
 
 /**
  * The property editor manager.  This orchestrates Geronimo usage of
@@ -196,7 +212,7 @@ public class PropertyEditors {
 
     }
 
-    public static Object getValue(Class type, String value) throws PropertyEditorException {
+    public static Object getValue(Type type, String value) throws PropertyEditorException {
         if (type == null) throw new NullPointerException("type is null");
         if (value == null) throw new NullPointerException("value is null");
 
@@ -206,10 +222,12 @@ public class PropertyEditors {
             return converter.toObject(value);
         }
 
+        Class clazz = toClass(type);
+
         // fall back to a property editor
         PropertyEditor editor = findEditor(type);
         if (editor == null) {
-            throw new PropertyEditorException("Unable to find PropertyEditor for " + type.getSimpleName());
+            throw new PropertyEditorException("Unable to find PropertyEditor for " + clazz.getSimpleName());
         }
 
         // create the object value
@@ -218,15 +236,86 @@ public class PropertyEditors {
         try {
             objectValue = editor.getValue();
         } catch (Exception e) {
-            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + type.getSimpleName() +
+            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + clazz.getSimpleName() +
                     " using the property editor " + editor.getClass().getSimpleName(), e);
         }
         return objectValue;
     }
 
-    private static Converter findConverter(Class type) {
+    private static Converter findConverter(Type type) {
         if (type == null) throw new NullPointerException("type is null");
 
+        Class clazz = toClass(type);
+
+
+
+        // it's possible this was a request for an array class.  We might not
+        // recognize the array type directly, but the component type might be
+        // resolvable
+        if (clazz.isArray() && !clazz.getComponentType().isArray()) {
+            // do a recursive lookup on the base type
+            Converter converter = findConverter(clazz.getComponentType());
+            // if we found a suitable editor for the base component type,
+            // wrapper this in an array adaptor for real use
+            if (converter != null) {
+                return new ArrayConverter(clazz, converter);
+            } else {
+                return null;
+            }
+        }
+
+        if (Collection.class.isAssignableFrom(clazz)){
+            Type[] types = getTypeParameters(Collection.class, type);
+
+            Type componentType = String.class;
+            if (types != null && types.length == 1 && types[0] instanceof Class) {
+                componentType = types[0];
+            }
+
+            Converter converter = findConverter(componentType);
+
+            if (converter != null){
+                if (RecipeHelper.hasDefaultConstructor(clazz)) {
+                    return new GenericCollectionConverter(clazz, converter);
+                } else if (SortedSet.class.isAssignableFrom(clazz)) {
+                    return new GenericCollectionConverter(TreeSet.class, converter);
+                } else if (Set.class.isAssignableFrom(clazz)) {
+                    return new GenericCollectionConverter(LinkedHashSet.class, converter);
+                } else {
+                    return new GenericCollectionConverter(ArrayList.class, converter);
+                }
+            }
+            
+            return null;
+        }
+
+        if (Map.class.isAssignableFrom(clazz)){
+            Type[] types = getTypeParameters(Map.class, type);
+
+            Type keyType = String.class;
+            Type valueType = String.class;
+            if (types != null && types.length == 2 && types[0] instanceof Class && types[1] instanceof Class) {
+                keyType = types[0];
+                valueType = types[1];
+            }
+
+            Converter keyConverter = findConverter(keyType);
+            Converter valueConverter = findConverter(valueType);
+
+            if (keyConverter != null && valueConverter != null){
+                if (RecipeHelper.hasDefaultConstructor(clazz)) {
+                    return new GenericMapConverter(clazz, keyConverter, valueConverter);
+                } else if (SortedMap.class.isAssignableFrom(clazz)) {
+                    return new GenericMapConverter(TreeMap.class, keyConverter, valueConverter);
+                } else if (ConcurrentMap.class.isAssignableFrom(clazz)) {
+                    return new GenericMapConverter(ConcurrentHashMap.class, keyConverter, valueConverter);
+                } else {
+                    return new GenericMapConverter(LinkedHashMap.class, keyConverter, valueConverter);
+                }
+            }
+
+            return null;
+        }
         Converter converter = (Converter) registry.get(type);
 
         // we're outta here if we got one.
@@ -234,7 +323,7 @@ public class PropertyEditors {
             return converter;
         }
 
-        Class[] declaredClasses = type.getDeclaredClasses();
+        Class[] declaredClasses = clazz.getDeclaredClasses();
         for (int i = 0; i < declaredClasses.length; i++) {
             Class declaredClass = declaredClasses[i];
             if (Converter.class.isAssignableFrom(declaredClass)) {
@@ -244,26 +333,13 @@ public class PropertyEditors {
 
                     // try to get the converter from the registry... the converter
                     // created above may have been for another class
-                    converter = (Converter) registry.get(type);
+                    converter = (Converter) registry.get(clazz);
                     if (converter != null) {
                         return converter;
                     }
                 } catch (Exception e) {
                 }
 
-            }
-        }
-
-        // it's possible this was a request for an array class.  We might not
-        // recognize the array type directly, but the component type might be
-        // resolvable
-        if (type.isArray() && !type.getComponentType().isArray()) {
-            // do a recursive lookup on the base type
-            converter = findConverter(type.getComponentType());
-            // if we found a suitable editor for the base component type,
-            // wrapper this in an array adaptor for real use
-            if (converter != null) {
-                return new ArrayConverter(type, converter);
             }
         }
 
@@ -278,27 +354,30 @@ public class PropertyEditors {
      * @return The resolved editor, if any.  Returns null if a suitable editor
      *         could not be located.
      */
-    private static PropertyEditor findEditor(Class type) {
+    private static PropertyEditor findEditor(Type type) {
         if (type == null) throw new NullPointerException("type is null");
 
+        Class clazz = toClass(type);
+
         // try to locate this directly from the editor manager first.
-        PropertyEditor editor = PropertyEditorManager.findEditor(type);
+        PropertyEditor editor = PropertyEditorManager.findEditor(clazz);
 
         // we're outta here if we got one.
         if (editor != null) {
             return editor;
         }
 
+
         // it's possible this was a request for an array class.  We might not
         // recognize the array type directly, but the component type might be
         // resolvable
-        if (type.isArray() && !type.getComponentType().isArray()) {
+        if (clazz.isArray() && !clazz.getComponentType().isArray()) {
             // do a recursive lookup on the base type
-            editor = findEditor(type.getComponentType());
+            editor = findEditor(clazz.getComponentType());
             // if we found a suitable editor for the base component type,
             // wrapper this in an array adaptor for real use
             if (editor != null) {
-                return new ArrayConverter(type, editor);
+                return new ArrayConverter(clazz, editor);
             }
         }
 
