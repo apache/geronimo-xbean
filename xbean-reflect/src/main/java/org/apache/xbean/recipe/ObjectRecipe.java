@@ -156,24 +156,10 @@ public class ObjectRecipe extends AbstractRecipe {
         this.constructorArgTypes = new ArrayList<Class<?>>(constructorArgTypes);
     }
 
-    /**
-     * Gets the name of the factory method to call on the constructed instance.
-     * This method must be of the form <code>public T factoryMethodName();</code>
-     * and specifically must NOT be static.  Static factory methods are handled using
-     * a ConstructionStrategy.
-     * @return the name of the factory method to call on the constructed instance
-     */
     public String getFactoryMethod() {
         return factoryMethod;
     }
 
-    /**
-     * Sets the name of the factory method to call on the constructed instance.
-     * This method must be of the form <code>public T factoryMethodName();</code>
-     * and specifically must NOT be static.  Static factory methods are handled using
-     * a ConstructionStrategy.
-     * @param factoryMethod the name of the factory method to call on the constructed instance
-     */
     public void setFactoryMethod(String factoryMethod) {
         this.factoryMethod = factoryMethod;
     }
