@@ -316,11 +316,16 @@ public class PropertyEditors {
 
             return null;
         }
+
         Converter converter = (Converter) registry.get(type);
 
         // we're outta here if we got one.
         if (converter != null) {
             return converter;
+        }
+
+        if (Enum.class.isAssignableFrom(clazz)){
+            return new EnumConverter(clazz);       
         }
 
         Class[] declaredClasses = clazz.getDeclaredClasses();

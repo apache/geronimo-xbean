@@ -55,6 +55,11 @@ public class GenericCollectionsTest extends TestCase {
         expected.listOfURI.add(new URI("green://verde"));
         expected.listOfURI.add(new URI("blue://azul"));
 
+        expected.listOfEnums = new ArrayList<Color>();
+        expected.listOfEnums.add(Color.RED);
+        expected.listOfEnums.add(Color.GREEN);
+        expected.listOfEnums.add(Color.BLUE);
+
         expected.mapOfClass = new LinkedHashMap<String, Class>();
         expected.mapOfClass.put("Rojo", Red.class);
         expected.mapOfClass.put("Verde", Green.class);
@@ -65,15 +70,25 @@ public class GenericCollectionsTest extends TestCase {
         expected.mapOfURI.put(new URI("green://verde"), "Verde");
         expected.mapOfURI.put(new URI("blue://azul"), "Azul");
 
+        expected.mapOfEnums = new LinkedHashMap<String, Color>();
+        expected.mapOfEnums.put("RED", Color.RED);
+        expected.mapOfEnums.put("GREEN", Color.GREEN);
+        expected.mapOfEnums.put("BLUE", Color.BLUE);
+
         expected.setOfClass = new LinkedHashSet<Class>();
         expected.setOfClass.add(Red.class);
         expected.setOfClass.add(Green.class);
         expected.setOfClass.add(Blue.class);
 
-        expected.setOfURI = new LinkedHashSet();
+        expected.setOfURI = new LinkedHashSet<URI>();
         expected.setOfURI.add(new URI("red://rojo"));
         expected.setOfURI.add(new URI("green://verde"));
         expected.setOfURI.add(new URI("blue://azul"));
+
+        expected.setOfEnums = new LinkedHashSet<Color>();
+        expected.setOfEnums.add(Color.RED);
+        expected.setOfEnums.add(Color.GREEN);
+        expected.setOfEnums.add(Color.BLUE);
 
 
         ObjectRecipe recipe = new ObjectRecipe(Something.class);
@@ -81,10 +96,13 @@ public class GenericCollectionsTest extends TestCase {
         recipe.setProperty("plainMap", toString(expected.plainMap));
         recipe.setProperty("listOfClass", toString(expected.listOfClass));
         recipe.setProperty("listOfURI", toString(expected.listOfURI));
+        recipe.setProperty("listOfEnums", toString(expected.listOfEnums));
         recipe.setProperty("mapOfClass", toString(expected.mapOfClass));
         recipe.setProperty("mapOfURI", toString(expected.mapOfURI));
+        recipe.setProperty("mapOfEnums", toString(expected.mapOfEnums));
         recipe.setProperty("setOfClass", toString(expected.setOfClass));
         recipe.setProperty("setOfURI", toString(expected.setOfURI));
+        recipe.setProperty("setOfEnums", toString(expected.setOfEnums));
 
         Something actual = (Something) recipe.create();
 
@@ -140,13 +158,19 @@ public class GenericCollectionsTest extends TestCase {
 
         public List<URI> listOfURI;
 
+        public List<Color> listOfEnums;
+
         public Map<String,Class> mapOfClass;
 
         public Map<URI, String> mapOfURI;
 
+        public Map<String, Color> mapOfEnums;
+
         public Set<Class> setOfClass;
 
         public Set<URI> setOfURI;
+
+        public Set<Color> setOfEnums;
 
         public List getPlainList() {
             return plainList;
@@ -180,9 +204,26 @@ public class GenericCollectionsTest extends TestCase {
             return setOfURI;
         }
 
+        public List<Color> getListOfEnums() {
+            return listOfEnums;
+        }
+
+        public Map<String, Color> getMapOfEnums() {
+            return mapOfEnums;
+        }
+
+        public Set<Color> getSetOfEnums() {
+            return setOfEnums;
+        }
     }
 
     public static class Red {}
     public static class Green {}
     public static class Blue {}
+
+
+    public static enum Color {
+        RED, GREEN, BLUE;
+    }
+
 }
