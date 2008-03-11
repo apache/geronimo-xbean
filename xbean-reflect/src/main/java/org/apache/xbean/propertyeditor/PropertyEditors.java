@@ -118,6 +118,16 @@ public class PropertyEditors {
         registerConverter(new JndiConverter());
         registerConverter(new VectorEditor());
         registerConverter(new WeakHashMapEditor());
+
+        try {
+            registerConverter(new Log4jConverter());
+        } catch (Throwable e) {
+        }
+
+        try {
+            registerConverter(new CommonsLoggingConverter());
+        } catch (Throwable e) {
+        }
     }
 
     public static void registerConverter(Converter converter) {
