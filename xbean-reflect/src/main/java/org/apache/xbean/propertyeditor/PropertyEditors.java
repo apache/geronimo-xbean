@@ -113,6 +113,9 @@ public class PropertyEditors {
         registerConverter(new TreeSetEditor());
         registerConverter(new URIEditor());
         registerConverter(new URLEditor());
+        registerConverter(new LoggerConverter());
+        registerConverter(new PatternConverter());
+        registerConverter(new JndiConverter());
         registerConverter(new VectorEditor());
         registerConverter(new WeakHashMapEditor());
     }
@@ -325,7 +328,7 @@ public class PropertyEditors {
         }
 
         if (Enum.class.isAssignableFrom(clazz)){
-            return new EnumConverter(clazz);       
+            return new EnumConverter(clazz);
         }
 
         Class[] declaredClasses = clazz.getDeclaredClasses();
