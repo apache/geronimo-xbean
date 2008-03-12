@@ -164,23 +164,29 @@ public class PropertyEditors {
     }
 
     public static boolean canConvert(Class type) {
+        PropertyEditor editor = findConverterOrEditor(type);
+
+        return editor != null;
+    }
+
+    private static PropertyEditor findConverterOrEditor(Type type){
         Converter converter = findConverter(type);
         if (converter != null) {
-            return true;
+            return converter;
         }
 
         // fall back to a property editor
         PropertyEditor editor = findEditor(type);
         if (editor != null) {
-            return true;
+            return editor;
         }
 
         converter = findBuiltinConverter(type);
         if (converter != null) {
-            return true;
+            return converter;
         }
-        
-        return false;
+
+        return null;
     }
 
     public static String toString(Object value) throws PropertyEditorException {
@@ -189,14 +195,13 @@ public class PropertyEditors {
         // get an editor for this type
         Class type = value.getClass();
 
-        // try to get a converter from our registry as they are way faster and easier to use
-        Converter converter = findConverter(type);
-        if (converter != null) {
+        PropertyEditor editor = findConverterOrEditor(type);
+
+        if (editor instanceof Converter) {
+            Converter converter = (Converter) editor;
             return converter.toString(value);
         }
 
-        // fall back to a property editor
-        PropertyEditor editor = findEditor(type);
         if (editor == null) {
             throw new PropertyEditorException("Unable to find PropertyEditor for " + type.getSimpleName());
         }
@@ -234,37 +239,28 @@ public class PropertyEditors {
         if (type == null) throw new NullPointerException("type is null");
         if (value == null) throw new NullPointerException("value is null");
 
-        // try to get a converter from our registry as they are way faster and easier to use
-        Converter converter = findConverter(type);
-        if (converter != null) {
+        PropertyEditor editor = findConverterOrEditor(type);
+
+        if (editor instanceof Converter) {
+            Converter converter = (Converter) editor;
             return converter.toObject(value);
         }
 
         Class clazz = toClass(type);
 
-        // fall back to a property editor
-        PropertyEditor editor = findEditor(type);
-
-
-        if (editor != null) {// create the object value
-            editor.setAsText(value);
-            Object objectValue = null;
-            try {
-                objectValue = editor.getValue();
-            } catch (Exception e) {
-                throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + clazz.getSimpleName() +
-                        " using the property editor " + editor.getClass().getSimpleName(), e);
-            }
-            return objectValue;
-        }
-
-        converter = findBuiltinConverter(type);
-
-        if (converter == null) {
+        if (editor == null) {
             throw new PropertyEditorException("Unable to find PropertyEditor for " + clazz.getSimpleName());
         }
 
-        return converter.toObject(value);
+        editor.setAsText(value);
+        Object objectValue = null;
+        try {
+            objectValue = editor.getValue();
+        } catch (Exception e) {
+            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + clazz.getSimpleName() +
+                    " using the property editor " + editor.getClass().getSimpleName(), e);
+        }
+        return objectValue;
     }
 
     private static Converter findBuiltinConverter(Type type) {
@@ -291,11 +287,11 @@ public class PropertyEditors {
         // resolvable
         if (clazz.isArray() && !clazz.getComponentType().isArray()) {
             // do a recursive lookup on the base type
-            Converter converter = findConverter(clazz.getComponentType());
+            PropertyEditor editor = findConverterOrEditor(clazz.getComponentType());
             // if we found a suitable editor for the base component type,
             // wrapper this in an array adaptor for real use
-            if (converter != null) {
-                return new ArrayConverter(clazz, converter);
+            if (editor != null) {
+                return new ArrayConverter(clazz, editor);
             } else {
                 return null;
             }
@@ -309,17 +305,17 @@ public class PropertyEditors {
                 componentType = types[0];
             }
 
-            Converter converter = findConverter(componentType);
+            PropertyEditor editor = findConverterOrEditor(componentType);
 
-            if (converter != null){
+            if (editor != null){
                 if (RecipeHelper.hasDefaultConstructor(clazz)) {
-                    return new GenericCollectionConverter(clazz, converter);
+                    return new GenericCollectionConverter(clazz, editor);
                 } else if (SortedSet.class.isAssignableFrom(clazz)) {
-                    return new GenericCollectionConverter(TreeSet.class, converter);
+                    return new GenericCollectionConverter(TreeSet.class, editor);
                 } else if (Set.class.isAssignableFrom(clazz)) {
-                    return new GenericCollectionConverter(LinkedHashSet.class, converter);
+                    return new GenericCollectionConverter(LinkedHashSet.class, editor);
                 } else {
-                    return new GenericCollectionConverter(ArrayList.class, converter);
+                    return new GenericCollectionConverter(ArrayList.class, editor);
                 }
             }
 
@@ -336,8 +332,8 @@ public class PropertyEditors {
                 valueType = types[1];
             }
 
-            Converter keyConverter = findConverter(keyType);
-            Converter valueConverter = findConverter(valueType);
+            PropertyEditor keyConverter = findConverterOrEditor(keyType);
+            PropertyEditor valueConverter = findConverterOrEditor(valueType);
 
             if (keyConverter != null && valueConverter != null){
                 if (RecipeHelper.hasDefaultConstructor(clazz)) {
