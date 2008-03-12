@@ -175,6 +175,11 @@ public class PropertyEditors {
             return true;
         }
 
+        converter = findBuiltinConverter(type);
+        if (converter != null) {
+            return true;
+        }
+        
         return false;
     }
 
@@ -239,20 +244,39 @@ public class PropertyEditors {
 
         // fall back to a property editor
         PropertyEditor editor = findEditor(type);
-        if (editor == null) {
+
+
+        if (editor != null) {// create the object value
+            editor.setAsText(value);
+            Object objectValue = null;
+            try {
+                objectValue = editor.getValue();
+            } catch (Exception e) {
+                throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + clazz.getSimpleName() +
+                        " using the property editor " + editor.getClass().getSimpleName(), e);
+            }
+            return objectValue;
+        }
+
+        converter = findBuiltinConverter(type);
+
+        if (converter == null) {
             throw new PropertyEditorException("Unable to find PropertyEditor for " + clazz.getSimpleName());
         }
 
-        // create the object value
-        editor.setAsText(value);
-        Object objectValue = null;
-        try {
-            objectValue = editor.getValue();
-        } catch (Exception e) {
-            throw new PropertyEditorException("Error while converting \"" + value + "\" to a " + clazz.getSimpleName() +
-                    " using the property editor " + editor.getClass().getSimpleName(), e);
+        return converter.toObject(value);
+    }
+
+    private static Converter findBuiltinConverter(Type type) {
+        if (type == null) throw new NullPointerException("type is null");
+
+        Class clazz = toClass(type);
+
+        if (Enum.class.isAssignableFrom(clazz)){
+            return new EnumConverter(clazz);
         }
-        return objectValue;
+
+        return null;       
     }
 
     private static Converter findConverter(Type type) {
@@ -298,7 +322,7 @@ public class PropertyEditors {
                     return new GenericCollectionConverter(ArrayList.class, converter);
                 }
             }
-            
+
             return null;
         }
 
@@ -335,10 +359,6 @@ public class PropertyEditors {
         // we're outta here if we got one.
         if (converter != null) {
             return converter;
-        }
-
-        if (Enum.class.isAssignableFrom(clazz)){
-            return new EnumConverter(clazz);
         }
 
         Class[] declaredClasses = clazz.getDeclaredClasses();
