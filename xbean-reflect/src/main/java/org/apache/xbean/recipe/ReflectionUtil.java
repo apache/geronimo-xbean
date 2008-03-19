@@ -273,7 +273,15 @@ public final class ReflectionUtil {
         } else {
             StringBuffer buffer = new StringBuffer("Unable to find a valid setter method: ");
             buffer.append("public void ").append(typeClass.getName()).append(".");
-            buffer.append(setterName).append("(").append(propertyValue == null ? "null" : propertyValue.getClass().getName()).append(")");
+            buffer.append(setterName).append("(");
+            if (propertyValue == null) {
+                buffer.append("null");
+            } else if (propertyValue instanceof String || propertyValue instanceof Recipe) {
+                buffer.append("...");
+            } else {
+                buffer.append(propertyValue.getClass().getName());
+            }
+            buffer.append(")");
             throw new MissingAccessorException(buffer.toString(), -1);
         }
     }
