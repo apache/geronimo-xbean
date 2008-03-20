@@ -367,24 +367,41 @@ public class ObjectRecipe extends AbstractRecipe {
 
     private void setProperty(Object instance, Class clazz, Property propertyName, Object propertyValue) {
 
-        Member member;
+        List<Member> members = new ArrayList<Member>();
         try {
             if (propertyName instanceof SetterProperty){
-                member = new MethodMember(ReflectionUtil.findSetter(clazz, propertyName.name, propertyValue, options));
+                List<Method> setters = ReflectionUtil.findAllSetters(clazz, propertyName.name, propertyValue, options);
+                for (Method setter : setters) {
+                    MethodMember member = new MethodMember(setter);
+                    members.add(member);
+                }
             } else if (propertyName instanceof FieldProperty){
-                member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options));
+                FieldMember member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options));
+                members.add(member);
             } else {
+                // add setter members
+                MissingAccessorException noSetter = null;
                 try {
-                    member = new MethodMember(ReflectionUtil.findSetter(clazz, propertyName.name, propertyValue, options));
-                } catch (MissingAccessorException noSetter) {
+                    List<Method> setters = ReflectionUtil.findAllSetters(clazz, propertyName.name, propertyValue, options);
+                    for (Method setter : setters) {
+                        MethodMember member = new MethodMember(setter);
+                        members.add(member);
+                    }
+                } catch (MissingAccessorException e) {
+                    noSetter = e;
                     if (!options.contains(Option.FIELD_INJECTION)) {
                         throw noSetter;
                     }
+                }
 
+                if (options.contains(Option.FIELD_INJECTION)) {
                     try {
-                        member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options));
+                        FieldMember member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options));
+                        members.add(member);
                     } catch (MissingAccessorException noField) {
-                        throw (noField.getMatchLevel() > noSetter.getMatchLevel())? noField: noSetter;
+                        if (members.isEmpty()) {
+                            throw (noSetter == null || noField.getMatchLevel() > noSetter.getMatchLevel())? noField: noSetter;
+                        }
                     }
                 }
             }
@@ -396,19 +413,42 @@ public class ObjectRecipe extends AbstractRecipe {
             throw e;
         }
 
-        try {
-            propertyValue = RecipeHelper.convert(member.getType(), propertyValue, false);
-            member.setValue(instance, propertyValue);
-        } catch (Exception e) {
-            Throwable t = e;
-            if (e instanceof InvocationTargetException) {
-                InvocationTargetException invocationTargetException = (InvocationTargetException) e;
-                if (invocationTargetException.getCause() != null) {
-                    t = invocationTargetException.getCause();
+        ConstructionException conversionException = null;
+        for (Member member : members) {
+            // convert the value to type of setter/field
+            try {
+                propertyValue = RecipeHelper.convert(member.getType(), propertyValue, false);
+            } catch (Exception e) {
+                // save off first conversion exception, in case setting failed
+                if (conversionException == null) {
+                    String valueType = propertyValue == null ? "null" : propertyValue.getClass().getName();
+                    String memberType = member.getType() instanceof Class ? ((Class) member.getType()).getName() : member.getType().toString();
+                    conversionException = new ConstructionException("Unable to convert property value" +
+                            " from " + valueType +
+                            " to " + memberType +
+                            " for injection " + member, e);
                 }
+                continue;
             }
-            throw new ConstructionException("Error setting property: " + member, t);
+            try {
+                // set value
+                member.setValue(instance, propertyValue);
+            } catch (Exception e) {
+                Throwable t = e;
+                if (e instanceof InvocationTargetException) {
+                    InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                    if (invocationTargetException.getCause() != null) {
+                        t = invocationTargetException.getCause();
+                    }
+                }
+                throw new ConstructionException("Error setting property: " + member, t);
+            }
+
+            // value set successfully
+            return;
         }
+
+        throw conversionException;
     }
 
     private Factory findFactory(Type expectedType) {
