@@ -34,6 +34,8 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.LinkedList;
+import java.util.LinkedHashSet;
 
 import static org.apache.xbean.recipe.RecipeHelper.isAssignableFrom;
 
@@ -149,6 +151,21 @@ public final class ReflectionUtil {
     }
 
     public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, Set<Option> options) {
+        List<Method> setters = findAllSetters(typeClass, propertyName, propertyValue, options);
+        return setters.get(0);
+    }
+
+    /**
+     * Finds all valid setters for the property.  Due to automatic type conversion there may be more than one possible
+     * setter that could be used to set the property.  The setters that do not require type converstion will be a the
+     * head of the returned list of setters.
+     * @param typeClass the class to search for setters
+     * @param propertyName the name of the property
+     * @param propertyValue the value that must be settable either directly or after conversion
+     * @param options controls which setters are considered valid
+     * @return the valid setters; never null or empty
+     */
+    public static List<Method> findAllSetters(Class typeClass, String propertyName, Object propertyValue, Set<Option> options) {
         if (typeClass == null) throw new NullPointerException("typeClass is null");
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
@@ -186,6 +203,9 @@ public final class ReflectionUtil {
         boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
         boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
         boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_PROPERTIES);
+
+
+        LinkedList<Method> validSetters = new LinkedList<Method>();
 
         List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
@@ -263,11 +283,22 @@ public final class ReflectionUtil {
                     setAccessible(method);
                 }
 
-                return method;
+                if (RecipeHelper.isInstance(methodParameterType, propertyValue)) {
+                    // This setter requires no conversion, which means there can not be a conversion error.
+                    // Therefore this setter is perferred and put a the head of the list
+                    validSetters.addFirst(method);
+                } else {
+                    validSetters.add(method);
+                }
             }
 
         }
 
+        if (!validSetters.isEmpty()) {
+            // remove duplicate methods (can happen with inheritance)
+            return new ArrayList<Method>(new LinkedHashSet<Method>(validSetters));
+        }
+        
         if (missException != null) {
             throw missException;
         } else {
