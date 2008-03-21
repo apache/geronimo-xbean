@@ -37,7 +37,8 @@
 		<xbean.osgi.import.pkg>
 			com.thoughtworks.qdox*;resolution:=optional,
 			org.apache.tools.ant*;resolution:=optional,
-            org.springframework.core;resolution:=optional,
+			org.springframework.core;resolution:=optional,
+			org.springframework.web*;resolution:=optional,
 			*
 		</xbean.osgi.import.pkg>
 	</properties>
@@ -126,6 +127,24 @@
                     </execution>
                 </executions>
             </plugin>
+	        <plugin>
+	            <groupId>org.apache.felix</groupId>
+	            <artifactId>maven-bundle-plugin</artifactId>
+	            <extensions>true</extensions>
+	            <configuration>
+		            <instructions>
+		                <Bundle-Name>${artifactId}</Bundle-Name>
+		                <Bundle-SymbolicName>${xbean.osgi.symbolic.name}</Bundle-SymbolicName>
+		                <Export-Package>${xbean.osgi.export}</Export-Package>
+		                <Import-Package>${xbean.osgi.import}</Import-Package>
+		                <Private-Package>${xbean.osgi.private.pkg}</Private-Package>
+		                <Implementation-Title>Apache XBean</Implementation-Title>
+		                <Implementation-Version>${project.version}</Implementation-Version>
+		                <DynamicImport-Package>META-INF.services.org.apache.xbean.spring*,META-INF.services.org.xbean.spring</DynamicImport-Package>
+		                <_failok>true</_failok>
+		           </instructions>
+		        </configuration>
+	        </plugin>
         </plugins>
     </build>
     
