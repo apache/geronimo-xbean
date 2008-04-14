@@ -31,7 +31,7 @@
 
     <artifactId>xbean-finder</artifactId>
     <packaging>bundle</packaging>
-    <name>XBean :: Classpath Resource Finder</name>
+    <name>Apache XBean :: Classpath Resource Finder</name>
     
     <dependencies>
         <dependency>

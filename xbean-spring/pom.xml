@@ -31,7 +31,7 @@
 
     <artifactId>xbean-spring</artifactId>
     <packaging>bundle</packaging>
-    <name>XBean :: Spring</name>
+    <name>Apache XBean :: Spring</name>
 	
 	<properties>
 		<xbean.osgi.import.pkg>

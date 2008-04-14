@@ -30,7 +30,7 @@
     </parent>
 
     <artifactId>maven-xbean-plugin</artifactId>
-    <name>XBean :: Maven Plugin</name>
+    <name>Apache XBean :: Maven Plugin</name>
     <packaging>maven-plugin</packaging>
     
     <dependencies>

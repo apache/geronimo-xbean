@@ -31,7 +31,7 @@
 
     <artifactId>xbean-telnet</artifactId>
     <packaging>bundle</packaging>
-    <name>XBean :: Telnet</name>
+    <name>Apache XBean :: Telnet</name>
 
     <dependencies>
 
