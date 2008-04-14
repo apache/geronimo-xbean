@@ -29,7 +29,7 @@
 
   <artifactId>xbean-reflect</artifactId>
   <packaging>bundle</packaging>
-  <name>XBean :: Reflect</name>
+  <name>Apache XBean :: Reflect</name>
 
   <dependencies>
     <dependency>

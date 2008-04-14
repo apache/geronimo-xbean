@@ -31,6 +31,6 @@
 
     <artifactId>xbean-classpath</artifactId>
     <packaging>bundle</packaging>
-    <name>XBean :: ClassPath</name>
+    <name>Apache XBean :: ClassPath</name>
 
 </project>

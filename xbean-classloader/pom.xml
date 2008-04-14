@@ -31,7 +31,7 @@
 
     <artifactId>xbean-classloader</artifactId>
     <packaging>bundle</packaging>
-    <name>XBean :: Classloader</name>
+    <name>Apache XBean :: Classloader</name>
     <version>3.4-SNAPSHOT</version>
 
     <build>
