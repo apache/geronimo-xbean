@@ -450,43 +450,6 @@ public class ObjectRecipe extends AbstractRecipe {
                         }
                     }
                 }
-
-//                if (options.contains(Option.MATCH_BY_TYPE) && members.isEmpty()) {
-//                    try {
-//                        List<java.lang.reflect.Member> membersByType = ReflectionUtil.findAllMembersByType(clazz, propertyValue, options);
-//                        if (membersByType.size() > 1) {
-//                            List<String> matches = new ArrayList<String>();
-//                            for (java.lang.reflect.Member member : membersByType) {
-//                                if (member instanceof Field) {
-//                                    Field field = (Field) member;
-//                                    matches.add(field.getName());
-//                                } else if (member instanceof Method) {
-//                                    Method setter = (Method) member;
-//                                    matches.add(setter.getName());
-//                                }
-//                            }
-//
-//                            throw new MissingAccessorException("Property of type " + propertyValue.getClass().getName() + " can be mapped to more then one field or setter: " + matches, 0);
-//                        }
-//
-//                        java.lang.reflect.Member member  = membersByType.iterator().next();
-//                        if (member instanceof Field) {
-//                            Field field = (Field) member;
-//                            members.add(new FieldMember(field));
-//                        } else if (member instanceof Method) {
-//                            Method setter = (Method) member;
-//                            members.add(new MethodMember(setter));
-//                        }
-//                    } catch (MissingAccessorException e) {
-//                        if (noSetter != null && noSetter.getMatchLevel() > e.getMatchLevel()) {
-//                            e = noSetter;
-//                        }
-//                        if (noField != null && noField.getMatchLevel() > e.getMatchLevel()) {
-//                            e = noField;
-//                        }
-//                        throw e;
-//                    }
-//                }
             }
         } catch (MissingAccessorException e) {
             if (options.contains(Option.IGNORE_MISSING_PROPERTIES)) {
