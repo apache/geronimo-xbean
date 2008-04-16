@@ -190,6 +190,10 @@ public class ObjectRecipe extends AbstractRecipe {
         setProperty(new SetterProperty(name), value);
     }
 
+    public void setAutoMatchProperty(String type, Object value){
+        setProperty(new AutoMatchProperty(type), value);
+    }
+
     private void setProperty(Property key, Object value) {
         if (value instanceof UnsetPropertiesRecipe) {
             allow(Option.IGNORE_MISSING_PROPERTIES);
@@ -378,6 +382,48 @@ public class ObjectRecipe extends AbstractRecipe {
             } else if (propertyName instanceof FieldProperty){
                 FieldMember member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options));
                 members.add(member);
+            } else if (propertyName instanceof AutoMatchProperty){
+                MissingAccessorException noField = null;
+                if (options.contains(Option.FIELD_INJECTION)) {
+                    List<Field> fieldsByType = null;
+                    try {
+                        fieldsByType = ReflectionUtil.findAllFieldsByType(clazz, propertyValue, options);
+                        FieldMember member = new FieldMember(fieldsByType.iterator().next());
+                        members.add(member);
+                    } catch (MissingAccessorException e) {
+                        noField = e;
+                    }
+
+                    // if we got more then one matching field, that is an immidate error
+                    if (fieldsByType != null && fieldsByType.size() > 1) {
+                        List<String> matches = new ArrayList<String>();
+                        for (Field field : fieldsByType) {
+                            matches.add(field.getName());
+                        }
+                        throw new MissingAccessorException("Property of type " + propertyValue.getClass().getName() + " can be mapped to more then one field: " + matches, 0);
+                    }
+                }
+
+                // if we didn't find any fields, try the setters
+                if (members.isEmpty()) {
+                    List<Method> settersByType;
+                    try {
+                        settersByType = ReflectionUtil.findAllSettersByType(clazz, propertyValue, options);
+                        MethodMember member = new MethodMember(settersByType.iterator().next());
+                        members.add(member);
+                    } catch (MissingAccessorException noSetter) {
+                        throw (noField == null || noSetter.getMatchLevel() > noField.getMatchLevel())? noSetter: noField;
+                    }
+
+                    // if we got more then one matching field, that is an immidate error
+                    if (settersByType != null && settersByType.size() > 1) {
+                        List<String> matches = new ArrayList<String>();
+                        for (Method setter : settersByType) {
+                            matches.add(setter.getName());
+                        }
+                        throw new MissingAccessorException("Property of type " + propertyValue.getClass().getName() + " can be mapped to more then one setter: " + matches, 0);
+                    }
+                }
             } else {
                 // add setter members
                 MissingAccessorException noSetter = null;
@@ -404,6 +450,43 @@ public class ObjectRecipe extends AbstractRecipe {
                         }
                     }
                 }
+
+//                if (options.contains(Option.MATCH_BY_TYPE) && members.isEmpty()) {
+//                    try {
+//                        List<java.lang.reflect.Member> membersByType = ReflectionUtil.findAllMembersByType(clazz, propertyValue, options);
+//                        if (membersByType.size() > 1) {
+//                            List<String> matches = new ArrayList<String>();
+//                            for (java.lang.reflect.Member member : membersByType) {
+//                                if (member instanceof Field) {
+//                                    Field field = (Field) member;
+//                                    matches.add(field.getName());
+//                                } else if (member instanceof Method) {
+//                                    Method setter = (Method) member;
+//                                    matches.add(setter.getName());
+//                                }
+//                            }
+//
+//                            throw new MissingAccessorException("Property of type " + propertyValue.getClass().getName() + " can be mapped to more then one field or setter: " + matches, 0);
+//                        }
+//
+//                        java.lang.reflect.Member member  = membersByType.iterator().next();
+//                        if (member instanceof Field) {
+//                            Field field = (Field) member;
+//                            members.add(new FieldMember(field));
+//                        } else if (member instanceof Method) {
+//                            Method setter = (Method) member;
+//                            members.add(new MethodMember(setter));
+//                        }
+//                    } catch (MissingAccessorException e) {
+//                        if (noSetter != null && noSetter.getMatchLevel() > e.getMatchLevel()) {
+//                            e = noSetter;
+//                        }
+//                        if (noField != null && noField.getMatchLevel() > e.getMatchLevel()) {
+//                            e = noField;
+//                        }
+//                        throw e;
+//                    }
+//                }
             }
         } catch (MissingAccessorException e) {
             if (options.contains(Option.IGNORE_MISSING_PROPERTIES)) {
@@ -642,6 +725,19 @@ public class ObjectRecipe extends AbstractRecipe {
         }
         public String toString() {
             return "[field] "+ super.toString();
+        }
+    }
+
+    public static class AutoMatchProperty extends Property {
+        public AutoMatchProperty(String type) {
+            super(type);
+        }
+
+        public int hashCode() {
+            return super.hashCode()+1;
+        }
+        public String toString() {
+            return "[auto-match] "+ super.toString();
         }
     }
 }

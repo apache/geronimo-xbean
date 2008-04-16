@@ -17,6 +17,7 @@
  */
 package org.apache.xbean.recipe;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -24,7 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.lang.annotation.Annotation;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -32,10 +32,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.LinkedList;
-import java.util.LinkedHashSet;
 
 import static org.apache.xbean.recipe.RecipeHelper.isAssignableFrom;
 
@@ -313,6 +313,176 @@ public final class ReflectionUtil {
                 buffer.append(propertyValue.getClass().getName());
             }
             buffer.append(")");
+            throw new MissingAccessorException(buffer.toString(), -1);
+        }
+    }
+
+    public static List<Field> findAllFieldsByType(Class typeClass, Object propertyValue, Set<Option> options) {
+        if (typeClass == null) throw new NullPointerException("typeClass is null");
+        if (options == null) options = EnumSet.noneOf(Option.class);
+
+        int matchLevel = 0;
+        MissingAccessorException missException = null;
+
+        List<Field> fields = new ArrayList<Field>(Arrays.asList(typeClass.getDeclaredFields()));
+        Class parent = typeClass.getSuperclass();
+        while (parent != null){
+            fields.addAll(Arrays.asList(parent.getDeclaredFields()));
+            parent = parent.getSuperclass();
+        }
+
+        boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
+        boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
+
+        LinkedList<Field> validFields = new LinkedList<Field>();
+        for (Field field : fields) {
+            Class fieldType = field.getType();
+            if (RecipeHelper.isInstance(fieldType, propertyValue) || RecipeHelper.isConvertable(fieldType, propertyValue)) {
+                if (!allowPrivate && !Modifier.isPublic(field.getModifiers())) {
+                    if (matchLevel < 4) {
+                        matchLevel = 4;
+                        missException = new MissingAccessorException("Field is not public: " + field, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (!allowStatic && Modifier.isStatic(field.getModifiers())) {
+                    if (matchLevel < 4) {
+                        matchLevel = 4;
+                        missException = new MissingAccessorException("Field is static: " + field, matchLevel);
+                    }
+                    continue;
+                }
+
+
+                if (fieldType.isPrimitive() && propertyValue == null) {
+                    if (matchLevel < 6) {
+                        matchLevel = 6;
+                        missException = new MissingAccessorException("Null can not be assigned to " +
+                                fieldType.getName() + ": " + field, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (allowPrivate && !Modifier.isPublic(field.getModifiers())) {
+                    setAccessible(field);
+                }
+
+                if (RecipeHelper.isInstance(fieldType, propertyValue)) {
+                    // This field requires no conversion, which means there can not be a conversion error.
+                    // Therefore this setter is perferred and put a the head of the list
+                    validFields.addFirst(field);
+                } else {
+                    validFields.add(field);
+                }
+            }
+        }
+
+        if (!validFields.isEmpty()) {
+            // remove duplicate methods (can happen with inheritance)
+            return new ArrayList<Field>(new LinkedHashSet<Field>(validFields));
+        }
+
+        if (missException != null) {
+            throw missException;
+        } else {
+            StringBuffer buffer = new StringBuffer("Unable to find a valid field ");
+            if (propertyValue instanceof Recipe) {
+                buffer.append("for ").append(propertyValue == null ? "null" : propertyValue);
+            } else {
+                buffer.append("of type ").append(propertyValue == null ? "null" : propertyValue.getClass().getName());
+            }
+            buffer.append(" in class ").append(typeClass.getName());
+            throw new MissingAccessorException(buffer.toString(), -1);
+        }
+    }
+    public static List<Method> findAllSettersByType(Class typeClass, Object propertyValue, Set<Option> options) {
+        if (typeClass == null) throw new NullPointerException("typeClass is null");
+        if (options == null) options = EnumSet.noneOf(Option.class);
+
+        int matchLevel = 0;
+        MissingAccessorException missException = null;
+
+        boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
+        boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
+
+        LinkedList<Method> validSetters = new LinkedList<Method>();
+        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
+        for (Method method : methods) {
+            if (method.getName().startsWith("set") && method.getParameterTypes().length == 1 && (RecipeHelper.isInstance(method.getParameterTypes()[0], propertyValue) || RecipeHelper.isConvertable(method.getParameterTypes()[0], propertyValue))) {
+                if (method.getReturnType() != Void.TYPE) {
+                    if (matchLevel < 2) {
+                        matchLevel = 2;
+                        missException = new MissingAccessorException("Setter returns a value: " + method, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (Modifier.isAbstract(method.getModifiers())) {
+                    if (matchLevel < 3) {
+                        matchLevel = 3;
+                        missException = new MissingAccessorException("Setter is abstract: " + method, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (!allowPrivate && !Modifier.isPublic(method.getModifiers())) {
+                    if (matchLevel < 4) {
+                        matchLevel = 4;
+                        missException = new MissingAccessorException("Setter is not public: " + method, matchLevel);
+                    }
+                    continue;
+                }
+
+                Class methodParameterType = method.getParameterTypes()[0];
+                if (methodParameterType.isPrimitive() && propertyValue == null) {
+                    if (matchLevel < 6) {
+                        matchLevel = 6;
+                        missException = new MissingAccessorException("Null can not be assigned to " +
+                                methodParameterType.getName() + ": " + method, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (!allowStatic && Modifier.isStatic(method.getModifiers())) {
+                    if (matchLevel < 4) {
+                        matchLevel = 4;
+                        missException = new MissingAccessorException("Setter is static: " + method, matchLevel);
+                    }
+                    continue;
+                }
+
+                if (allowPrivate && !Modifier.isPublic(method.getModifiers())) {
+                    setAccessible(method);
+                }
+
+                if (RecipeHelper.isInstance(methodParameterType, propertyValue)) {
+                    // This setter requires no conversion, which means there can not be a conversion error.
+                    // Therefore this setter is perferred and put a the head of the list
+                    validSetters.addFirst(method);
+                } else {
+                    validSetters.add(method);
+                }
+            }
+
+        }
+
+        if (!validSetters.isEmpty()) {
+            // remove duplicate methods (can happen with inheritance)
+            return new ArrayList<Method>(new LinkedHashSet<Method>(validSetters));
+        }
+
+        if (missException != null) {
+            throw missException;
+        } else {
+            StringBuffer buffer = new StringBuffer("Unable to find a valid setter ");
+            if (propertyValue instanceof Recipe) {
+                buffer.append("for ").append(propertyValue == null ? "null" : propertyValue);
+            } else {
+                buffer.append("of type ").append(propertyValue == null ? "null" : propertyValue.getClass().getName());
+            }
+            buffer.append(" in class ").append(typeClass.getName());
             throw new MissingAccessorException(buffer.toString(), -1);
         }
     }
