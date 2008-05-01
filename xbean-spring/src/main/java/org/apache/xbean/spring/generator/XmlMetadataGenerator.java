@@ -126,7 +126,11 @@ public class XmlMetadataGenerator implements GeneratorPlugin {
             }
 
             // add property
-            properties.put(namespace,  cp);
+            String uri = namespace;
+            if (!uri.endsWith("/")) {
+                uri += "/";
+            }
+            properties.put(uri + cp,  cp);
 
             // write properties
             OutputStream fout = new FileOutputStream(file);
