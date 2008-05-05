@@ -334,15 +334,7 @@
     
     <profiles>
         <profile>
-           <id>release-environment</id>
-
-            <activation>
-                <property>
-                    <name>env</name>
-                    <value>release</value>
-                </property>
-            </activation>
-
+           <id>release</id>
             <build>
                 <plugins>
                     <!-- We want to sign the artifact, the POM, and all attached artifacts -->
@@ -383,7 +375,7 @@
 		            <plugin>
 		                <groupId>org.apache.maven.plugins</groupId>
 		                <artifactId>maven-source-plugin</artifactId>
-                        <version>2.0.2</version>
+                        <version>2.0.4</version>
 		                <executions>
 		                    <execution>
 		                        <goals>
@@ -396,7 +388,7 @@
                     <plugin>
                         <inherited>true</inherited>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.2</version>
+                        <version>2.4</version>
                         <configuration>
                             <source>1.5</source>
                         </configuration>
