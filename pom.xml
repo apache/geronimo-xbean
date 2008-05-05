@@ -247,7 +247,7 @@
                 <plugin>
                     <groupId>org.apache.xbean</groupId>
                     <artifactId>maven-xbean-plugin</artifactId>
-                    <version>${version}</version>
+                    <version>${pom.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
