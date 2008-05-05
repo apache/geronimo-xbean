@@ -38,7 +38,7 @@
         <dependency>
             <groupId>${pom.groupId}</groupId>
             <artifactId>xbean-spring</artifactId>
-            <version>${version}</version>
+            <version>${pom.version}</version>
         </dependency>
 
         <dependency>
