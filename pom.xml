@@ -275,7 +275,7 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.0-beta-7</version>
                 <configuration>
-                    <preparationGoals>clean,verify,clean,install</preparationGoals>
+                    <preparationGoals>clean,verify,install</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
