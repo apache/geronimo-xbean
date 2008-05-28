@@ -35,7 +35,7 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
     
-    <version>3.5-SNAPSHOT</version>
+    <version>3.4.1</version>
     
     <description>
         XBean is a plugin based server architecture.
@@ -44,9 +44,9 @@
     <url>http://geronimo.apache.org/xbean</url>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
-        <url>http://svn.apache.org/viewvc/geronimo/xbean/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.4.1</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.4.1</developerConnection>
+        <url>http://svn.apache.org/viewvc/geronimo/xbean/tags/xbean-3.4.1</url>
     </scm>
     
     <properties>
