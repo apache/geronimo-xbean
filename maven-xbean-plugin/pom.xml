@@ -26,7 +26,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>3.5-SNAPSHOT</version>
+        <version>3.4.1</version>
     </parent>
 
     <artifactId>maven-xbean-plugin</artifactId>
