@@ -65,6 +65,7 @@ public class ClassFinder {
 
     private final ClassLoader classLoader;
     private final List<String> classesNotLoaded = new ArrayList<String>();
+    private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
 
     /**
      * Creates a ClassFinder that will search the urls in the specified classloader
@@ -674,7 +675,7 @@ public class ClassFinder {
                 InputStream in = resource.openStream();
                 try {
                     ClassReader classReader = new ClassReader(in);
-                    classReader.accept(new InfoBuildingVisitor(), true);
+                    classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
                 } finally {
                     in.close();
                 }
