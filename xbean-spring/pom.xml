@@ -140,7 +140,7 @@
                                <Private-Package>${xbean.osgi.private.pkg}</Private-Package>
                                <Implementation-Title>Apache XBean</Implementation-Title>
                                <Implementation-Version>${project.version}</Implementation-Version>
-                               <DynamicImport-Package>META-INF.services.org.apache.xbean.spring*,META-INF.services.org.xbean.spring</DynamicImport-Package>
+                               <DynamicImport-Package>META-INF.services.org.apache.xbean.spring.*,META-INF.services.org.xbean.spring</DynamicImport-Package>
                                <_failok>true</_failok>
                           </instructions>
                        </configuration>
