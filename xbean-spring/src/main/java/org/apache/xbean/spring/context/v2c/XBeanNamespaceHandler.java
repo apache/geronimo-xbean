@@ -41,7 +41,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.xbean.spring.context.impl.MappingMetaData;
 import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
 import org.apache.xbean.spring.context.impl.NamespaceHelper;
-import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -52,7 +51,6 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
-import org.springframework.beans.factory.support.ChildBeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
@@ -64,6 +62,8 @@ import org.springframework.beans.factory.xml.NamespaceHandler;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.util.StringUtils;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -488,7 +488,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 String uri = childElement.getNamespaceURI();
                 String localName = childElement.getLocalName();
 
-                if (!isEmpty(uri) || !reservedElementNames.contains(localName)) {
+                if (!isDefaultNamespace(uri) || !reservedElementNames.contains(localName)) {
                     // we could be one of the following
                     // * the child element maps to a <property> tag with inner
                     // tags being the bean
@@ -845,6 +845,13 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
     protected boolean isEmpty(String uri) {
         return uri == null || uri.length() == 0;
+    }
+
+    protected boolean isDefaultNamespace(String namespaceUri) {
+        return (!StringUtils.hasLength(namespaceUri) ||
+               BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI.equals(namespaceUri)) ||
+               SPRING_SCHEMA.equals(namespaceUri) ||
+               SPRING_SCHEMA_COMPAT.equals(namespaceUri);
     }
 
     protected void declareLifecycleMethods(BeanDefinitionHolder definitionHolder, MappingMetaData metaData,
