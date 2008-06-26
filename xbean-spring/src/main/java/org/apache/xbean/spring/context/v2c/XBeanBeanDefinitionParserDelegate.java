@@ -44,7 +44,7 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
 
     public Object parsePropertySubElement(Element ele, BeanDefinition bd, String defaultTypeClassName) {
         if (!isDefaultNamespace(ele.getNamespaceURI())) {
-            return internalParseNestedCustomElement(ele);
+            return internalParseNestedCustomElement(ele, bd);
         } 
         else if (ele.getTagName().equals(QNAME_ELEMENT)) {
             return parseQNameElement(ele);
@@ -83,11 +83,11 @@ public class XBeanBeanDefinitionParserDelegate extends BeanDefinitionParserDeleg
         return buffer.toString();
     }
     
-    private Object internalParseNestedCustomElement(Element candidateEle) {
+    private Object internalParseNestedCustomElement(Element candidateEle, BeanDefinition containingBeanDefinition) {
         try {
             Method mth = getClass().getSuperclass().getDeclaredMethod("parseNestedCustomElement", new Class[] { Element.class, BeanDefinition.class });
             mth.setAccessible(true);
-            return mth.invoke(this, new Object[] { candidateEle, null });
+            return mth.invoke(this, new Object[] { candidateEle, containingBeanDefinition });
         } catch (Exception e) {
             if (e instanceof InvocationTargetException && e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
