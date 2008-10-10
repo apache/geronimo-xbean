@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.Type;
@@ -46,15 +47,16 @@ import java.lang.reflect.Type;
  * @version $Rev: 6687 $
  */
 public class PropertyEditors {
-    private static final Map registry = Collections.synchronizedMap(new ReferenceIdentityMap());
-    private static final Map PRIMITIVE_TO_WRAPPER;
-    private static final Map WRAPPER_TO_PRIMITIVE;
+    private static final Map<Class, Converter> registry = Collections.synchronizedMap(new ReferenceIdentityMap());
+    private static final Map<Class, Class> PRIMITIVE_TO_WRAPPER;
+    private static final Map<Class, Class> WRAPPER_TO_PRIMITIVE;
+    private static boolean registerWithVM;
 
     /**
      * Register all of the built in converters
      */
     static {
-        Map map = new HashMap();
+        Map<Class, Class> map = new HashMap<Class, Class>();
         map.put(boolean.class, Boolean.class);
         map.put(char.class, Character.class);
         map.put(byte.class, Byte.class);
@@ -66,7 +68,7 @@ public class PropertyEditors {
         PRIMITIVE_TO_WRAPPER = Collections.unmodifiableMap(map);
 
 
-        map = new HashMap();
+        map = new HashMap<Class, Class>();
         map.put(Boolean.class, boolean.class);
         map.put(Character.class, char.class);
         map.put(Byte.class, byte.class);
@@ -130,20 +132,56 @@ public class PropertyEditors {
         }
     }
 
+    /**
+     * Are converters registered with the VM PropertyEditorManager.  By default
+     * converters are not registered with the VM as this creates problems for
+     * IDE and Spring because they rely in their specific converters being
+     * registered to function properly. 
+     */
+    public static boolean isRegisterWithVM() {
+        return registerWithVM;
+    }
+
+    /**
+     * Sets if converters registered with the VM PropertyEditorManager.
+     * If the new value is true, all currently registered converters are
+     * immediately registered with the VM.
+     */
+    public static void setRegisterWithVM(boolean registerWithVM) {
+        if (PropertyEditors.registerWithVM != registerWithVM) {
+            PropertyEditors.registerWithVM = registerWithVM;
+
+            // register all converters with the VM
+            if (registerWithVM) {
+                for (Entry<Class, Converter> entry : registry.entrySet()) {
+                    Class type = entry.getKey();
+                    Converter converter = entry.getValue();
+                    PropertyEditorManager.registerEditor(type, converter.getClass());
+                }
+            }
+        }
+    }
+
     public static void registerConverter(Converter converter) {
         if (converter == null) throw new NullPointerException("editor is null");
         Class type = converter.getType();
         registry.put(type, converter);
-        PropertyEditorManager.registerEditor(type, converter.getClass());
+        if (registerWithVM) {
+            PropertyEditorManager.registerEditor(type, converter.getClass());
+        }
 
         if (PRIMITIVE_TO_WRAPPER.containsKey(type)) {
-            Class wrapperType = (Class) PRIMITIVE_TO_WRAPPER.get(type);
+            Class wrapperType = PRIMITIVE_TO_WRAPPER.get(type);
             registry.put(wrapperType, converter);
-            PropertyEditorManager.registerEditor(wrapperType, converter.getClass());
+            if (registerWithVM) {
+                PropertyEditorManager.registerEditor(wrapperType, converter.getClass());
+            }
         } else if (WRAPPER_TO_PRIMITIVE.containsKey(type)) {
-            Class primitiveType = (Class) WRAPPER_TO_PRIMITIVE.get(type);
+            Class primitiveType = WRAPPER_TO_PRIMITIVE.get(type);
             registry.put(primitiveType, converter);
-            PropertyEditorManager.registerEditor(primitiveType, converter.getClass());
+            if (registerWithVM) {
+                PropertyEditorManager.registerEditor(primitiveType, converter.getClass());
+            }
         }
     }
 
@@ -152,7 +190,7 @@ public class PropertyEditors {
         if (classLoader == null) throw new NullPointerException("classLoader is null");
 
         // load using the ClassLoading utility, which also manages arrays and primitive classes.
-        Class typeClass = null;
+        Class typeClass;
         try {
             typeClass = Class.forName(type, true, classLoader);
         } catch (ClassNotFoundException e) {
@@ -208,7 +246,7 @@ public class PropertyEditors {
 
         // create the string value
         editor.setValue(value);
-        String textValue = null;
+        String textValue;
         try {
             textValue = editor.getAsText();
         } catch (Exception e) {
@@ -224,7 +262,7 @@ public class PropertyEditors {
         if (classLoader == null) throw new NullPointerException("classLoader is null");
 
         // load using the ClassLoading utility, which also manages arrays and primitive classes.
-        Class typeClass = null;
+        Class typeClass;
         try {
             typeClass = Class.forName(type, true, classLoader);
         } catch (ClassNotFoundException e) {
@@ -253,7 +291,7 @@ public class PropertyEditors {
         }
 
         editor.setAsText(value);
-        Object objectValue = null;
+        Object objectValue;
         try {
             objectValue = editor.getValue();
         } catch (Exception e) {
@@ -350,7 +388,7 @@ public class PropertyEditors {
             return null;
         }
 
-        Converter converter = (Converter) registry.get(type);
+        Converter converter = registry.get(clazz);
 
         // we're outta here if we got one.
         if (converter != null) {
@@ -358,8 +396,7 @@ public class PropertyEditors {
         }
 
         Class[] declaredClasses = clazz.getDeclaredClasses();
-        for (int i = 0; i < declaredClasses.length; i++) {
-            Class declaredClass = declaredClasses[i];
+        for (Class declaredClass : declaredClasses) {
             if (Converter.class.isAssignableFrom(declaredClass)) {
                 try {
                     converter = (Converter) declaredClass.newInstance();
@@ -367,7 +404,7 @@ public class PropertyEditors {
 
                     // try to get the converter from the registry... the converter
                     // created above may have been for another class
-                    converter = (Converter) registry.get(clazz);
+                    converter = registry.get(clazz);
                     if (converter != null) {
                         return converter;
                     }
