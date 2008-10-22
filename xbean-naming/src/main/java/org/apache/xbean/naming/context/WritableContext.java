@@ -16,50 +16,50 @@
  */
 package org.apache.xbean.naming.context;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.xbean.naming.reference.CachingReference;
 
 import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.NameAlreadyBoundException;
 import javax.naming.ContextNotEmptyException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NamingException;
+
+import org.apache.xbean.naming.reference.CachingReference;
 
 /**
  * @version $Rev$ $Date$
  */
 public class WritableContext extends AbstractFederatedContext {
     private final Lock writeLock = new ReentrantLock();
-    private final AtomicReference bindingsRef;
-    private final AtomicReference indexRef;
+    private final AtomicReference<Map<String, Object>> bindingsRef;
+    private final AtomicReference<Map<String, Object>> indexRef;
     private final boolean cacheReferences;
 
     public WritableContext() throws NamingException {
-        this("", Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, false);
+        this("", Collections.<String, Object>emptyMap(), ContextAccess.MODIFIABLE, false);
     }
 
     public WritableContext(String nameInNamespace) throws NamingException {
-        this(nameInNamespace, Collections.EMPTY_MAP, ContextAccess.MODIFIABLE, false);
+        this(nameInNamespace, Collections.<String, Object>emptyMap(), ContextAccess.MODIFIABLE, false);
     }
 
-    public WritableContext(String nameInNamespace, Map bindings) throws NamingException {
+    public WritableContext(String nameInNamespace, Map<String, Object> bindings) throws NamingException {
         this(nameInNamespace, bindings, ContextAccess.MODIFIABLE, false);
     }
 
-    public WritableContext(String nameInNamespace, Map bindings, boolean cacheReferences) throws NamingException {
+    public WritableContext(String nameInNamespace, Map<String, Object> bindings, boolean cacheReferences) throws NamingException {
         this(nameInNamespace, bindings, ContextAccess.MODIFIABLE, cacheReferences);
     }
 
-    public WritableContext(String nameInNamespace, Map bindings, ContextAccess contextAccess) throws NamingException {
+    public WritableContext(String nameInNamespace, Map<String, Object> bindings, ContextAccess contextAccess) throws NamingException {
         this(nameInNamespace, bindings, contextAccess, false);
     }
 
-    public WritableContext(String nameInNamespace, Map bindings, ContextAccess contextAccess, boolean cacheReferences) throws NamingException {
+    public WritableContext(String nameInNamespace, Map<String, Object> bindings, ContextAccess contextAccess, boolean cacheReferences) throws NamingException {
         super(nameInNamespace, contextAccess);
 
         this.cacheReferences = cacheReferences;
@@ -67,10 +67,10 @@ public class WritableContext extends AbstractFederatedContext {
             bindings = CachingReference.wrapReferences(bindings);
         }
 
-        Map localBindings = ContextUtil.createBindings(bindings, this);
+        Map<String, Object> localBindings = ContextUtil.createBindings(bindings, this);
 
-        this.bindingsRef = new AtomicReference(Collections.unmodifiableMap(localBindings));
-        this.indexRef = new AtomicReference(Collections.unmodifiableMap(buildIndex("", localBindings)));
+        this.bindingsRef = new AtomicReference<Map<String, Object>>(Collections.unmodifiableMap(localBindings));
+        this.indexRef = new AtomicReference<Map<String, Object>>(Collections.unmodifiableMap(buildIndex("", localBindings)));
     }
 
     protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
@@ -82,10 +82,10 @@ public class WritableContext extends AbstractFederatedContext {
         return true;
     }
 
-    protected void addBinding(AtomicReference bindingsRef, String name, String nameInNamespace, Object value, boolean rebind) throws NamingException {
+    protected void addBinding(AtomicReference<Map<String, Object>> bindingsRef, String name, String nameInNamespace, Object value, boolean rebind) throws NamingException {
         writeLock.lock();
         try {
-            Map bindings = (Map) bindingsRef.get();
+            Map<String, Object> bindings = bindingsRef.get();
 
             if (!rebind && bindings.containsKey(name)) {
                 throw new NameAlreadyBoundException(name);
@@ -94,7 +94,7 @@ public class WritableContext extends AbstractFederatedContext {
                 value = CachingReference.wrapReference(getNameInNamespace(name), value);
             }
 
-            Map newBindings = new HashMap(bindings);
+            Map<String, Object> newBindings = new HashMap<String, Object>(bindings);
             newBindings.put(name,value);
             bindingsRef.set(newBindings);
 
@@ -105,12 +105,12 @@ public class WritableContext extends AbstractFederatedContext {
     }
 
     private void addToIndex(String name, Object value) {
-        Map index = (Map) indexRef.get();
-        Map newIndex = new HashMap(index);
+        Map<String, Object> index = indexRef.get();
+        Map<String, Object> newIndex = new HashMap<String, Object>(index);
         newIndex.put(name, value);
         if (value instanceof NestedWritableContext) {
             NestedWritableContext nestedcontext = (NestedWritableContext) value;
-            Map newIndexValues = buildIndex(name, (Map) nestedcontext.bindingsRef.get());
+            Map<String, Object> newIndexValues = buildIndex(name, nestedcontext.bindingsRef.get());
             newIndex.putAll(newIndexValues);
         }
         indexRef.set(newIndex);
@@ -124,23 +124,23 @@ public class WritableContext extends AbstractFederatedContext {
         return true;
     }
 
-    private boolean removeBinding(AtomicReference bindingsRef, String name, boolean removeNotEmptyContext) throws NamingException {
+    private boolean removeBinding(AtomicReference<Map<String, Object>> bindingsRef, String name, boolean removeNotEmptyContext) throws NamingException {
         writeLock.lock();
         try {
-            Map bindings = (Map) bindingsRef.get();
+            Map<String, Object> bindings = bindingsRef.get();
             if (!bindings.containsKey(name)) {
                 // remove is idempotent meaning remove succeededs even if there was no value bound
                 return false;
             }
 
-            Map newBindings = new HashMap(bindings);
+            Map<String, Object> newBindings = new HashMap<String, Object>(bindings);
             Object oldValue = newBindings.remove(name);
             if (!removeNotEmptyContext && oldValue instanceof Context && !isEmpty((Context)oldValue)) {
                 throw new ContextNotEmptyException(name);
             }
             bindingsRef.set(newBindings);
 
-            Map newIndex = removeFromIndex(name);
+            Map<String, Object> newIndex = removeFromIndex(name);
             indexRef.set(newIndex);
             return true;
         } finally {
@@ -148,39 +148,37 @@ public class WritableContext extends AbstractFederatedContext {
         }
     }
 
-    private Map removeFromIndex(String name) {
-        Map index = (Map) indexRef.get();
-        Map newIndex = new HashMap(index);
+    private Map<String, Object> removeFromIndex(String name) {
+        Map<String, Object> index = indexRef.get();
+        Map<String, Object> newIndex = new HashMap<String, Object>(index);
         Object oldValue = newIndex.remove(name);
         if (oldValue instanceof NestedWritableContext) {
             NestedWritableContext nestedcontext = (NestedWritableContext) oldValue;
-            Map removedIndexValues = buildIndex(name, (Map) nestedcontext.bindingsRef.get());
-            for (Iterator iterator = removedIndexValues.keySet().iterator(); iterator.hasNext();) {
-                String key = (String) iterator.next();
+            Map<String, Object> removedIndexValues = buildIndex(name, nestedcontext.bindingsRef.get());
+            for (String key : removedIndexValues.keySet()) {
                 newIndex.remove(key);
             }
         }
         return newIndex;
     }
 
-    public Context createNestedSubcontext(String path, Map bindings) throws NamingException {
+    public Context createNestedSubcontext(String path, Map<String, Object> bindings) throws NamingException {
         return new NestedWritableContext(path,bindings);
     }
 
-    private static Map buildIndex(String nameInNamespace, Map bindings) {
+    private static Map<String, Object> buildIndex(String nameInNamespace, Map<String, Object> bindings) {
         String path = nameInNamespace;
         if (path.length() > 0 && !path.endsWith("/")) {
             path += "/";
         }
 
-        Map absoluteIndex = new HashMap();
-        for (Iterator iterator = bindings.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String name = (String) entry.getKey();
+        Map<String, Object> absoluteIndex = new HashMap<String, Object>();
+        for (Map.Entry<String, Object> entry : bindings.entrySet()) {
+            String name = entry.getKey();
             Object value = entry.getValue();
             if (value instanceof NestedWritableContext) {
-                NestedWritableContext nestedContext = (NestedWritableContext)value;
-                absoluteIndex.putAll(buildIndex(nestedContext.pathWithSlash, (Map) nestedContext.bindingsRef.get()));
+                NestedWritableContext nestedContext = (NestedWritableContext) value;
+                absoluteIndex.putAll(buildIndex(nestedContext.pathWithSlash, nestedContext.bindingsRef.get()));
             }
             absoluteIndex.put(path + name, value);
         }
@@ -188,32 +186,31 @@ public class WritableContext extends AbstractFederatedContext {
     }
 
     protected Object getDeepBinding(String name) {
-        Map index = (Map) indexRef.get();
+        Map<String, Object> index = indexRef.get();
         return index.get(name);
     }
 
-    protected Map getWrapperBindings() throws NamingException {
-        Map bindings = (Map) bindingsRef.get();
-        return bindings;
+    protected Map<String, Object> getWrapperBindings() throws NamingException {
+        return bindingsRef.get();
     }
 
     /**
      * Nested context which shares the absolute index map in MapContext.
      */
     public class NestedWritableContext extends AbstractFederatedContext {
-        private final AtomicReference bindingsRef;
+        private final AtomicReference<Map<String, Object>> bindingsRef;
         private final String pathWithSlash;
 
-        public NestedWritableContext(String path, Map bindings) throws NamingException {
+        public NestedWritableContext(String path, Map<String, Object> bindings) throws NamingException {
             super(WritableContext.this, path);
 
             if (!path.endsWith("/")) path += "/";
             this.pathWithSlash = path;
 
-            this.bindingsRef = new AtomicReference(Collections.unmodifiableMap(bindings));
+            this.bindingsRef = new AtomicReference<Map<String, Object>>(Collections.unmodifiableMap(bindings));
         }
 
-        public Context createNestedSubcontext(String path, Map bindings) throws NamingException {
+        public Context createNestedSubcontext(String path, Map<String, Object> bindings) throws NamingException {
             return new NestedWritableContext(path, bindings);
         }
 
@@ -222,9 +219,8 @@ public class WritableContext extends AbstractFederatedContext {
             return WritableContext.this.getDeepBinding(absoluteName);
         }
 
-        protected Map getWrapperBindings() throws NamingException {
-            Map bindings = (Map) bindingsRef.get();
-            return bindings;
+        protected Map<String, Object> getWrapperBindings() throws NamingException {
+            return bindingsRef.get();
         }
 
         protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {

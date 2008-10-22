@@ -36,6 +36,7 @@ public interface NestedContextFactory {
      * @param path the path to the new nested context
      * @param bindings the initial bindings for the context
      * @return the new nested context
+     * @throws javax.naming.NamingException on error
      */
-    Context createNestedSubcontext(String path, Map bindings) throws NamingException;
+    Context createNestedSubcontext(String path, Map<String, Object> bindings) throws NamingException;
 }

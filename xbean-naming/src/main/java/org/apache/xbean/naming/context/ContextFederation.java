@@ -16,27 +16,26 @@
  */
 package org.apache.xbean.naming.context;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
-import javax.naming.NamingException;
 import javax.naming.NamingEnumeration;
-import javax.naming.Binding;
+import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * @version $Rev$ $Date$
  */
 public class ContextFederation {
     private final Context actualContext;
-    private final AtomicReference federatedContextRef = new AtomicReference(Collections.EMPTY_SET);
+    private final AtomicReference<Set<Context>> federatedContextRef = new AtomicReference<Set<Context>>(Collections.<Context>emptySet());
     public static final int MAX_WRITE_ATTEMPTS = 10;
 
     public ContextFederation(Context actualContext) {
@@ -44,12 +43,12 @@ public class ContextFederation {
     }
 
     public void addContext(Context context) {
-        Set federatedContext;
-        Set newFederatedContext;
+        Set<Context> federatedContext;
+        Set<Context> newFederatedContext;
         for (int i = 0; i < MAX_WRITE_ATTEMPTS; i++) {
             federatedContext = getFederatedContexts();
 
-            newFederatedContext = new LinkedHashSet(federatedContext);
+            newFederatedContext = new LinkedHashSet<Context>(federatedContext);
             newFederatedContext.add(context);
             newFederatedContext = Collections.unmodifiableSet(newFederatedContext);
             if (federatedContextRef.compareAndSet(federatedContext, newFederatedContext)) {
@@ -59,13 +58,12 @@ public class ContextFederation {
         throw new RuntimeException("Unable to update federatedContextRef within " + MAX_WRITE_ATTEMPTS + " attempts");
     }
 
-    public Set getFederatedContexts() {
-        return (Set) federatedContextRef.get();
+    public Set<Context> getFederatedContexts() {
+        return federatedContextRef.get();
     }
 
     public Object getFederatedBinding(String name) throws NamingException {
-        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
-            Context context = (Context) iterator.next();
+        for (Context context : getFederatedContexts()) {
 
             try {
                 Object value = context.lookup(name);
@@ -79,10 +77,9 @@ public class ContextFederation {
         return null;
     }
 
-    public Map getFederatedBindings() throws NamingException {
-        Map bindings = new HashMap();
-        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
-            Context context = (Context) iterator.next();
+    public Map<String, Object> getFederatedBindings() throws NamingException {
+        Map<String, Object> bindings = new HashMap<String, Object>();
+        for (Context context : getFederatedContexts()) {
 
             // list federated context
             NamingEnumeration namingEnumeration = context.listBindings("");
@@ -102,8 +99,7 @@ public class ContextFederation {
     }
 
     protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
-        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
-            Context context = (Context) iterator.next();
+        for (Context context : getFederatedContexts()) {
 
             try {
                 if (rebind) {
@@ -119,8 +115,7 @@ public class ContextFederation {
     }
 
     protected boolean removeBinding(String name) throws NamingException {
-        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
-            Context context = (Context) iterator.next();
+        for (Context context : getFederatedContexts()) {
 
             try {
                 context.unbind(name);
@@ -132,9 +127,8 @@ public class ContextFederation {
     }
 
     public Object lookup(Name name) {
-        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
+        for (Context federatedContext : getFederatedContexts()) {
             try {
-                Context federatedContext = (Context) iterator.next();
                 Object value = federatedContext.lookup(name);
                 if (value instanceof Context) {
                     return new VirtualSubcontext(name, actualContext);
@@ -151,8 +145,7 @@ public class ContextFederation {
         Name parsedSubcontextName = actualContext.getNameParser("").parse(subcontextName);
 
         ContextFederation subcontextFederation = new ContextFederation(actualSubcontext);
-        for (Iterator iterator = getFederatedContexts().iterator(); iterator.hasNext();) {
-            Context federatedContext = (Context) iterator.next();
+        for (Context federatedContext : getFederatedContexts()) {
             VirtualSubcontext virtualSubcontext = new VirtualSubcontext(parsedSubcontextName, federatedContext);
             subcontextFederation.addContext(virtualSubcontext);
         }

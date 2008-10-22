@@ -21,6 +21,9 @@ import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NameParser;
+import javax.naming.Binding;
+import javax.naming.NameClassPair;
+
 import java.util.Hashtable;
 
 /**
@@ -90,19 +93,19 @@ public class VirtualSubcontext implements Context {
         context.rename(getNameInContext(oldName), getNameInContext(newName));
     }
 
-    public NamingEnumeration list(Name name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
         return context.list(getNameInContext(name));
     }
 
-    public NamingEnumeration list(String name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         return context.list(getNameInContext(name));
     }
 
-    public NamingEnumeration listBindings(Name name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
         return context.listBindings(getNameInContext(name));
     }
 
-    public NamingEnumeration listBindings(String name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
         return context.listBindings(getNameInContext(name));
     }
 

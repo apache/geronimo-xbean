@@ -76,8 +76,8 @@ public final class ContextUtil {
         }
     }
 
-    public static Map listToMap(NamingEnumeration enumeration) {
-        Map result = new HashMap();
+    public static Map<String, String> listToMap(NamingEnumeration enumeration) {
+        Map<String, String> result = new HashMap<String, String>();
         while (enumeration.hasMoreElements()) {
             NameClassPair nameClassPair = (NameClassPair) enumeration.nextElement();
             String name = nameClassPair.getName();
@@ -86,8 +86,8 @@ public final class ContextUtil {
         return result;
     }
 
-    public static Map listBindingsToMap(NamingEnumeration enumeration) {
-        Map result = new HashMap();
+    public static Map<String, Object> listBindingsToMap(NamingEnumeration enumeration) {
+        Map<String, Object> result = new HashMap<String, Object>();
         while (enumeration.hasMoreElements()) {
             Binding binding = (Binding) enumeration.nextElement();
             String name = binding.getName();
@@ -96,7 +96,7 @@ public final class ContextUtil {
         return result;
     }
 
-    public static final class ListEnumeration implements NamingEnumeration {
+    public static final class ListEnumeration implements NamingEnumeration<NameClassPair> {
         private final Iterator iterator;
 
         public ListEnumeration(Map localBindings) {
@@ -111,15 +111,15 @@ public final class ContextUtil {
             return iterator.hasNext();
         }
 
-        public Object next() {
+        public NameClassPair next() {
             return nextElement();
         }
 
-        public Object nextElement() {
+        public NameClassPair nextElement() {
             Map.Entry entry = (Map.Entry) iterator.next();
             String name = (String) entry.getKey();
             Object value = entry.getValue();
-            String className = null;
+            String className;
             if (value instanceof Reference) {
                 Reference reference = (Reference) value;
                 className = reference.getClassName();
@@ -133,7 +133,7 @@ public final class ContextUtil {
         }
     }
 
-    public static final class ListBindingEnumeration implements NamingEnumeration {
+    public static final class ListBindingEnumeration implements NamingEnumeration<Binding> {
         private final Iterator iterator;
 
         public ListBindingEnumeration(Map localBindings) {
@@ -148,11 +148,11 @@ public final class ContextUtil {
             return iterator.hasNext();
         }
 
-        public Object next() {
+        public Binding next() {
             return nextElement();
         }
 
-        public Object nextElement() {
+        public Binding nextElement() {
             Map.Entry entry = (Map.Entry) iterator.next();
             String name = (String) entry.getKey();
             Object value = entry.getValue();
@@ -226,21 +226,19 @@ public final class ContextUtil {
         }
     }
 
-    public static Map createBindings(Map absoluteBindings, NestedContextFactory factory) throws NamingException {
+    public static Map<String, Object> createBindings(Map<String, Object> absoluteBindings, NestedContextFactory factory) throws NamingException {
         // create a tree of Nodes using the absolute bindings
         Node node = buildMapTree(absoluteBindings);
 
         // convert the node tree into a tree of context objects
-        Map localBindings = ContextUtil.createBindings(null, node, factory);
 
-        return localBindings;
+        return ContextUtil.createBindings(null, node, factory);
     }
 
-    private static Map createBindings(String nameInNameSpace, Node node, NestedContextFactory factory) throws NamingException {
-        Map bindings = new HashMap(node.size());
-        for (Iterator iterator = node.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String name = (String) entry.getKey();
+    private static Map<String, Object> createBindings(String nameInNameSpace, Node node, NestedContextFactory factory) throws NamingException {
+        Map<String, Object> bindings = new HashMap<String, Object>(node.size());
+        for (Map.Entry<String, Object> entry : node.entrySet()) {
+            String name = entry.getKey();
             Object value = entry.getValue();
 
             // if this is a nested node we need to create a context for the node
@@ -264,21 +262,20 @@ public final class ContextUtil {
     /**
      * Do nothing subclass of hashmap used to differentiate between a Map in the tree an a nested element during tree building
      */
-    public static final class Node extends HashMap {
+    public static final class Node extends HashMap<String, Object> {
     }
 
-    public static Node buildMapTree(Map absoluteBindings) throws NamingException {
+    public static Node buildMapTree(Map<String, Object> absoluteBindings) throws NamingException {
         Node rootContext = new Node();
 
-        for (Iterator iterator = absoluteBindings.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String name = (String) entry.getKey();
+        for (Map.Entry<String, Object> entry : absoluteBindings.entrySet()) {
+            String name = entry.getKey();
             Object value = entry.getValue();
 
             Node parentContext = rootContext;
 
             Name compoundName = ContextUtil.parseName(name);
-            for (Enumeration parts = compoundName.getAll(); parts.hasMoreElements(); ) {
+            for (Enumeration parts = compoundName.getAll(); parts.hasMoreElements();) {
                 String part = (String) parts.nextElement();
                 // the last element in the path is the name of the value
                 if (parts.hasMoreElements()) {

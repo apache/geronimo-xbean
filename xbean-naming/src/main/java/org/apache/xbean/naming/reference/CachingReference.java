@@ -16,13 +16,13 @@
  */
 package org.apache.xbean.naming.reference;
 
-import org.apache.xbean.naming.context.ContextUtil;
-
-import javax.naming.Reference;
-import javax.naming.NamingException;
-import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.Iterator;
+import java.util.Map;
+
+import javax.naming.NamingException;
+import javax.naming.Reference;
+
+import org.apache.xbean.naming.context.ContextUtil;
 
 /**
  * @version $Rev: 355877 $ $Date: 2005-12-10 18:48:27 -0800 (Sat, 10 Dec 2005) $
@@ -35,14 +35,13 @@ public class CachingReference extends SimpleReference {
         return value;
     }
 
-    public static Map wrapReferences(Map bindings) {
-        LinkedHashMap newBindings = new LinkedHashMap(bindings);
-        for (Iterator iterator = bindings.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String name = (String) entry.getKey();
+    public static Map<String, Object> wrapReferences(Map<String, Object> bindings) {
+        LinkedHashMap<String, Object> newBindings = new LinkedHashMap<String, Object>(bindings);
+        for (Map.Entry<String, Object> entry : bindings.entrySet()) {
+            String name = entry.getKey();
             Object value = entry.getValue();
             if (value instanceof Reference && !(value instanceof CachingReference)) {
-                newBindings.put(name, new CachingReference(name, (Reference)value));
+                newBindings.put(name, new CachingReference(name, (Reference) value));
             }
         }
         return newBindings;

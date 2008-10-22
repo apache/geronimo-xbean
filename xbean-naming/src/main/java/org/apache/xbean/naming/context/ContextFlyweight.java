@@ -21,6 +21,9 @@ import javax.naming.NamingException;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.NameParser;
+import javax.naming.NameClassPair;
+import javax.naming.Binding;
+
 import java.util.Hashtable;
 
 /**
@@ -76,19 +79,19 @@ public abstract class ContextFlyweight implements Context {
         getContext().rename(oldName, newName);
     }
 
-    public NamingEnumeration list(Name name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
         return getContext().list(name);
     }
 
-    public NamingEnumeration list(String name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         return getContext().list(name);
     }
 
-    public NamingEnumeration listBindings(Name name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
         return getContext().listBindings(name);
     }
 
-    public NamingEnumeration listBindings(String name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
         return getContext().listBindings(name);
     }
 
