@@ -16,13 +16,13 @@
  */
 package org.apache.xbean.naming.context;
 
+import java.util.Collections;
+import java.util.Map;
+
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @version $Rev$ $Date$
@@ -67,18 +67,18 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         return value;
     }
 
-    protected final Map getBindings() throws NamingException {
-        Map bindings = contextFederation.getFederatedBindings();
+    protected final Map<String, Object> getBindings() throws NamingException {
+        Map<String, Object> bindings = contextFederation.getFederatedBindings();
         bindings.putAll(getWrapperBindings());
         return bindings;
     }
 
-    protected abstract Map getWrapperBindings() throws NamingException;
+    protected abstract Map<String, Object> getWrapperBindings() throws NamingException;
 
     protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
         if (!(value instanceof Context && !isNestedSubcontext(value))) {
             return contextFederation.addBinding(name, value, rebind);
-        } else if (value instanceof Context && !isNestedSubcontext(value)) {
+        } else if (!isNestedSubcontext(value)) {
             Context federatedContext = (Context) value;
 
             // if we already have a context bound at the specified value
@@ -92,7 +92,7 @@ public abstract class AbstractFederatedContext extends AbstractContext {
                 addFederatedContext(nestedContext, federatedContext);
                 return true;
             } else {
-                AbstractFederatedContext nestedContext = (AbstractFederatedContext) createNestedSubcontext(name, Collections.EMPTY_MAP);
+                AbstractFederatedContext nestedContext = (AbstractFederatedContext) createNestedSubcontext(name, Collections.<String, Object>emptyMap());
                 addFederatedContext(nestedContext, federatedContext);
 
                 // call back into this method using the new nested context
@@ -110,9 +110,8 @@ public abstract class AbstractFederatedContext extends AbstractContext {
 
     protected static void addFederatedContext(AbstractFederatedContext wrappingContext, Context innerContext) throws NamingException {
         wrappingContext.contextFederation.addContext(innerContext);
-        for (Iterator iterator = wrappingContext.getWrapperBindings().entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String name = (String) entry.getKey();
+        for (Map.Entry<String, Object> entry : wrappingContext.getWrapperBindings().entrySet()) {
+            String name = entry.getKey();
             Object value = entry.getValue();
             if (value instanceof AbstractFederatedContext) {
                 AbstractFederatedContext nestedContext = (AbstractFederatedContext) value;

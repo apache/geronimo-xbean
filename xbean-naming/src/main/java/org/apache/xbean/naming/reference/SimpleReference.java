@@ -30,13 +30,13 @@ import javax.naming.spi.ObjectFactory;
  * @version $Rev: 355877 $ $Date: 2005-12-10 18:48:27 -0800 (Sat, 10 Dec 2005) $
  */
 public abstract class SimpleReference extends Reference {
-    private static final Enumeration EMPTY_ENUMERATION = new Enumeration() {
+    private static final Enumeration<RefAddr> EMPTY_ENUMERATION = new Enumeration<RefAddr>() {
         public boolean hasMoreElements() {
             return false;
         }
 
-        public Object nextElement() {
-            return new NoSuchElementException();
+        public RefAddr nextElement() {
+            throw new NoSuchElementException();
         }
     };
 
@@ -47,6 +47,7 @@ public abstract class SimpleReference extends Reference {
     /**
      * Gets the actual referenced Object.
      * @return the referenced object
+     * @throws javax.naming.NamingException on error
      */
     public abstract Object getContent() throws NamingException;
 
@@ -63,7 +64,7 @@ public abstract class SimpleReference extends Reference {
      * to obtain the class name of a factory.  This factory in turn understands the simple
      * reference.  This style is much slower because JNDI will use reflection to load and
      * create this class.
-     * @return
+     * @return factory class name
      */
     public final String getFactoryClassName() {
         return SimpleObjectFactory.class.getName();
@@ -84,7 +85,7 @@ public abstract class SimpleReference extends Reference {
         throw new ArrayIndexOutOfBoundsException(posn);
     }
 
-    public final Enumeration getAll() {
+    public final Enumeration<RefAddr> getAll() {
         return EMPTY_ENUMERATION;
     }
 

@@ -29,6 +29,9 @@ import javax.naming.LinkRef;
 import javax.naming.NameNotFoundException;
 import javax.naming.InitialContext;
 import javax.naming.OperationNotSupportedException;
+import javax.naming.NameClassPair;
+import javax.naming.Binding;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -40,7 +43,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     private final Name parsedNameInNamespace;
     private final ContextAccess contextAccess;
     private final boolean modifiable;
-    private final ThreadLocal inCall = new ThreadLocal();
+    private final ThreadLocal<Name> inCall = new ThreadLocal<Name>();
 
     protected AbstractContext(String nameInNamespace) {
         this(nameInNamespace, ContextAccess.MODIFIABLE);
@@ -82,9 +85,10 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * Gets the object bound to the name.  The name will not contain slashes.
      * @param name the name
      * @return the object bound to the name, or null if not found
+     * @throws javax.naming.NamingException on error
      */
     protected Object getBinding(String name) throws NamingException {
-        Map bindings = getBindings();
+        Map<String, Object> bindings = getBindings();
         return bindings.get(name);
     }
 
@@ -193,7 +197,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     }
 
     protected Context lookupFinalContext(Name name) throws NamingException {
-        Object value = null;
+        Object value;
         try {
             value = lookup(name.getPrefix(name.size() - 1));
         } catch (NamingException e) {
@@ -220,7 +224,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * @return a Map from binding name to binding value
      * @throws NamingException if a problem occurs while getting the bindigns
      */
-    protected abstract Map getBindings() throws NamingException;
+    protected abstract Map<String, Object> getBindings() throws NamingException;
 
     //
     //  Add Binding
@@ -274,7 +278,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
                         break;
                     } else {
                         // the current value must be a nested subcontext
-                        if (!(currentContext instanceof Context)) {
+                        if (!(currentValue instanceof Context)) {
                             throw new NotContextException("Expected an instance of context to be bound at " +
                                     part + " but found an instance of " + currentValue.getClass().getName());
                         }
@@ -298,11 +302,9 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         try {
             if (context instanceof AbstractContext) {
                 AbstractContext abstractContext = (AbstractContext) context;
-                Object value = abstractContext.getBinding(name);
-                return value;
+                return abstractContext.getBinding(name);
             } else {
-                Object value = context.lookup(name);
-                return value;
+                return context.lookup(name);
             }
         } catch (NamingException e) {
             return null;
@@ -340,7 +342,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * a path specified by the name.  All necessary intermediate contexts will be created using the createContext method.
      * @param path the path to the context that will contains this context
      * @param name the name under which the value should be bound
-     * @param value the vale
+     * @param value the value
      * @return a context with the value bound at the specified name
      * @throws NamingException if a problem occurs while creating the subcontext tree
      */
@@ -368,7 +370,8 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      * Removes the binding from the context.  The name will not contain a path and the value will not
      * be a nested context although it may be a foreign context.
      * @param name name under which the value should be bound
-     * @param removeNotEmptyContext
+     * @param removeNotEmptyContext ??? TODO figure this out
+     * @return whether removal was successful
      * @throws NamingException if a problem occurs during the bind such as a value already being bound
      */
     protected abstract boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException;
@@ -446,7 +449,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     protected static boolean isEmpty(Context context) throws NamingException {
         if (context instanceof AbstractContext) {
             AbstractContext abstractContext = (AbstractContext) context;
-            Map currentBindings = abstractContext.getBindings();
+            Map<String, Object> currentBindings = abstractContext.getBindings();
             return currentBindings.isEmpty();
         } else {
             NamingEnumeration namingEnumeration = context.list("");
@@ -457,7 +460,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     protected static int getSize(Context context) throws NamingException {
         if (context instanceof AbstractContext) {
             AbstractContext abstractContext = (AbstractContext) context;
-            Map currentBindings = abstractContext.getBindings();
+            Map<String, Object> currentBindings = abstractContext.getBindings();
             return currentBindings.size();
         } else {
             NamingEnumeration namingEnumeration = context.list("");
@@ -474,7 +477,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
      *
      * @param context the context to remove the binding from
      * @param name the binding name
-     * @param removeNotEmptyContext
+     * @param removeNotEmptyContext ??? TODO figure this out
      * @throws NamingException if a problem occurs while unbinding
      */
     private void unbind(Context context, String name, boolean removeNotEmptyContext) throws NamingException {
@@ -537,6 +540,8 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
 
     /**
      * Gets the name of a path withing the global namespace context.
+     * @param path path to extend
+     * @return full path in namespace
      */
     protected String getNameInNamespace(String path) {
         String nameInNamespace = getNameInNamespace();
@@ -549,6 +554,9 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
 
     /**
      * Gets the name of a path withing the global namespace context.
+     * @param path path to extend
+     * @return full path in namespace
+     * @throws javax.naming.NamingException on error
      */
     protected Name getNameInNamespace(Name path) throws NamingException {
         Name nameInNamespace = getParsedNameInNamespace();
@@ -710,17 +718,17 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     // List
     //
 
-    protected NamingEnumeration list() throws NamingException {
-        Map bindings = getBindings();
+    protected NamingEnumeration<NameClassPair> list() throws NamingException {
+        Map<String, Object> bindings = getBindings();
         return new ContextUtil.ListEnumeration(bindings);
     }
 
-    protected NamingEnumeration listBindings() throws NamingException {
-        Map bindings = getBindings();
+    protected NamingEnumeration<Binding> listBindings() throws NamingException {
+        Map<String, Object> bindings = getBindings();
         return new ContextUtil.ListBindingEnumeration(bindings);
     }
 
-    public NamingEnumeration list(String name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
 
         // if the name is empty, list the current context
@@ -729,7 +737,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = null;
+        Object target;
         try {
             target = lookup(name);
         } catch (NamingException e) {
@@ -745,7 +753,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
     }
 
-    public NamingEnumeration list(Name name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
 
         // if the name is empty, list the current context
@@ -754,7 +762,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = null;
+        Object target;
         try {
             target = lookup(name);
         } catch (NamingException e) {
@@ -770,7 +778,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
     }
 
-    public NamingEnumeration listBindings(String name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
 
         // if the name is empty, list the current context
@@ -779,11 +787,11 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = null;
+        Object target;
         try {
             target = lookup(name);
         } catch (NamingException e) {
-            throw new NotContextException(name.toString());
+            throw new NotContextException(name);
         }
 
         if (target == this) {
@@ -795,7 +803,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
     }
 
-    public NamingEnumeration listBindings(Name name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
 
         // if the name is empty, list the current context
@@ -804,7 +812,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         }
 
         // lookup the target context
-        Object target = null;
+        Object target;
         try {
             target = lookup(name);
         } catch (NamingException e) {

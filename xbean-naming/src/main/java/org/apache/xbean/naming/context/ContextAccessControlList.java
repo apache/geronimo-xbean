@@ -16,20 +16,20 @@
  */
 package org.apache.xbean.naming.context;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import javax.naming.Name;
 import javax.naming.NamingException;
-import java.util.List;
-import java.util.Iterator;
-import java.util.Collections;
-import java.util.ArrayList;
 
 /**
  * @version $Rev$ $Date$
  */
 public class ContextAccessControlList implements ContextAccess {
     private final boolean defaultAllow;
-    private final List allow;
-    private final List deny;
+    private final List<Name> allow;
+    private final List<Name> deny;
 
     public ContextAccessControlList(boolean defaultAllow, List allow, List deny) {
         this.defaultAllow = defaultAllow;
@@ -37,17 +37,16 @@ public class ContextAccessControlList implements ContextAccess {
         this.deny = toACL(deny);
     }
 
-    private List toACL(List input) {
-        if (input == null) return Collections.EMPTY_LIST;
+    private List<Name> toACL(List input) {
+        if (input == null) return Collections.emptyList();
         
-        ArrayList list = new ArrayList(input.size());
-        for (Iterator iterator = input.iterator(); iterator.hasNext();) {
-            Object value = iterator.next();
+        ArrayList<Name> list = new ArrayList<Name>(input.size());
+        for (Object value : input) {
             if (value instanceof Name) {
-                list.add(value);
+                list.add((Name) value);
             } else if (value instanceof String) {
                 String string = (String) value;
-                Name name = null;
+                Name name;
                 try {
                     name = ContextUtil.NAME_PARSER.parse(string);
                 } catch (NamingException e) {
@@ -74,8 +73,7 @@ public class ContextAccessControlList implements ContextAccess {
 
     protected boolean isAllowed(Name name) {
         if (name == null) throw new NullPointerException("name is null");
-        for (Iterator iterator = allow.iterator(); iterator.hasNext();) {
-            Name prefix = (Name) iterator.next();
+        for (Name prefix : allow) {
             if (name.startsWith(prefix)) {
                 return true;
             }
@@ -86,8 +84,7 @@ public class ContextAccessControlList implements ContextAccess {
 
     protected boolean isDenied(Name name) {
         if (name == null) throw new NullPointerException("name is null");
-        for (Iterator iterator = deny.iterator(); iterator.hasNext();) {
-            Name prefix = (Name) iterator.next();
+        for (Name prefix : deny) {
             if (name.startsWith(prefix)) {
                 return true;
             }
