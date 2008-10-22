@@ -894,4 +894,19 @@ public class WritableContextTest extends AbstractContextTest {
         }
         assertEq(bindings, context);
     }
+
+    public void testLookupSubContext() throws Exception {
+        Context ctx = (Context) context.lookup("a/b/c");
+        String s = (String) ctx.lookup("d/e/string");
+        assertEquals(s, WritableContextTest.STRING_VAL);
+    }
+
+    public void testDeepBinding() throws Exception {
+        WritableContext w = new WritableContext("jca:");
+        w.addDeepBinding(w.getNameParser("").parse("test/test/GBean/resourceSource"), WritableContextTest.STRING_VAL, false, true);
+        assertEquals(WritableContextTest.STRING_VAL, w.lookup("test/test/GBean/resourceSource"));
+        w.rebind("test/test/GBean/resourceSource", 1);
+        assertEquals(new Integer(1), w.lookup("test/test/GBean/resourceSource"));
+    }
+
 }
