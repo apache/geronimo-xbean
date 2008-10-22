@@ -351,11 +351,11 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         if (name == null) throw new NullPointerException("name is null");
         if (name.size() < 2) throw new InvalidNameException("name must have at least 2 parts " + name);
 
-        if (!path.endsWith("/")) path += "/";
+        if (path.length() > 0 && !path.endsWith("/")) path += "/";
 
-        for (int i = name.size() - 2; i >= 0; i--) {
-            String fullPath = path + name.getSuffix(i);
-            String key = name.get(i + 1);
+        for (int i = name.size() - 1; i > 0; i--) {
+            String fullPath = path + name.getPrefix(i);
+            String key = name.get(i);
             value = createNestedSubcontext(fullPath, Collections.singletonMap(key, value));
         }
         return (Context) value;

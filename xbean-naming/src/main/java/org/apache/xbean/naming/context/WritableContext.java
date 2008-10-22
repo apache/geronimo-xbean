@@ -203,7 +203,8 @@ public class WritableContext extends AbstractFederatedContext {
 
         public NestedWritableContext(String path, Map<String, Object> bindings) throws NamingException {
             super(WritableContext.this, path);
-
+            
+            path = getNameInNamespace();
             if (!path.endsWith("/")) path += "/";
             this.pathWithSlash = path;
 
