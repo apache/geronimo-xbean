@@ -122,6 +122,7 @@ public class ImmutableContext extends AbstractContext {
         public NestedImmutableContext(String path, Map<String, Object> bindings) {
             super(ImmutableContext.this.getNameInNamespace(path), ContextAccess.UNMODIFIABLE);
 
+            path = getNameInNamespace();
             if (!path.endsWith("/")) path += "/";
             this.pathWithSlash = path;
 
