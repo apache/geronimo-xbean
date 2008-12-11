@@ -203,7 +203,7 @@ public class MultiParentClassLoader extends NamedClassLoader {
             }
         }
 
-        throw new ClassNotFoundException(name + " in classloader " + name);
+        throw new ClassNotFoundException(name + " in classloader " + getName());
     }
 
     private boolean isNonOverridableClass(String name) {
