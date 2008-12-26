@@ -245,6 +245,28 @@ public class ClassFinder {
         return classes;
     }
 
+    public List<Class> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
+        classesNotLoaded.clear();
+        List<Class> classes = new ArrayList<Class>();
+        for (ClassInfo classInfo : classInfos) {
+            try {
+                Class clazz = classInfo.get();
+                do {
+                    if (clazz.isAnnotationPresent(annotation)) {
+                        classes.add(classInfo.get());
+                        break;
+                    }
+                    clazz = clazz.getSuperclass();
+                } while (clazz != null && clazz != Object.class);
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(classInfo.getName());
+            } catch (NoClassDefFoundError e) {
+                classesNotLoaded.add(classInfo.getName());
+            }
+        }
+        return classes;
+    }
+
     public List<Method> findAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<ClassInfo> seen = new ArrayList<ClassInfo>();

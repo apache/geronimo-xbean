@@ -25,15 +25,16 @@ import org.acme.bar.AnnType;
 import org.acme.bar.FullyAnnotated;
 import org.acme.foo.Blue;
 import org.acme.foo.Color;
+import org.acme.foo.Deployable;
+import org.acme.foo.FamilyHalloween;
 import org.acme.foo.Green;
 import org.acme.foo.Halloween;
 import org.acme.foo.Holiday;
+import org.acme.foo.Primary;
+import org.acme.foo.Property;
 import org.acme.foo.Red;
 import org.acme.foo.Thanksgiving;
 import org.acme.foo.ValentinesDay;
-import org.acme.foo.Deployable;
-import org.acme.foo.Primary;
-import org.acme.foo.Property;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
@@ -99,6 +100,26 @@ public class ClassFinderTest extends TestCase {
         for (Class clazz : expected3) {
             assertTrue(clazz.getName(), actual.contains(clazz));
         }
+    }
+
+    public void testFindInheritedAnnotatedClassesInherited() throws Exception {
+        Class[] expected = {FamilyHalloween.class, Halloween.class, Thanksgiving.class, ValentinesDay.class};
+        List<Class> actual = classFinder.findInheritedAnnotatedClasses(Holiday.class);
+
+        assertNotNull(actual);
+        assertEquals(expected.length, actual.size());
+        for (Class clazz : expected) {
+            assertTrue(clazz.getName(), actual.contains(clazz));
+        }
+
+        expected = new Class[]{Halloween.class, Thanksgiving.class, ValentinesDay.class};
+        actual = classFinder.findAnnotatedClasses(Holiday.class);
+        assertNotNull(actual);
+        assertEquals(expected.length, actual.size());
+        for (Class clazz : expected) {
+            assertTrue(clazz.getName(), actual.contains(clazz));
+        }
+
     }
 
     public void testFindAnnotatedMethods() throws Exception {
