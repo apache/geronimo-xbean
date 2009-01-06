@@ -245,25 +245,46 @@ public class ClassFinder {
         return classes;
     }
 
+    /**
+     * Naive implementation - works extremelly slow O(n^3)
+     *
+     * @param annotation
+     * @return list of directly or indirectly (inherited) annotated classes
+     */
     public List<Class> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<Class> classes = new ArrayList<Class>();
-        for (ClassInfo classInfo : classInfos) {
+        List<Info> infos = getAnnotationInfos(annotation.getName());
+        for (Info info : infos) {
             try {
-                Class clazz = classInfo.get();
-                do {
-                    if (clazz.isAnnotationPresent(annotation)) {
-                        classes.add(classInfo.get());
-                        break;
-                    }
-                    clazz = clazz.getSuperclass();
-                } while (clazz != null && clazz != Object.class);
-            } catch (ClassNotFoundException e) {
-                classesNotLoaded.add(classInfo.getName());
-            } catch (NoClassDefFoundError e) {
-                classesNotLoaded.add(classInfo.getName());
+                classes.add(((ClassInfo) info).get());
+            } catch (ClassNotFoundException cnfe) {
+                // TODO: ignored, but a log message would be appropriate
             }
         }
+        boolean annClassFound;
+        List<ClassInfo> tempClassInfos = new ArrayList<ClassInfo>(classInfos);
+        do {
+            annClassFound = false;
+            for (int pos = 0; pos < tempClassInfos.size(); pos++) {
+                ClassInfo classInfo = tempClassInfos.get(pos);
+                try {
+                    String superType = classInfo.getSuperType();
+                    for (Class clazz : classes) {
+                        if (superType.equals(clazz.getName())) {
+                            classes.add(classInfo.get());
+                            tempClassInfos.remove(pos);
+                            annClassFound = true;
+                            break;
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(classInfo.getName());
+                } catch (NoClassDefFoundError e) {
+                    classesNotLoaded.add(classInfo.getName());
+                }
+            }
+        } while (annClassFound);
         return classes;
     }
 

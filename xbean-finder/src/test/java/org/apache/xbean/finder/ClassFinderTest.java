@@ -23,18 +23,7 @@ import org.acme.bar.Construct;
 import org.acme.bar.Type;
 import org.acme.bar.AnnType;
 import org.acme.bar.FullyAnnotated;
-import org.acme.foo.Blue;
-import org.acme.foo.Color;
-import org.acme.foo.Deployable;
-import org.acme.foo.FamilyHalloween;
-import org.acme.foo.Green;
-import org.acme.foo.Halloween;
-import org.acme.foo.Holiday;
-import org.acme.foo.Primary;
-import org.acme.foo.Property;
-import org.acme.foo.Red;
-import org.acme.foo.Thanksgiving;
-import org.acme.foo.ValentinesDay;
+import org.acme.foo.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
@@ -103,7 +92,7 @@ public class ClassFinderTest extends TestCase {
     }
 
     public void testFindInheritedAnnotatedClassesInherited() throws Exception {
-        Class[] expected = {FamilyHalloween.class, Halloween.class, Thanksgiving.class, ValentinesDay.class};
+        Class[] expected = {FunnyFamilyHalloween.class, FamilyHalloween.class, Halloween.class, Thanksgiving.class, ValentinesDay.class};
         List<Class> actual = classFinder.findInheritedAnnotatedClasses(Holiday.class);
 
         assertNotNull(actual);
@@ -119,7 +108,6 @@ public class ClassFinderTest extends TestCase {
         for (Class clazz : expected) {
             assertTrue(clazz.getName(), actual.contains(clazz));
         }
-
     }
 
     public void testFindAnnotatedMethods() throws Exception {
