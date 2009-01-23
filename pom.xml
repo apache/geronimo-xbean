@@ -50,6 +50,7 @@
     </scm>
     
     <properties>
+        <siteId>xbean</siteId>
 	    <!--
 	     |
 	     | Geronimo OSGi properties
