@@ -120,11 +120,11 @@ public class WritableContext extends AbstractFederatedContext {
         if (super.removeBinding(name, removeNotEmptyContext)) {
             return true;
         }
-        removeBinding(bindingsRef, name, removeNotEmptyContext);
+        removeBinding(bindingsRef, name, getNameInNamespace(name), removeNotEmptyContext);
         return true;
     }
 
-    private boolean removeBinding(AtomicReference<Map<String, Object>> bindingsRef, String name, boolean removeNotEmptyContext) throws NamingException {
+    private boolean removeBinding(AtomicReference<Map<String, Object>> bindingsRef, String name, String nameInNamespace, boolean removeNotEmptyContext) throws NamingException {
         writeLock.lock();
         try {
             Map<String, Object> bindings = bindingsRef.get();
@@ -140,7 +140,7 @@ public class WritableContext extends AbstractFederatedContext {
             }
             bindingsRef.set(newBindings);
 
-            Map<String, Object> newIndex = removeFromIndex(name);
+            Map<String, Object> newIndex = removeFromIndex(nameInNamespace);
             indexRef.set(newIndex);
             return true;
         } finally {
@@ -234,7 +234,7 @@ public class WritableContext extends AbstractFederatedContext {
         }
 
         protected boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
-            if (WritableContext.this.removeBinding(bindingsRef, name, false)) {
+            if (WritableContext.this.removeBinding(bindingsRef, name, getNameInNamespace(name), removeNotEmptyContext)) {
                 return true;
             }
             return super.removeBinding(name, false);
