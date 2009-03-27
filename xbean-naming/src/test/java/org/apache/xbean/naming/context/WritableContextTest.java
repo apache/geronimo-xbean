@@ -908,5 +908,67 @@ public class WritableContextTest extends AbstractContextTest {
         w.rebind("test/test/GBean/resourceSource", 1);
         assertEquals(new Integer(1), w.lookup("test/test/GBean/resourceSource"));
     }
+    
+    public void testRemoveDeepBinding_Leaf() throws Exception {
+        WritableContext w = new WritableContext("jca:");
+        // Test when only one object
+        w.addDeepBinding(w.getNameParser("").parse("test/test/GBean/resourceSource"), WritableContextTest.STRING_VAL, true, true);
+        assertEquals(WritableContextTest.STRING_VAL, w.lookup("test/test/GBean/resourceSource"));
+        w.removeDeepBinding(w.getNameParser("").parse("test/test/GBean/resourceSource"), true, true);
+        try {
+        	w.lookup("test");
+            fail("Expected NameNotFoundException");
+        } catch (NameNotFoundException expected) {
+        }
+        w.addDeepBinding(w.getNameParser("").parse("test/test/GBean/resourceSource"), WritableContextTest.STRING_VAL, true, true);
+        assertEquals(WritableContextTest.STRING_VAL, w.lookup("test/test/GBean/resourceSource"));
+        w.addDeepBinding(w.getNameParser("").parse("test/test/GBean/rresourceSource2"), new Integer(2), true, true);
+        assertEquals(new Integer(2), w.lookup("test/test/GBean/rresourceSource2"));
+
+        w.removeDeepBinding(w.getNameParser("").parse("test/test/GBean/resourceSource"), true, true);
+        assertEquals(new Integer(2), w.lookup("test/test/GBean/rresourceSource2"));
+        try {
+            w.lookup("test/test/GBean/resourceSource");
+            fail("Expected NameNotFoundException");
+        } catch (NameNotFoundException expected) {
+        }
+        w.removeDeepBinding(w.getNameParser("").parse("test/test/GBean/rresourceSource2"), true, true);
+        try {
+        	w.lookup("test");
+            fail("Expected NameNotFoundException");
+        } catch (NameNotFoundException expected) {
+        }
+    }
+    
+    public void testRemoveDeepBinding_Intermediate() throws Exception {
+        WritableContext w = new WritableContext("jca:");
+        // Test when only one object
+        w.addDeepBinding(w.getNameParser("").parse("test/test1/GBean/resourceSource"), WritableContextTest.STRING_VAL, true, true);
+        assertEquals(WritableContextTest.STRING_VAL, w.lookup("test/test1/GBean/resourceSource"));
+        w.removeDeepBinding(w.getNameParser("").parse("test/test1/GBean/resourceSource"), true, true);
+        try {
+        	w.lookup("test");
+            fail("Expected NameNotFoundException");
+        } catch (NameNotFoundException expected) {
+        }
+        w.addDeepBinding(w.getNameParser("").parse("test/test1/GBean/resourceSource"), WritableContextTest.STRING_VAL, true, true);
+        assertEquals(WritableContextTest.STRING_VAL, w.lookup("test/test1/GBean/resourceSource"));
+        w.addDeepBinding(w.getNameParser("").parse("test/test2/GBean/rresourceSource2"), new Integer(2), true, true);
+        assertEquals(new Integer(2), w.lookup("test/test2/GBean/rresourceSource2"));
+
+        w.removeDeepBinding(w.getNameParser("").parse("test/test1/GBean/resourceSource"), true, true);
+        assertEquals(new Integer(2), w.lookup("test/test2/GBean/rresourceSource2"));
+        try {
+            w.lookup("test/test1");
+            fail("Expected NameNotFoundException");
+        } catch (NameNotFoundException expected) {
+        }
+        w.removeDeepBinding(w.getNameParser("").parse("test/test2/GBean/rresourceSource2"), true, true);
+        try {
+        	w.lookup("test");
+            fail("Expected NameNotFoundException");
+        } catch (NameNotFoundException expected) {
+        }
+    }
 
 }
