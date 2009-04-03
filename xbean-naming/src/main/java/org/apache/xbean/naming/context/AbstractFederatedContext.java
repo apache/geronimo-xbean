@@ -45,10 +45,10 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         this.contextFederation = new ContextFederation(this);
     }
 
-    public AbstractFederatedContext(AbstractFederatedContext masterContext, String path) throws NamingException {
-        super(masterContext.getNameInNamespace(path), masterContext.getContextAccess());
+    public AbstractFederatedContext(AbstractFederatedContext masterContext, String nameInNamespace) throws NamingException {
+        super(nameInNamespace, masterContext.getContextAccess());
         this.masterContext = masterContext;
-        this.contextFederation = this.masterContext.contextFederation.createSubcontextFederation(path, this);
+        this.contextFederation = this.masterContext.contextFederation.createSubcontextFederation(nameInNamespace, this);
     }
 
     protected Object faultLookup(String stringName, Name parsedName) {

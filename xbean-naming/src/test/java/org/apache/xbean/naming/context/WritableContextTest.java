@@ -23,6 +23,8 @@ import javax.naming.NotContextException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.InvalidNameException;
 import javax.naming.ContextNotEmptyException;
+import javax.naming.NamingException;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -969,6 +971,40 @@ public class WritableContextTest extends AbstractContextTest {
             fail("Expected NameNotFoundException");
         } catch (NameNotFoundException expected) {
         }
+    }
+
+    public void test2PathsCreateSubcontext() throws Exception {
+        WritableContext w = new WritableContext();
+        doBind(w, "a/b/c", "c");
+        doBind(w, "a/b/b/c", "c");
+        assertEquals("a", ((Context)w.lookup("a")).getNameInNamespace());
+        assertEquals("a/b", ((Context)w.lookup("a/b")).getNameInNamespace());
+        assertEquals("a/b/b", ((Context)w.lookup("a/b/b")).getNameInNamespace());
+
+        w = new WritableContext("a");
+        doBind(w, "a/b/c", "c");
+        doBind(w, "a/b/b/c", "c");
+        assertEquals("a/a", ((Context)w.lookup("a")).getNameInNamespace());
+        assertEquals("a/a/b", ((Context)w.lookup("a/b")).getNameInNamespace());
+        assertEquals("a/a/b/b", ((Context)w.lookup("a/a/b/b")).getNameInNamespace());
+    }
+
+    private void doBind(Context context, String nameString, Object value) throws NamingException {
+        Name name = context.getNameParser("").parse(nameString);
+        Context current = context;
+        for (int i = 0; i< name.size() - 1; i++) {
+            String part = name.get(i);
+            try {
+                Object o = current.lookup(part);
+                if (!(o instanceof Context)) {
+                    throw new NamingException("not a context at " + part +" found: " + o);
+                }
+                current = (Context) o;
+            } catch (NamingException e) {
+                current = current.createSubcontext(part);
+            }
+        }
+        current.bind(name.get(name.size() - 1), value);
     }
 
 }

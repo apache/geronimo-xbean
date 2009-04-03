@@ -163,7 +163,10 @@ public class WritableContext extends AbstractFederatedContext {
     }
 
     public Context createNestedSubcontext(String path, Map<String, Object> bindings) throws NamingException {
-        return new NestedWritableContext(path,bindings);
+        if (getNameInNamespace().length() > 0) {
+            path = getNameInNamespace() + "/" + path;
+        }
+        return new NestedWritableContext(path, bindings);
     }
 
     private static Map<String, Object> buildIndex(String nameInNamespace, Map<String, Object> bindings) {
@@ -212,7 +215,7 @@ public class WritableContext extends AbstractFederatedContext {
         }
 
         public Context createNestedSubcontext(String path, Map<String, Object> bindings) throws NamingException {
-            return new NestedWritableContext(path, bindings);
+            return new NestedWritableContext(getNameInNamespace(path), bindings);
         }
 
         protected Object getDeepBinding(String name) {
