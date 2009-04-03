@@ -27,16 +27,49 @@ public class ImmutableContextTest extends AbstractContextTest {
     private static final String STRING_VAL = "some string";
 
     public void testBasic() throws Exception {
-        Map map = new HashMap();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("string", STRING_VAL);
         map.put("nested/context/string", STRING_VAL);
         map.put("a/b/c/d/e/string", STRING_VAL);
-        map.put("a/b/c/d/e/one", new Integer(1));
-        map.put("a/b/c/d/e/two", new Integer(2));
-        map.put("a/b/c/d/e/three", new Integer(3));
+        map.put("a/b/c/d/e/one", 1);
+        map.put("a/b/c/d/e/two", 2);
+        map.put("a/b/c/d/e/three", 3);
+        map.put("a/a/b/c/d/e/three", 3);
+        map.put("a/b/b/c/d/e/three", 3);
 
         Context context = new ImmutableContext(map);
 
         assertEq(map, context);
+
+        assertEquals("a", ((Context)context.lookup("a")).getNameInNamespace());
+        assertEquals("a/a", ((Context)context.lookup("a/a")).getNameInNamespace());
+        assertEquals("a/b/b", ((Context)context.lookup("a/b/b")).getNameInNamespace());
+        assertEquals("a/b", ((Context)context.lookup("a/b")).getNameInNamespace());
+        assertEquals("a/b/c", ((Context)context.lookup("a/b/c")).getNameInNamespace());
+        assertEquals("a/b/c/d", ((Context)context.lookup("a/b/c/d")).getNameInNamespace());
+        assertEquals("a/b/c/d/e", ((Context)context.lookup("a/b/c/d/e")).getNameInNamespace());
+
+    }
+
+    public void testNameInNamespace() throws Exception {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("string", STRING_VAL);
+        map.put("nested/context/string", STRING_VAL);
+        map.put("a/b/c/d/e/string", STRING_VAL);
+        map.put("a/b/c/d/e/one", 1);
+        map.put("a/b/c/d/e/two", 2);
+        map.put("a/b/c/d/e/three", 3);
+        map.put("a/a/b/c/d/e/three", 3);
+        map.put("a/b/b/c/d/e/three", 3);
+
+        Context context = new ImmutableContext("a", map, false);
+        assertEquals("a/a", ((Context)context.lookup("a")).getNameInNamespace());
+        assertEquals("a/a/a", ((Context)context.lookup("a/a")).getNameInNamespace());
+        assertEquals("a/a/b/b", ((Context)context.lookup("a/b/b")).getNameInNamespace());
+        assertEquals("a/a/b", ((Context)context.lookup("a/b")).getNameInNamespace());
+        assertEquals("a/a/b/c", ((Context)context.lookup("a/b/c")).getNameInNamespace());
+        assertEquals("a/a/b/c/d", ((Context)context.lookup("a/b/c/d")).getNameInNamespace());
+        assertEquals("a/a/b/c/d/e", ((Context)context.lookup("a/b/c/d/e")).getNameInNamespace());
+
     }
 }

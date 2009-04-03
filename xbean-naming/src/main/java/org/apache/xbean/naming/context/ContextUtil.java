@@ -248,7 +248,7 @@ public final class ContextUtil {
                 // recursive call create bindings to cause building the context depth first
                 String path = nameInNameSpace == null ? name : nameInNameSpace + "/" + name;
 
-                Map nestedBindings = createBindings(path, nestedNode, factory);
+                Map<String, Object> nestedBindings = createBindings(path, nestedNode, factory);
                 Context nestedContext = factory.createNestedSubcontext(path, nestedBindings);
                 bindings.put(name, nestedContext);
             } else {
