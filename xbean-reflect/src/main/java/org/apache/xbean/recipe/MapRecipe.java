@@ -196,17 +196,17 @@ public class MapRecipe extends AbstractRecipe {
 
             // if expectedType is a subclass of the assigned type,
             // we use it assuming it has a default constructor
-            if (type.isAssignableFrom(expectedClass) && RecipeHelper.hasDefaultConstructor(expectedClass)) {
-                return expectedClass;
+            if (expectedClass.isAssignableFrom(type) && RecipeHelper.hasDefaultConstructor(type)) {
+                return type;
             }
         }
 
         // no type explicitly set
         if (RecipeHelper.hasDefaultConstructor(expectedClass)) {
             return expectedClass;
-        } else if (expectedClass.isAssignableFrom(SortedMap.class)) {
+        } else if (SortedMap.class.isAssignableFrom(expectedClass)) {
             return TreeMap.class;
-        } else if (expectedClass.isAssignableFrom(ConcurrentMap.class)) {
+        } else if (ConcurrentMap.class.isAssignableFrom(expectedClass)) {
             return ConcurrentHashMap.class;
         } else {
             return LinkedHashMap.class;
