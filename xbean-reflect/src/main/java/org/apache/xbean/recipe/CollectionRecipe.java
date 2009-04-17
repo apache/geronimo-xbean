@@ -188,7 +188,7 @@ public class CollectionRecipe extends AbstractRecipe {
 
         // no type explicitly set
         if (RecipeHelper.hasDefaultConstructor(type)) {
-            return expectedClass;
+            return type;
         } else if (expectedClass.isAssignableFrom(SortedSet.class)) {
             return TreeSet.class;
         } else if (expectedClass.isAssignableFrom(Set.class)) {
