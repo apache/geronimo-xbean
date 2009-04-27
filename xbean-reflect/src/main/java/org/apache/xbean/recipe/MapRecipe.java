@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Dictionary;
+import java.util.AbstractMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -130,10 +133,14 @@ public class MapRecipe extends AbstractRecipe {
             throw new ConstructionException("Error while creating set instance: " + mapType.getName());
         }
 
-        if(!(o instanceof Map)) {
+        Map instance;
+        if (o instanceof Map) {
+            instance = (Map) o;
+        } else if (o instanceof Dictionary) {
+            instance = new DummyDictionaryAsMap((Dictionary) o);
+        } else {
             throw new ConstructionException("Specified map type does not implement the Map interface: " + mapType.getName());
         }
-        Map instance = (Map) o;
 
         // get component type
         Type keyType = Object.class;
@@ -274,6 +281,24 @@ public class MapRecipe extends AbstractRecipe {
                 value = reference.get();
             }
             map.put(key, value);
+        }
+    }
+
+    public static class DummyDictionaryAsMap extends AbstractMap {
+
+        private final Dictionary dictionary;
+
+        public DummyDictionaryAsMap(Dictionary dictionary) {
+            this.dictionary = dictionary;
+        }
+
+        @Override
+        public Object put(Object key, Object value) {
+            return dictionary.put(key, value);
+        }
+
+        public Set entrySet() {
+            throw new UnsupportedOperationException();
         }
     }
 
