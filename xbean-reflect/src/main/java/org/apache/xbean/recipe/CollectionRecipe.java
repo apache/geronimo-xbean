@@ -189,11 +189,11 @@ public class CollectionRecipe extends AbstractRecipe {
         // no type explicitly set
         if (RecipeHelper.hasDefaultConstructor(type)) {
             return type;
-        } else if (expectedClass.isAssignableFrom(SortedSet.class)) {
+        } else if (SortedSet.class.isAssignableFrom(expectedClass)) {
             return TreeSet.class;
-        } else if (expectedClass.isAssignableFrom(Set.class)) {
+        } else if (Set.class.isAssignableFrom(expectedClass)) {
             return LinkedHashSet.class;
-        } else if (expectedClass.isAssignableFrom(List.class)) {
+        } else if (List.class.isAssignableFrom(expectedClass)) {
             return ArrayList.class;
         } else {
             return ArrayList.class;
