@@ -20,9 +20,11 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -47,8 +49,6 @@ public class CollectionRecipe extends AbstractRecipe {
 
     public CollectionRecipe(Class type) {
         if (type == null) throw new NullPointerException("type is null");
-        if (!RecipeHelper.hasDefaultConstructor(type)) throw new IllegalArgumentException("Collection type does not have a default constructor " + type);
-
         this.list = new ArrayList<Object>();
         this.typeClass = type;
     }
@@ -168,9 +168,8 @@ public class CollectionRecipe extends AbstractRecipe {
 
     private Class getType(Type expectedType) {
         Class expectedClass = RecipeHelper.toClass(expectedType);
-        Class type = expectedClass;
         if (typeClass != null || typeName != null) {
-            type = typeClass;
+            Class type = typeClass;
             if (type == null) {
                 try {
                     type = RecipeHelper.loadClass(typeName);
@@ -181,25 +180,31 @@ public class CollectionRecipe extends AbstractRecipe {
 
             // if expectedType is a subclass of the assigned type,
             // we use it assuming it has a default constructor
-            if (type.isAssignableFrom(expectedClass) && RecipeHelper.hasDefaultConstructor(expectedClass)) {
-                type = expectedClass;
+            if (type.isAssignableFrom(expectedClass)) {
+                return getCollection(expectedClass);                
+            } else {
+                return getCollection(type);
             }
         }
-
+        
         // no type explicitly set
+        return getCollection(expectedClass);
+    }
+
+    private Class getCollection(Class type) {
         if (RecipeHelper.hasDefaultConstructor(type)) {
             return type;
-        } else if (SortedSet.class.isAssignableFrom(expectedClass)) {
+        } else if (SortedSet.class.isAssignableFrom(type)) {
             return TreeSet.class;
-        } else if (Set.class.isAssignableFrom(expectedClass)) {
+        } else if (Set.class.isAssignableFrom(type)) {
             return LinkedHashSet.class;
-        } else if (List.class.isAssignableFrom(expectedClass)) {
+        } else if (List.class.isAssignableFrom(type)) {
             return ArrayList.class;
         } else {
             return ArrayList.class;
         }
     }
-
+    
     public void add(Object value) {
         list.add(value);
     }
