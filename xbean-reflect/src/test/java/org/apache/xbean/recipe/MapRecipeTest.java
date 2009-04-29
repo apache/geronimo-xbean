@@ -16,6 +16,9 @@
  */
 package org.apache.xbean.recipe;
 
+import java.net.URI;
+import java.util.Date;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SortedMap;
@@ -36,5 +39,27 @@ public class MapRecipeTest extends TestCase {
         assertEquals(TreeMap.class, new MapRecipe().create(SortedMap.class, false).getClass());
         assertEquals(ConcurrentHashMap.class, new MapRecipe().create(ConcurrentMap.class, false).getClass());
         assertEquals(HashMap.class, new MapRecipe(HashMap.class).create(Map.class, false).getClass());
+    }
+    
+    public void testRecipe() throws Exception {
+        MapRecipe recipe = new MapRecipe(Map.class);
+        assertEquals(LinkedHashMap.class, recipe.create(Map.class, false).getClass());
+        assertEquals(ConcurrentHashMap.class, recipe.create(ConcurrentMap.class, false).getClass());
+        assertEquals(ConcurrentHashMap.class, recipe.create(ConcurrentHashMap.class, false).getClass());
+        assertEquals(TreeMap.class, recipe.create(SortedMap.class, false).getClass());
+        assertEquals(LinkedHashMap.class, recipe.create(LinkedHashMap.class, false).getClass());
+        assertEquals(Hashtable.class, recipe.create(Hashtable.class, false).getClass());
+        assertEquals(LinkedHashMap.class, recipe.create(Object.class, false).getClass());
+        
+        assertTrue(recipe.canCreate(Map.class));
+        assertTrue(recipe.canCreate(ConcurrentMap.class));
+        assertTrue(recipe.canCreate(SortedMap.class));
+        assertTrue(recipe.canCreate(TreeMap.class));
+        assertTrue(recipe.canCreate(LinkedHashMap.class));
+        assertTrue(recipe.canCreate(Hashtable.class));
+        assertTrue(recipe.canCreate(Object.class));
+        
+        assertFalse(recipe.canCreate(Date.class));   
+        assertFalse(recipe.canCreate(URI.class));
     }
 }

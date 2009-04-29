@@ -51,8 +51,8 @@ public class MapRecipe extends AbstractRecipe {
     }
 
     public MapRecipe(Class type) {
+        if (type == null) throw new NullPointerException("type is null");
         this.typeClass = type;
-        if (!RecipeHelper.hasDefaultConstructor(type)) throw new IllegalArgumentException("Type does not have a default constructor " + type);
         entries = new ArrayList<Object[]>();
     }
 
@@ -203,23 +203,28 @@ public class MapRecipe extends AbstractRecipe {
 
             // if expectedType is a subclass of the assigned type,
             // we use it assuming it has a default constructor
-            if (expectedClass.isAssignableFrom(type) && RecipeHelper.hasDefaultConstructor(type)) {
-                return type;
+            if (type.isAssignableFrom(expectedClass)) {
+                return getMap(expectedClass);                
+            } else {
+                return getMap(type);
             }
         }
 
         // no type explicitly set
-        if (RecipeHelper.hasDefaultConstructor(expectedClass)) {
-            return expectedClass;
-        } else if (SortedMap.class.isAssignableFrom(expectedClass)) {
+        return getMap(expectedClass);
+    }
+    
+    private Class getMap(Class type) {
+        if (RecipeHelper.hasDefaultConstructor(type)) {
+            return type;
+        } else if (SortedMap.class.isAssignableFrom(type)) {
             return TreeMap.class;
-        } else if (ConcurrentMap.class.isAssignableFrom(expectedClass)) {
+        } else if (ConcurrentMap.class.isAssignableFrom(type)) {
             return ConcurrentHashMap.class;
         } else {
             return LinkedHashMap.class;
         }
     }
-
 
     public void put(Object key, Object value) {
         if (key == null) throw new NullPointerException("key is null");
