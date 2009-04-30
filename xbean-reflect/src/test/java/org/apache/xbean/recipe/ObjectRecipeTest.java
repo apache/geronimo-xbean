@@ -127,4 +127,58 @@ public class ObjectRecipeTest extends TestCase {
         assertEquals(expectedConstruction, actual.getConstructionCalled());
     }
 
+    public void testCompoundProperties() throws Exception {
+        ObjectRecipe objectRecipe = new ObjectRecipe(Component.class);
+        objectRecipe.setCompoundProperty("name", "Adam");
+        objectRecipe.setCompoundProperty("box.height", 5);
+        objectRecipe.setCompoundProperty("box.width", 10);
+        
+        objectRecipe.setCompoundProperty("component.name", "Eva");
+        objectRecipe.setCompoundProperty("component.box.height", 10);
+        objectRecipe.setCompoundProperty("component.box.width", 20);
+                
+        Component component = (Component) objectRecipe.create(Component.class.getClassLoader());
+        
+        assertEquals("Adam", component.getName());
+        assertEquals(5, component.getBox().getHeight());
+        assertEquals(10, component.getBox().getWidth());
+        
+        assertEquals("Eva", component.getComponent().getName());
+        assertEquals(10, component.getComponent().getBox().getHeight());
+        assertEquals(20, component.getComponent().getBox().getWidth());
+    }
+    
+    public static class Component {
+                
+        String name;
+        Box box;
+        Component component;
+        
+        public Box getBox() {
+            if (box == null) {
+                box = new Box();
+            }
+            return box;
+        }
+        
+        public Component getComponent() {
+            if (component == null) {
+                component = new Component();
+            }
+            return component;
+        }
+        
+        public Component getNullComponent() {
+            return null;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getName() {
+            return name;
+        }                
+            
+    }
 }

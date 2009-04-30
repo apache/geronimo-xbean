@@ -194,6 +194,10 @@ public class ObjectRecipe extends AbstractRecipe {
         setProperty(new AutoMatchProperty(type), value);
     }
 
+    public void setCompoundProperty(String name, Object value) {
+        setProperty(new CompoundProperty(name), value);
+    }
+    
     private void setProperty(Property key, Object value) {
         if (value instanceof UnsetPropertiesRecipe) {
             allow(Option.IGNORE_MISSING_PROPERTIES);
@@ -423,6 +427,33 @@ public class ObjectRecipe extends AbstractRecipe {
                         }
                         throw new MissingAccessorException("Property of type " + propertyValue.getClass().getName() + " can be mapped to more then one setter: " + matches, 0);
                     }
+                }
+            } else if (propertyName instanceof CompoundProperty) {
+                String[] names = propertyName.name.split("\\.");
+                for (int i = 0; i < names.length - 1; i++) {
+                    Method getter = ReflectionUtil.findGetter(clazz, names[i], options);
+                    if (getter != null) {
+                        try {
+                            instance = getter.invoke(instance);
+                            clazz = instance.getClass();
+                        } catch (Exception e) {
+                            Throwable t = e;
+                            if (e instanceof InvocationTargetException) {
+                                InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+                                if (invocationTargetException.getCause() != null) {
+                                    t = invocationTargetException.getCause();
+                                }
+                            }
+                            throw new ConstructionException("Error setting property: " + names[i], t);                            
+                        } 
+                    } else {
+                        throw new ConstructionException("No getter for " + names[i] + " property");
+                    }
+                }
+                List<Method> setters = ReflectionUtil.findAllSetters(clazz, names[names.length - 1], propertyValue, options);
+                for (Method setter : setters) {
+                    MethodMember member = new MethodMember(setter);
+                    members.add(member);
                 }
             } else {
                 // add setter members
@@ -701,6 +732,19 @@ public class ObjectRecipe extends AbstractRecipe {
         }
         public String toString() {
             return "[auto-match] "+ super.toString();
+        }
+    }
+    
+    public static class CompoundProperty extends Property {
+        public CompoundProperty(String type) {
+            super(type);
+        }
+
+        public int hashCode() {
+            return super.hashCode()+1;
+        }
+        public String toString() {
+            return "[compound] "+ super.toString();
         }
     }
 }
