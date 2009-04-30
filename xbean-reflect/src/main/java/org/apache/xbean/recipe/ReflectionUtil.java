@@ -150,6 +150,72 @@ public final class ReflectionUtil {
         }
     }
 
+    public static Method findGetter(Class typeClass, String propertyName, Set<Option> options) {
+        if (typeClass == null) throw new NullPointerException("typeClass is null");
+        if (propertyName == null) throw new NullPointerException("name is null");
+        if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
+        if (options == null) options = EnumSet.noneOf(Option.class);
+
+        if (propertyName.contains("/")){
+            String[] strings = propertyName.split("/");
+            if (strings == null || strings.length != 2) throw new IllegalArgumentException("badly formed <class>/<attribute> property name: " + propertyName);
+
+            String className = strings[0];
+            propertyName = strings[1];
+
+            boolean found = false;
+            while(!typeClass.equals(Object.class) && !found){
+                if (typeClass.getName().equals(className)){
+                    found = true;
+                    break;
+                } else {
+                    typeClass = typeClass.getSuperclass();
+                }
+            }
+
+            if (!found) throw new MissingAccessorException("Type not assignable to class: " + className, -1);
+        }
+
+        String getterName = "get" + Character.toUpperCase(propertyName.charAt(0));
+        if (propertyName.length() > 0) {
+            getterName += propertyName.substring(1);
+        }
+        
+        boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
+        boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
+        boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_PROPERTIES);
+
+        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
+        for (Method method : methods) {
+            if (method.getName().equals(getterName) || (caseInsesnitive && method.getName().equalsIgnoreCase(getterName))) {
+                if (method.getParameterTypes().length > 0) {
+                    continue;
+                }
+                if (method.getReturnType() == Void.TYPE) {
+                    continue;
+                }
+                if (Modifier.isAbstract(method.getModifiers())) {
+                    continue;
+                }
+                if (!allowPrivate && !Modifier.isPublic(method.getModifiers())) {
+                    continue;
+                }
+                if (!allowStatic && Modifier.isStatic(method.getModifiers())) {
+                    continue;
+                }
+
+                if (allowPrivate && !Modifier.isPublic(method.getModifiers())) {
+                    setAccessible(method);
+                }
+                
+                return method;
+            }
+        }
+        
+        return null;
+    }
+    
     public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, Set<Option> options) {
         List<Method> setters = findAllSetters(typeClass, propertyName, propertyValue, options);
         return setters.get(0);
