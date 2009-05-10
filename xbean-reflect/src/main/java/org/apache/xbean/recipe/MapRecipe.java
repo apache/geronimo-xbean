@@ -145,7 +145,7 @@ public class MapRecipe extends AbstractRecipe {
         // get component type
         Type keyType = Object.class;
         Type valueType = Object.class;
-        Type[] typeParameters = RecipeHelper.getTypeParameters(Collection.class, expectedType);
+        Type[] typeParameters = RecipeHelper.getTypeParameters(Map.class, expectedType);
         if (typeParameters != null && typeParameters.length == 2) {
             if (typeParameters[0] instanceof Class) {
                 keyType = typeParameters[0];
