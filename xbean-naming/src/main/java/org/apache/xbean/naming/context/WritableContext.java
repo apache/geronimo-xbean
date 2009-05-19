@@ -27,6 +27,7 @@ import javax.naming.Context;
 import javax.naming.ContextNotEmptyException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
+import javax.naming.Referenceable;
 
 import org.apache.xbean.naming.reference.CachingReference;
 
@@ -83,6 +84,13 @@ public class WritableContext extends AbstractFederatedContext {
     }
 
     protected void addBinding(AtomicReference<Map<String, Object>> bindingsRef, String name, String nameInNamespace, Object value, boolean rebind) throws NamingException {
+        if (value instanceof Referenceable) {
+            value = ((Referenceable)value).getReference();
+        }
+        if (cacheReferences) {
+            value = CachingReference.wrapReference(getNameInNamespace(name), value);
+        }
+
         writeLock.lock();
         try {
             Map<String, Object> bindings = bindingsRef.get();
@@ -90,10 +98,6 @@ public class WritableContext extends AbstractFederatedContext {
             if (!rebind && bindings.containsKey(name)) {
                 throw new NameAlreadyBoundException(name);
             }
-            if (cacheReferences) {
-                value = CachingReference.wrapReference(getNameInNamespace(name), value);
-            }
-
             Map<String, Object> newBindings = new HashMap<String, Object>(bindings);
             newBindings.put(name,value);
             bindingsRef.set(newBindings);
