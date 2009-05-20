@@ -19,6 +19,7 @@ package org.apache.xbean.naming.context;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Hashtable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,6 +29,8 @@ import javax.naming.ContextNotEmptyException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.Referenceable;
+import javax.naming.Reference;
+import javax.naming.spi.NamingManager;
 
 import org.apache.xbean.naming.reference.CachingReference;
 
@@ -85,7 +88,18 @@ public class WritableContext extends AbstractFederatedContext {
 
     protected void addBinding(AtomicReference<Map<String, Object>> bindingsRef, String name, String nameInNamespace, Object value, boolean rebind) throws NamingException {
         if (value instanceof Referenceable) {
-            value = ((Referenceable)value).getReference();
+            Reference ref = ((Referenceable)value).getReference();
+            if (ref != null) {
+                try {
+                    Object o = NamingManager.getObjectInstance(ref, null, null, new Hashtable());
+                    if (!value.equals(o)) {
+                        value = ref;
+                    }
+                } catch (Exception e) {
+                    //don't try to bind reference
+                }
+            }
+
         }
         if (cacheReferences) {
             value = CachingReference.wrapReference(getNameInNamespace(name), value);
