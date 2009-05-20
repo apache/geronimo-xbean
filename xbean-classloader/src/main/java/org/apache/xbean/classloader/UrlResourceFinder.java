@@ -17,9 +17,10 @@
 package org.apache.xbean.classloader;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 /**
  * @version $Rev$ $Date$
@@ -229,7 +230,12 @@ public class UrlResourceFinder implements ResourceFinder {
             throw new Error("Only local file jars are supported " + url);
         }
 
-        File file = new File(url.getPath());
+        File file;
+        try {
+            file = new File(url.toURI());
+        } catch (URISyntaxException e) {
+            file = new File(url.getPath());
+        }
         if (!file.exists()) {
             throw new FileNotFoundException(file.getAbsolutePath());
         }
