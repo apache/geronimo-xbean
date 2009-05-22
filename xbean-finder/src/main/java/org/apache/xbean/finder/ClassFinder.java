@@ -16,11 +16,11 @@
  */
 package org.apache.xbean.finder;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.commons.EmptyVisitor;
+import org.apache.xbean.asm.AnnotationVisitor;
+import org.apache.xbean.asm.ClassReader;
+import org.apache.xbean.asm.FieldVisitor;
+import org.apache.xbean.asm.MethodVisitor;
+import org.apache.xbean.asm.commons.EmptyVisitor;
 
 import java.io.File;
 import java.io.IOException;

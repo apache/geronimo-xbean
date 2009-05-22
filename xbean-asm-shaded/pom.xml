@@ -18,7 +18,7 @@
 
 -->
 
-<!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
+<!-- $Rev$ $Date$ -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -29,14 +29,43 @@
     <groupId>org.apache.xbean</groupId>
     <version>3.6-SNAPSHOT</version>
   </parent>
-  <artifactId>xbean-finder</artifactId>
+  <artifactId>xbean-asm-shaded</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache XBean :: Classpath Resource Finder</name>
+  <name>Apache XBean :: ASM shaded (repackaged)</name>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>org.objectweb.asm</pattern>
+                  <shadedPattern>org.apache.xbean.asm</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
-      <groupId>org.apache.xbean</groupId>
-      <artifactId>xbean-asm-shaded</artifactId>
-      <version>${version}</version>
+      <groupId>asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>asm</groupId>
+      <artifactId>asm-commons</artifactId>
+      <version>3.1</version>
     </dependency>
   </dependencies>
 </project>

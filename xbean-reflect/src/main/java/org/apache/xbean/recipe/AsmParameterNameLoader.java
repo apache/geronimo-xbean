@@ -84,7 +84,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
     }
 
     /**
-     * Gets the parameter names of all constructoror null if the class was compiled without debug symbols on.
+     * Gets the parameter names of all constructor or null if the class was compiled without debug symbols on.
      * @param clazz the class for which the constructor parameter names should be retrieved
      * @return a map from Constructor object to the parameter names or null if the class was compiled without debug symbols on
      */
