@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.Arrays;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
+import org.apache.xbean.asm.ClassReader;
+import org.apache.xbean.asm.Label;
+import org.apache.xbean.asm.MethodVisitor;
+import org.apache.xbean.asm.Type;
+import org.apache.xbean.asm.commons.EmptyVisitor;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the
@@ -111,7 +111,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
             ClassReader reader = AsmParameterNameLoader.createClassReader(clazz);
 
             AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor visitor = new AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor(clazz);
-            reader.accept(visitor, false);
+            reader.accept(visitor, 0);
 
             Map exceptions = visitor.getExceptions();
             if (exceptions.size() == 1) {
@@ -160,7 +160,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
             ClassReader reader = AsmParameterNameLoader.createClassReader(clazz);
 
             AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor visitor = new AsmParameterNameLoader.AllParameterNamesDiscoveringVisitor(clazz, methodName);
-            reader.accept(visitor, false);
+            reader.accept(visitor, 0);
 
             Map exceptions = visitor.getExceptions();
             if (exceptions.size() == 1) {
