@@ -42,6 +42,9 @@ public class WritableContext extends AbstractFederatedContext {
     private final AtomicReference<Map<String, Object>> bindingsRef;
     private final AtomicReference<Map<String, Object>> indexRef;
     private final boolean cacheReferences;
+    private final boolean supportReferenceable = true;
+    private final boolean checkDereferenceDifferent = true;
+    private final boolean assumeDereferenceBound = false;
 
     public WritableContext() throws NamingException {
         this("", Collections.<String, Object>emptyMap(), ContextAccess.MODIFIABLE, false);
@@ -87,16 +90,22 @@ public class WritableContext extends AbstractFederatedContext {
     }
 
     protected void addBinding(AtomicReference<Map<String, Object>> bindingsRef, String name, String nameInNamespace, Object value, boolean rebind) throws NamingException {
-        if (value instanceof Referenceable) {
+        if (supportReferenceable && value instanceof Referenceable) {
             Reference ref = ((Referenceable)value).getReference();
             if (ref != null) {
-                try {
-                    Object o = NamingManager.getObjectInstance(ref, null, null, new Hashtable());
-                    if (!value.equals(o)) {
-                        value = ref;
+                if (checkDereferenceDifferent) {
+                    try {
+                        Object o = NamingManager.getObjectInstance(ref, null, null, new Hashtable());
+                        if (!value.equals(o)) {
+                            value = ref;
+                        }
+                    } catch (Exception e) {
+                        if (!assumeDereferenceBound) {
+                            value = ref;
+                        }
                     }
-                } catch (Exception e) {
-                    //don't try to bind reference
+                } else {
+                    value = ref;
                 }
             }
 
