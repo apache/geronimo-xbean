@@ -71,7 +71,7 @@ public class WritableContext extends AbstractFederatedContext {
 
         this.cacheReferences = cacheReferences;
         if (this.cacheReferences) {
-            bindings = CachingReference.wrapReferences(bindings);
+            bindings = CachingReference.wrapReferences(bindings, this);
         }
 
         Map<String, Object> localBindings = ContextUtil.createBindings(bindings, this);
@@ -111,7 +111,7 @@ public class WritableContext extends AbstractFederatedContext {
 
         }
         if (cacheReferences) {
-            value = CachingReference.wrapReference(getNameInNamespace(name), value);
+            value = CachingReference.wrapReference(name, value, this);
         }
 
         writeLock.lock();

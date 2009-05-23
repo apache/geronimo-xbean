@@ -48,7 +48,7 @@ public final class ContextUtil {
         return NAME_PARSER.parse(name);
     }
 
-    public static Object resolve(String name, Object value) throws NamingException {
+    public static Object resolve(Object value, String stringName, Name parsedName, Context nameCtx) throws NamingException {
         if (!(value instanceof Reference)) {
             return value;
         }
@@ -62,17 +62,20 @@ public final class ContextUtil {
             } catch (NamingException e) {
                 throw e;
             } catch (Exception e) {
-                throw (NamingException) new NamingException("Could not look up : " + name).initCause(e);
+                throw (NamingException) new NamingException("Could not look up : " + stringName == null? parsedName.toString(): stringName).initCause(e);
             }
         }
 
         // for normal References we have to do it the slow way
         try {
-            return NamingManager.getObjectInstance(reference, null, null, new Hashtable());
+            if (parsedName == null) {
+                parsedName = NAME_PARSER.parse(stringName);
+            }
+            return NamingManager.getObjectInstance(reference, parsedName, nameCtx, new Hashtable());
         } catch (NamingException e) {
             throw e;
         } catch (Exception e) {
-            throw (NamingException) new NamingException("Could not look up : " + name).initCause(e);
+            throw (NamingException) new NamingException("Could not look up : " + stringName == null? parsedName.toString(): stringName).initCause(e);
         }
     }
 
@@ -135,9 +138,11 @@ public final class ContextUtil {
 
     public static final class ListBindingEnumeration implements NamingEnumeration<Binding> {
         private final Iterator iterator;
+        private final Context context;
 
-        public ListBindingEnumeration(Map localBindings) {
+        public ListBindingEnumeration(Map localBindings, Context context) {
             this.iterator = localBindings.entrySet().iterator();
+            this.context = context;
         }
 
         public boolean hasMore() {
@@ -156,7 +161,7 @@ public final class ContextUtil {
             Map.Entry entry = (Map.Entry) iterator.next();
             String name = (String) entry.getKey();
             Object value = entry.getValue();
-            return new ReadOnlyBinding(name, value);
+            return new ReadOnlyBinding(name, value, context);
         }
 
         public void close() {
@@ -165,10 +170,12 @@ public final class ContextUtil {
 
     public static final class ReadOnlyBinding extends Binding {
         private final Object value;
+        private final Context context;
 
-        public ReadOnlyBinding(String name, Object value) {
+        public ReadOnlyBinding(String name, Object value, Context context) {
             super(name, value);
             this.value = value;
+            this.context = context;
         }
 
         public void setName(String name) {
@@ -189,7 +196,7 @@ public final class ContextUtil {
 
         public Object getObject() {
             try {
-                return resolve(getName(), value);
+                return resolve(value, getName(), null, context);
             } catch (NamingException e) {
                 throw new RuntimeException(e);
             }
