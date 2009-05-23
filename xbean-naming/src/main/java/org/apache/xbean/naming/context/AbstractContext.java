@@ -113,7 +113,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         // try to look up the name directly (this is the fastest path)
         Object directLookup = getDeepBinding(stringName);
         if (directLookup != null) {
-            return ContextUtil.resolve(stringName, directLookup);
+            return ContextUtil.resolve(directLookup, stringName, parsedName, this);
         }
 
         // if the parsed name has no parts, they are asking for the current context
@@ -137,7 +137,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
 
             // if the name only had one part, we've looked up everything
             if (parsedName.size() == 1) {
-                localValue = ContextUtil.resolve(stringName, localValue);
+                localValue = ContextUtil.resolve(localValue, stringName, parsedName, this);
                 return localValue;
             }
 
@@ -719,7 +719,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
 
     protected NamingEnumeration<Binding> listBindings() throws NamingException {
         Map<String, Object> bindings = getBindings();
-        return new ContextUtil.ListBindingEnumeration(bindings);
+        return new ContextUtil.ListBindingEnumeration(bindings, this);
     }
 
     public NamingEnumeration<NameClassPair> list(String name) throws NamingException {

@@ -47,7 +47,7 @@ public class ImmutableContext extends AbstractContext {
         super(nameInNamespace, ContextAccess.UNMODIFIABLE);
 
         if (cacheReferences) {
-            bindings = CachingReference.wrapReferences(bindings);
+            bindings = CachingReference.wrapReferences(bindings, this);
         }
 
         Map<String, Object> localBindings = ContextUtil.createBindings(bindings, this);
