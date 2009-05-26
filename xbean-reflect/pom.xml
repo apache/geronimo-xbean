@@ -33,13 +33,18 @@
   <packaging>bundle</packaging>
   <name>Apache XBean :: Reflect</name>
   <dependencies>
-    <dependency>
-      <groupId>org.apache.xbean</groupId>
-      <artifactId>xbean-asm-shaded</artifactId>
-      <version>${version}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
-    </dependency>
+      <dependency>
+        <groupId>asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>3.1</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>asm</groupId>
+        <artifactId>asm-commons</artifactId>
+        <version>3.1</version>
+        <scope>provided</scope>
+      </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>

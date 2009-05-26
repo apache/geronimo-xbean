@@ -16,11 +16,11 @@
  */
 package org.apache.xbean.finder;
 
-import org.apache.xbean.asm.AnnotationVisitor;
-import org.apache.xbean.asm.ClassReader;
-import org.apache.xbean.asm.FieldVisitor;
-import org.apache.xbean.asm.MethodVisitor;
-import org.apache.xbean.asm.commons.EmptyVisitor;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.commons.EmptyVisitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -152,25 +152,29 @@ public class ClassFinder {
         List<Package> packages = new ArrayList<Package>();
         for (Class clazz : classes) {
 
-            Package aPackage = clazz.getPackage();
-            if (aPackage != null && !packages.contains(aPackage)){
-                infos.add(new PackageInfo(aPackage));
-                packages.add(aPackage);
-            }
+            try {
+                Package aPackage = clazz.getPackage();
+                if (aPackage != null && !packages.contains(aPackage)){
+                    infos.add(new PackageInfo(aPackage));
+                    packages.add(aPackage);
+                }
 
-            ClassInfo classInfo = new ClassInfo(clazz);
-            infos.add(classInfo);
-            classInfos.add(classInfo);
-            for (Method method : clazz.getDeclaredMethods()) {
-                infos.add(new MethodInfo(classInfo, method));
-            }
+                ClassInfo classInfo = new ClassInfo(clazz);
+                infos.add(classInfo);
+                classInfos.add(classInfo);
+                for (Method method : clazz.getDeclaredMethods()) {
+                    infos.add(new MethodInfo(classInfo, method));
+                }
 
-            for (Constructor constructor : clazz.getConstructors()) {
-                infos.add(new MethodInfo(classInfo, constructor));
-            }
+                for (Constructor constructor : clazz.getConstructors()) {
+                    infos.add(new MethodInfo(classInfo, constructor));
+                }
 
-            for (Field field : clazz.getDeclaredFields()) {
-                infos.add(new FieldInfo(classInfo, field));
+                for (Field field : clazz.getDeclaredFields()) {
+                    infos.add(new FieldInfo(classInfo, field));
+                }
+            } catch (NoClassDefFoundError e) {
+                throw new NoClassDefFoundError("Could not fully load class: " + clazz.getName() + "\n due to:" + e.getMessage() + "\n in classLoader: \n" + clazz.getClassLoader());
             }
         }
 
