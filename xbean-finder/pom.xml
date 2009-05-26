@@ -37,6 +37,7 @@
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-asm-shaded</artifactId>
       <version>${version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>
