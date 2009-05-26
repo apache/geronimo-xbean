@@ -29,9 +29,9 @@
     <groupId>org.apache.xbean</groupId>
     <version>3.6-SNAPSHOT</version>
   </parent>
-  <artifactId>xbean-asm-shaded</artifactId>
+  <artifactId>xbean-finder-shaded</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache XBean :: ASM shaded (repackaged)</name>
+  <name>Apache XBean :: Finder shaded (repackaged)</name>
   <build>
     <plugins>
       <plugin>
@@ -50,6 +50,12 @@
                   <shadedPattern>org.apache.xbean.asm</shadedPattern>
                 </relocation>
               </relocations>
+              <!-- this doesn't seem to work... what am I doing wrong? -->
+              <artifactSet>
+                <excludes>
+                  <exclude>org.apache.xbean:xbean-asm-shaded</exclude>
+                </excludes>
+              </artifactSet>
             </configuration>
           </execution>
         </executions>
@@ -58,14 +64,25 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>3.1</version>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-finder</artifactId>
+      <version>${version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>asm</groupId>
+          <artifactId>asm-commons</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    <dependency>
-      <groupId>asm</groupId>
-      <artifactId>asm-commons</artifactId>
-      <version>3.1</version>
-    </dependency>
+    <!-- see above note in shade plugin configuration -->
+    <!--<dependency>-->
+      <!--<groupId>org.apache.xbean</groupId>-->
+      <!--<artifactId>xbean-asm-shaded</artifactId>-->
+      <!--<version>${version}</version>-->
+    <!--</dependency>-->
   </dependencies>
 </project>
