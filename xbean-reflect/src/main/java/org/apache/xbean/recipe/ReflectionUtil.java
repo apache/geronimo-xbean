@@ -42,10 +42,14 @@ import static org.apache.xbean.recipe.RecipeHelper.isAssignableFrom;
 public final class ReflectionUtil {
     private static ParameterNameLoader parameterNamesLoader;
     static {
-        try {
-            Class<? extends ParameterNameLoader> loaderClass = ReflectionUtil.class.getClassLoader().loadClass("org.apache.xbean.recipe.AsmParameterNameLoader").asSubclass(ParameterNameLoader.class);
-            parameterNamesLoader = loaderClass.newInstance();
-        } catch (Throwable ignored) {
+        String[] impls = {"org.apache.xbean.recipe.XbeanAsmParameterNameLoader", "org.apache.xbean.recipe.AsmParameterNameLoader"};
+        for (String impl : impls) {
+            try {
+                Class<? extends ParameterNameLoader> loaderClass = ReflectionUtil.class.getClassLoader().loadClass(impl).asSubclass(ParameterNameLoader.class);
+                parameterNamesLoader = loaderClass.newInstance();
+                break;
+            } catch (Throwable ignored) {
+            }
         }
     }
 

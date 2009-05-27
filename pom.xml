@@ -412,7 +412,6 @@
         <module>maven-xbean-plugin</module>
         <module>xbean-asm-shaded</module>
         <module>xbean-finder-shaded</module>
-        <module>xbean-reflect-shaded</module>
     </modules>
     
     <repositories>
