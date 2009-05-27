@@ -1,25 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-<!--
+    <!--
 
-    Licensed to the Apache Software Foundation (ASF) under one or more
-    contributor license agreements.  See the NOTICE file distributed with
-    this work for additional information regarding copyright ownership.
-    The ASF licenses this file to You under the Apache License, Version 2.0
-    (the "License"); you may not use this file except in compliance with
-    the License.  You may obtain a copy of the License at
+        Licensed to the Apache Software Foundation (ASF) under one or more
+        contributor license agreements.  See the NOTICE file distributed with
+        this work for additional information regarding copyright ownership.
+        The ASF licenses this file to You under the Apache License, Version 2.0
+        (the "License"); you may not use this file except in compliance with
+        the License.  You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+           http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
 
--->
+    -->
 
-<!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
+    <!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -32,17 +32,19 @@
     <artifactId>xbean-spring</artifactId>
     <packaging>bundle</packaging>
     <name>Apache XBean :: Spring</name>
-	
-	<properties>
-		<xbean.osgi.import.pkg>
-			com.thoughtworks.qdox*;resolution:=optional,
-			org.apache.tools.ant*;resolution:=optional,
-			org.springframework.core;resolution:=optional,
-			org.springframework.web*;resolution:=optional,
-			*
-		</xbean.osgi.import.pkg>
-	</properties>
-	
+
+    <description>xbean-spring provides a schema-driven proprietary namespace handler for spring contexts</description>
+
+    <properties>
+        <xbean.osgi.import.pkg>
+            com.thoughtworks.qdox*;resolution:=optional,
+            org.apache.tools.ant*;resolution:=optional,
+            org.springframework.core;resolution:=optional,
+            org.springframework.web*;resolution:=optional,
+            *
+        </xbean.osgi.import.pkg>
+    </properties>
+
     <dependencies>
 
         <dependency>
@@ -81,7 +83,7 @@
         </dependency>
 
     </dependencies>
-    
+
     <build>
         <testResources>
             <testResource>
@@ -113,39 +115,39 @@
                             <tasks>
                                 <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                                     <classpath>
-                                        <pathelement path="${basedir}/target/classes" />
-                                        <pathelement path="${basedir}/target/test-classes" />
-                                        <path refid="maven.runtime.classpath" />
+                                        <pathelement path="${basedir}/target/classes"/>
+                                        <pathelement path="${basedir}/target/test-classes"/>
+                                        <path refid="maven.runtime.classpath"/>
                                     </classpath>
                                 </taskdef>
-                                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/" />
+                                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/"/>
                                 <copy todir="${basedir}/target/test-classes">
-                                    <fileset dir="${basedir}/target/test-generated" />
+                                    <fileset dir="${basedir}/target/test-generated"/>
                                 </copy>
                             </tasks>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-               <plugin>
-                   <groupId>org.apache.felix</groupId>
-                   <artifactId>maven-bundle-plugin</artifactId>
-                   <extensions>true</extensions>
-                   <configuration>
-                           <instructions>
-                               <Bundle-Name>${artifactId}</Bundle-Name>
-                               <Bundle-SymbolicName>${xbean.osgi.symbolic.name}</Bundle-SymbolicName>
-                               <Export-Package>${xbean.osgi.export}</Export-Package>
-                               <Import-Package>${xbean.osgi.import}</Import-Package>
-                               <Private-Package>${xbean.osgi.private.pkg}</Private-Package>
-                               <Implementation-Title>Apache XBean</Implementation-Title>
-                               <Implementation-Version>${project.version}</Implementation-Version>
-                               <DynamicImport-Package>META-INF.services.org.apache.xbean.spring.*,META-INF.services.org.xbean.spring</DynamicImport-Package>
-                               <_failok>true</_failok>
-                          </instructions>
-                       </configuration>
-               </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            com.thoughtworks.qdox*;resolution:=optional,
+                            org.apache.tools.ant*;resolution:=optional,
+                            org.springframework.core;resolution:=optional,
+                            org.springframework.web*;resolution:=optional,
+                            *
+                        </Import-Package>
+                        <DynamicImport-Package>META-INF.services.org.apache.xbean.spring.*,META-INF.services.org.xbean.spring</DynamicImport-Package>
+                        <_failok>true</_failok>
+                    </instructions>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-    
+
 </project>

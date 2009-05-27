@@ -32,8 +32,7 @@
     <artifactId>xbean-classloader</artifactId>
     <packaging>bundle</packaging>
     <name>Apache XBean :: Classloader</name>
-    <version>3.6-SNAPSHOT</version>
-
+    <description>xbean-classloader includes a flexibie multi-parent classloader</description>
     <build>
         <plugins>
             <plugin>

@@ -42,9 +42,9 @@ public class WritableContext extends AbstractFederatedContext {
     private final AtomicReference<Map<String, Object>> bindingsRef;
     private final AtomicReference<Map<String, Object>> indexRef;
     private final boolean cacheReferences;
-    private final boolean supportReferenceable = true;
-    private final boolean checkDereferenceDifferent = true;
-    private final boolean assumeDereferenceBound = false;
+    private final boolean supportReferenceable;
+    private final boolean checkDereferenceDifferent;
+    private final boolean assumeDereferenceBound;
 
     public WritableContext() throws NamingException {
         this("", Collections.<String, Object>emptyMap(), ContextAccess.MODIFIABLE, false);
@@ -67,12 +67,24 @@ public class WritableContext extends AbstractFederatedContext {
     }
 
     public WritableContext(String nameInNamespace, Map<String, Object> bindings, ContextAccess contextAccess, boolean cacheReferences) throws NamingException {
+        this(nameInNamespace, bindings, contextAccess, cacheReferences, true, true, false);
+    }
+    public WritableContext(String nameInNamespace,
+                           Map<String, Object> bindings,
+                           ContextAccess contextAccess,
+                           boolean cacheReferences,
+                           boolean supportReferenceable,
+                           boolean checkDereferenceDifferent,
+                           boolean assumeDereferenceBound) throws NamingException {
         super(nameInNamespace, contextAccess);
 
         this.cacheReferences = cacheReferences;
         if (this.cacheReferences) {
             bindings = CachingReference.wrapReferences(bindings, this);
         }
+        this.supportReferenceable = supportReferenceable;
+        this.checkDereferenceDifferent = checkDereferenceDifferent;
+        this.assumeDereferenceBound = assumeDereferenceBound;
 
         Map<String, Object> localBindings = ContextUtil.createBindings(bindings, this);
 
