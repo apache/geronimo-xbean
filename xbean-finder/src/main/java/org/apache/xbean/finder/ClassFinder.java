@@ -428,6 +428,7 @@ public class ClassFinder {
             } else if (file.getName().endsWith(".class")) {
                 String name = file.getName();
                 name = name.replaceFirst(".class$", "");
+                if (name.contains(".")) continue;
                 classNames.add(packageName + name);
             }
         }
@@ -458,6 +459,7 @@ public class ClassFinder {
             }
             String className = entry.getName();
             className = className.replaceFirst(".class$", "");
+            if (className.contains(".")) continue;
             className = className.replace('/', '.');
             classNames.add(className);
         }
