@@ -961,8 +961,8 @@ public class ResourceFinder {
             URL currentUrl = search[i];
             if (currentUrl == null) {
                 continue;
-            }
-            JarFile jarFile = null;
+            }            
+
             try {
                 String protocol = currentUrl.getProtocol();
                 if (protocol.equals("jar")) {
@@ -972,8 +972,10 @@ public class ResourceFinder {
                     * entry doesn't exist.
                     */
                     URL jarURL = ((JarURLConnection) currentUrl.openConnection()).getJarFileURL();
+                    JarFile jarFile;
+                    JarURLConnection juc;
                     try {
-                        JarURLConnection juc = (JarURLConnection) new URL("jar", "", jarURL.toExternalForm() + "!/").openConnection();
+                        juc = (JarURLConnection) new URL("jar", "", jarURL.toExternalForm() + "!/").openConnection();
                         jarFile = juc.getJarFile();
                     } catch (IOException e) {
                         // Don't look for this jar file again
@@ -981,29 +983,41 @@ public class ResourceFinder {
                         throw e;
                     }
 
-                    String entryName;
-                    if (currentUrl.getFile().endsWith("!/")) {
-                        entryName = resourceName;
-                    } else {
-                        String file = currentUrl.getFile();
-                        int sepIdx = file.lastIndexOf("!/");
-                        if (sepIdx == -1) {
-                            // Invalid URL, don't look here again
-                            search[i] = null;
-                            continue;
+                    try {
+                        juc = (JarURLConnection) new URL("jar", "", jarURL.toExternalForm() + "!/").openConnection();                        
+                        jarFile = juc.getJarFile();
+                        String entryName;
+                        if (currentUrl.getFile().endsWith("!/")) {
+                            entryName = resourceName;
+                        } else {
+                            String file = currentUrl.getFile();
+                            int sepIdx = file.lastIndexOf("!/");
+                            if (sepIdx == -1) {
+                                // Invalid URL, don't look here again
+                                search[i] = null;
+                                continue;
+                            }
+                            sepIdx += 2;
+                            StringBuffer sb = new StringBuffer(file.length() - sepIdx + resourceName.length());
+                            sb.append(file.substring(sepIdx));
+                            sb.append(resourceName);
+                            entryName = sb.toString();
                         }
-                        sepIdx += 2;
-                        StringBuffer sb = new StringBuffer(file.length() - sepIdx + resourceName.length());
-                        sb.append(file.substring(sepIdx));
-                        sb.append(resourceName);
-                        entryName = sb.toString();
+                        if (entryName.equals("META-INF/") && jarFile.getEntry("META-INF/MANIFEST.MF") != null) {
+                            return targetURL(currentUrl, "META-INF/MANIFEST.MF");
+                        }
+                        if (jarFile.getEntry(entryName) != null) {
+                            return targetURL(currentUrl, resourceName);
+                        }
+                    } finally {
+                        if (!juc.getUseCaches()) {
+                            try {
+                                jarFile.close();
+                            } catch (Exception e) {
+                            }
+                        }
                     }
-                    if (entryName.equals("META-INF/") && jarFile.getEntry("META-INF/MANIFEST.MF") != null){
-                        return targetURL(currentUrl, "META-INF/MANIFEST.MF");
-                    }
-                    if (jarFile.getEntry(entryName) != null) {
-                        return targetURL(currentUrl, resourceName);
-                    }
+                    
                 } else if (protocol.equals("file")) {
                     String baseFile = currentUrl.getFile();
                     String host = currentUrl.getHost();
