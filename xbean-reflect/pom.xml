@@ -70,7 +70,7 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
-    <!-- todo Either figure out resolution=optional + dynamic imports for the loggers or construct fragment bundles for them -->
+    <!-- todo Either figure out resolution:=optional + dynamic imports for the loggers or construct fragment bundles for them -->
     <build>
         <plugins>
             <plugin>
@@ -81,8 +81,7 @@
                 <configuration>
                     <instructions>
                         <Export-Package>!org.apache.xbean.asm.*,org.apache.xbean.*;version=${pom.version}</Export-Package>
-                        <Import-Package>*,org.apache.log4j;resolution=optional,org.apache.commons.logging;resolution=optional,org.objectweb.asm;resolution=optional;version=3.1,org.objectweb.asm.commons;resolution=optional;version=3.1,org.apache.xbean.asm;resolution=optional;version=3.1,org.apache.xbean.asm.commons;resolution=optional;version=3.1
-                        </Import-Package>
+                        <Import-Package>*,org.apache.log4j;resolution:=optional,org.apache.commons.logging;resolution:=optional,org.objectweb.asm;resolution:=optional;version=3.1,org.objectweb.asm.commons;resolution:=optional;version=3.1,org.apache.xbean.asm;resolution:=optional;version=3.1,org.apache.xbean.asm.commons;resolution:=optional;version=3.1</Import-Package>
                     </instructions>
                 </configuration>
             </plugin>
