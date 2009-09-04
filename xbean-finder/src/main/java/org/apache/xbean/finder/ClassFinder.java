@@ -261,7 +261,9 @@ public class ClassFinder {
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             try {
-                classes.add(((ClassInfo) info).get());
+            	if(info instanceof ClassInfo){
+                   classes.add(((ClassInfo) info).get());
+            	}
             } catch (ClassNotFoundException cnfe) {
                 // TODO: ignored, but a log message would be appropriate
             }
