@@ -63,6 +63,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.util.StringUtils;
+import org.springframework.core.io.ResourceLoader;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -236,7 +237,11 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             return bd.getBeanClass();
         }
         try {
-            ClassLoader cl = parserContext.getReaderContext().getReader().getBeanClassLoader();
+            ResourceLoader rl = parserContext.getReaderContext().getResourceLoader();
+            ClassLoader cl = rl != null ? rl.getClassLoader() : null;
+            if (cl == null) {
+                cl = parserContext.getReaderContext().getReader().getBeanClassLoader();
+            }
             if (cl == null) {
                 cl = Thread.currentThread().getContextClassLoader();
             }
