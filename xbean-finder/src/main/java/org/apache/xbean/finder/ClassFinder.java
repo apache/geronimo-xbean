@@ -542,7 +542,7 @@ public class ClassFinder {
         }
 
         public String getPackageName(){
-            return name.substring(name.lastIndexOf(".")+1, name.length());
+        	  return name.substring(0,name.lastIndexOf("."));
         }
 
         public List<MethodInfo> getConstructors() {

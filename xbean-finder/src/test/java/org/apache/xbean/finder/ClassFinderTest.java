@@ -151,4 +151,12 @@ public class ClassFinderTest extends TestCase {
         testFindAnnotatedMethods();
         testFindAnnotatedPackages();
     }
+    public void testFindClassesInPackage() throws Exception{
+    	List<Class> classesInPackage = classFinder.findClassesInPackage("org.acme.foo", false);
+    	Class[] classesArray = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class,
+                Red.CandyApple.class, Red.Pink.class, Halloween.class, Holiday.class, Deployable.class, Primary.class,
+                Property.class, Thanksgiving.class, ValentinesDay.class};
+    	List<Class> classes = Arrays.asList(classesArray);
+    	assertEquals(true, classesInPackage.containsAll(classes));
+    }
 }
