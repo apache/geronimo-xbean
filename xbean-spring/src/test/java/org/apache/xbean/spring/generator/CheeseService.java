@@ -28,6 +28,8 @@ public class CheeseService {
     private String id;
     private String name;
 
+    private long volume;
+    
     public CheeseService(String id, String name) {
         this.id = id;
         this.name = name;
@@ -39,5 +41,16 @@ public class CheeseService {
 
     public String getName() {
         return name;
+    }
+    
+    public long getVolumeWithPropertyEditor() {
+    	return volume;
+    }
+    
+    /**
+    * @org.apache.xbean.Property propertyEditor="org.apache.xbean.spring.example.MilliLittersPropertyEditor"
+    */
+    public void setVolumeWithPropertyEditor(long volume) {
+    	this.volume = volume;
     }
 }

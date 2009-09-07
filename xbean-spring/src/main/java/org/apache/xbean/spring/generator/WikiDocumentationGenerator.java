@@ -182,7 +182,7 @@ public class WikiDocumentationGenerator implements GeneratorPlugin {
 
             for ( Iterator iterator = element.getAttributes().iterator(); iterator.hasNext(); ) {
                 AttributeMapping attribute = (AttributeMapping) iterator.next();
-                Type type = attribute.getType();
+                Type type = attribute.getPropertyEditor() != null ? Type.newSimpleType(String.class.getName()): attribute.getType();
                 out.println("    | " + attribute.getAttributeName() + " | "+getTypeLink(type, refercencedTypes)+" | {html}"+attribute.getDescription()+"{html} |");	
 	          }
         }

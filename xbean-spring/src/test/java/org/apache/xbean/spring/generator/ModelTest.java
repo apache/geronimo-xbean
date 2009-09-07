@@ -19,12 +19,14 @@ package org.apache.xbean.spring.generator;
 import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.TestCase;
 import org.apache.xbean.spring.example.BeerService;
@@ -61,6 +63,29 @@ public class ModelTest extends TestCase {
         Map flatCollections = recipeService.getFlatCollections();
         assertNotNull(flatCollections);
         assertEquals(1, flatCollections.size());
+        
+        ElementMapping cheese = defaultNamespace.getElement("cheese");
+        assertNotNull(cheese);
+        AttributeMapping volume = cheese.getAttribute("volumeWithPropertyEditor");
+        assertNotNull(volume);
+        assertNotNull(volume.getPropertyEditor());
+        assertEquals(volume.getType().getName(), "long");
+        
+        // validate xsd has string for attribute VolumeWithPropertyEditor
+        final AtomicBoolean gotExpected = new AtomicBoolean(false);
+        XsdGenerator generator = new XsdGenerator(null);
+        generator.generateSchema(new PrintWriter("dummy") {
+
+			@Override
+			public void println(String x) {
+				if (x.indexOf("volumeWithPropertyEditor") != -1) {
+					if (x.indexOf("xs:string") != -1) {
+						gotExpected.set(true);
+					}
+				}
+			}}, defaultNamespace);
+        
+        assertTrue("xsd with string got genereated", gotExpected.get());
     }
 
     public void testQdoxExcludeClass() throws Exception{
