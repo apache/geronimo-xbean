@@ -25,9 +25,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>6</version>
+        <groupId>org.apache.geronimo.genesis</groupId>
+        <artifactId>genesis-java5-flava</artifactId>
+        <version>2.0</version>
     </parent>
 
     <groupId>org.apache.xbean</groupId>
@@ -231,7 +231,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <version>3.8.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -253,45 +253,6 @@
                     <version>${pom.version}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>1.5</source>
-                        <target>1.5</target>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <failIfNoTests>false</failIfNoTests>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <configuration>
-                        <preparationGoals>clean,verify,install</preparationGoals>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>ianal-maven-plugin</artifactId>
-                    <version>1.0-alpha-1</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>verify-legal-files</goal>
-                            </goals>
-                            <configuration>
-                                <!-- Fail the build if any artifacts are missing legal files -->
-                                <strict>true</strict>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
                     <version>2.0.0</version>
@@ -304,33 +265,10 @@
                         </instructions>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-remote-resources-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>process</goal>
-                            </goals>
-                            <configuration>
-                                <properties>
-                                    <addLicense>true</addLicense>
-                                    <addArtifact>true</addArtifact>
-                                    <projectName>Apache XBean</projectName>
-                                </properties>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
 
         <plugins>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>ianal-maven-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
