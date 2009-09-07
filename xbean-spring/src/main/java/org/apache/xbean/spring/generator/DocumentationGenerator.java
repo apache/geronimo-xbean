@@ -136,7 +136,7 @@ public class DocumentationGenerator implements GeneratorPlugin {
             out.println("  <tr><th>Attribute</th><th>Type</th><th>Description</th>");
             for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
                 AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
-                Type type = attributeMapping.getType();
+                Type type = attributeMapping.getPropertyEditor() != null ?  Type.newSimpleType(String.class.getName()) : attributeMapping.getType();
                 if (namespaceMapping.isSimpleType(type)) {
                     out.println("  <tr><td>" + attributeMapping.getAttributeName() + "</td><td>" + Utils.getXsdType(type)
                             + "</td><td>" + attributeMapping.getDescription() + "</td></tr>");
