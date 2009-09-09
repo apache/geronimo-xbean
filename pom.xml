@@ -42,13 +42,20 @@
         XBean is a plugin based server architecture.
     </description>
 
-    <url>http://geronimo.apache.org/xbean</url>
-
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
         <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
         <url>http://svn.apache.org/viewvc/geronimo/xbean/trunk</url>
     </scm>
+
+    <url>http://geronimo.apache.org/maven/${siteId}/${version}</url>
+
+    <distributionManagement>
+        <site>
+            <id>xbean-website</id>
+            <url>${staging.siteURL}/${siteId}/${version}</url>
+        </site>
+    </distributionManagement>
 
     <properties>
         <siteId>xbean</siteId>
@@ -87,7 +94,7 @@
             <id>chirino</id>
             <name>Hiram Chirino</name>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>-5</timezone>
         </developer>
@@ -96,7 +103,7 @@
             <name>Dain Sundstrom</name>
             <email>dain@iq80.com</email>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>-8</timezone>
         </developer>
@@ -105,7 +112,7 @@
             <name>David Blevins</name>
             <email>dblevins@visi.com</email>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>-8</timezone>
         </developer>
@@ -113,7 +120,7 @@
             <id>jstrachan</id>
             <name>James Strachan</name>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>-8</timezone>
         </developer>
@@ -121,7 +128,7 @@
             <id>jvanzyl</id>
             <name>Jason van Zyl</name>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>-8</timezone>
         </developer>
@@ -129,7 +136,7 @@
             <id>maguro</id>
             <name>Alan D. Cabrera</name>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>-8</timezone>
         </developer>
@@ -137,7 +144,7 @@
             <id>gnodet</id>
             <name>Guillaume Nodet</name>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>+1</timezone>
         </developer>
@@ -146,7 +153,7 @@
             <name>Jacek Laskowski</name>
             <email>jacek@laskowski.net.pl</email>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>+1</timezone>
         </developer>
@@ -154,7 +161,7 @@
             <id>djencks</id>
             <name>David Jencks</name>
             <roles>
-                <role>Commiter</role>
+                <role>Committer</role>
             </roles>
             <timezone>-8</timezone>
         </developer>
@@ -288,14 +295,6 @@
         <module>xbean-asm-shaded</module>
         <module>xbean-finder-shaded</module>
     </modules>
-
-
-    <distributionManagement>
-        <site>
-            <id>xbean-website</id>
-            <url>scp://people.apache.org/www/geronimo.apache.org/maven/xbean</url>
-        </site>
-    </distributionManagement>
 
     <reporting>
         <plugins>
