@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!--
 
@@ -36,16 +35,16 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
 
-    <version>3.6-SNAPSHOT</version>
+    <version>3.6</version>
 
     <description>
         XBean is a plugin based server architecture.
     </description>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
-        <url>http://svn.apache.org/viewvc/geronimo/xbean/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.6</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-3.6</developerConnection>
+        <url>http://svn.apache.org/viewvc/geronimo/xbean/tags/xbean-3.6</url>
     </scm>
 
     <url>http://geronimo.apache.org/maven/${siteId}/${version}</url>
@@ -268,7 +267,7 @@
                         <instructions>
                             <Bundle-DocURL>${project.url}</Bundle-DocURL>
                             <Export-Package>org.apache.xbean.*;version=${pom.version}</Export-Package>
-                            <Private-Package/>
+                            <Private-Package />
                         </instructions>
                     </configuration>
                 </plugin>
