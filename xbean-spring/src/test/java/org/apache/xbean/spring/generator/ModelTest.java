@@ -16,20 +16,19 @@
  */
 package org.apache.xbean.spring.generator;
 
-import java.beans.PropertyEditorManager;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import junit.framework.TestCase;
 import org.apache.xbean.spring.example.BeerService;
+import org.springframework.beans.factory.xml.PluggableSchemaResolver;
+import org.xml.sax.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.beans.PropertyEditorManager;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Dain Sundstrom
@@ -75,16 +74,16 @@ public class ModelTest extends TestCase {
         final AtomicBoolean gotExpected = new AtomicBoolean(false);
         XsdGenerator generator = new XsdGenerator(null);
         generator.generateSchema(new PrintWriter("dummy") {
+            @Override
+            public void println(String x) {
+                if (x.indexOf("volumeWithPropertyEditor") != -1) {
+                    if (x.indexOf("xs:string") != -1) {
+                        gotExpected.set(true);
+                    }
+                }
+            }
+        }, defaultNamespace);
 
-			@Override
-			public void println(String x) {
-				if (x.indexOf("volumeWithPropertyEditor") != -1) {
-					if (x.indexOf("xs:string") != -1) {
-						gotExpected.set(true);
-					}
-				}
-			}}, defaultNamespace);
-        
         assertTrue("xsd with string got genereated", gotExpected.get());
     }
 
@@ -140,5 +139,74 @@ public class ModelTest extends TestCase {
         editorSearchPath.add("org.apache.xbean.spring.context.impl");
         PropertyEditorManager.setEditorSearchPath((String[]) editorSearchPath.toArray(new String[editorSearchPath.size()]));
         assertTrue(Utils.isSimpleType(Type.newSimpleType("java.net.URI")));
+    }
+
+    public void testXSDValidation() throws Exception{
+
+        InputStream xmlFile = ModelTest.class.getResourceAsStream("model-test-xsd-validation.xml");
+        File xsd = generateXSD();
+        validate(xmlFile, xsd);
+
+    }
+
+    private File generateXSD() throws IOException {
+        String basedir = System.getProperties().getProperty("basedir", ".");
+        final File targetXSD = new File(basedir, "target/test-data/model-test.xsd");
+        targetXSD.getParentFile().mkdirs();
+        QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE, new File[] { new File(basedir, "/src/test/java")}, null);
+        NamespaceMapping namespaceMapping = getDefaultNamespace(mappingLoader);
+        XsdGenerator generator = new XsdGenerator(targetXSD);
+        generator.setLog(new LogFacade() {
+            public void log(String message) {
+            }
+            public void log(String message, int level) {
+            }
+        });
+        generator.generate(namespaceMapping);
+        return targetXSD;
+    }
+
+    private void validate(InputStream xml, final File xsd) throws ParserConfigurationException, SAXException, IOException {
+        assertNotNull(xml);
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setValidating(true);
+        factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+
+        final AtomicReference<SAXParseException> error = new AtomicReference<SAXParseException>();
+
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        builder.setErrorHandler(new ErrorHandler() {
+            public void warning(SAXParseException exception) throws SAXException {
+                error.set(exception);
+            }
+
+            public void error(SAXParseException exception) throws SAXException {
+                error.set(exception);
+            }
+
+            public void fatalError(SAXParseException exception) throws SAXException {
+                error.set(exception);
+            }
+        });
+        builder.setEntityResolver(new EntityResolver() {
+            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                PluggableSchemaResolver springResolver = new PluggableSchemaResolver(getClass().getClassLoader());
+                InputSource source = springResolver.resolveEntity(publicId, systemId);
+                if (source == null && "http://xbean.apache.org/test.xsd".equals(systemId)) {
+                    source = new InputSource(new FileInputStream(xsd));
+                    source.setPublicId(publicId);
+                    source.setSystemId(systemId);
+                }
+
+                return source;
+            }
+        });
+        builder.parse(xml);
+        if (error.get() != null) {
+            error.get().printStackTrace();
+            fail("Validateion failed: " + error.get().getMessage());
+        }
     }
 }
