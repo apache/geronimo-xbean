@@ -20,12 +20,14 @@
 
 <!-- $Rev$ $Date$ -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>3.7-SNAPSHOT</version>
+        <version>3.6-SNAPSHOT</version>
     </parent>
     <artifactId>xbean-asm-shaded</artifactId>
     <packaging>jar</packaging>
@@ -95,7 +97,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <unzip src="${project.build.directory}/xbean-asm-shaded-${pom.version}.jar" dest="${project.build.directory}/classes" />
+                                <unzip src="${project.build.directory}/xbean-asm-shaded-${pom.version}.jar" dest="${project.build.directory}/classes"/>
                             </tasks>
                         </configuration>
                     </execution>
@@ -109,7 +111,7 @@
             <!--<instructions>-->
             <!--<Export-Package>org.apache.xbean.asm;version=3.1</Export-Package>-->
             <!--<Import-Package>${xbean.osgi.import}</Import-Package>-->
-            <!--<Private-Package />-->
+            <!--<Private-Package/>-->
             <!--</instructions>-->
             <!--</configuration>-->
             <!--</plugin>-->
