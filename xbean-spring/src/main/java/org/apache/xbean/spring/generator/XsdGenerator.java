@@ -192,7 +192,8 @@ public class XsdGenerator implements GeneratorPlugin {
         }
         out.println("          <xs:complexType>");
         if (types.isEmpty()) {
-            out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any namespace='##other'/></xs:sequence>");
+            // We don't know the type because it's generic collection.  Allow folks to insert objets from any namespace
+            out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any minOccurs='0' maxOccurs='unbounded'/></xs:sequence>");
         } else {
             out.println("            <xs:choice minOccurs='0' maxOccurs='" + maxOccurs + "'>");
             for (Iterator iterator = types.iterator(); iterator.hasNext();) {
