@@ -60,23 +60,29 @@
                                     <exclude>org.apache.xbean:xbean-asm-shaded</exclude>
                                 </excludes>
                             </artifactSet>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <manifestEntries>
-                                        <Bundle-Name>${pom.name}</Bundle-Name>
-                                        <Bundle-Vendor>${organization.name}</Bundle-Vendor>
-                                        <Bundle-Version>${version}</Bundle-Version>
-                                        <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
-                                        <Bundle-License>${license.url}</Bundle-License>
-                                        <Bundle-Description>${description}</Bundle-Description>
-                                        <Bundle-DocURL>${project.url}</Bundle-DocURL>
-                                        <Export-Package>${xbean.osgi.export}</Export-Package>
-                                        <Import-Package>${xbean.osgi.import}</Import-Package>
-                                        <Bundle-SymbolicName>org.apache.xbean.finder-shaded</Bundle-SymbolicName>
-                                    </manifestEntries>
-                                </transformer>
-                            </transformers>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm,*;resolution:=optional</Import-Package>
+                        <Private-Package />
+                        <excludeDependencies>true</excludeDependencies>
+                        <_nouses>true</_nouses>
+                        <_classpath>target/xbean-finder-shaded-${pom.version}.jar</_classpath>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
