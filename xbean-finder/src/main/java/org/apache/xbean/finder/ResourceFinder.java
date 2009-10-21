@@ -668,7 +668,7 @@ public class ResourceFinder {
 
         URL resource = getResource(fulluri);
         if (resource == null) {
-            throw new IOException("Could not find command in : " + fulluri);
+            throw new IOException("Could not find resource: " + fulluri);
         }
 
         return loadProperties(resource);
