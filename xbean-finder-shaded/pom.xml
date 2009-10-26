@@ -68,10 +68,14 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
+                    <!--
+                       - It won't work as CLASSPATH references the file to be processed and blows up
+                       - Dunno how it should work
+                    <excludeDependencies>true</excludeDependencies>
+                    -->
                     <instructions>
                         <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm,*;resolution:=optional</Import-Package>
                         <Private-Package />
-                        <excludeDependencies>true</excludeDependencies>
                         <_nouses>true</_nouses>
                         <_classpath>target/xbean-finder-shaded-${pom.version}.jar</_classpath>
                     </instructions>
