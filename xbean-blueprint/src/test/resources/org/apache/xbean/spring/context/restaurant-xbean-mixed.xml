@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- START SNIPPET: xml -->
+<beans xmlns:foo="http://acme.com">
+
+  <restaurant id="restaurant" xmlns="http://xbean.apache.org/schemas/pizza"
+              serviceName="foo:xyz">
+    <dinnerMenu>
+      <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
+      <bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.xbean.spring.example.PizzaService">
+        <property name="topping" value="Eggs"/>
+        <property name="cheese" value="Mozzarella"/>
+        <property name="size" value="16"/>
+      </bean>
+    </dinnerMenu>
+
+    <snackMenu>
+      <pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
+      <pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
+    </snackMenu>
+
+    <lunchMenu>
+      <bean xmlns="" class="org.apache.xbean.spring.example.PizzaService">
+        <property name="topping" value="Chicken"/>
+        <property name="cheese" value="Brie"/>
+        <property name="size" value="17"/>
+      </bean>
+    </lunchMenu>
+
+    <favourite>
+      <bean xmlns="http://xbean.apache.org/schemas/spring/1.0" class="org.apache.xbean.spring.example.PizzaService">
+        <property name="topping" value="Salami"/>
+        <property name="cheese" value="Edam"/>
+        <property name="size" value="17"/>
+      </bean>
+    </favourite>
+  </restaurant>
+</beans>
+<!-- END SNIPPET: xml -->
