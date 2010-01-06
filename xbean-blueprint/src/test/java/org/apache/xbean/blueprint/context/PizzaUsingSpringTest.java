@@ -32,7 +32,7 @@ public class PizzaUsingSpringTest extends BlueprintTestSupport {
 
         checkPropertyValue("topping", "Salami", meta);
         checkPropertyValue("cheese", "Edam", meta);
-        //TODO blueprint
+        //TODO blueprint int values
 //        checkPropertyValue("size", 17, meta);
     }
 

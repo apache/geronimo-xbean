@@ -17,12 +17,13 @@
 package org.apache.xbean.blueprint.context;
 
 import java.util.List;
-import java.util.Set;
 
-import javax.xml.namespace.QName;
-
-import org.apache.xbean.blueprint.example.PizzaService;
-import org.apache.xbean.blueprint.example.RestaurantService;
+import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.apache.aries.blueprint.reflect.ValueMetadataImpl;
+import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
+import org.osgi.service.blueprint.reflect.BeanProperty;
+import org.osgi.service.blueprint.reflect.CollectionMetadata;
+import org.osgi.service.blueprint.reflect.Metadata;
 
 /**
  * @author James Strachan
@@ -32,60 +33,71 @@ import org.apache.xbean.blueprint.example.RestaurantService;
 public class RestaurantUsingSpringTest extends BlueprintTestSupport {
 
     public void testPizza() throws Exception {
-        RestaurantService restaurant = (RestaurantService) reg.getComponentDefinition("restaurant");
+        BeanMetadataImpl restaurant = (BeanMetadataImpl) reg.getComponentDefinition("restaurant");
 
-        QName service = restaurant.getServiceName();
-        assertEquals(new QName("http://acme.com", "xyz"), service);
+        BeanProperty prop = propertyByName("serviceName", restaurant);
+
+        BeanMetadataImpl qname = (BeanMetadataImpl) prop.getValue();
+        assertEquals(2, qname.getArguments().size());
+        assertEquals("http://acme.com", ((ValueMetadataImpl) qname.getArguments().get(0).getValue()).getStringValue());
+        assertEquals("xyz", ((ValueMetadataImpl) qname.getArguments().get(1).getValue()).getStringValue());
 
         // dinners (1-many using list)
-        List dinners = restaurant.getDinnerMenu();
+        BeanProperty dinnerProp = propertyByName("dinnerMenu", restaurant);
+        List<Metadata> dinners = ((CollectionMetadata) dinnerProp.getValue()).getValues();
         assertNotNull("dinners is null!", dinners);
         assertEquals("dinners size: " + dinners, 2, dinners.size());
 
-        PizzaService pizza = (PizzaService) dinners.get(0);
-        assertEquals("topping", "Ham", pizza.getTopping());
-        assertEquals("cheese", "Mozzarella", pizza.getCheese());
-        assertEquals("size", 15, pizza.getSize());
+        BeanMetadataImpl pizza = (BeanMetadataImpl) dinners.get(0);
+        checkPropertyValue("topping", "Ham", pizza);
+        checkPropertyValue("cheese", "Mozzarella", pizza);
+        //TODO blueprint int value
+        checkPropertyValue("size", "15", pizza);
 
-        pizza = (PizzaService) dinners.get(1);
-        assertEquals("topping", "Eggs", pizza.getTopping());
-        assertEquals("cheese", "Mozzarella", pizza.getCheese());
-        assertEquals("size", 16, pizza.getSize());
+        pizza = (BeanMetadataImpl) dinners.get(1);
+        checkPropertyValue("topping", "Eggs", pizza);
+        checkPropertyValue("cheese", "Mozzarella", pizza);
+        //TODO blueprint int value
+        checkPropertyValue("size", "16", pizza);
 
         // dinners (1-many using Set)
-        Set<PizzaService> snacks = restaurant.getSnackMenu();
+        BeanProperty snackProp = propertyByName("snackMenu", restaurant);
+        List<Metadata> snacks = ((CollectionMetadata) snackProp.getValue()).getValues();
         assertNotNull("dinners is null!", snacks);
         assertEquals("dinners size: " + snacks, 2, snacks.size());
-        for (PizzaService snack : snacks) {
-            String topping = snack.getTopping();
+        for (Metadata snackMeta : snacks) {
+            BeanMetadataImpl snack = (BeanMetadataImpl) snackMeta;
+            BeanProperty toppingProp = propertyByName("topping", snack);
+            String topping = ((ValueMetadataImpl)toppingProp.getValue()).getStringValue();
             if ("Tofu".equals(topping)) {
-                assertEquals("cheese", "Parmesan", snack.getCheese());
-                assertEquals("size", 6, snack.getSize());
+                checkPropertyValue("cheese", "Parmesan", snack);
+                checkPropertyValue("size", "6", snack);
             } else if ("Prosciutto".equals(topping)) {
-                assertEquals("cheese", "Blue", snack.getCheese());
-                assertEquals("size", 8, snack.getSize());
+                checkPropertyValue("cheese", "Blue", snack);
+                checkPropertyValue("size", "8", snack);
             } else {
-                fail("wrong topping: " + snack);
+                fail("wrong topping: " + snackMeta);
             }
         }
         // lunches (1-many using array)
-        PizzaService[] lunches = restaurant.getLunchMenu();
+        CollectionMetadataImpl lunches = (CollectionMetadataImpl) propertyByName("lunchMenu", restaurant).getValue();
         assertNotNull("lunches is null!", lunches);
-        assertEquals("lunches size: " + lunches, 1, lunches.length);
+        assertEquals("lunches size: " + lunches, 1, lunches.getValues().size());
 
-        pizza = lunches[0];
-        assertEquals("topping", "Chicken", pizza.getTopping());
-        assertEquals("cheese", "Brie", pizza.getCheese());
-        assertEquals("size", 17, pizza.getSize());
+        pizza = (BeanMetadataImpl) lunches.getValues().get(0);
+        checkPropertyValue("topping", "Chicken", pizza);
+        checkPropertyValue("cheese", "Brie", pizza);
+        checkPropertyValue("size", "17", pizza);
 
         // favourite (1-1)
-        pizza = restaurant.getFavourite();
+        BeanProperty favourite = propertyByName("favourite", restaurant);
+        pizza = (BeanMetadataImpl) favourite.getValue();
         assertNotNull("Pizza is null!", pizza);
-        pizza.makePizza();
-
-        assertEquals("topping", "Salami", pizza.getTopping());
-        assertEquals("cheese", "Edam", pizza.getCheese());
-        assertEquals("size", 17, pizza.getSize());
+//        pizza.makePizza();
+//
+        checkPropertyValue("topping", "Salami", pizza);
+        checkPropertyValue("cheese", "Edam", pizza);
+        checkPropertyValue("size", "17", pizza);
 
     }
 

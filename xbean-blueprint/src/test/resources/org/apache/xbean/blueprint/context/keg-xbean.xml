@@ -18,12 +18,12 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:x="http://xbean.apache.org/schemas/pizza">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:x="http://xbean.apache.org/schemas/pizza">
 
-  <x:keg id="ml1000" remaining="1000 ml"/>
-  <x:keg id="pints5" remaining="5 pints"/>
-  <x:keg id="liter20" remaining="20 liter"/>
-  <x:keg id="empty" remaining="0"/>
+  <x:keg b:id="ml1000" x:remaining="1000 ml"/>
+  <x:keg b:id="pints5" x:remaining="5 pints"/>
+  <x:keg b:id="liter20" x:remaining="20 liter"/>
+  <x:keg b:id="empty" x:remaining="0"/>
 
-</blueprint>
+</b:blueprint>
 <!-- END SNIPPET: xml -->
