@@ -168,10 +168,11 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 String childName = child.getLocalName();
                 Metadata childMetadata = null;
                 String propertyName = mappingMetaData.getNestedListProperty(beanTypeName, childName);
-                //explicit list?
+                //explicit list
                 if (propertyName != null) {
                     childMetadata = parserContext.parseElement(CollectionMetadata.class, beanMetaData, child);
                 } else if ((propertyName = mappingMetaData.getFlatCollectionProperty(beanTypeName, childName)) != null) {
+                    //flat collection
 
 //                } else if ((propertyName = mappingMetaData.getNestedProperty(beanTypeName, childName)) != null) {
 //

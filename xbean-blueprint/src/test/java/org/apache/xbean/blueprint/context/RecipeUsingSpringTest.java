@@ -20,25 +20,29 @@ import java.util.List;
 
 import org.apache.xbean.blueprint.example.Recipe;
 import org.apache.xbean.blueprint.example.RecipeService;
+import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
+import org.osgi.service.blueprint.reflect.Metadata;
 
 public class RecipeUsingSpringTest extends BlueprintTestSupport {
 
     public void testRecipes() throws Exception {
-        RecipeService svc = (RecipeService) reg.getComponentDefinition("recipeService");
+        BeanMetadataImpl svc = (BeanMetadataImpl) reg.getComponentDefinition("recipeService");
 
-        List list = svc.getRecipes();
+        List<Metadata> list = ((CollectionMetadataImpl)propertyByName("recipes", svc).getValue()).getValues();
         assertNotNull(list);
         assertEquals(2, list.size());
-        Recipe r = (Recipe) list.get(0);
-        assertEquals("Food", r.getIngredients());
-        assertEquals("Mash together", r.getInstructions());
+        BeanMetadataImpl r = (BeanMetadataImpl) list.get(0);
+        checkPropertyValue("ingredients", "Food", r);
+        checkPropertyValue("instructions", "Mash together", r);
         
-        r = (Recipe) list.get(1);
-        assertEquals("Food", r.getIngredients());
-        assertEquals("Mash together", r.getInstructions());
-        
-        assertNotNull(svc.getTopRecipe());
-        assertEquals("Food", svc.getTopRecipe().getIngredients());
+        r = (BeanMetadataImpl) list.get(1);
+        checkPropertyValue("ingredients", "Food", r);
+        checkPropertyValue("instructions", "Mash together", r);
+
+        BeanMetadataImpl topRecipe = (BeanMetadataImpl) propertyByName("topRecipe", svc).getValue();
+        assertNotNull(topRecipe);
+        checkPropertyValue("ingredients", "Food", topRecipe);
     }
 
     protected String getPlan() {
