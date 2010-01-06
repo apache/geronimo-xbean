@@ -21,22 +21,30 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.apache.xbean.blueprint.example.QNameService;
+import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
+import org.osgi.service.blueprint.reflect.Metadata;
 
 public class QNameUsingSpringTest extends BlueprintTestSupport {
 
     public void testQName() throws Exception {
-        QNameService svc = (QNameService) reg.getComponentDefinition("qnameService");
+        BeanMetadataImpl svc = (BeanMetadataImpl) reg.getComponentDefinition("qnameService");
 
-        QName[] services = svc.getServices();
+        List<Metadata> services = ((CollectionMetadataImpl)propertyByName("services", svc).getValue()).getValues();
         assertNotNull(services);
-        assertEquals(2, services.length);
-        assertEquals(new QName("urn:foo", "test"), services[0]);
-        assertEquals(new QName("urn:foo", "bar"), services[1]);
+        assertEquals(2, services.size());
+        checkQName("urn:foo", "test", services.get(0));
+        checkQName("urn:foo", "bar", services.get(1));
         
-        List list = svc.getList();
+        List<Metadata> list = ((CollectionMetadataImpl)propertyByName("list", svc).getValue()).getValues();
         assertNotNull(list);
         assertEquals(1, list.size());
-        assertEquals(new QName("urn:foo", "list"), list.get(0));
+        checkQName("urn:foo", "list", list.get(0));
+    }
+
+    protected void checkQName(String namespace, String local, Metadata meta) {
+        checkArgumentValue(0, namespace, (BeanMetadataImpl) meta, false);
+        checkArgumentValue(1, local, (BeanMetadataImpl) meta, false);
     }
 
     protected String getPlan() {

@@ -23,20 +23,20 @@
 		<property name="services">
 			<list>
 				<bean class="javax.xml.namespace.QName">
-			        <constructor-arg value="urn:foo"/>
-			        <constructor-arg value="test"/>
+			        <argument value="urn:foo"/>
+			        <argument value="test"/>
 				</bean>
 				<bean class="javax.xml.namespace.QName">
-			        <constructor-arg value="urn:foo"/>
-			        <constructor-arg value="bar"/>
+			        <argument value="urn:foo"/>
+			        <argument value="bar"/>
 				</bean>
 			</list>
 		</property>
 		<property name="list">
 			<list>
 				<bean class="javax.xml.namespace.QName">
-			        <constructor-arg value="urn:foo"/>
-			        <constructor-arg value="list"/>
+			        <argument value="urn:foo"/>
+			        <argument value="list"/>
 				</bean>
 			</list>
 		</property>

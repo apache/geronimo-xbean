@@ -18,10 +18,10 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:b="http://xbean.apache.org/schemas/pizza">
+<x:blueprint xmlns:x="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:b="http://xbean.apache.org/schemas/pizza">
 
-  <b:gin id="ginService"><![CDATA[Bombay Sapphire]]></b:gin>
+  <b:gin x:id="ginService"><![CDATA[Bombay Sapphire]]></b:gin>
 
-</blueprint>
+</x:blueprint>
 <!-- END SNIPPET: xml -->
 
