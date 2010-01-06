@@ -27,7 +27,6 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 public class BeerUsingBlueprintTest extends BlueprintTestSupport {
     
     public void testBeer() throws Exception {
-        ComponentDefinitionRegistry reg = parse(getPlan());
         BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("beerService");
         checkPropertyValue("name", "Stella", meta);
         checkPropertyValue("id", "123", meta);

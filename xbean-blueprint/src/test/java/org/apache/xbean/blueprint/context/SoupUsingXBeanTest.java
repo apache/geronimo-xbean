@@ -23,6 +23,11 @@ package org.apache.xbean.blueprint.context;
  */
 public class SoupUsingXBeanTest extends SoupUsingBlueprintTest {
 
+    @Override
+    protected void setUp() throws Exception {
+        reg = parse(getPlan(), "META-INF/services/org/apache/xbean/blueprint/http/xbean.apache.org/schemas/soup");
+    }
+
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/soup-xbean.xml";
     }
