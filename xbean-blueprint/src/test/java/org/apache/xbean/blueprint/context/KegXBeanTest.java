@@ -35,11 +35,15 @@ public class KegXBeanTest extends BlueprintTestSupport {
         BeanMetadataImpl pints5 = (BeanMetadataImpl) reg.getComponentDefinition("pints5");
         BeanMetadataImpl liter20 = (BeanMetadataImpl) reg.getComponentDefinition("liter20");
         
-        checkPropertyValue("remaining", "1000", ml1000);
+        checkPropertyValue("remaining", "1000 ml", ml1000);
         checkPropertyValue("remaining", "0", empty);
-        checkPropertyValue("remaining", "8750", pints5);
-        checkPropertyValue("remaining", "20000", liter20);
-        
+        checkPropertyValue("remaining", "5 pints", pints5);
+        checkPropertyValue("remaining", "20 liter", liter20);
+//        checkPropertyValue("remaining", "1000", ml1000);
+//        checkPropertyValue("remaining", "0", empty);
+//        checkPropertyValue("remaining", "8750", pints5);
+//        checkPropertyValue("remaining", "20000", liter20);
+
     }
 
     protected String getPlan() {
