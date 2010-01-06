@@ -17,6 +17,7 @@
 package org.apache.xbean.blueprint.context;
 
 import org.apache.xbean.blueprint.example.SaladService;
+import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
  * @author Dain Sundstrom
@@ -25,11 +26,11 @@ import org.apache.xbean.blueprint.example.SaladService;
  */
 public class SaladUsingSpringTest extends BlueprintTestSupport {
     public void testSalad() throws Exception {
-        SaladService salad = (SaladService) reg.getComponentDefinition("saladService");
+        BeanMetadataImpl salad = (BeanMetadataImpl) reg.getComponentDefinition("saladService");
 
-        assertEquals("dressing", "Cesar", salad.getDressing());
-        assertEquals("size", "Small", salad.getSize());
-        assertEquals("crouton", true, salad.isCrouton());
+        checkArgumentValue(0, "Cesar", salad, false);
+        checkArgumentValue(1, "Small", salad, false);
+        checkArgumentValue(2, "true", salad, false);
     }
 
     protected String getPlan() {

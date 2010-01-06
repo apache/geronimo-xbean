@@ -25,21 +25,6 @@ import org.apache.aries.blueprint.namespace.ComponentDefinitionRegistryImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xbean.blueprint.context.impl.XBeanNamespaceHandler;
-import org.apache.xbean.blueprint.example.BeerService;
-import org.apache.xbean.blueprint.example.ContainerBean;
-import org.apache.xbean.blueprint.example.DummyBean;
-import org.apache.xbean.blueprint.example.FavoriteService;
-import org.apache.xbean.blueprint.example.FlatMapService;
-import org.apache.xbean.blueprint.example.GinService;
-import org.apache.xbean.blueprint.example.InnerBean;
-import org.apache.xbean.blueprint.example.KegService;
-import org.apache.xbean.blueprint.example.MilliLittersPropertyEditor;
-import org.apache.xbean.blueprint.example.PizzaService;
-import org.apache.xbean.blueprint.example.QNameService;
-import org.apache.xbean.blueprint.example.Recipe;
-import org.apache.xbean.blueprint.example.RecipeService;
-import org.apache.xbean.blueprint.example.RestaurantService;
-import org.apache.xbean.blueprint.example.SaladService;
 import org.xml.sax.SAXException;
 import org.osgi.service.blueprint.reflect.BeanProperty;
 import org.osgi.service.blueprint.reflect.ValueMetadata;
@@ -48,6 +33,7 @@ import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.BeanMetadata;
 
 import javax.xml.validation.Schema;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -61,7 +47,7 @@ import java.util.Map;
 
 /**
  * A useful base class for testing spring based utilities.
- * 
+ *
  * @author James Strachan
  * @version $Id$
  * @since 2.0
@@ -88,7 +74,7 @@ public abstract class BlueprintTestSupport extends TestCase {
 
         Set<Class> classes = new HashSet<Class>();
         ClassLoader cl = BlueprintTestSupport.class.getClassLoader();
-        for (Map.Entry entry: properties.entrySet()) {
+        for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             if (!key.contains(".")) {
                 String className = (String) entry.getValue();
@@ -102,19 +88,25 @@ public abstract class BlueprintTestSupport extends TestCase {
             public Set<URI> getNamespaces() {
                 return Collections.singleton(NAMESPACE_URI);
             }
+
             public NamespaceHandler getNamespaceHandler(URI namespace) {
                 return xbeanHandler;
             }
+
             public void removeListener(NamespaceHandlerRegistry.Listener listener) {
             }
+
             public Schema getSchema() throws SAXException, IOException {
                 return null;
             }
+
             public boolean isComplete() {
                 return false;
             }
+
             public void addListener(NamespaceHandlerRegistry.Listener listener) {
             }
+
             public void destroy() {
             }
         };
@@ -132,22 +124,27 @@ public abstract class BlueprintTestSupport extends TestCase {
 
     protected abstract String getPlan();
 
-    protected void checkPropertyValue(String name, String expectedValued, BeanMetadataImpl meta) {
+    protected void checkPropertyValue(String name, Object expectedValued, BeanMetadataImpl meta) {
+        BeanProperty prop = propertyByName(name, meta);
+        assertEquals(expectedValued, ((ValueMetadata) prop.getValue()).getStringValue());
+    }
+
+    protected BeanProperty propertyByName(String name, BeanMetadataImpl meta) {
         List<BeanProperty> props = meta.getProperties();
-        for (BeanProperty prop: props) {
+        for (BeanProperty prop : props) {
             if (name.equals(prop.getName())) {
-                assertEquals(expectedValued, ((ValueMetadata)prop.getValue()).getStringValue());
-                return;
+                return prop;
             }
         }
         throw new RuntimeException("No such property: " + name + " in metadata: " + meta);
+
     }
 
     protected void checkArgumentValue(int index, String expectedValued, BeanMetadataImpl meta, boolean allowNesting) {
         List<BeanArgument> props = meta.getArguments();
         Metadata metadata = props.get(index).getValue();
         if (allowNesting && metadata instanceof BeanMetadata) {
-            metadata = ((BeanMetadata)metadata).getArguments().get(0).getValue();
+            metadata = ((BeanMetadata) metadata).getArguments().get(0).getValue();
         }
         assertEquals(expectedValued, ((ValueMetadata) metadata).getStringValue());
     }
