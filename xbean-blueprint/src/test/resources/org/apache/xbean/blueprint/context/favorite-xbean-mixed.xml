@@ -22,22 +22,22 @@
 
   <b:favorite id="favoriteService">
     <property name="favorites">
-      <util:map>
+      <map>
           <entry key="Dan" value="Grey Goose" />
           <entry key="IndecisiveDan">
-              <util:list>
+              <list>
                   <value>Malbec</value>
                   <bean class="java.lang.Integer">
                     <constructor-arg value="0"/>
                   </bean>
-              </util:list>
+              </list>
           </entry>
           <entry key="WithInnerBean">
             <bean class="org.apache.xbean.blueprint.example.GinService">
               <property name="name" value="name"/>
             </bean>
           </entry>
-      </util:map>
+      </map>
     </property>
   </b:favorite>
 
