@@ -63,8 +63,13 @@ public abstract class BlueprintTestSupport extends TestCase {
     }
 
     protected static ComponentDefinitionRegistryImpl parse(String plan) throws Exception {
+        String schema = "META-INF/services/org/apache/xbean/blueprint/http/xbean.apache.org/schemas/pizza";
+        return parse(plan, schema);
+    }
+
+    protected static ComponentDefinitionRegistryImpl parse(String plan, String schema) throws Exception {
         Properties properties = new Properties();
-        URL propUrl = BlueprintTestSupport.class.getClassLoader().getResource("META-INF/services/org/apache/xbean/blueprint/http/xbean.apache.org/schemas/pizza");
+        URL propUrl = BlueprintTestSupport.class.getClassLoader().getResource(schema);
         InputStream in = propUrl.openStream();
         try {
             properties.load(in);
@@ -124,12 +129,12 @@ public abstract class BlueprintTestSupport extends TestCase {
 
     protected abstract String getPlan();
 
-    protected void checkPropertyValue(String name, Object expectedValued, BeanMetadataImpl meta) {
+    protected static void checkPropertyValue(String name, Object expectedValued, BeanMetadataImpl meta) {
         BeanProperty prop = propertyByName(name, meta);
         assertEquals(expectedValued, ((ValueMetadata) prop.getValue()).getStringValue());
     }
 
-    protected BeanProperty propertyByName(String name, BeanMetadataImpl meta) {
+    protected static BeanProperty propertyByName(String name, BeanMetadataImpl meta) {
         List<BeanProperty> props = meta.getProperties();
         for (BeanProperty prop : props) {
             if (name.equals(prop.getName())) {
@@ -140,7 +145,7 @@ public abstract class BlueprintTestSupport extends TestCase {
 
     }
 
-    protected void checkArgumentValue(int index, String expectedValued, BeanMetadataImpl meta, boolean allowNesting) {
+    protected static void checkArgumentValue(int index, String expectedValued, BeanMetadataImpl meta, boolean allowNesting) {
         List<BeanArgument> props = meta.getArguments();
         Metadata metadata = props.get(index).getValue();
         if (allowNesting && metadata instanceof BeanMetadata) {

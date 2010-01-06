@@ -18,11 +18,11 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:s="http://xbean.apache.org/schemas/soup">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:s="http://xbean.apache.org/schemas/pizza">
 
-  <s:soup b:id="soupService" id="soupService" type="French Onion"/>
+  <s:soup b:id="soupService" s:id="soupService" s:type="French Onion"/>
 
-  <s:soup b:id="nestedBean" id="nestedBean">
+  <s:soup b:id="nestedBean" s:id="nestedBean">
     <s:type>
       <b:bean class="java.lang.String">
         <b:argument index="0" value="French Onion"/>
@@ -30,7 +30,7 @@
     </s:type>
   </s:soup>
 
-  <s:soup b:id="nestedValue" id="nestedValue">
+  <s:soup b:id="nestedValue" s:id="nestedValue">
     <s:type>
       <b:value>French Onion</b:value>
     </s:type>
