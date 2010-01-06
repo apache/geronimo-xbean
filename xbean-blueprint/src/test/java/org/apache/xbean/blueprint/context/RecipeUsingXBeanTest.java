@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.blueprint.context;
 
-public class RecipeUsingXBeanTest extends RecipeUsingSpringTest {
+public class RecipeUsingXBeanTest extends RecipeUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/recipe-xbean.xml";

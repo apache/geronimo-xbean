@@ -20,7 +20,7 @@ package org.apache.xbean.blueprint.context;
  *
  * @version $Revision$
  */
-public class PizzaUsingXBeanWithPropertiesTextNodeTest extends PizzaUsingSpringTest {
+public class PizzaUsingXBeanWithPropertiesTextNodeTest extends PizzaUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/pizza-xbean-properties.xml";

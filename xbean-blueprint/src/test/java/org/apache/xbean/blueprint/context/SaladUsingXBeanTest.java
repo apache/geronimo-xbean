@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.0
  */
-public class SaladUsingXBeanTest extends SaladUsingSpringTest {
+public class SaladUsingXBeanTest extends SaladUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/salad-xbean.xml";

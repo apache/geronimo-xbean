@@ -16,27 +16,26 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.VodkaService;
+import org.apache.aries.blueprint.ComponentDefinitionRegistry;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
- * @author Dan Diephouse
- * @version $Id: VodkaUsingSpringTest.java 434369 2006-08-24 10:24:21Z gnodet $
+ * @author James Strachan
+ * @version $Id$
  * @since 1.0
  */
-public class VodkaUsingSpringTest extends BlueprintTestSupport {
+public class BeerUsingBlueprintTest extends BlueprintTestSupport {
     
-    public void testWine() throws Exception {
-        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("vodkaService");
-
-        checkPropertyValue("name", "Grey Goose", meta);
-        checkPropertyValue("id", "vodkaService", meta);
-        
-        // Test more complex classes
-        checkPropertyValue("vodkaClass", VodkaService.class.getName(), meta);
+    public void testBeer() throws Exception {
+        ComponentDefinitionRegistry reg = parse(getPlan());
+        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("beerService");
+        checkPropertyValue("name", "Stella", meta);
+        checkPropertyValue("id", "123", meta);
+        assertEquals("id", "beerService", meta.getId());
     }
 
     protected String getPlan() {
-        return "org/apache/xbean/blueprint/context/vodka-normal.xml";
+        return "org/apache/xbean/blueprint/context/beer-normal.xml";
     }
+
 }

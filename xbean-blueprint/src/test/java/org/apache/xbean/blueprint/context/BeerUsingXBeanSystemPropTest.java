@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.0
  */
-public class BeerUsingXBeanSystemPropTest extends BeerUsingSpringTest {
+public class BeerUsingXBeanSystemPropTest extends BeerUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/beer-xbean-system-prop.xml";

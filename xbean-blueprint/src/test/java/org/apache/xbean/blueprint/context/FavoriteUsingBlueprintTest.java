@@ -28,7 +28,7 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
  * @version $Id$
  * @since 1.0
  */
-public class FavoriteUsingSpringTest extends BlueprintTestSupport {
+public class FavoriteUsingBlueprintTest extends BlueprintTestSupport {
     
     public void testFavs() throws Exception {
         BeanMetadataImpl meta = (BeanMetadataImpl)  reg.getComponentDefinition("favoriteService");

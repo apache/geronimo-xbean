@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id: VodkaUsingXBeanTest.java 434369 2006-08-24 10:24:21Z gnodet $
  * @since 2.0
  */
-public class VodkaUsingXBeanTest extends VodkaUsingSpringTest {
+public class VodkaUsingXBeanTest extends VodkaUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/vodka-xbean.xml";

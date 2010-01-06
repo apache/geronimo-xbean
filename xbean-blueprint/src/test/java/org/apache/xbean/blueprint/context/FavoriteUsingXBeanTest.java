@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.0
  */
-public class FavoriteUsingXBeanTest extends FavoriteUsingSpringTest {
+public class FavoriteUsingXBeanTest extends FavoriteUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/favorite-xbean.xml";

@@ -30,7 +30,7 @@ import org.osgi.service.blueprint.reflect.CollectionMetadata;
  * @version $Id$
  * @since 1.0
  */
-public class SocketAddressSpringTest extends BlueprintTestSupport {
+public class SocketAddressBlueprintTest extends BlueprintTestSupport {
 
     public void testSocketService() throws Exception {
         BeanMetadataImpl socketService = (BeanMetadataImpl) reg.getComponentDefinition("socketService");

@@ -16,27 +16,23 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.PizzaService;
+import org.apache.xbean.blueprint.example.GinService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
  * @author James Strachan
  * @version $Id$
- * @since 2.0
+ * @since 1.0
  */
-public class PizzaUsingSpringTest extends BlueprintTestSupport {
-
-    public void testPizza() throws Exception {
-        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("pizzaService");
-//        pizza.makePizza();
-
-        checkPropertyValue("topping", "Salami", meta);
-        checkPropertyValue("cheese", "Edam", meta);
-        //TODO blueprint int values
-//        checkPropertyValue("size", 17, meta);
+public class GinUsingXBeanTest extends BlueprintTestSupport {
+    
+    public void testWine() throws Exception {
+        BeanMetadataImpl meta = (BeanMetadataImpl)  reg.getComponentDefinition("ginService");
+        //TODO content processing
+        checkPropertyValue("name", "Bombay Sapphire", meta);
     }
 
     protected String getPlan() {
-        return "org/apache/xbean/blueprint/context/pizza-normal.xml";
+        return "org/apache/xbean/blueprint/context/gin.xml";
     }
 }

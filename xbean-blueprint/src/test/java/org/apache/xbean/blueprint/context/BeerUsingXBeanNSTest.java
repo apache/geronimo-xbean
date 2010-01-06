@@ -22,7 +22,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.2
  */
-public class BeerUsingXBeanNSTest extends BeerUsingSpringTest {
+public class BeerUsingXBeanNSTest extends BeerUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/beer-xbean-ns.xml";

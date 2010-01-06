@@ -16,14 +16,13 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.PizzaService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
  *
  * @version $Revision$
  */
-public class PizzaUsingXBeanWinBeanRefTest extends PizzaUsingSpringTest {
+public class PizzaUsingXBeanWinBeanRefTest extends PizzaUsingBlueprintTest {
     
     public void testPizza() throws Exception {
         BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("pizzaService");

@@ -30,7 +30,7 @@ import org.osgi.service.blueprint.reflect.Metadata;
  * @version $Id$
  * @since 2.0
  */
-public class RestaurantUsingSpringTest extends BlueprintTestSupport {
+public class RestaurantUsingBlueprintTest extends BlueprintTestSupport {
 
     public void testPizza() throws Exception {
         BeanMetadataImpl restaurant = (BeanMetadataImpl) reg.getComponentDefinition("restaurant");
