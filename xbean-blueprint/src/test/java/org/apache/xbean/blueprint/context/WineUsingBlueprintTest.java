@@ -16,24 +16,24 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.SaladService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
- * @author Dain Sundstrom
+ * @author James Strachan
  * @version $Id$
  * @since 1.0
  */
-public class SaladUsingSpringTest extends BlueprintTestSupport {
-    public void testSalad() throws Exception {
-        BeanMetadataImpl salad = (BeanMetadataImpl) reg.getComponentDefinition("saladService");
+public class WineUsingBlueprintTest extends BlueprintTestSupport {
+    
+    public void testWine() throws Exception {
+        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("wineService");
 
-        checkArgumentValue(0, "Cesar", salad, false);
-        checkArgumentValue(1, "Small", salad, false);
-        checkArgumentValue(2, "true", salad, false);
+        checkArgumentValue(1, "Amarone", meta, false);
+        checkArgumentValue(0, "wineService", meta, false);
     }
 
     protected String getPlan() {
-        return "org/apache/xbean/blueprint/context/salad-normal.xml";
+        return "org/apache/xbean/blueprint/context/wine-normal.xml";
     }
+
 }

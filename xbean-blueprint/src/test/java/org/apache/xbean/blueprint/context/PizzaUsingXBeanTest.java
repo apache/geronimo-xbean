@@ -22,7 +22,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.0
  */
-public class PizzaUsingXBeanTest extends PizzaUsingSpringTest {
+public class PizzaUsingXBeanTest extends PizzaUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/pizza-xbean.xml";

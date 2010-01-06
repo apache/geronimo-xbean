@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.0
  */
-public class RestaurantUsingXBeanMixedTest extends RestaurantUsingSpringTest {
+public class RestaurantUsingXBeanMixedTest extends RestaurantUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/restaurant-xbean-mixed.xml";

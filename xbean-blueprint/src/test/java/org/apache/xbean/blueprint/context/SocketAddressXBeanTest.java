@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 1.0
  */
-public class SocketAddressXBeanTest extends SocketAddressSpringTest {
+public class SocketAddressXBeanTest extends SocketAddressBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/socket-address.xml";

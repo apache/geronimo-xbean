@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.0
  */
-public class WineUsingXBeanTest extends WineUsingSpringTest {
+public class WineUsingXBeanTest extends WineUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/wine-xbean.xml";

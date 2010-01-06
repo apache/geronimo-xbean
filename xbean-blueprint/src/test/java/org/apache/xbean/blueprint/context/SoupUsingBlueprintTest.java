@@ -23,7 +23,7 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
  * @version $Id$
  * @since 1.0
  */
-public class SoupUsingSpringTest extends BlueprintTestSupport {
+public class SoupUsingBlueprintTest extends BlueprintTestSupport {
     private static final long time = System.currentTimeMillis();
 
     public void testSoup() throws Exception {

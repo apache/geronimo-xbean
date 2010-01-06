@@ -24,7 +24,7 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
 import org.osgi.service.blueprint.reflect.Metadata;
 
-public class RecipeUsingSpringTest extends BlueprintTestSupport {
+public class RecipeUsingBlueprintTest extends BlueprintTestSupport {
 
     public void testRecipes() throws Exception {
         BeanMetadataImpl svc = (BeanMetadataImpl) reg.getComponentDefinition("recipeService");

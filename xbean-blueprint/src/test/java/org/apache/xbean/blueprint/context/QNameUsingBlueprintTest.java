@@ -25,7 +25,7 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
 import org.osgi.service.blueprint.reflect.Metadata;
 
-public class QNameUsingSpringTest extends BlueprintTestSupport {
+public class QNameUsingBlueprintTest extends BlueprintTestSupport {
 
     public void testQName() throws Exception {
         BeanMetadataImpl svc = (BeanMetadataImpl) reg.getComponentDefinition("qnameService");

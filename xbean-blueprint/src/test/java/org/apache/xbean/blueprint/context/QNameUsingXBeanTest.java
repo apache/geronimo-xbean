@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.blueprint.context;
 
-public class QNameUsingXBeanTest extends QNameUsingSpringTest {
+public class QNameUsingXBeanTest extends QNameUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/qname-xbean.xml";

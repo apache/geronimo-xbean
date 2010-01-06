@@ -29,7 +29,7 @@ import java.net.URI;
  * @version $Id$
  * @since 2.0
  */
-public class RestaurantUsingXBeanTest extends RestaurantUsingSpringTest {
+public class RestaurantUsingXBeanTest extends RestaurantUsingBlueprintTest {
     private static final Log log = LogFactory.getLog(RestaurantUsingXBeanTest.class);
 
     public void testPizza() throws Exception {

@@ -21,7 +21,7 @@ package org.apache.xbean.blueprint.context;
  * @version $Id$
  * @since 2.0
  */
-public class SoupUsingXBeanTest extends SoupUsingSpringTest {
+public class SoupUsingXBeanTest extends SoupUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/soup-xbean.xml";

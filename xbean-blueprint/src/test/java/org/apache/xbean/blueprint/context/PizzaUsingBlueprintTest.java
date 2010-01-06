@@ -16,26 +16,27 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.aries.blueprint.ComponentDefinitionRegistry;
+import org.apache.xbean.blueprint.example.PizzaService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
  * @author James Strachan
  * @version $Id$
- * @since 1.0
+ * @since 2.0
  */
-public class BeerUsingSpringTest extends BlueprintTestSupport {
-    
-    public void testBeer() throws Exception {
-        ComponentDefinitionRegistry reg = parse(getPlan());
-        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("beerService");
-        checkPropertyValue("name", "Stella", meta);
-        checkPropertyValue("id", "123", meta);
-        assertEquals("id", "beerService", meta.getId());
+public class PizzaUsingBlueprintTest extends BlueprintTestSupport {
+
+    public void testPizza() throws Exception {
+        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("pizzaService");
+//        pizza.makePizza();
+
+        checkPropertyValue("topping", "Salami", meta);
+        checkPropertyValue("cheese", "Edam", meta);
+        //TODO blueprint int values
+//        checkPropertyValue("size", 17, meta);
     }
 
     protected String getPlan() {
-        return "org/apache/xbean/blueprint/context/beer-normal.xml";
+        return "org/apache/xbean/blueprint/context/pizza-normal.xml";
     }
-
 }

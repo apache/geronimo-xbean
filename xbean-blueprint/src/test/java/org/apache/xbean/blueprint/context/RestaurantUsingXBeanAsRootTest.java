@@ -17,7 +17,7 @@
 package org.apache.xbean.blueprint.context;
 
 
-public class RestaurantUsingXBeanAsRootTest extends RestaurantUsingSpringTest {
+public class RestaurantUsingXBeanAsRootTest extends RestaurantUsingBlueprintTest {
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/restaurant-xbean-root.xml";

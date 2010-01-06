@@ -16,23 +16,24 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.GinService;
+import org.apache.xbean.blueprint.example.SaladService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
- * @author James Strachan
+ * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class GinUsingSpringTest extends BlueprintTestSupport {
-    
-    public void testWine() throws Exception {
-        BeanMetadataImpl meta = (BeanMetadataImpl)  reg.getComponentDefinition("ginService");
-        //TODO content processing
-        checkPropertyValue("name", "Bombay Sapphire", meta);
+public class SaladUsingBlueprintTest extends BlueprintTestSupport {
+    public void testSalad() throws Exception {
+        BeanMetadataImpl salad = (BeanMetadataImpl) reg.getComponentDefinition("saladService");
+
+        checkArgumentValue(0, "Cesar", salad, false);
+        checkArgumentValue(1, "Small", salad, false);
+        checkArgumentValue(2, "true", salad, false);
     }
 
     protected String getPlan() {
-        return "org/apache/xbean/blueprint/context/gin.xml";
+        return "org/apache/xbean/blueprint/context/salad-normal.xml";
     }
 }
