@@ -21,6 +21,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.commons.EmptyVisitor;
+import org.objectweb.asm.signature.SignatureReader;
+import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -275,6 +277,7 @@ public class ClassFinder {
             for (int pos = 0; pos < tempClassInfos.size(); pos++) {
                 ClassInfo classInfo = tempClassInfos.get(pos);
                 try {
+                    // check whether any superclass is annotated
                     String superType = classInfo.getSuperType();
                     for (Class clazz : classes) {
                         if (superType.equals(clazz.getName())) {
@@ -282,6 +285,18 @@ public class ClassFinder {
                             tempClassInfos.remove(pos);
                             annClassFound = true;
                             break;
+                        }
+                    }
+                    // check whether any interface is annotated
+                    List<String> interfces = classInfo.getInterfaces();
+                    for (String interfce: interfces) {
+                        for (Class clazz : classes) {
+                            if (interfce.replaceFirst("<.*>","").equals(clazz.getName())) {
+                                classes.add(classInfo.get());
+                                tempClassInfos.remove(pos);
+                                annClassFound = true;
+                                break;
+                            }
                         }
                     }
                 } catch (ClassNotFoundException e) {
@@ -521,10 +536,10 @@ public class ClassFinder {
     }
 
     public class ClassInfo extends Annotatable implements Info {
-        private final String name;
+        private String name;
         private final List<MethodInfo> methods = new ArrayList<MethodInfo>();
         private final List<MethodInfo> constructors = new ArrayList<MethodInfo>();
-        private final String superType;
+        private String superType;
         private final List<String> interfaces = new ArrayList<String>();
         private final List<FieldInfo> fields = new ArrayList<FieldInfo>();
         private Class<?> clazz;
@@ -575,7 +590,7 @@ public class ClassFinder {
             if (clazz != null) return clazz;
             if (notFound != null) throw notFound;
             try {
-                this.clazz = classLoader.loadClass(name);
+                this.clazz = classLoader.loadClass(name.replaceFirst("<.*>",""));
                 return clazz;
             } catch (ClassNotFoundException notFound) {
                 classesNotLoaded.add(name);
@@ -755,11 +770,16 @@ public class ClassFinder {
             } else {
                 ClassInfo classInfo = new ClassInfo(javaName(name), javaName(superName));
 
-                for (String interfce : interfaces) {
-                    classInfo.getInterfaces().add(javaName(interfce));
+                if (signature == null) {
+                    for (String interfce : interfaces) {
+                        classInfo.getInterfaces().add(javaName(interfce));
+                    }
+                } else {
+                    // the class uses generics
+                    new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
                 }
                 info = classInfo;
-                classInfos.add(classInfo);
+                classInfos.add(classInfo);                
             }
         }
 
@@ -795,5 +815,165 @@ public class ClassFinder {
             annotationInfos.add(annotationInfo);
             return new InfoBuildingVisitor(annotationInfo);
         }
+    }
+
+    public static class GenericAwareInfoBuildingVisitor implements SignatureVisitor {
+
+        public enum TYPE {
+            CLASS
+        }
+
+        public enum STATE {
+            BEGIN, END, SUPERCLASS, INTERFACE, FORMAL_TYPE_PARAM
+        }
+
+        private Info info;
+        private TYPE type;
+        private STATE state;
+
+        private static boolean debug = false;
+
+        public GenericAwareInfoBuildingVisitor() {
+        }
+
+        public GenericAwareInfoBuildingVisitor(TYPE type, Info info) {
+            this.type = type;
+            this.info = info;
+            this.state = STATE.BEGIN;
+        }
+
+        public void visitFormalTypeParameter(String s) {
+            if (debug) System.out.println(" s=" + s);
+            switch (state) {
+                case BEGIN:
+                    ((ClassInfo) info).name += "<" + s;
+            }
+            state = STATE.FORMAL_TYPE_PARAM;
+        }
+
+        public SignatureVisitor visitClassBound() {
+            if (debug) System.out.println(" visitClassBound()");
+            return this;
+        }
+
+        public SignatureVisitor visitInterfaceBound() {
+            if (debug) System.out.println(" visitInterfaceBound()");
+            return this;
+        }
+
+        public SignatureVisitor visitSuperclass() {
+            if (debug) System.out.println(" visitSuperclass()");
+            state = STATE.SUPERCLASS;
+            return this;
+        }
+
+        public SignatureVisitor visitInterface() {
+            if (debug) System.out.println(" visitInterface()");
+            ((ClassInfo) info).getInterfaces().add("");
+            state = STATE.INTERFACE;
+            return this;
+        }
+
+        public SignatureVisitor visitParameterType() {
+            if (debug) System.out.println(" visitParameterType()");
+            return this;
+        }
+
+        public SignatureVisitor visitReturnType() {
+            if (debug) System.out.println(" visitReturnType()");
+            return this;
+        }
+
+        public SignatureVisitor visitExceptionType() {
+            if (debug) System.out.println(" visitExceptionType()");
+            return this;
+        }
+
+        public void visitBaseType(char c) {
+            if (debug) System.out.println(" visitBaseType(" + c + ")");
+        }
+
+        public void visitTypeVariable(String s) {
+            if (debug) System.out.println(" visitTypeVariable(" + s + ")");
+        }
+
+        public SignatureVisitor visitArrayType() {
+            if (debug) System.out.println(" visitArrayType()");
+            return this;
+        }
+
+        public void visitClassType(String s) {
+            if (debug) System.out.println(" visitClassType(" + s + ")");
+            switch (state) {
+                case INTERFACE:
+                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    int idx = interfces.size() - 1;
+                    String interfce = interfces.get(idx);
+                    if (interfce.length() == 0) {
+                        interfce = javaName(s);
+                    } else {
+                        interfce += javaName(s);
+                    }
+                    interfces.set(idx, interfce);
+                    break;
+                case SUPERCLASS:
+                    if (!s.equals("java/lang/Object")) {
+                        ((ClassInfo) info).superType = javaName(s);
+                    }
+            }
+        }
+
+        public void visitInnerClassType(String s) {
+            if (debug) System.out.println(" visitInnerClassType(" + s + ")");
+        }
+
+        public void visitTypeArgument() {
+            if (debug) System.out.println(" visitTypeArgument()");
+            switch (state) {
+                case INTERFACE:
+                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    int idx = interfces.size() - 1;
+                    String interfce = interfces.get(idx);
+                    interfce += "<";
+                    interfces.set(idx, interfce);
+            }
+        }
+
+        public SignatureVisitor visitTypeArgument(char c) {
+            if (debug) System.out.println(" visitTypeArgument(" + c + ")");
+            switch (state) {
+                case INTERFACE:
+                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    int idx = interfces.size() - 1;
+                    String interfce = interfces.get(idx);
+                    interfce += "<";
+                    interfces.set(idx, interfce);
+            }
+            return this;
+        }
+
+        public void visitEnd() {
+            if (debug) System.out.println(" visitEnd()");
+            switch (state) {
+                case INTERFACE:
+                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    int idx = interfces.size() - 1;
+                    String interfce = interfces.get(idx);
+                    interfce += ">";
+                    interfces.set(idx, interfce);
+                    break;
+                case FORMAL_TYPE_PARAM:
+                    String name = ((ClassInfo) info).name;
+                    if (name.contains("<")) {
+                        ((ClassInfo) info).name += ">";
+                    }
+            }
+            state = STATE.END;
+        }
+
+        private String javaName(String name) {
+            return (name == null)? null:name.replace('/', '.');
+        }
+        
     }
 }

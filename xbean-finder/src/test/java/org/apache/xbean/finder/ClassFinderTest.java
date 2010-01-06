@@ -28,6 +28,8 @@ import org.acme.foo.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Arrays;
 
@@ -63,7 +65,7 @@ public class ClassFinderTest extends TestCase {
 
     public void testFindAnnotatedClasses() throws Exception {
 
-        Class[] expected = {Halloween.class, Thanksgiving.class, ValentinesDay.class};
+        Class[] expected = {Halloween.class, Thanksgiving.class, ValentinesDay.class, GenericHoliday.class};
         List<Class> actual = classFinder.findAnnotatedClasses(Holiday.class);
 
         assertNotNull(actual);
@@ -92,7 +94,7 @@ public class ClassFinderTest extends TestCase {
     }
 
     public void testFindInheritedAnnotatedClassesInherited() throws Exception {
-        Class[] expected = {FunnyFamilyHalloween.class, FamilyHalloween.class, Halloween.class, Thanksgiving.class, ValentinesDay.class};
+        Class[] expected = {FunnyFamilyHalloween.class, FamilyHalloween.class, Halloween.class, Thanksgiving.class, ValentinesDay.class, GenericHoliday.class, StringGenericHoliday.class};
         List<Class> actual = classFinder.findInheritedAnnotatedClasses(Holiday.class);
 
         assertNotNull(actual);
@@ -101,7 +103,7 @@ public class ClassFinderTest extends TestCase {
             assertTrue(clazz.getName(), actual.contains(clazz));
         }
 
-        expected = new Class[]{Halloween.class, Thanksgiving.class, ValentinesDay.class};
+        expected = new Class[]{Halloween.class, Thanksgiving.class, ValentinesDay.class, GenericHoliday.class};
         actual = classFinder.findAnnotatedClasses(Holiday.class);
         assertNotNull(actual);
         assertEquals(expected.length, actual.size());
@@ -141,7 +143,8 @@ public class ClassFinderTest extends TestCase {
     public void testClassListConstructor() throws Exception {
         Class[] classes = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class,
                 Red.CandyApple.class, Red.Pink.class, Halloween.class, Holiday.class, Deployable.class, Primary.class,
-                Property.class, Thanksgiving.class, ValentinesDay.class, FullyAnnotated.class, Type.class};
+                Property.class, Thanksgiving.class, ValentinesDay.class, FullyAnnotated.class, Type.class,
+                GenericHoliday.class, StringGenericHoliday.class};
 
         classFinder = new ClassFinder(classes);
 
