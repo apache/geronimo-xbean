@@ -16,6 +16,10 @@
  */
 package org.apache.xbean.blueprint.example;
 
+/**
+ * @org.apache.xbean.XBean element="container"
+ *
+ */
 public class ContainerBean {
 
     InnerBean[] beans;

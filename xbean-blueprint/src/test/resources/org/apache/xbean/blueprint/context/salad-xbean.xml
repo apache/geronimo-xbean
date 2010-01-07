@@ -18,9 +18,9 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:s="http://xbean.apache.org/schemas/salad">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:s="http://xbean.apache.org/schemas/pizza">
 
-  <s:salad id="saladService" dressing="Cesar" size="Small" addCroutons="true"/>
+  <s:saladService b:id="saladService" s:dressing="Cesar" s:size="Small" s:addCroutons="true"/>
   
 </b:blueprint>
 <!-- END SNIPPET: xml -->

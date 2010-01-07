@@ -18,9 +18,9 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns="http://xbean.apache.org/schemas/pizza">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:w="http://xbean.apache.org/schemas/pizza">
 
-  <wine b:id="wineService" id="wineService" name="Amarone"/>
+  <w:wine b:id="wineService" w:id="wineService" w:name="Amarone"/>
 
 </b:blueprint>
 <!-- END SNIPPET: xml -->

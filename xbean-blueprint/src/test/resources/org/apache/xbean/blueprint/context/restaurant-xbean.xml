@@ -18,29 +18,29 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns="http://xbean.apache.org/schemas/pizza">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="http://xbean.apache.org/schemas/pizza">
        xmlns:foo="http://acme.com">
 
-  <restaurant b:id="restaurant" 
-              serviceName="foo:xyz" 
-              uri="http://cheese.com">
-    <dinnerMenu>
-      <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
-      <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
-    </dinnerMenu>
+  <p:restaurant b:id="restaurant"
+              p:serviceName="foo:xyz"
+              p:uri="http://cheese.com">
+    <p:dinnerMenu>
+      <p:pizza p:myTopping="Ham" p:cheese="Mozzarella" p:size="15"/>
+      <p:pizza p:myTopping="Eggs" p:cheese="Mozzarella" p:size="16"/>
+    </p:dinnerMenu>
 
-    <lunchMenu>
-      <pizza myTopping="Chicken" cheese="Brie" size="17"/>
-    </lunchMenu>
+    <p:lunchMenu>
+      <p:pizza p:myTopping="Chicken" p:cheese="Brie" p:size="17"/>
+    </p:lunchMenu>
 
-    <snackMenu>
-      <pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
-      <pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
-    </snackMenu>
+    <p:snackMenu>
+      <p:pizza p:myTopping="Tofu" p:cheese="Parmesan" p:size="6"/>
+      <p:pizza p:myTopping="Prosciutto" p:cheese="Blue" p:size="8"/>
+    </p:snackMenu>
 
-    <favourite>
-      <pizza myTopping="Salami" cheese="Edam" size="17"/>
-    </favourite>
-  </restaurant>
+    <p:favourite>
+      <p:pizza p:myTopping="Salami" p:cheese="Edam" p:size="17"/>
+    </p:favourite>
+  </p:restaurant>
 </b:blueprint>
 <!-- END SNIPPET: xml -->

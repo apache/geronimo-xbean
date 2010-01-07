@@ -33,6 +33,7 @@ import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.BeanMetadata;
 
 import javax.xml.validation.Schema;
+import javax.xml.namespace.QName;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,6 +88,7 @@ public abstract class BlueprintTestSupport extends TestCase {
                 classes.add(clazz);
             }
         }
+        classes.add(QName.class);
 
         final NamespaceHandler xbeanHandler = new XBeanNamespaceHandler(NAMESPACE_URI.toString(), BlueprintTestSupport.class.getClassLoader().getResource("restaurant.xsd"), classes, properties);
         NamespaceHandlerRegistry.NamespaceHandlerSet handlers = new NamespaceHandlerRegistry.NamespaceHandlerSet() {

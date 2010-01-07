@@ -18,7 +18,7 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns:s="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:b="http://xbean.apache.org/schemas/pizza">
+<s:blueprint xmlns:s="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:b="http://xbean.apache.org/schemas/pizza">
 
   <b:flat-map s:id="flat-map">
     <b:services>
@@ -29,6 +29,6 @@
     </b:services>
   </b:flat-map>
 
-</blueprint>
+</s:blueprint>
 <!-- END SNIPPET: xml -->
 

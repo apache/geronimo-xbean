@@ -17,18 +17,18 @@
     limitations under the License.
 
 -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0"
  xmlns:x="http://xbean.apache.org/schemas/pizza"
 	   xmlns:foo="urn:foo">
 
-	<x:qname-service id="qnameService">
+	<x:qname-service b:id="qnameService">
 		<x:services>
-			<qname>foo:test</qname>
-			<qname>foo:bar</qname>
+			<x:qname>foo:test</x:qname>
+			<x:qname>foo:bar</x:qname>
 		</x:services>
 		<x:list>
-			<qname>foo:list</qname>
+			<x:qname>foo:list</x:qname>
 		</x:list>
 	</x:qname-service>
 	
-</blueprint>
+</b:blueprint>
