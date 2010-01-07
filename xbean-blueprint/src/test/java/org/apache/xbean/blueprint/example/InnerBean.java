@@ -16,6 +16,10 @@
  */
 package org.apache.xbean.blueprint.example;
 
+/**
+ * @org.apache.xbean.XBean element="inner"
+ *
+ */
 public class InnerBean {
 
     public static InnerBean INSTANCE = null;

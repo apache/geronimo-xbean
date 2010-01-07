@@ -17,16 +17,16 @@
     limitations under the License.
 
 -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" 
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0"
     xmlns:x="http://xbean.apache.org/schemas/pizza" xmlns:foo="urn:foo">
 
-  <x:recipe-service id="recipeService">
-    <property name="topRecipe" xmlns="http://www.springframework.org/schema/beans"> 
-      <bean class="org.apache.xbean.blueprint.example.Recipe">
-        <property name="instructions" value="Mash together" />
-        <property name="ingredients" value="Food" />
-      </bean>
-    </property>
+  <x:recipe-service b:id="recipeService">
+    <b:property name="topRecipe">
+      <b:bean class="org.apache.xbean.blueprint.example.Recipe">
+        <b:property name="instructions" value="Mash together" />
+        <b:property name="ingredients" value="Food" />
+      </b:bean>
+    </b:property>
     <x:recipe>
       <x:instructions>Mash together</x:instructions>
       <x:ingredients>Food</x:ingredients>
@@ -37,4 +37,4 @@
     </x:recipe>
   </x:recipe-service>
 
-</blueprint>
+</b:blueprint>
