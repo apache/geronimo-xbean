@@ -20,7 +20,7 @@
 <!-- START SNIPPET: xml -->
 <s:blueprint xmlns:b="http://xbean.apache.org/schemas/pizza" xmlns:s="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
-  <b:beer s:id="beerService" id="123" name="${beerType}"/>
+  <b:beer s:id="beerService" b:id="123" b:name="${beerType}"/>
 
 </s:blueprint>
 <!-- END SNIPPET: xml -->

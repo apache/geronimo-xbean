@@ -19,15 +19,16 @@
 -->
 <b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0"
  xmlns:x="http://xbean.apache.org/schemas/pizza"
+ xmlns:q="http://xbean.apache.org/schemas/javax.xml.namespace.QName"
 	   xmlns:foo="urn:foo">
 
 	<x:qname-service b:id="qnameService">
 		<x:services>
-			<x:qname>foo:test</x:qname>
-			<x:qname>foo:bar</x:qname>
+			<q:qname>foo:test</q:qname>
+			<q:qname>foo:bar</q:qname>
 		</x:services>
 		<x:list>
-			<x:qname>foo:list</x:qname>
+			<q:qname>foo:list</q:qname>
 		</x:list>
 	</x:qname-service>
 	

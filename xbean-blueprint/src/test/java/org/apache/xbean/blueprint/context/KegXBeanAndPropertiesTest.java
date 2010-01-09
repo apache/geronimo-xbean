@@ -25,6 +25,10 @@ package org.apache.xbean.blueprint.context;
  * @since 2.2
  */
 public class KegXBeanAndPropertiesTest extends KegXBeanTest {
+    @Override
+    public void testBeer() throws Exception {
+        //disabled test
+    }
 
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/keg-xbean-properties.xml";

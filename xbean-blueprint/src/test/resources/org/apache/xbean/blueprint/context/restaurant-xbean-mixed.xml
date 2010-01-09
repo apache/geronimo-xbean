@@ -18,40 +18,40 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0"
  xmlns:foo="http://acme.com">
 
-  <restaurant id="restaurant" xmlns="http://xbean.apache.org/schemas/pizza"
-              serviceName="foo:xyz">
-    <dinnerMenu>
-      <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
-      <bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.xbean.blueprint.example.PizzaService">
-        <property name="topping" value="Eggs"/>
-        <property name="cheese" value="Mozzarella"/>
-        <property name="size" value="16"/>
-      </bean>
-    </dinnerMenu>
+  <p:restaurant b:id="restaurant" xmlns:p="http://xbean.apache.org/schemas/pizza"
+              p:serviceName="foo:xyz">
+    <p:dinnerMenu>
+      <p:pizza p:myTopping="Ham" p:cheese="Mozzarella" p:size="15"/>
+      <b:bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.xbean.blueprint.example.PizzaService">
+        <b:property name="topping" value="Eggs"/>
+        <b:property name="cheese" value="Mozzarella"/>
+        <b:property name="size" value="16"/>
+      </b:bean>
+    </p:dinnerMenu>
 
-    <snackMenu>
-      <pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
-      <pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
-    </snackMenu>
+    <p:snackMenu>
+      <p:pizza p:myTopping="Tofu" p:cheese="Parmesan" p:size="6"/>
+      <p:pizza p:myTopping="Prosciutto" p:cheese="Blue" p:size="8"/>
+    </p:snackMenu>
 
-    <lunchMenu>
-      <bean xmlns="" class="org.apache.xbean.blueprint.example.PizzaService">
-        <property name="topping" value="Chicken"/>
-        <property name="cheese" value="Brie"/>
-        <property name="size" value="17"/>
-      </bean>
-    </lunchMenu>
+    <p:lunchMenu>
+      <b:bean xmlns="" class="org.apache.xbean.blueprint.example.PizzaService">
+        <b:property name="topping" value="Chicken"/>
+        <b:property name="cheese" value="Brie"/>
+        <b:property name="size" value="17"/>
+      </b:bean>
+    </p:lunchMenu>
 
-    <favourite>
-      <bean xmlns="http://xbean.apache.org/schemas/spring/1.0" class="org.apache.xbean.blueprint.example.PizzaService">
+    <p:favourite>
+      <bean xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" class="org.apache.xbean.blueprint.example.PizzaService">
         <property name="topping" value="Salami"/>
         <property name="cheese" value="Edam"/>
         <property name="size" value="17"/>
       </bean>
-    </favourite>
-  </restaurant>
-</blueprint>
+    </p:favourite>
+  </p:restaurant>
+</b:blueprint>
 <!-- END SNIPPET: xml -->

@@ -24,6 +24,7 @@ import org.apache.aries.blueprint.container.Parser;
 import org.apache.aries.blueprint.namespace.ComponentDefinitionRegistryImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xbean.blueprint.context.impl.QNameNamespaceHandler;
 import org.apache.xbean.blueprint.context.impl.XBeanNamespaceHandler;
 import org.xml.sax.SAXException;
 import org.osgi.service.blueprint.reflect.BeanProperty;
@@ -39,7 +40,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -56,6 +59,7 @@ import java.util.Map;
 public abstract class BlueprintTestSupport extends TestCase {
     protected Log log = LogFactory.getLog(getClass());
     private static final URI NAMESPACE_URI = URI.create("http://xbean.apache.org/schemas/pizza");
+    private static final URI QNAME_URI = URI.create("http://xbean.apache.org/schemas/javax.xml.namespace.QName");
 
     protected ComponentDefinitionRegistryImpl reg;
 
@@ -91,13 +95,19 @@ public abstract class BlueprintTestSupport extends TestCase {
         classes.add(QName.class);
 
         final NamespaceHandler xbeanHandler = new XBeanNamespaceHandler(NAMESPACE_URI.toString(), BlueprintTestSupport.class.getClassLoader().getResource("restaurant.xsd"), classes, properties);
+        final NamespaceHandler qnameHandler = new QNameNamespaceHandler();
         NamespaceHandlerRegistry.NamespaceHandlerSet handlers = new NamespaceHandlerRegistry.NamespaceHandlerSet() {
             public Set<URI> getNamespaces() {
-                return Collections.singleton(NAMESPACE_URI);
+                return new HashSet<URI>(Arrays.asList(NAMESPACE_URI, QNAME_URI));
             }
 
             public NamespaceHandler getNamespaceHandler(URI namespace) {
-                return xbeanHandler;
+                if (NAMESPACE_URI.equals(namespace)) {
+                    return xbeanHandler;
+                } else if (QNAME_URI.equals(namespace)){
+                    return qnameHandler;
+                }
+                return null;
             }
 
             public void removeListener(NamespaceHandlerRegistry.Listener listener) {

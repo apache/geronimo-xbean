@@ -18,6 +18,7 @@
 
 -->
 <!-- START SNIPPET: xml -->
+        <!-- this doesn't work in blueprint.  first check is for blueprint namespace -->
 <restaurant id="restaurant" xmlns="http://xbean.apache.org/schemas/restaurant" xmlns:foo="http://acme.com" serviceName="foo:xyz" uri="http://cheese.com">
     <dinnerMenu>
       <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>

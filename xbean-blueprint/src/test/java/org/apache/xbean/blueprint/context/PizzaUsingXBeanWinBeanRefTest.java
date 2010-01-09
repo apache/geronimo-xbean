@@ -17,25 +17,26 @@
 package org.apache.xbean.blueprint.context;
 
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.apache.aries.blueprint.reflect.RefMetadataImpl;
+import org.osgi.service.blueprint.reflect.BeanProperty;
 
 /**
- *
  * @version $Revision$
  */
 public class PizzaUsingXBeanWinBeanRefTest extends PizzaUsingBlueprintTest {
-    
+
     public void testPizza() throws Exception {
         BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("pizzaService");
-//        pizza.makePizza();
 
-        checkPropertyValue("topping", "Salami", meta);
+        BeanProperty p = propertyByName("topping", meta);
+        assertTrue(p.getValue() instanceof RefMetadataImpl);
+        assertEquals("topping", ((RefMetadataImpl)p.getValue()).getComponentId());
         checkPropertyValue("cheese", "#Edam", meta);
-        //TODO bluerprint
-//        checkPropertyValue("size", 17, meta);
+        checkPropertyValue("size", "17", meta);
     }
 
     protected String getPlan() {
-        return "org/apache/xbean/blueprint/context/pizza-xbean-ref.xml";
+        return "org/apache/xbean/blueprint/context/pizza-xbean-bean-ref.xml";
     }
-    
+
 }

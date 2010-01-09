@@ -40,6 +40,8 @@ import org.apache.aries.blueprint.ParserContext;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
 import org.apache.aries.blueprint.mutable.MutableCollectionMetadata;
 import org.apache.aries.blueprint.mutable.MutableValueMetadata;
+import org.apache.aries.blueprint.mutable.MutableMapMetadata;
+import org.apache.aries.blueprint.mutable.MutableRefMetadata;
 import org.apache.aries.blueprint.reflect.BeanPropertyImpl;
 import org.osgi.framework.Bundle;
 import org.osgi.service.blueprint.container.ComponentDefinitionException;
@@ -49,6 +51,9 @@ import org.osgi.service.blueprint.reflect.CollectionMetadata;
 import org.osgi.service.blueprint.reflect.ComponentMetadata;
 import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.ValueMetadata;
+import org.osgi.service.blueprint.reflect.NullMetadata;
+import org.osgi.service.blueprint.reflect.NonNullMetadata;
+import org.osgi.service.blueprint.reflect.MapEntry;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -60,6 +65,10 @@ import org.w3c.dom.Text;
  * @version $Rev$ $Date$
  */
 public class XBeanNamespaceHandler implements NamespaceHandler {
+
+    public static final String BLUEPRINT_NAMESPACE = "http://www.osgi.org/xmlns/blueprint/v1.0.0";
+    private static final String BEAN_REFERENCE_PREFIX = "#";
+    private static final String NULL_REFERENCE = "#null";
 
     private final String namespace;
     private final URL schemaLocation;
@@ -141,8 +150,8 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             throw new ComponentDefinitionException("Unknown bean class: " + className);
         }
 
-        if (element.hasAttributeNS("http://www.osgi.org/xmlns/blueprint/v1.0.0", "id")) {
-            String id = element.getAttributeNS("http://www.osgi.org/xmlns/blueprint/v1.0.0", "id");
+        if (element.hasAttributeNS(BLUEPRINT_NAMESPACE, "id")) {
+            String id = element.getAttributeNS(BLUEPRINT_NAMESPACE, "id");
             beanMetaData.setId(id);
         } else {
             beanMetaData.setId(parserContext.generateId());
@@ -152,7 +161,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
         attributeProperties(element, parserContext, beanTypeName, beanMetaData);
         contentProperty(beanMetaData, element, parserContext);
-        nestedProperties(element, parserContext, beanTypeName, beanMetaData);
+        nestedProperties(beanMetaData, element, beanTypeName, className, parserContext);
         //QName resolution
         coerceNamespaceAwarePropertyValues(beanMetaData, element, parserContext);
         namedConstructorArgs.processParameters(beanMetaData, mappingMetaData, parserContext);
@@ -193,16 +202,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             String value = getElementText(element).trim();
             addProperty(name, value, definition, parserContext);
         } else {
-            StringBuilder buffer = new StringBuilder();
-            NodeList childNodes = element.getChildNodes();
-            for (int i = 0, size = childNodes.getLength(); i < size; i++) {
-                Node node = childNodes.item(i);
-                if (node instanceof Text) {
-                    buffer.append(((Text) node).getData());
-                }
-            }
-
-            ByteArrayInputStream in = new ByteArrayInputStream(buffer.toString().getBytes());
+            ByteArrayInputStream in = new ByteArrayInputStream(getElementText(element).getBytes());
             Properties properties = new Properties();
             try {
                 properties.load(in);
@@ -219,13 +219,12 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private void addProperty(String name, String value, MutableBeanMetadata definition, ParserContext parserContext) {
-        MutableValueMetadata m = parserContext.createMetadata(MutableValueMetadata.class);
-        m.setStringValue(value);
+        Metadata m = getValue(value, null, parserContext);
         BeanProperty beanProperty = new BeanPropertyImpl(name, m);
         definition.addProperty(beanProperty);
     }
 
-    private void nestedProperties(Element element, ParserContext parserContext, String beanTypeName, MutableBeanMetadata beanMetaData) {
+    private void nestedProperties(MutableBeanMetadata beanMetadata, Element element, String beanTypeName, String className, ParserContext parserContext) {
         NodeList nodes = element.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
@@ -234,8 +233,8 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 String childName = child.getLocalName();
                 String namespace = child.getNamespaceURI();
                 if (!this.namespace.equals(namespace)) {
-                    BeanProperty prop = parserContext.parseElement(BeanProperty.class, beanMetaData, child);
-                    beanMetaData.addProperty(prop);
+                    BeanProperty prop = parserContext.parseElement(BeanProperty.class, beanMetadata, child);
+                    beanMetadata.addProperty(prop);
                     continue;
                 }
                 Metadata childMetadata = null;
@@ -245,11 +244,11 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 //explicit list
                 if (propertyName != null || isCollectionType(propertyType)) {
                     propertyName = propertyName == null ? childName : propertyName;
-                    childMetadata = parserContext.parseElement(CollectionMetadata.class, beanMetaData, child);
+                    childMetadata = parserContext.parseElement(CollectionMetadata.class, beanMetadata, child);
                 } else if ((propertyName = mappingMetaData.getFlatCollectionProperty(beanTypeName, childName)) != null) {
                     //flat collection
                     Metadata elementMetadata = parse(child, parserContext);
-                    BeanProperty list = propertyByName(propertyName, beanMetaData);
+                    BeanProperty list = propertyByName(propertyName, beanMetadata);
                     MutableCollectionMetadata listMeta;
                     if (list == null) {
                         listMeta = parserContext.createMetadata(MutableCollectionMetadata.class);
@@ -259,48 +258,310 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     }
                     listMeta.addValue(elementMetadata);
                 } else if ((propertyName = mappingMetaData.getNestedProperty(beanTypeName, childName)) != null) {
+                    // lets find the first child bean that parses fine
+                    childMetadata = parseChildExtensionBean(child, beanMetadata, parserContext);
 
                 } else if (mappingMetaData.isFlatProperty(beanTypeName, childName)) {
                     propertyName = childName;
                     String flatClassName = getPropertyDescriptor(mappingMetaData.getClassName(beanTypeName), childName).getPropertyType().getName();
                     childMetadata = parseInternal(child, parserContext, childName, flatClassName);
                 } else {
-                    propertyName = mappingMetaData.getPropertyName(beanTypeName, childName);
-                    NodeList childNodes = child.getChildNodes();
-                    StringBuilder buf = new StringBuilder();
-                    for (int j = 0; j < childNodes.getLength(); j++) {
-                        Node childNode = childNodes.item(j);
-                        if (childNode instanceof Element) {
-                            Element childElement = (Element) childNode;
-                            if (namespace.equals(childElement.getNamespaceURI())) {
-                                childMetadata = parse(childElement, parserContext);
-                            } else {
-                                try {
-                                    childMetadata = parserContext.parseElement(BeanMetadata.class, beanMetaData, childElement);
-                                } catch (Exception e) {
-                                    childMetadata = parserContext.parseElement(ValueMetadata.class, beanMetaData, childElement);
-                                }
-                            }
-
-                            break;
-                        } else if (childNode instanceof Text) {
-                            String value = childNode.getNodeValue();
-                            buf.append(value);
-                        }
-                    }
-                    if (childMetadata == null) {
+                    childMetadata = tryParseNestedPropertyViaIntrospection(beanMetadata, className, child, parserContext);
+                    propertyName = childName;
+                }
+                if (childMetadata == null) {
+                    String text = getElementText(child);
+                    if (text != null) {
                         MutableValueMetadata m = parserContext.createMetadata(MutableValueMetadata.class);
-                        m.setStringValue(buf.toString().trim());
+                        m.setStringValue(text.trim());
                         childMetadata = m;
                     }
+
+
+//                    propertyName = mappingMetaData.getPropertyName(beanTypeName, childName);
+//                    NodeList childNodes = child.getChildNodes();
+//                    StringBuilder buf = new StringBuilder();
+//                    for (int j = 0; j < childNodes.getLength(); j++) {
+//                        Node childNode = childNodes.item(j);
+//                        if (childNode instanceof Element) {
+//                            Element childElement = (Element) childNode;
+//                            if (namespace.equals(childElement.getNamespaceURI())) {
+//                                childMetadata = parse(childElement, parserContext);
+//                            } else {
+//                                try {
+//                                    childMetadata = parserContext.parseElement(BeanMetadata.class, beanMetaData, childElement);
+//                                } catch (Exception e) {
+//                                    childMetadata = parserContext.parseElement(ValueMetadata.class, beanMetaData, childElement);
+//                                }
+//                            }
+//
+//                            break;
+//                        } else if (childNode instanceof Text) {
+//                            String value = childNode.getNodeValue();
+//                            buf.append(value);
+//                        }
+//                    }
+//                    if (childMetadata == null) {
+//                        MutableValueMetadata m = parserContext.createMetadata(MutableValueMetadata.class);
+//                        m.setStringValue(buf.toString().trim());
+//                        childMetadata = m;
+//                    }
                 }
                 if (childMetadata != null) {
                     BeanProperty beanProperty = new BeanPropertyImpl(propertyName, childMetadata);
-                    beanMetaData.addProperty(beanProperty);
+                    beanMetadata.addProperty(beanProperty);
                 }
             }
         }
     }
+
+    private Metadata parseChildExtensionBean(Element child, MutableBeanMetadata beanMetadata, ParserContext parserContext) {
+        NodeList nl = child.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                Element childElement = (Element) node;
+                String uri = childElement.getNamespaceURI();
+                String localName = childElement.getLocalName();
+
+                if (uri == null ||
+                    uri.equals(BLUEPRINT_NAMESPACE)) {
+                    if ("bean".equals(localName)) {
+                        return parserContext.parseElement(BeanMetadata.class, beanMetadata, childElement);
+                    } else {
+                        return parserContext.parseElement(ValueMetadata.class, beanMetadata, childElement);
+                    }
+                } else {
+                    Metadata value = parse(childElement, parserContext);
+                    if (value != null) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private Metadata tryParseNestedPropertyViaIntrospection(MutableBeanMetadata beanMetadata, String className, Element element, ParserContext parserContext) {
+        String localName = element.getLocalName();
+        PropertyDescriptor descriptor = getPropertyDescriptor(className, localName);
+        if (descriptor != null) {
+            return parseNestedPropertyViaIntrospection(beanMetadata, element, descriptor.getName(), descriptor.getPropertyType(), parserContext);
+        } else {
+            return parseNestedPropertyViaIntrospection(beanMetadata, element, localName, Object.class, parserContext);
+        }
+    }
+
+    private Metadata parseNestedPropertyViaIntrospection(MutableBeanMetadata beanMetadata, Element element, String propertyName, Class propertyType, ParserContext parserContext) {
+        if (isMap(propertyType)) {
+            return parseCustomMapElement(beanMetadata, element, propertyName, parserContext);
+        } else if (isCollection(propertyType)) {
+            return  parserContext.parseElement(MutableCollectionMetadata.class, beanMetadata, element);
+        } else {
+            return parseChildExtensionBean(element, beanMetadata, parserContext);
+        }
+    }
+
+    private boolean isMap(Class type) {
+        return Map.class.isAssignableFrom(type);
+    }
+
+    /**
+     * Returns true if the given type is a collection type or an array
+     */
+    private boolean isCollection(Class type) {
+        return type.isArray() || Collection.class.isAssignableFrom(type);
+    }
+
+    protected String getLocalName(Element element) {
+        String localName = element.getLocalName();
+        if (localName == null) {
+            localName = element.getNodeName();
+        }
+        return localName;
+    }
+
+    protected Metadata parseCustomMapElement(MutableBeanMetadata beanMetadata, Element element, String name, ParserContext parserContext) {
+        MutableMapMetadata map = parserContext.createMetadata(MutableMapMetadata.class);
+
+         Element parent = (Element) element.getParentNode();
+         String entryName = mappingMetaData.getMapEntryName(getLocalName(parent), name);
+         String keyName = mappingMetaData.getMapKeyName(getLocalName(parent), name);
+         String dups = mappingMetaData.getMapDupsMode(getLocalName(parent), name);
+         boolean flat = mappingMetaData.isFlatMap(getLocalName(parent), name);
+         String defaultKey = mappingMetaData.getMapDefaultKey(getLocalName(parent), name);
+
+         if (entryName == null) entryName = "property";
+         if (keyName == null) keyName = "key";
+         if (dups == null) dups = "replace";
+
+         // TODO : support further customizations
+         //String valueName = "value";
+         //boolean keyIsAttr = true;
+         //boolean valueIsAttr = false;
+         NodeList nl = element.getChildNodes();
+         for (int i = 0; i < nl.getLength(); i++) {
+             Node node = nl.item(i);
+             if (node instanceof Element) {
+                 Element childElement = (Element) node;
+
+                 String localName = childElement.getLocalName();
+                 String uri = childElement.getNamespaceURI();
+                 if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
+                     continue;
+                 }
+
+                 // we could use namespaced attributes to differentiate real spring
+                 // attributes from namespace-specific attributes
+                 if (!flat && !isEmpty(uri) && localName.equals(entryName)) {
+                     String key = childElement.getAttribute(keyName);
+                     if (key == null || key.length() == 0) {
+                         key = defaultKey;
+                     }
+                     if (key == null) {
+                         throw new RuntimeException("No key defined for map " + entryName);
+                     }
+
+                     NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
+
+                     Element valueElement = getFirstChildElement(childElement);
+                     Metadata value;
+                     if (valueElement != null) {
+                         String valueElUri = valueElement.getNamespaceURI();
+                         String valueElLocalName = valueElement.getLocalName();
+                         if (valueElUri == null ||
+                             valueElUri.equals(BLUEPRINT_NAMESPACE)) {
+                             if ("bean".equals(valueElLocalName)) {
+                                 value = parserContext.parseElement(BeanMetadata.class, beanMetadata, valueElement);
+                             } else {
+                                 value = parserContext.parseElement(BeanProperty.class, beanMetadata, valueElement).getValue();
+                             }
+                         } else {
+                             value = parserContext.parseElement(ValueMetadata.class, beanMetadata, valueElement);
+                         }
+                     } else {
+                         value = getValue(getElementText(childElement), null, parserContext);
+                     }
+
+                     addValueToMap(map, keyValue, value, dups, parserContext);
+                 } else if (flat && !isEmpty(uri)) {
+                     String key = childElement.getAttribute(keyName);
+                     if (key == null || key.length() == 0) {
+                         key = defaultKey;
+                     }
+                     if (key == null) {
+                         throw new RuntimeException("No key defined for map entry " + entryName);
+                     }
+                     NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
+                     childElement.removeAttribute(keyName);
+                     Metadata bdh = parse(childElement, parserContext);
+                     addValueToMap(map, keyValue, bdh, dups, parserContext);
+                 }
+             }
+         }
+         return map;
+     }
+
+     protected void addValueToMap(MutableMapMetadata map, NonNullMetadata keyValue, Metadata value, String dups, ParserContext parserContext) {
+         if (hasKey(map, keyValue)) {
+             if ("discard".equalsIgnoreCase(dups)) {
+                 // Do nothing
+             } else if ("replace".equalsIgnoreCase(dups)) {
+                 map.addEntry(keyValue, value);
+             } else if ("allow".equalsIgnoreCase(dups)) {
+                 MutableCollectionMetadata l = parserContext.createMetadata(MutableCollectionMetadata.class);
+                 l.addValue(get(map, keyValue));
+                 l.addValue(value);
+                 map.addEntry(keyValue, l);
+             } else if ("always".equalsIgnoreCase(dups)) {
+                 MutableCollectionMetadata l = (MutableCollectionMetadata) get(map, keyValue);
+                 l.addValue(value);
+             }
+         } else {
+             if ("always".equalsIgnoreCase(dups)) {
+                 MutableCollectionMetadata l = (MutableCollectionMetadata) get(map, keyValue);
+                 if (l == null) {
+                     l = parserContext.createMetadata(MutableCollectionMetadata.class);
+                     map.addEntry(keyValue, l);
+                 }
+                 l.addValue(value);
+             } else {
+                 map.addEntry(keyValue, value);
+             }
+         }
+     }
+
+    private Metadata get(MutableMapMetadata map, NonNullMetadata keyValue) {
+        for (MapEntry entry: map.getEntries()) {
+            if (entry.getKey().equals(keyValue)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private boolean hasKey(MutableMapMetadata map, NonNullMetadata keyValue) {
+        return get(map, keyValue) != null;
+    }
+
+    protected boolean isEmpty(String uri) {
+        return uri == null || uri.length() == 0;
+    }
+    protected Metadata getValue(String value, String propertyEditor, ParserContext parserContext) {
+        if (value == null)  return null;
+
+        //
+        // If value is #null then we are explicitly setting the value null instead of an empty string
+        //
+        if (NULL_REFERENCE.equals(value)) {
+            return parserContext.createMetadata(NullMetadata.class);
+        }
+
+        //
+        // If value starts with # then we have a ref
+        //
+        if (value.startsWith(BEAN_REFERENCE_PREFIX)) {
+            // strip off the #
+            value = value.substring(BEAN_REFERENCE_PREFIX.length());
+
+            // if the new value starts with a #, then we had an excaped value (e.g. ##value)
+            if (!value.startsWith(BEAN_REFERENCE_PREFIX)) {
+                MutableRefMetadata ref = parserContext.createMetadata(MutableRefMetadata.class);
+                ref.setComponentId(value);
+                return ref;
+            }
+        }
+
+//        if( propertyEditor!=null ) {
+//        	PropertyEditor p = createPropertyEditor(propertyEditor);
+//
+//        	RootBeanDefinition def = new RootBeanDefinition();
+//        	def.setBeanClass(PropertyEditorFactory.class);
+//        	def.getPropertyValues().addPropertyValue("propertyEditor", p);
+//        	def.getPropertyValues().addPropertyValue("value", value);
+//
+//        	return def;
+//        }
+
+        //
+        // Neither null nor a reference
+        //
+        MutableValueMetadata metadata = parserContext.createMetadata(MutableValueMetadata.class);
+        metadata.setStringValue(value);
+        return metadata;
+    }
+
+     protected Element getFirstChildElement(Element element) {
+         NodeList nl = element.getChildNodes();
+         for (int i = 0; i < nl.getLength(); i++) {
+             Node node = nl.item(i);
+             if (node instanceof Element) {
+                 return (Element) node;
+             }
+         }
+         return null;
+     }
+
 
     private boolean isCollectionType(Class propertyType) {
         if (propertyType == null) {
@@ -384,7 +645,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private String getElementText(Element element) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         NodeList nodeList = element.getChildNodes();
         for (int i = 0, size = nodeList.getLength(); i < size; i++) {
             Node node = nodeList.item(i);

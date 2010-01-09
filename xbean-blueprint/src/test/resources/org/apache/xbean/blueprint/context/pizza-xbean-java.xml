@@ -18,10 +18,10 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="java://org.apache.xbean.blueprint.example">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="http://xbean.apache.org/schemas/pizza">
 
-  <p:PizzaService id="pizzaService" topping="Salami" cheese="Edam" size="17"/>
+  <p:pizza b:id="pizzaService" p:topping="Salami" p:cheese="Edam" p:size="17"/>
   
-</blueprint>
+</b:blueprint>
 
 <!-- END SNIPPET: xml -->

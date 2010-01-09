@@ -18,17 +18,17 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="java://org.apache.xbean.blueprint.example">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="http://xbean.apache.org/schemas/pizza">
 
-  <p:PizzaService id="pizzaService">
+  <p:pizza b:id="pizzaService">
       cheese    Edam
 
     <!-- properties can have complex elements mixed in -->
     <p:topping>Salami</p:topping>
 
        size      17
-  </p:PizzaService>
+  </p:pizza>
 
-</blueprint>
+</b:blueprint>
 
 <!-- END SNIPPET: xml -->
