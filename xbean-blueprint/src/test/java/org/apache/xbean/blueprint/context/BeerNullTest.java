@@ -19,6 +19,7 @@ package org.apache.xbean.blueprint.context;
 import org.apache.xbean.blueprint.example.BeerService;
 import org.apache.aries.blueprint.ComponentDefinitionRegistry;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.osgi.service.blueprint.reflect.NullMetadata;
 
 /**
  * @author Dain Sundstrom
@@ -39,8 +40,7 @@ public class BeerNullTest extends BlueprintTestSupport {
 
         checkPropertyValue("name", "Blue Moon", meta2);
         checkPropertyValue("id", "123", meta2);
-        //TODO blueprint null handling?
-        checkPropertyValue("source", "#null", meta2);
+        assertTrue(propertyByName("source", meta2).getValue() instanceof NullMetadata);
     }
 
     protected String getPlan() {

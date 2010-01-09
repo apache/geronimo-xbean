@@ -18,17 +18,17 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="http://xbean.apache.org/schemas/pizza">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="http://xbean.apache.org/schemas/pizza">
 
 
-  <bean id="topping" class="java.lang.String">
-    <argument>
-      <value>Salami</value>
-    </argument>
-  </bean>
+  <b:bean id="topping" class="java.lang.String">
+    <b:argument>
+      <b:value>Salami</b:value>
+    </b:argument>
+  </b:bean>
 
-  <p:pizza id="pizzaService" myTopping="#topping" cheese="##Edam" size="17"/>
+  <p:pizza b:id="pizzaService" p:myTopping="#topping" p:cheese="##Edam" p:size="17"/>
   
-</blueprint>
+</b:blueprint>
 <!-- END SNIPPET: xml -->
 

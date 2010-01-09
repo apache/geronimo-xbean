@@ -18,16 +18,16 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:x="http://xbean.apache.org/schemas/pizza">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:x="http://xbean.apache.org/schemas/pizza">
 
-  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	<property name="location" value="org/apache/xbean/spring/context/keg-xbean-properties.properties" />
-  </bean>  
+  <b:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	<b:property name="location" value="org/apache/xbean/spring/context/keg-xbean-properties.properties" />
+  </b:bean>
 	  
-  <x:keg id="ml1000" remaining="${ml1000}"/>
-  <x:keg id="pints5" remaining="${pints5}"/>
-  <x:keg id="liter20" remaining="${liter20}"/>
-  <x:keg id="empty" remaining="${empty}"/>
+  <x:keg b:id="ml1000" x:remaining="${ml1000}"/>
+  <x:keg b:id="pints5" x:remaining="${pints5}"/>
+  <x:keg b:id="liter20" x:remaining="${liter20}"/>
+  <x:keg b:id="empty" x:remaining="${empty}"/>
 
-</blueprint>
+</b:blueprint>
 <!-- END SNIPPET: xml -->

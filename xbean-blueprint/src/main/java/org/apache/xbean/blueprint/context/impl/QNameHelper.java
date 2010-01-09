@@ -23,6 +23,7 @@ import javax.xml.namespace.QName;
 import org.apache.aries.blueprint.ParserContext;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
 import org.apache.aries.blueprint.mutable.MutableCollectionMetadata;
+import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.apache.aries.blueprint.reflect.BeanPropertyImpl;
 import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
 import org.apache.aries.blueprint.reflect.ValueMetadataImpl;
@@ -57,6 +58,36 @@ public class QNameHelper {
             }
             return new QName(qualifiedName);
         }
+    }
+    
+    public static Metadata createQNameMetadata(Element element, String qualifiedName, ParserContext parserContext) {
+        BeanMetadataImpl beanMetadata = parserContext.createMetadata(BeanMetadataImpl.class);
+        beanMetadata.setClassName(QName.class.getName());
+        int index = qualifiedName.indexOf(':');
+        if (index >= 0) {
+            String prefix = qualifiedName.substring(0, index);
+            String localName = qualifiedName.substring(index + 1);
+            String uri = recursiveGetAttributeValue(element, "xmlns:" + prefix);
+            beanMetadata.addArgument(valueMetadata(uri, parserContext), String.class.getName(), 0);
+            beanMetadata.addArgument(valueMetadata(localName, parserContext), String.class.getName(), 1);
+            beanMetadata.addArgument(valueMetadata(prefix, parserContext), String.class.getName(), 2);
+        }
+        else {
+            String uri = recursiveGetAttributeValue(element, "xmlns");
+            if (uri != null) {
+                beanMetadata.addArgument(valueMetadata(uri, parserContext), String.class.getName(), 0);
+                beanMetadata.addArgument(valueMetadata(qualifiedName, parserContext), String.class.getName(), 1);
+            } else {
+                beanMetadata.addArgument(valueMetadata(qualifiedName, parserContext), String.class.getName(), 0);
+            }
+        }
+        return beanMetadata;
+    }
+
+    private static Metadata valueMetadata(String stringValue, ParserContext parserContext) {
+        ValueMetadataImpl value = parserContext.createMetadata(ValueMetadataImpl.class);
+        value.setStringValue(stringValue);
+        return value;
     }
 
     /**

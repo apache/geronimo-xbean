@@ -24,12 +24,12 @@
     <b:favorites>
       <b:favorite-item person="Dan">Grey Goose</b:favorite-item>
       <b:favorite-item person="IndecisiveDan">
-        <list>
-          <value>Malbec</value>
-          <bean class="java.lang.Integer">
-            <constructor-arg value="0"/>
-          </bean>
-        </list>
+        <s:list>
+          <s:value>Malbec</s:value>
+          <s:bean s:class="java.lang.Integer">
+            <s:argument s:value="0"/>
+          </s:bean>
+        </s:list>
       </b:favorite-item>
       <b:favorite-item person="WithInnerBean">
         <b:gin><![CDATA[Bombay Sapphire]]></b:gin>
