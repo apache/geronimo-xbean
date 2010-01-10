@@ -22,6 +22,12 @@ import java.util.Map;
 import org.apache.xbean.blueprint.example.FavoriteService;
 import org.apache.xbean.blueprint.example.GinService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.osgi.service.blueprint.reflect.BeanMetadata;
+import org.osgi.service.blueprint.reflect.BeanProperty;
+import org.osgi.service.blueprint.reflect.CollectionMetadata;
+import org.osgi.service.blueprint.reflect.MapEntry;
+import org.osgi.service.blueprint.reflect.MapMetadata;
+import org.osgi.service.blueprint.reflect.ValueMetadata;
 
 /**
  * @author James Strachan
@@ -29,29 +35,32 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
  * @since 1.0
  */
 public class FavoriteUsingBlueprintTest extends BlueprintTestSupport {
-    
+
     public void testFavs() throws Exception {
-        BeanMetadataImpl meta = (BeanMetadataImpl)  reg.getComponentDefinition("favoriteService");
-       //TODO blueprint understand maps
-        Map favorites = null;//fs.getFavorites();
-//        assertNotNull(favorites);
-//        assertEquals(3, favorites.size());
-//
-//        assertEquals("Grey Goose", favorites.get("Dan"));
-//        Object object = favorites.get("IndecisiveDan");
-//        System.out.println(object.getClass());
-//        assertTrue(object instanceof List);
-//        List l = (List) object;
-//        assertEquals(2, l.size());
-//        object = l.get(0);
-//        System.out.println(object.getClass());
-//        assertTrue(object instanceof String);
-//        object = l.get(1);
-//        System.out.println(object.getClass());
-//        assertTrue(object instanceof Integer);
-//        object = favorites.get("WithInnerBean");
-//        System.out.println(object.getClass());
-//        assertTrue(object instanceof GinService);
+        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("favoriteService");
+
+        assertEquals(1, meta.getProperties().size());
+        BeanProperty prop = propertyByName("favorites", meta);
+        MapMetadata favorites = (MapMetadata) prop.getValue();
+        assertEquals(3, favorites.getEntries().size());
+        MapEntry me = favorites.getEntries().get(0);
+        assertEquals("Dan", ((ValueMetadata) me.getKey()).getStringValue());
+        assertEquals("Grey Goose", ((ValueMetadata) me.getValue()).getStringValue());
+
+        me = favorites.getEntries().get(1);
+        assertEquals("IndecisiveDan", ((ValueMetadata) me.getKey()).getStringValue());
+
+        CollectionMetadata cm = (CollectionMetadata) me.getValue();
+        assertEquals(2, cm.getValues().size());
+        assertEquals("Malbec", ((ValueMetadata) cm.getValues().get(0)).getStringValue());
+        assertEquals("0", ((ValueMetadata) ((BeanMetadata)cm.getValues().get(1)).getArguments().get(0).getValue()).getStringValue());
+
+
+        me = favorites.getEntries().get(2);
+        assertEquals("WithInnerBean", ((ValueMetadata) me.getKey()).getStringValue());
+        BeanMetadata bm = (BeanMetadata) me.getValue();
+        assertEquals(GinService.class.getName(), bm.getClassName());
+        assertEquals("Bombay Sapphire", ((ValueMetadata)bm.getProperties().get(0).getValue()).getStringValue());
     }
 
     protected String getPlan() {

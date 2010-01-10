@@ -40,17 +40,6 @@ public class RestaurantUsingXBeanTest extends RestaurantUsingBlueprintTest {
         super.testPizza();
 
         BeanMetadataImpl restaurant = (BeanMetadataImpl) reg.getComponentDefinition("restaurant");
-        BeanProperty qname = propertyByName("serviceName", restaurant);
-        assertEquals("xyz", ((ValueMetadata)qname.getValue()).getStringValue());
-//        QName name = restaurant.getServiceName();
-//        assertNotNull("Name is null", name);
-
-        //TODO blueprint
-//        assertEquals("Namespace URI", "http://acme.com", name.getNamespaceURI());
-//        assertEquals("localName", "xyz", name.getLocalPart());
-//        assertEquals("prefix", "foo", name.getPrefix());
-
-        log.info("Successfully converted the property to a QName: " + qname);
 
         ValueMetadata uri = (ValueMetadata) propertyByName("uri", restaurant).getValue();
         assertNotNull("URI is null", uri);

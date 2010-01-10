@@ -28,7 +28,6 @@ public class GinUsingXBeanTest extends BlueprintTestSupport {
     
     public void testWine() throws Exception {
         BeanMetadataImpl meta = (BeanMetadataImpl)  reg.getComponentDefinition("ginService");
-        //TODO content processing
         checkPropertyValue("name", "Bombay Sapphire", meta);
     }
 

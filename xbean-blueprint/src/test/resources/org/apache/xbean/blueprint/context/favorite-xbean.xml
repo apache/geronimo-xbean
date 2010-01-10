@@ -22,16 +22,16 @@
 
   <b:favorite s:id="favoriteService">
     <b:favorites>
-      <b:favorite-item person="Dan">Grey Goose</b:favorite-item>
-      <b:favorite-item person="IndecisiveDan">
+      <b:favorite-item b:person="Dan">Grey Goose</b:favorite-item>
+      <b:favorite-item b:person="IndecisiveDan">
         <s:list>
           <s:value>Malbec</s:value>
-          <s:bean s:class="java.lang.Integer">
-            <s:argument s:value="0"/>
+          <s:bean class="java.lang.Integer">
+            <s:argument value="0"/>
           </s:bean>
         </s:list>
       </b:favorite-item>
-      <b:favorite-item person="WithInnerBean">
+      <b:favorite-item b:person="WithInnerBean">
         <b:gin><![CDATA[Bombay Sapphire]]></b:gin>
       </b:favorite-item>
     </b:favorites>

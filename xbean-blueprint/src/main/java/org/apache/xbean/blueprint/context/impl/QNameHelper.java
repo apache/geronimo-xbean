@@ -42,23 +42,6 @@ import org.w3c.dom.Node;
  */
 public class QNameHelper {
     private static final Log log = LogFactory.getLog(QNameHelper.class);
-
-    public static QName createQName(Element element, String qualifiedName) {
-        int index = qualifiedName.indexOf(':');
-        if (index >= 0) {
-            String prefix = qualifiedName.substring(0, index);
-            String localName = qualifiedName.substring(index + 1);
-            String uri = recursiveGetAttributeValue(element, "xmlns:" + prefix);
-            return new QName(uri, localName, prefix);
-        }
-        else {
-            String uri = recursiveGetAttributeValue(element, "xmlns");
-            if (uri != null) {
-                return new QName(uri, qualifiedName);
-            }
-            return new QName(qualifiedName);
-        }
-    }
     
     public static Metadata createQNameMetadata(Element element, String qualifiedName, ParserContext parserContext) {
         BeanMetadataImpl beanMetadata = parserContext.createMetadata(BeanMetadataImpl.class);
@@ -127,7 +110,7 @@ public class QNameHelper {
                 Metadata value = propertyValue.getValue();
                 if (value instanceof ValueMetadata) {
                     bd.removeProperty(propertyValue);
-                    ValueMetadataImpl valueMetadata = createQNameMetadata(element, parserContext, value);
+                    Metadata valueMetadata = createQNameMetadata(element, ((ValueMetadata)value).getStringValue(), parserContext);
                     bd.addProperty(new BeanPropertyImpl(name, valueMetadata));
                 }
                 //else??
@@ -143,7 +126,7 @@ public class QNameHelper {
 
                     for (Metadata v : values) {
                         if (v instanceof ValueMetadata) {
-                            newValue.addValue(createQNameMetadata(element, parserContext, v));
+                            newValue.addValue(createQNameMetadata(element, ((ValueMetadata)v).getStringValue(), parserContext));
                         } else {
                             newValue.addValue(v);
                         }
@@ -154,13 +137,5 @@ public class QNameHelper {
             }
         }
     }
-
-    private static ValueMetadataImpl createQNameMetadata(Element element, ParserContext parserContext, Metadata value) {
-        ValueMetadataImpl valueMetadata = parserContext.createMetadata(ValueMetadataImpl.class);
-        valueMetadata.setStringValue(createQName(element, ((ValueMetadata)value).getStringValue()).toString());
-        valueMetadata.setType(QName.class.getName());
-        return valueMetadata;
-    }
-
 
 }
