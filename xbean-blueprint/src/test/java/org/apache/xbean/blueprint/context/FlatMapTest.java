@@ -16,11 +16,13 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import java.util.List;
-
-import org.apache.xbean.blueprint.example.FlatMapService;
 import org.apache.xbean.blueprint.example.KegService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.osgi.service.blueprint.reflect.CollectionMetadata;
+import org.osgi.service.blueprint.reflect.MapEntry;
+import org.osgi.service.blueprint.reflect.MapMetadata;
+import org.osgi.service.blueprint.reflect.Metadata;
+import org.osgi.service.blueprint.reflect.ValueMetadata;
 
 /**
  * @author gnodet
@@ -28,29 +30,34 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 public class FlatMapTest extends BlueprintTestSupport {
 
     public void testFlatMap() {
-        BeanMetadataImpl meta = (BeanMetadataImpl)  reg.getComponentDefinition("flat-map");
-        //TODO blueprint
-//        assertEquals(3, fm.getServices().size());
-//        Object obj = fm.getServices().get("key1");
-//        assertTrue(obj instanceof List);
-//        List l = (List) obj;
-//        assertEquals(2, l.size());
-//        System.out.println(l.get(0).getClass());
-//        assertTrue(l.get(0) instanceof KegService);
-//        System.out.println(l.get(1).getClass());
-//        assertTrue(l.get(1) instanceof KegService);
-//        obj = fm.getServices().get("key2");
-//        assertTrue(obj instanceof List);
-//        l = (List) obj;
-//        assertEquals(1, l.size());
-//        System.out.println(l.get(0).getClass());
-//        assertTrue(l.get(0) instanceof KegService);
-//        obj = fm.getServices().get("others");
-//        assertTrue(obj instanceof List);
-//        l = (List) obj;
-//        assertEquals(1, l.size());
-//        System.out.println(l.get(0).getClass());
-//        assertTrue(l.get(0) instanceof KegService);
+        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("flat-map");
+        MapMetadata c = (MapMetadata) propertyByName("services", meta).getValue();
+        assertEquals(3, c.getEntries().size());
+        MapEntry me = c.getEntries().get(0);
+        assertEquals("key1", ((ValueMetadata) me.getKey()).getStringValue());
+        CollectionMetadata l = (CollectionMetadata) me.getValue();
+        assertEquals(2, l.getValues().size());
+        checkEntry(l.getValues().get(0), "1000 ml");
+        checkEntry(l.getValues().get(1), "5 pints");
+
+        me = c.getEntries().get(1);
+        assertEquals("key2", ((ValueMetadata) me.getKey()).getStringValue());
+        l = (CollectionMetadata) me.getValue();
+        assertEquals(1, l.getValues().size());
+        checkEntry(l.getValues().get(0), "20 liter");
+
+        me = c.getEntries().get(2);
+        assertEquals("others", ((ValueMetadata) me.getKey()).getStringValue());
+        l = (CollectionMetadata) me.getValue();
+        assertEquals(1, l.getValues().size());
+        checkEntry(l.getValues().get(0), "0");
+    }
+
+    private void checkEntry(Metadata me, String value) {
+        BeanMetadataImpl beanMetadata = (BeanMetadataImpl) me;
+        assertEquals(KegService.class.getName(), beanMetadata.getClassName());
+        assertEquals(1, beanMetadata.getProperties().size());
+        assertEquals(value, ((ValueMetadata) beanMetadata.getProperties().get(0).getValue()).getStringValue());
     }
 
     protected String getPlan() {

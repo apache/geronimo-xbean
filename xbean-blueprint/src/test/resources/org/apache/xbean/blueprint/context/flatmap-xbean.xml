@@ -22,10 +22,10 @@
 
   <b:flat-map s:id="flat-map">
     <b:services>
-      <b:keg id="key1" remaining="1000 ml"/>
-      <b:keg id="key1" remaining="5 pints"/>
-      <b:keg id="key2" remaining="20 liter"/>
-      <b:keg remaining="0"/>
+      <b:keg b:id="key1" b:remaining="1000 ml"/>
+      <b:keg b:id="key1" b:remaining="5 pints"/>
+      <b:keg b:id="key2" b:remaining="20 liter"/>
+      <b:keg b:remaining="0"/>
     </b:services>
   </b:flat-map>
 

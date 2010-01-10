@@ -325,7 +325,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 String localName = childElement.getLocalName();
 
                 if (uri == null ||
-                    uri.equals(BLUEPRINT_NAMESPACE)) {
+                        uri.equals(BLUEPRINT_NAMESPACE)) {
                     if ("bean".equals(localName)) {
                         return parserContext.parseElement(BeanMetadata.class, beanMetadata, childElement);
                     } else {
@@ -356,7 +356,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         if (isMap(propertyType)) {
             return parseCustomMapElement(beanMetadata, element, propertyName, parserContext);
         } else if (isCollection(propertyType)) {
-            return  parserContext.parseElement(MutableCollectionMetadata.class, beanMetadata, element);
+            return parserContext.parseElement(MutableCollectionMetadata.class, beanMetadata, element);
         } else {
             return parseChildExtensionBean(element, beanMetadata, parserContext);
         }
@@ -384,115 +384,132 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     protected Metadata parseCustomMapElement(MutableBeanMetadata beanMetadata, Element element, String name, ParserContext parserContext) {
         MutableMapMetadata map = parserContext.createMetadata(MutableMapMetadata.class);
 
-         Element parent = (Element) element.getParentNode();
-         String entryName = mappingMetaData.getMapEntryName(getLocalName(parent), name);
-         String keyName = mappingMetaData.getMapKeyName(getLocalName(parent), name);
-         String dups = mappingMetaData.getMapDupsMode(getLocalName(parent), name);
-         boolean flat = mappingMetaData.isFlatMap(getLocalName(parent), name);
-         String defaultKey = mappingMetaData.getMapDefaultKey(getLocalName(parent), name);
+        Element parent = (Element) element.getParentNode();
+        String entryName = mappingMetaData.getMapEntryName(getLocalName(parent), name);
+        String keyName = mappingMetaData.getMapKeyName(getLocalName(parent), name);
+        String dups = mappingMetaData.getMapDupsMode(getLocalName(parent), name);
+        boolean flat = mappingMetaData.isFlatMap(getLocalName(parent), name);
+        String defaultKey = mappingMetaData.getMapDefaultKey(getLocalName(parent), name);
 
-         if (entryName == null) entryName = "property";
-         if (keyName == null) keyName = "key";
-         if (dups == null) dups = "replace";
+        if (entryName == null) entryName = "property";
+        if (keyName == null) keyName = "key";
+        if (dups == null) dups = "replace";
 
-         // TODO : support further customizations
-         //String valueName = "value";
-         //boolean keyIsAttr = true;
-         //boolean valueIsAttr = false;
-         NodeList nl = element.getChildNodes();
-         for (int i = 0; i < nl.getLength(); i++) {
-             Node node = nl.item(i);
-             if (node instanceof Element) {
-                 Element childElement = (Element) node;
+        // TODO : support further customizations
+        //String valueName = "value";
+        //boolean keyIsAttr = true;
+        //boolean valueIsAttr = false;
+        NodeList nl = element.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                Element childElement = (Element) node;
 
-                 String localName = childElement.getLocalName();
-                 String uri = childElement.getNamespaceURI();
-                 if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
-                     continue;
-                 }
+                String localName = childElement.getLocalName();
+                String uri = childElement.getNamespaceURI();
+                if (localName == null || localName.equals("xmlns") || localName.startsWith("xmlns:")) {
+                    continue;
+                }
 
-                 // we could use namespaced attributes to differentiate real spring
-                 // attributes from namespace-specific attributes
-                 if (!flat && !isEmpty(uri) && localName.equals(entryName)) {
-                     String key = childElement.getAttribute(keyName);
-                     if (key == null || key.length() == 0) {
-                         key = defaultKey;
-                     }
-                     if (key == null) {
-                         throw new RuntimeException("No key defined for map " + entryName);
-                     }
+                // we could use namespaced attributes to differentiate real spring
+                // attributes from namespace-specific attributes
+                if (!flat && !isEmpty(uri) && localName.equals(entryName)) {
+                    String key = childElement.getAttributeNS(uri, keyName);
+                    if (key == null || key.length() == 0) {
+                        key = defaultKey;
+                    }
+                    if (key == null) {
+                        throw new RuntimeException("No key defined for map " + entryName);
+                    }
 
-                     NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
+                    NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
 
-                     Element valueElement = getFirstChildElement(childElement);
-                     Metadata value;
-                     if (valueElement != null) {
-                         String valueElUri = valueElement.getNamespaceURI();
-                         String valueElLocalName = valueElement.getLocalName();
-                         if (valueElUri == null ||
-                             valueElUri.equals(BLUEPRINT_NAMESPACE)) {
-                             if ("bean".equals(valueElLocalName)) {
-                                 value = parserContext.parseElement(BeanMetadata.class, beanMetadata, valueElement);
-                             } else {
-                                 value = parserContext.parseElement(BeanProperty.class, beanMetadata, valueElement).getValue();
-                             }
-                         } else {
-                             value = parserContext.parseElement(ValueMetadata.class, beanMetadata, valueElement);
-                         }
-                     } else {
-                         value = getValue(getElementText(childElement), null, parserContext);
-                     }
+                    Element valueElement = getFirstChildElement(childElement);
+                    Metadata value;
+                    if (valueElement != null) {
+                        value = parserContext.parseElement(Metadata.class, beanMetadata, valueElement);
+//                        String valueElUri = valueElement.getNamespaceURI();
+//                        String valueElLocalName = valueElement.getLocalName();
+//                        if (valueElUri == null ||
+//                                valueElUri.equals(BLUEPRINT_NAMESPACE)) {
+//                            if ("bean".equals(valueElLocalName)) {
+//                                value = parserContext.parseElement(BeanMetadata.class, beanMetadata, valueElement);
+//                            } else {
+//                                value = parserContext.parseElement(BeanProperty.class, beanMetadata, valueElement).getValue();
+//                            }
+//                        } else {
+//                            value = parserContext.parseElement(ValueMetadata.class, beanMetadata, valueElement);
+//                        }
+                    } else {
+                        value = getValue(getElementText(childElement), null, parserContext);
+                    }
 
-                     addValueToMap(map, keyValue, value, dups, parserContext);
-                 } else if (flat && !isEmpty(uri)) {
-                     String key = childElement.getAttribute(keyName);
-                     if (key == null || key.length() == 0) {
-                         key = defaultKey;
-                     }
-                     if (key == null) {
-                         throw new RuntimeException("No key defined for map entry " + entryName);
-                     }
-                     NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
-                     childElement.removeAttribute(keyName);
-                     Metadata bdh = parse(childElement, parserContext);
-                     addValueToMap(map, keyValue, bdh, dups, parserContext);
-                 }
-             }
-         }
-         return map;
-     }
+                    addValueToMap(map, keyValue, value, dups, parserContext);
+                } else if (flat && !isEmpty(uri)) {
+                    String key = childElement.getAttributeNS(uri, keyName);
+                    if (key == null || key.length() == 0) {
+                        key = defaultKey;
+                    }
+                    if (key == null) {
+                        throw new RuntimeException("No key defined for map entry " + entryName);
+                    }
+                    NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
+                    childElement = cloneElement(childElement);
+                    childElement.removeAttributeNS(uri, keyName);
+                    Metadata bdh = parse(childElement, parserContext);
+                    addValueToMap(map, keyValue, bdh, dups, parserContext);
+                }
+            }
+        }
+        return map;
+    }
 
-     protected void addValueToMap(MutableMapMetadata map, NonNullMetadata keyValue, Metadata value, String dups, ParserContext parserContext) {
-         if (hasKey(map, keyValue)) {
-             if ("discard".equalsIgnoreCase(dups)) {
-                 // Do nothing
-             } else if ("replace".equalsIgnoreCase(dups)) {
-                 map.addEntry(keyValue, value);
-             } else if ("allow".equalsIgnoreCase(dups)) {
-                 MutableCollectionMetadata l = parserContext.createMetadata(MutableCollectionMetadata.class);
-                 l.addValue(get(map, keyValue));
-                 l.addValue(value);
-                 map.addEntry(keyValue, l);
-             } else if ("always".equalsIgnoreCase(dups)) {
-                 MutableCollectionMetadata l = (MutableCollectionMetadata) get(map, keyValue);
-                 l.addValue(value);
-             }
-         } else {
-             if ("always".equalsIgnoreCase(dups)) {
-                 MutableCollectionMetadata l = (MutableCollectionMetadata) get(map, keyValue);
-                 if (l == null) {
-                     l = parserContext.createMetadata(MutableCollectionMetadata.class);
-                     map.addEntry(keyValue, l);
-                 }
-                 l.addValue(value);
-             } else {
-                 map.addEntry(keyValue, value);
-             }
-         }
-     }
+    /**
+     * Creates a clone of the element and its attribute (though not its content)
+     */
+    protected Element cloneElement(Element element) {
+        Element answer = element.getOwnerDocument().createElementNS(element.getNamespaceURI(), element.getNodeName());
+        NamedNodeMap attributes = element.getAttributes();
+        for (int i = 0, size = attributes.getLength(); i < size; i++) {
+            Attr attribute = (Attr) attributes.item(i);
+            String uri = attribute.getNamespaceURI();
+            answer.setAttributeNS(uri, attribute.getName(), attribute.getNodeValue());
+        }
+        return answer;
+    }
+
+
+    protected void addValueToMap(MutableMapMetadata map, NonNullMetadata keyValue, Metadata value, String dups, ParserContext parserContext) {
+        if (hasKey(map, keyValue)) {
+            if ("discard".equalsIgnoreCase(dups)) {
+                // Do nothing
+            } else if ("replace".equalsIgnoreCase(dups)) {
+                map.addEntry(keyValue, value);
+            } else if ("allow".equalsIgnoreCase(dups)) {
+                MutableCollectionMetadata l = parserContext.createMetadata(MutableCollectionMetadata.class);
+                l.addValue(get(map, keyValue));
+                l.addValue(value);
+                map.addEntry(keyValue, l);
+            } else if ("always".equalsIgnoreCase(dups)) {
+                MutableCollectionMetadata l = (MutableCollectionMetadata) get(map, keyValue);
+                l.addValue(value);
+            }
+        } else {
+            if ("always".equalsIgnoreCase(dups)) {
+                MutableCollectionMetadata l = (MutableCollectionMetadata) get(map, keyValue);
+                if (l == null) {
+                    l = parserContext.createMetadata(MutableCollectionMetadata.class);
+                    map.addEntry(keyValue, l);
+                }
+                l.addValue(value);
+            } else {
+                map.addEntry(keyValue, value);
+            }
+        }
+    }
 
     private Metadata get(MutableMapMetadata map, NonNullMetadata keyValue) {
-        for (MapEntry entry: map.getEntries()) {
+        for (MapEntry entry : map.getEntries()) {
             if (entry.getKey().equals(keyValue)) {
                 return entry.getValue();
             }
@@ -507,8 +524,9 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     protected boolean isEmpty(String uri) {
         return uri == null || uri.length() == 0;
     }
+
     protected Metadata getValue(String value, String propertyEditor, ParserContext parserContext) {
-        if (value == null)  return null;
+        if (value == null) return null;
 
         //
         // If value is #null then we are explicitly setting the value null instead of an empty string
@@ -551,16 +569,16 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         return metadata;
     }
 
-     protected Element getFirstChildElement(Element element) {
-         NodeList nl = element.getChildNodes();
-         for (int i = 0; i < nl.getLength(); i++) {
-             Node node = nl.item(i);
-             if (node instanceof Element) {
-                 return (Element) node;
-             }
-         }
-         return null;
-     }
+    protected Element getFirstChildElement(Element element) {
+        NodeList nl = element.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+            if (node instanceof Element) {
+                return (Element) node;
+            }
+        }
+        return null;
+    }
 
 
     private boolean isCollectionType(Class propertyType) {

@@ -32,8 +32,7 @@ public class PizzaUsingBlueprintTest extends BlueprintTestSupport {
 
         checkPropertyValue("topping", "Salami", meta);
         checkPropertyValue("cheese", "Edam", meta);
-        //TODO blueprint int values
-//        checkPropertyValue("size", 17, meta);
+        checkPropertyValue("size", "17", meta);
     }
 
     protected String getPlan() {

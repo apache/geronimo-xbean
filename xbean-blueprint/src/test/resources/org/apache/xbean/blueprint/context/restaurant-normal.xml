@@ -27,6 +27,7 @@
       <bean class="javax.xml.namespace.QName">
         <argument value="http://acme.com"/>
         <argument value="xyz"/>
+        <argument value="foo"/>
       </bean>
     </property>
     <property name="favourite">

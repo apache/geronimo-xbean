@@ -35,7 +35,7 @@
         </entry>
         <entry key="WithInnerBean">
           <bean class="org.apache.xbean.blueprint.example.GinService">
-            <property name="name" value="name"/>
+            <property name="name" value="Bombay Sapphire"/>
           </bean>
         </entry>
       </map>

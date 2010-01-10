@@ -18,12 +18,13 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:p="http://xbean.apache.org/schemas/pizza">
-       xmlns:foo="http://acme.com">
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+             xmlns:p="http://xbean.apache.org/schemas/pizza"
+             xmlns:foo="http://acme.com">
 
   <p:restaurant b:id="restaurant"
-              p:serviceName="foo:xyz"
-              p:uri="http://cheese.com">
+                p:serviceName="foo:xyz"
+                p:uri="http://cheese.com">
     <p:dinnerMenu>
       <p:pizza p:myTopping="Ham" p:cheese="Mozzarella" p:size="15"/>
       <p:pizza p:myTopping="Eggs" p:cheese="Mozzarella" p:size="16"/>
@@ -43,4 +44,4 @@
     </p:favourite>
   </p:restaurant>
 </b:blueprint>
-<!-- END SNIPPET: xml -->
+        <!-- END SNIPPET: xml -->

@@ -18,10 +18,11 @@ package org.apache.xbean.blueprint.context;
 
 import junit.framework.TestCase;
 
-import org.apache.xbean.blueprint.example.ContainerBean;
 import org.apache.xbean.blueprint.example.InnerBean;
 import org.apache.aries.blueprint.ComponentDefinitionRegistry;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.osgi.service.blueprint.reflect.BeanMetadata;
+import org.osgi.service.blueprint.reflect.CollectionMetadata;
 
 public class ComponentTest extends TestCase {
 
@@ -30,7 +31,7 @@ public class ComponentTest extends TestCase {
     }
     
     public void test1() throws Exception {
-        test("org/apache/xbean/blueprint/context/component-spring.xml");
+        test("org/apache/xbean/blueprint/context/component-blueprint.xml");
     }
 
     public void test2() throws Exception {
@@ -41,9 +42,9 @@ public class ComponentTest extends TestCase {
         ComponentDefinitionRegistry f = BlueprintTestSupport.parse(file);
         BeanMetadataImpl meta = (BeanMetadataImpl) f.getComponentDefinition("container");
         assertNotNull(meta);
-        //TODO blueprint look at bean metadata?
-//        assertNotNull(meta.getBeans());
-//        assertEquals(1, meta.getBeans().length);
+        CollectionMetadata list = (CollectionMetadata) BlueprintTestSupport.propertyByName("beans", meta).getValue();
+        assertEquals(1, list.getValues().size());
+        assertEquals(InnerBean.class.getName(), ((BeanMetadata)list.getValues().get(0)).getClassName());
     }
 
 }

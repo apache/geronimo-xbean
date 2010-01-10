@@ -39,18 +39,11 @@ public class RestaurantUsingBlueprintTest extends BlueprintTestSupport {
 
         BeanProperty prop = propertyByName("serviceName", restaurant);
 
-        if (prop.getValue() instanceof BeanMetadata) {
-            BeanMetadataImpl qname = (BeanMetadataImpl) prop.getValue();
-            assertEquals(2, qname.getArguments().size());
-            assertEquals("http://acme.com", ((ValueMetadataImpl) qname.getArguments().get(0).getValue()).getStringValue());
-            assertEquals("xyz", ((ValueMetadataImpl) qname.getArguments().get(1).getValue()).getStringValue());
-        } else if (prop.getValue() instanceof ValueMetadata){
-            ValueMetadataImpl qname = (ValueMetadataImpl) prop.getValue();
-            //TODO blueprint
-//            assertEquals("foo:xyz", qname.getStringValue());
-        } else {
-            fail("unrecognized serviceName: " + prop.getValue());
-        }
+        BeanMetadataImpl qname = (BeanMetadataImpl) prop.getValue();
+        assertEquals(3, qname.getArguments().size());
+        assertEquals("http://acme.com", ((ValueMetadataImpl) qname.getArguments().get(0).getValue()).getStringValue());
+        assertEquals("xyz", ((ValueMetadataImpl) qname.getArguments().get(1).getValue()).getStringValue());
+        assertEquals("foo", ((ValueMetadataImpl) qname.getArguments().get(2).getValue()).getStringValue());
 
         // dinners (1-many using list)
         BeanProperty dinnerProp = propertyByName("dinnerMenu", restaurant);
@@ -78,7 +71,7 @@ public class RestaurantUsingBlueprintTest extends BlueprintTestSupport {
         for (Metadata snackMeta : snacks) {
             BeanMetadataImpl snack = (BeanMetadataImpl) snackMeta;
             BeanProperty toppingProp = propertyByName("topping", snack);
-            String topping = ((ValueMetadataImpl)toppingProp.getValue()).getStringValue();
+            String topping = ((ValueMetadataImpl) toppingProp.getValue()).getStringValue();
             if ("Tofu".equals(topping)) {
                 checkPropertyValue("cheese", "Parmesan", snack);
                 checkPropertyValue("size", "6", snack);
