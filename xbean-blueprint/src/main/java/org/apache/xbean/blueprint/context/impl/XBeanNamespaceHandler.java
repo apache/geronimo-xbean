@@ -323,20 +323,24 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 Element childElement = (Element) node;
                 String uri = childElement.getNamespaceURI();
                 String localName = childElement.getLocalName();
-
-                if (uri == null ||
-                        uri.equals(BLUEPRINT_NAMESPACE)) {
-                    if ("bean".equals(localName)) {
-                        return parserContext.parseElement(BeanMetadata.class, beanMetadata, childElement);
-                    } else {
-                        return parserContext.parseElement(ValueMetadata.class, beanMetadata, childElement);
-                    }
-                } else {
-                    Metadata value = parse(childElement, parserContext);
-                    if (value != null) {
-                        return value;
-                    }
+                Metadata value = parserContext.parseElement(Metadata.class, beanMetadata, childElement);
+                if (value != null) {
+                    return value;
                 }
+                //TODO ARIES-111
+//                if (uri == null ||
+//                        uri.equals(BLUEPRINT_NAMESPACE)) {
+//                    if ("bean".equals(localName)) {
+//                        return parserContext.parseElement(BeanMetadata.class, beanMetadata, childElement);
+//                    } else {
+//                        return parserContext.parseElement(ValueMetadata.class, beanMetadata, childElement);
+//                    }
+//                } else {
+//                    Metadata value = parse(childElement, parserContext);
+//                    if (value != null) {
+//                        return value;
+//                    }
+//                }
             }
         }
         return null;
@@ -356,7 +360,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         if (isMap(propertyType)) {
             return parseCustomMapElement(beanMetadata, element, propertyName, parserContext);
         } else if (isCollection(propertyType)) {
-            return parserContext.parseElement(MutableCollectionMetadata.class, beanMetadata, element);
+            return parserContext.parseElement(CollectionMetadata.class, beanMetadata, element);
         } else {
             return parseChildExtensionBean(element, beanMetadata, parserContext);
         }
