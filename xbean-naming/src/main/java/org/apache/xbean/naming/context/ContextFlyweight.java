@@ -32,6 +32,14 @@ import java.util.Hashtable;
 public abstract class ContextFlyweight implements Context {
     protected abstract Context getContext() throws NamingException;
 
+    protected Name getName(Name name) throws NamingException {
+        return name;
+    }
+
+    protected String getName(String name) throws NamingException {
+        return name;
+    }
+
     public void close() throws NamingException {
     }
 
@@ -40,91 +48,91 @@ public abstract class ContextFlyweight implements Context {
     }
 
     public Object lookup(Name name) throws NamingException {
-        return getContext().lookup(name);
+        return getContext().lookup(getName(name));
     }
 
     public Object lookup(String name) throws NamingException {
-        return getContext().lookup(name);
+        return getContext().lookup(getName(name));
     }
 
     public void bind(Name name, Object obj) throws NamingException {
-        getContext().bind(name, obj);
+        getContext().bind(getName(name), obj);
     }
 
     public void bind(String name, Object obj) throws NamingException {
-        getContext().bind(name, obj);
+        getContext().bind(getName(name), obj);
     }
 
     public void rebind(Name name, Object obj) throws NamingException {
-        getContext().rebind(name, obj);
+        getContext().rebind(getName(name), obj);
     }
 
     public void rebind(String name, Object obj) throws NamingException {
-        getContext().rebind(name, obj);
+        getContext().rebind(getName(name), obj);
     }
 
     public void unbind(Name name) throws NamingException {
-        getContext().unbind(name);
+        getContext().unbind(getName(name));
     }
 
     public void unbind(String name) throws NamingException {
-        getContext().unbind(name);
+        getContext().unbind(getName(name));
     }
 
     public void rename(Name oldName, Name newName) throws NamingException {
-        getContext().rename(oldName, newName);
+        getContext().rename(getName(oldName), getName(newName));
     }
 
     public void rename(String oldName, String newName) throws NamingException {
-        getContext().rename(oldName, newName);
+        getContext().rename(getName(oldName), getName(newName));
     }
 
     public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
-        return getContext().list(name);
+        return getContext().list(getName(name));
     }
 
     public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
-        return getContext().list(name);
+        return getContext().list(getName(name));
     }
 
     public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
-        return getContext().listBindings(name);
+        return getContext().listBindings(getName(name));
     }
 
     public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
-        return getContext().listBindings(name);
+        return getContext().listBindings(getName(name));
     }
 
     public void destroySubcontext(Name name) throws NamingException {
-        getContext().destroySubcontext(name);
+        getContext().destroySubcontext(getName(name));
     }
 
     public void destroySubcontext(String name) throws NamingException {
-        getContext().destroySubcontext(name);
+        getContext().destroySubcontext(getName(name));
     }
 
     public Context createSubcontext(Name name) throws NamingException {
-        return getContext().createSubcontext(name);
+        return getContext().createSubcontext(getName(name));
     }
 
     public Context createSubcontext(String name) throws NamingException {
-        return getContext().createSubcontext(name);
+        return getContext().createSubcontext(getName(name));
     }
 
     public Object lookupLink(Name name) throws NamingException {
-        return getContext().lookupLink(name);
+        return getContext().lookupLink(getName(name));
     }
 
     public Object lookupLink(String name) throws NamingException {
-        return getContext().lookupLink(name);
+        return getContext().lookupLink(getName(name));
     }
 
     public NameParser getNameParser(Name name) throws NamingException {
-        return getContext().getNameParser(name);
+        return getContext().getNameParser(getName(name));
     }
 
     public NameParser getNameParser(String name) throws NamingException {
-        return getContext().getNameParser(name);
+        return getContext().getNameParser(getName(name));
     }
 
     public Name composeName(Name name, Name prefix) throws NamingException {

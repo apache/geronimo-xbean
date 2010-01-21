@@ -18,6 +18,7 @@ package org.apache.xbean.naming.context;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -45,6 +46,12 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         this.contextFederation = new ContextFederation(this);
     }
 
+    public AbstractFederatedContext(String nameInNamespace, ContextAccess contextAccess, Set<Context> federatedContexts) {
+        super(nameInNamespace, contextAccess);
+        this.masterContext = this;
+        this.contextFederation = new ContextFederation(this, federatedContexts);
+    }
+
     public AbstractFederatedContext(AbstractFederatedContext masterContext, String nameInNamespace) throws NamingException {
         super(nameInNamespace, masterContext.getContextAccess());
         this.masterContext = masterContext;
@@ -59,8 +66,25 @@ public abstract class AbstractFederatedContext extends AbstractContext {
         return super.faultLookup(stringName, parsedName);
     }
 
+    @Override
+    protected Object getDeepBinding(String name) {
+        try {
+            Object value = contextFederation.getFederatedBinding(name);
+            if (value instanceof Context) {
+                return null;
+            }
+            return value;
+        } catch (NamingException e) {
+            return null;
+        }
+    }
+
+    @Override
     protected Object getBinding(String name) throws NamingException {
         Object value = contextFederation.getFederatedBinding(name);
+        if (value instanceof Context) {
+            return createNestedSubcontext(name, getBindings(name));
+        }
         if (value == null) {
             value = getWrapperBindings().get(name);
         }
@@ -68,7 +92,11 @@ public abstract class AbstractFederatedContext extends AbstractContext {
     }
 
     protected final Map<String, Object> getBindings() throws NamingException {
-        Map<String, Object> bindings = contextFederation.getFederatedBindings();
+        return getBindings("");
+    }
+
+    protected final Map<String, Object> getBindings(String name) throws NamingException {
+        Map<String, Object> bindings = contextFederation.getFederatedBindings(name);
         bindings.putAll(getWrapperBindings());
         return bindings;
     }
@@ -121,6 +149,23 @@ public abstract class AbstractFederatedContext extends AbstractContext {
 
                 VirtualSubcontext virtualSubcontext = new VirtualSubcontext(nameInNamespace, innerContext);
                 addFederatedContext(nestedContext, virtualSubcontext);
+            }
+        }
+    }
+    
+    protected static void removeFederatedContext(AbstractFederatedContext wrappingContext, Context innerContext) throws NamingException {
+        wrappingContext.contextFederation.removeContext(innerContext);
+        for (Map.Entry<String, Object> entry : wrappingContext.getWrapperBindings().entrySet()) {
+            String name = entry.getKey();
+            Object value = entry.getValue();
+            if (value instanceof AbstractFederatedContext) {
+                AbstractFederatedContext nestedContext = (AbstractFederatedContext) value;
+
+                Name parsedName = wrappingContext.getNameParser().parse(name);
+                Name nameInNamespace = wrappingContext.getNameInNamespace(parsedName);
+
+                VirtualSubcontext virtualSubcontext = new VirtualSubcontext(nameInNamespace, innerContext);
+                removeFederatedContext(nestedContext, virtualSubcontext);
             }
         }
     }
