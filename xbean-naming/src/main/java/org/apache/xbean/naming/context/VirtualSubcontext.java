@@ -29,14 +29,14 @@ import java.util.Hashtable;
 /**
  * @version $Rev$ $Date$
  */
-public class VirtualSubcontext implements Context {
+public class VirtualSubcontext extends ContextFlyweight {
     private final Name nameInContext;
     private final Context context;
 
     public VirtualSubcontext(Name nameInContext, Context context) throws NamingException {
         if (context instanceof VirtualSubcontext) {
             VirtualSubcontext virtualSubcontext = (VirtualSubcontext) context;
-            this.nameInContext = virtualSubcontext.getNameInContext(nameInContext);
+            this.nameInContext = virtualSubcontext.getName(nameInContext);
             this.context = virtualSubcontext.context;
         } else {
             this.nameInContext = nameInContext;
@@ -44,121 +44,40 @@ public class VirtualSubcontext implements Context {
         }
     }
 
-    private Name getNameInContext(Name name) throws NamingException {
+    @Override
+    protected Context getContext() throws NamingException {
+        return context;
+    }
+
+    @Override
+    protected Name getName(Name name) throws NamingException {
         return context.composeName(nameInContext, name);
     }
 
-    private Name getNameInContext(String name) throws NamingException {
+    @Override
+    protected String getName(String name) throws NamingException {
         Name parsedName = context.getNameParser("").parse(name);
-        return context.composeName(nameInContext, parsedName);
+        return context.composeName(nameInContext, parsedName).toString();
     }
 
-    public Object lookup(Name name) throws NamingException {
-        return context.lookup(getNameInContext(name));
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        VirtualSubcontext that = (VirtualSubcontext) o;
+
+        if (context != null ? !context.equals(that.context) : that.context != null) return false;
+        if (nameInContext != null ? !nameInContext.equals(that.nameInContext) : that.nameInContext != null) return false;
+
+        return true;
     }
 
-    public Object lookup(String name) throws NamingException {
-        return context.lookup(getNameInContext(name));
-    }
-
-    public void bind(Name name, Object obj) throws NamingException {
-        context.bind(getNameInContext(name), obj);
-    }
-
-    public void bind(String name, Object obj) throws NamingException {
-        context.bind(getNameInContext(name), obj);
-    }
-
-    public void rebind(Name name, Object obj) throws NamingException {
-        context.rebind(getNameInContext(name), obj);
-    }
-
-    public void rebind(String name, Object obj) throws NamingException {
-        context.rebind(getNameInContext(name), obj);
-    }
-
-    public void unbind(Name name) throws NamingException {
-        context.unbind(getNameInContext(name));
-    }
-
-    public void unbind(String name) throws NamingException {
-        context.unbind(getNameInContext(name));
-    }
-
-    public void rename(Name oldName, Name newName) throws NamingException {
-        context.rename(getNameInContext(oldName), getNameInContext(newName));
-    }
-
-    public void rename(String oldName, String newName) throws NamingException {
-        context.rename(getNameInContext(oldName), getNameInContext(newName));
-    }
-
-    public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
-        return context.list(getNameInContext(name));
-    }
-
-    public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
-        return context.list(getNameInContext(name));
-    }
-
-    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
-        return context.listBindings(getNameInContext(name));
-    }
-
-    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
-        return context.listBindings(getNameInContext(name));
-    }
-
-    public void destroySubcontext(Name name) throws NamingException {
-        context.destroySubcontext(getNameInContext(name));
-    }
-
-    public void destroySubcontext(String name) throws NamingException {
-        context.destroySubcontext(getNameInContext(name));
-    }
-
-    public Context createSubcontext(Name name) throws NamingException {
-        return context.createSubcontext(getNameInContext(name));
-    }
-
-    public Context createSubcontext(String name) throws NamingException {
-        return context.createSubcontext(getNameInContext(name));
-    }
-
-    public Object lookupLink(Name name) throws NamingException {
-        return context.lookupLink(getNameInContext(name));
-    }
-
-    public Object lookupLink(String name) throws NamingException {
-        return context.lookupLink(getNameInContext(name));
-    }
-
-    public NameParser getNameParser(Name name) throws NamingException {
-        return context.getNameParser(getNameInContext(name));
-    }
-
-    public NameParser getNameParser(String name) throws NamingException {
-        return context.getNameParser(getNameInContext(name));
-    }
-
-    public Name composeName(Name name, Name prefix) throws NamingException {
-        return context.composeName(name, prefix);
-    }
-
-    public String composeName(String name, String prefix) throws NamingException {
-        return context.composeName(name, prefix);
-    }
-
-    public Object addToEnvironment(String propName, Object propVal) throws NamingException {
-        return context.addToEnvironment(propName, propVal);
-    }
-
-    public Object removeFromEnvironment(String propName) throws NamingException {
-        return context.removeFromEnvironment(propName);
-    }
-
-    public Hashtable getEnvironment() throws NamingException {
-        return context.getEnvironment();
+    @Override
+    public int hashCode() {
+        int result = nameInContext != null ? nameInContext.hashCode() : 0;
+        result = 31 * result + (context != null ? context.hashCode() : 0);
+        return result;
     }
 
     public void close() throws NamingException {

@@ -71,7 +71,7 @@ public final class ContextUtil {
             if (parsedName == null) {
                 parsedName = NAME_PARSER.parse(stringName);
             }
-            return NamingManager.getObjectInstance(reference, parsedName, nameCtx, new Hashtable());
+            return NamingManager.getObjectInstance(reference, parsedName, nameCtx, nameCtx.getEnvironment());
         } catch (NamingException e) {
             throw e;
         } catch (Exception e) {
