@@ -39,27 +39,24 @@ import org.apache.aries.blueprint.NamespaceHandler;
 import org.apache.aries.blueprint.ParserContext;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
 import org.apache.aries.blueprint.mutable.MutableCollectionMetadata;
-import org.apache.aries.blueprint.mutable.MutableValueMetadata;
 import org.apache.aries.blueprint.mutable.MutableMapMetadata;
 import org.apache.aries.blueprint.mutable.MutableRefMetadata;
-import org.apache.aries.blueprint.reflect.BeanPropertyImpl;
+import org.apache.aries.blueprint.mutable.MutableValueMetadata;
 import org.osgi.framework.Bundle;
 import org.osgi.service.blueprint.container.ComponentDefinitionException;
 import org.osgi.service.blueprint.reflect.BeanMetadata;
 import org.osgi.service.blueprint.reflect.BeanProperty;
 import org.osgi.service.blueprint.reflect.CollectionMetadata;
 import org.osgi.service.blueprint.reflect.ComponentMetadata;
-import org.osgi.service.blueprint.reflect.Metadata;
-import org.osgi.service.blueprint.reflect.ValueMetadata;
-import org.osgi.service.blueprint.reflect.NullMetadata;
-import org.osgi.service.blueprint.reflect.NonNullMetadata;
 import org.osgi.service.blueprint.reflect.MapEntry;
+import org.osgi.service.blueprint.reflect.Metadata;
+import org.osgi.service.blueprint.reflect.NonNullMetadata;
+import org.osgi.service.blueprint.reflect.NullMetadata;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * @version $Rev$ $Date$
@@ -99,6 +96,35 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         this.managedClasses = managedClassesFromProperties(bundle, properties);
         managedClassesByName = mapClasses(managedClasses);
         this.mappingMetaData = new MappingMetaData(properties);
+    }
+    public XBeanNamespaceHandler(String namespace, String schemaLocation, String propertiesLocation) throws IOException, ClassNotFoundException {
+        ClassLoader cl = getClass().getClassLoader();
+        URL propertiesUrl = cl.getResource(propertiesLocation);
+        InputStream in = propertiesUrl.openStream();
+        Properties properties = new Properties();
+        try {
+            properties.load(in);
+        } finally {
+            in.close();
+        }
+        this.namespace = namespace;
+        this.schemaLocation = cl.getResource(schemaLocation);
+        this.managedClasses = managedClassesFromProperties(cl, properties);
+        managedClassesByName = mapClasses(managedClasses);
+        this.mappingMetaData = new MappingMetaData(properties);
+    }
+
+    private static Set<Class> managedClassesFromProperties(ClassLoader cl, Properties properties) throws ClassNotFoundException {
+        Set<Class> managedClasses = new HashSet<Class>();
+        for (Map.Entry entry : properties.entrySet()) {
+            String key = (String) entry.getKey();
+            if (key.indexOf(".") < 0) {
+                String className = (String) entry.getValue();
+                Class clazz = cl.loadClass(className);
+                managedClasses.add(clazz);
+            }
+        }
+        return managedClasses;
     }
 
     private static Set<Class> managedClassesFromProperties(Bundle bundle, Properties properties) throws ClassNotFoundException {
@@ -220,8 +246,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
     private void addProperty(String name, String value, MutableBeanMetadata definition, ParserContext parserContext) {
         Metadata m = getValue(value, null, parserContext);
-        BeanProperty beanProperty = new BeanPropertyImpl(name, m);
-        definition.addProperty(beanProperty);
+        definition.addProperty(name, m);
     }
 
     private void nestedProperties(MutableBeanMetadata beanMetadata, Element element, String beanTypeName, String className, ParserContext parserContext) {
@@ -308,8 +333,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 //                    }
                 }
                 if (childMetadata != null) {
-                    BeanProperty beanProperty = new BeanPropertyImpl(propertyName, childMetadata);
-                    beanMetadata.addProperty(beanProperty);
+                    beanMetadata.addProperty(propertyName, childMetadata);
                 }
             }
         }

@@ -17,18 +17,15 @@
     limitations under the License.
 
 -->
-<beans
-    xmlns="http://www.springframework.org/schema/beans"
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0"
     xmlns:test="http://xbean.apache.org/test"
-    xmlns:util="http://www.springframework.org/schema/util"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
         http://xbean.apache.org/test http://xbean.apache.org/test.xsd
     ">
 
   <!-- All the following bean declarations are equivalent  -->
-  <test:qname-service id="qname-1">
+  <test:qname-service b:id="qname-1">
     <test:list>
       <bean class="org.apache.xbean.spring.example.PizzaService">
         <property name="cheese" value="mucho"/>
@@ -36,25 +33,25 @@
     </test:list>
   </test:qname-service>
 
-  <test:qname-service id="qname-2">
+  <test:qname-service b:id="qname-2">
     <test:list>
       <test:pizza cheese="mucho"/>
     </test:list>
   </test:qname-service>
 
-  <test:qname-service id="qname-3">
-    <property name="list">
-      <list>
+  <test:qname-service b:id="qname-3">
+    <b:property name="list">
+      <b:list>
         <test:pizza cheese="mucho"/>
-      </list>
-    </property>
+      </b:list>
+    </b:property>
   </test:qname-service>
 
 
-  <test:recipe-service id="recipe-service-1">
+  <test:recipe-service b:id="recipe-service-1">
     <test:topRecipe>
       <test:recipe instructions="lots of sugar"/>
     </test:topRecipe>
   </test:recipe-service>
 
-</beans>
+</b:blueprint>

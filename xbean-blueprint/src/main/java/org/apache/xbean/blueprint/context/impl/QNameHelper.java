@@ -23,10 +23,7 @@ import javax.xml.namespace.QName;
 import org.apache.aries.blueprint.ParserContext;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
 import org.apache.aries.blueprint.mutable.MutableCollectionMetadata;
-import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
-import org.apache.aries.blueprint.reflect.BeanPropertyImpl;
-import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
-import org.apache.aries.blueprint.reflect.ValueMetadataImpl;
+import org.apache.aries.blueprint.mutable.MutableValueMetadata;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.blueprint.reflect.BeanProperty;
@@ -44,7 +41,7 @@ public class QNameHelper {
     private static final Log log = LogFactory.getLog(QNameHelper.class);
     
     public static Metadata createQNameMetadata(Element element, String qualifiedName, ParserContext parserContext) {
-        BeanMetadataImpl beanMetadata = parserContext.createMetadata(BeanMetadataImpl.class);
+        MutableBeanMetadata beanMetadata = parserContext.createMetadata(MutableBeanMetadata.class);
         beanMetadata.setClassName(QName.class.getName());
         int index = qualifiedName.indexOf(':');
         if (index >= 0) {
@@ -68,7 +65,7 @@ public class QNameHelper {
     }
 
     private static Metadata valueMetadata(String stringValue, ParserContext parserContext) {
-        ValueMetadataImpl value = parserContext.createMetadata(ValueMetadataImpl.class);
+        MutableValueMetadata value = parserContext.createMetadata(MutableValueMetadata.class);
         value.setStringValue(stringValue);
         return value;
     }
@@ -111,7 +108,7 @@ public class QNameHelper {
                 if (value instanceof ValueMetadata) {
                     bd.removeProperty(propertyValue);
                     Metadata valueMetadata = createQNameMetadata(element, ((ValueMetadata)value).getStringValue(), parserContext);
-                    bd.addProperty(new BeanPropertyImpl(name, valueMetadata));
+                    bd.addProperty(name, valueMetadata);
                 }
                 //else??
             }
@@ -122,7 +119,7 @@ public class QNameHelper {
                 Object value = propertyValue.getValue();
                 if (value instanceof CollectionMetadata) {
                     List<Metadata> values = ((CollectionMetadata) value).getValues();
-                    MutableCollectionMetadata newValue = parserContext.createMetadata(CollectionMetadataImpl.class);
+                    MutableCollectionMetadata newValue = parserContext.createMetadata(MutableCollectionMetadata.class);
 
                     for (Metadata v : values) {
                         if (v instanceof ValueMetadata) {
@@ -132,7 +129,7 @@ public class QNameHelper {
                         }
                     }
                     bd.removeProperty(propertyValue);
-                    bd.addProperty(new BeanPropertyImpl(name, newValue));
+                    bd.addProperty(name, newValue);
                 }
             }
         }
