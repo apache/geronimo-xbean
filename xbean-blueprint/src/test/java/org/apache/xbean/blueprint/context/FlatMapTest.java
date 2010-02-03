@@ -37,14 +37,14 @@ public class FlatMapTest extends BlueprintTestSupport {
         assertEquals("key1", ((ValueMetadata) me.getKey()).getStringValue());
         CollectionMetadata l = (CollectionMetadata) me.getValue();
         assertEquals(2, l.getValues().size());
-        checkEntry(l.getValues().get(0), "1000 ml");
-        checkEntry(l.getValues().get(1), "5 pints");
+        checkEntry(l.getValues().get(0), "1000");
+        checkEntry(l.getValues().get(1), "8750");
 
         me = c.getEntries().get(1);
         assertEquals("key2", ((ValueMetadata) me.getKey()).getStringValue());
         l = (CollectionMetadata) me.getValue();
         assertEquals(1, l.getValues().size());
-        checkEntry(l.getValues().get(0), "20 liter");
+        checkEntry(l.getValues().get(0), "20000");
 
         me = c.getEntries().get(2);
         assertEquals("others", ((ValueMetadata) me.getKey()).getStringValue());

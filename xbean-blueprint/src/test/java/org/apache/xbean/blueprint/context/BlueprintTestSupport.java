@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xbean.blueprint.context.impl.QNameNamespaceHandler;
 import org.apache.xbean.blueprint.context.impl.XBeanNamespaceHandler;
+import org.apache.xbean.blueprint.example.MilliLittersPropertyEditor;
 import org.xml.sax.SAXException;
 import org.osgi.service.blueprint.reflect.BeanProperty;
 import org.osgi.service.blueprint.reflect.ValueMetadata;
@@ -36,6 +37,7 @@ import org.osgi.service.blueprint.reflect.BeanMetadata;
 import javax.xml.validation.Schema;
 import javax.xml.namespace.QName;
 
+import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -94,7 +96,9 @@ public abstract class BlueprintTestSupport extends TestCase {
         }
         classes.add(QName.class);
 
-        final NamespaceHandler xbeanHandler = new XBeanNamespaceHandler(NAMESPACE_URI.toString(), BlueprintTestSupport.class.getClassLoader().getResource("restaurant.xsd"), classes, properties);
+        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
+        propertyEditors.put(MilliLittersPropertyEditor.class.getName(), MilliLittersPropertyEditor.class);
+        final NamespaceHandler xbeanHandler = new XBeanNamespaceHandler(NAMESPACE_URI.toString(), BlueprintTestSupport.class.getClassLoader().getResource("restaurant.xsd"), classes, propertyEditors, properties);
         final NamespaceHandler qnameHandler = new QNameNamespaceHandler();
         NamespaceHandlerRegistry.NamespaceHandlerSet handlers = new NamespaceHandlerRegistry.NamespaceHandlerSet() {
             public Set<URI> getNamespaces() {

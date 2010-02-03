@@ -24,6 +24,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,17 +73,19 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     private final Set<Class> managedClasses;
     private final MappingMetaData mappingMetaData;
     private final Map<String, Class> managedClassesByName;
+    private final Map<String, Class<? extends PropertyEditor>> propertyEditors;
     private final NamedConstructorArgs namedConstructorArgs = new NamedConstructorArgs();
 
-    public XBeanNamespaceHandler(String namespace, URL schemaLocation, Set<Class> managedClasses, Properties properties) {
+    public XBeanNamespaceHandler(String namespace, URL schemaLocation, Set<Class> managedClasses, Map<String, Class<? extends PropertyEditor>> propertyEditors, Properties properties) {
         this.namespace = namespace;
         this.schemaLocation = schemaLocation;
         this.managedClasses = managedClasses;
         managedClassesByName = mapClasses(managedClasses);
+        this.propertyEditors = propertyEditors;
         this.mappingMetaData = new MappingMetaData(properties);
     }
 
-    public XBeanNamespaceHandler(String namespace, String schemaLocation, Bundle bundle, String propertiesLocation) throws IOException, ClassNotFoundException {
+    public XBeanNamespaceHandler(String namespace, String schemaLocation, Bundle bundle, String propertiesLocation) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         URL propertiesUrl = bundle.getEntry(propertiesLocation);
         InputStream in = propertiesUrl.openStream();
         Properties properties = new Properties();
@@ -95,11 +98,16 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         this.schemaLocation = bundle.getEntry(schemaLocation);
         this.managedClasses = managedClassesFromProperties(bundle, properties);
         managedClassesByName = mapClasses(managedClasses);
+        propertyEditors = propertyEditorsFromProperties(bundle, properties);
         this.mappingMetaData = new MappingMetaData(properties);
     }
-    public XBeanNamespaceHandler(String namespace, String schemaLocation, String propertiesLocation) throws IOException, ClassNotFoundException {
+
+    public XBeanNamespaceHandler(String namespace, String schemaLocation, String propertiesLocation) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClassLoader cl = getClass().getClassLoader();
         URL propertiesUrl = cl.getResource(propertiesLocation);
+        if (propertiesUrl == null) {
+            throw new IOException("Could not locate properties at " + propertiesLocation);
+        }
         InputStream in = propertiesUrl.openStream();
         Properties properties = new Properties();
         try {
@@ -111,6 +119,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         this.schemaLocation = cl.getResource(schemaLocation);
         this.managedClasses = managedClassesFromProperties(cl, properties);
         managedClassesByName = mapClasses(managedClasses);
+        propertyEditors = propertyEditorsFromProperties(cl, properties);
         this.mappingMetaData = new MappingMetaData(properties);
     }
 
@@ -138,6 +147,31 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             }
         }
         return managedClasses;
+    }
+
+    private Map<String, Class<? extends PropertyEditor>> propertyEditorsFromProperties(Bundle bundle, Properties properties) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
+        for (Map.Entry entry : properties.entrySet()) {
+            String key = (String) entry.getKey();
+            if (key.endsWith(".propertyEditor") ) {
+                String className = (String) entry.getValue();
+                Class<? extends PropertyEditor> clazz = bundle.loadClass(className).asSubclass(PropertyEditor.class);
+                propertyEditors.put(className, clazz);
+            }
+        }
+        return propertyEditors;
+    }
+    private Map<String, Class<? extends PropertyEditor>> propertyEditorsFromProperties(ClassLoader classLoader, Properties properties) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
+        for (Map.Entry entry : properties.entrySet()) {
+            String key = (String) entry.getKey();
+            if (key.endsWith(".propertyEditor") ) {
+                String className = (String) entry.getValue();
+                Class<? extends PropertyEditor> clazz = classLoader.loadClass(className).asSubclass(PropertyEditor.class);
+                propertyEditors.put(className, clazz);
+            }
+        }
+        return propertyEditors;
     }
 
     private Map<String, Class> mapClasses(Set<Class> managedClasses) {
@@ -213,20 +247,22 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
-            if (namespace.equals(attr.getNamespaceURI())) {
+            if (namespace.equals(attr.getNamespaceURI()) || attr.getNamespaceURI() == null) {
                 String attrName = attr.getLocalName();
                 String value = attr.getValue().trim();
                 String propertyName = mappingMetaData.getPropertyName(beanTypeName, attrName);
-                addProperty(propertyName, value, beanMetaData, parserContext);
+                String propertyEditor = mappingMetaData.getPropertyEditor(beanTypeName, attrName);
+                addProperty(propertyName, value, propertyEditor, beanMetaData, parserContext);
             }
         }
     }
 
     private void contentProperty(MutableBeanMetadata definition, Element element, ParserContext parserContext) {
         String name = mappingMetaData.getContentProperty(element.getLocalName());
+        String propertyEditor = mappingMetaData.getPropertyEditor(element.getLocalName(), name);
         if (name != null) {
             String value = getElementText(element).trim();
-            addProperty(name, value, definition, parserContext);
+            addProperty(name, value, propertyEditor, definition, parserContext);
         } else {
             ByteArrayInputStream in = new ByteArrayInputStream(getElementText(element).getBytes());
             Properties properties = new Properties();
@@ -239,13 +275,13 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
-                addProperty(key, value, definition, parserContext);
+                addProperty(key, value, propertyEditor, definition, parserContext);
             }
         }
     }
 
-    private void addProperty(String name, String value, MutableBeanMetadata definition, ParserContext parserContext) {
-        Metadata m = getValue(value, null, parserContext);
+    private void addProperty(String name, String value, String propertyEditor, MutableBeanMetadata definition, ParserContext parserContext) {
+        Metadata m = getValue(value, propertyEditor, parserContext);
         definition.addProperty(name, m);
     }
 
@@ -450,7 +486,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                         throw new RuntimeException("No key defined for map " + entryName);
                     }
 
-                    NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
+                    NonNullMetadata keyValue = (NonNullMetadata) getValue(key, mappingMetaData.getPropertyEditor(localName, key), parserContext);
 
                     Element valueElement = getFirstChildElement(childElement);
                     Metadata value;
@@ -469,7 +505,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 //                            value = parserContext.parseElement(ValueMetadata.class, beanMetadata, valueElement);
 //                        }
                     } else {
-                        value = getValue(getElementText(childElement), null, parserContext);
+                        value = getValue(getElementText(childElement), mappingMetaData.getPropertyEditor(localName, key), parserContext);
                     }
 
                     addValueToMap(map, keyValue, value, dups, parserContext);
@@ -481,7 +517,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     if (key == null) {
                         throw new RuntimeException("No key defined for map entry " + entryName);
                     }
-                    NonNullMetadata keyValue = (NonNullMetadata) getValue(key, null, parserContext);
+                    NonNullMetadata keyValue = (NonNullMetadata) getValue(key, mappingMetaData.getPropertyEditor(localName, key), parserContext);
                     childElement = cloneElement(childElement);
                     childElement.removeAttributeNS(uri, keyName);
                     Metadata bdh = parse(childElement, parserContext);
@@ -553,7 +589,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         return uri == null || uri.length() == 0;
     }
 
-    protected Metadata getValue(String value, String propertyEditor, ParserContext parserContext) {
+    protected Metadata getValue(String value, String propertyEditorName, ParserContext parserContext) {
         if (value == null) return null;
 
         //
@@ -593,6 +629,18 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         // Neither null nor a reference
         //
         MutableValueMetadata metadata = parserContext.createMetadata(MutableValueMetadata.class);
+        if (propertyEditorName != null) {
+            PropertyEditor propertyEditor;
+            try {
+                propertyEditor = propertyEditors.get(propertyEditorName).newInstance();
+            } catch (InstantiationException e) {
+                throw new ComponentDefinitionException("Could not create a " + propertyEditorName + " to convert value " + value + " for namespace " + namespace);
+            } catch (IllegalAccessException e) {
+                throw new ComponentDefinitionException("Could not create a " + propertyEditorName + " to convert value " + value + " for namespace " + namespace);
+            }
+            propertyEditor.setAsText(value);
+            value = propertyEditor.getAsText();
+        }
         metadata.setStringValue(value);
         return metadata;
     }
