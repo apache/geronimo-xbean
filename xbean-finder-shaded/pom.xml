@@ -54,42 +54,58 @@
                                     <shadedPattern>org.apache.xbean.asm</shadedPattern>
                                 </relocation>
                             </relocations>
-                            <!-- this doesn't seem to work... what am I doing wrong? -->
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.apache.xbean:xbean-asm-shaded</exclude>
-                                </excludes>
-                            </artifactSet>
+                          <artifactSet>
+                            <includes>
+                              <include>org.apache.xbean:xbean-finder</include>
+                            </includes>
+                            <excludes>
+                              <exclude>org.apache.xbean:xbean-asm-shaded</exclude>
+                              <exclude>junit:junit</exclude>
+                            </excludes>
+                          </artifactSet>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <configuration>
-                    <!--
-                       - It won't work as CLASSPATH references the file to be processed and blows up
-                       - Dunno how it should work
-                    <excludeDependencies>true</excludeDependencies>
-                    -->
-                    <instructions>
-                        <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm,*;resolution:=optional</Import-Package>
-                        <Private-Package />
-                        <_nouses>true</_nouses>
-                        <_classpath>target/xbean-finder-shaded-${pom.version}.jar</_classpath>
-                    </instructions>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-antrun-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>run</goal>
+                      </goals>
+                      <configuration>
+                          <tasks>
+                              <delete dir="${project.build.directory}/classes" />
+                              <unzip src="${project.build.directory}/xbean-finder-shaded-${pom.version}.jar" dest="${project.build.directory}/classes" />
+                          </tasks>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.felix</groupId>
+              <artifactId>maven-bundle-plugin</artifactId>
+              <configuration>
+                  <excludeDependencies>true</excludeDependencies>
+                  <instructions>
+                      <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm,*;resolution:=optional</Import-Package>
+                      <Private-Package />
+                      <_nouses>true</_nouses>
+                  </instructions>
+              </configuration>
+              <executions>
+                  <execution>
+                      <id>bundle-manifest</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>bundle</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -97,22 +113,11 @@
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-finder</artifactId>
             <version>${version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>asm</groupId>
-                    <artifactId>asm</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>asm</groupId>
-                    <artifactId>asm-commons</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        <!-- see above note in shade plugin configuration -->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.xbean</groupId>-->
-        <!--<artifactId>xbean-asm-shaded</artifactId>-->
-        <!--<version>${version}</version>-->
-        <!--</dependency>-->
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-asm-shaded</artifactId>
+        <version>${version}</version>
+      </dependency>
     </dependencies>
 </project>
