@@ -30,6 +30,10 @@ public class KegXBeanAndPropertiesTest extends KegXBeanTest {
         //disabled test
     }
 
+    @Override
+    protected void setUp() throws Exception {
+    }
+
     protected String getPlan() {
         return "org/apache/xbean/blueprint/context/keg-xbean-properties.xml";
     }
