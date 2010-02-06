@@ -53,6 +53,8 @@ import org.osgi.service.blueprint.reflect.MapEntry;
 import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.NonNullMetadata;
 import org.osgi.service.blueprint.reflect.NullMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -63,6 +65,8 @@ import org.w3c.dom.NodeList;
  * @version $Rev$ $Date$
  */
 public class XBeanNamespaceHandler implements NamespaceHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(XBeanNamespaceHandler.class);
 
     public static final String BLUEPRINT_NAMESPACE = "http://www.osgi.org/xmlns/blueprint/v1.0.0";
     private static final String BEAN_REFERENCE_PREFIX = "#";
@@ -123,27 +127,37 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         this.mappingMetaData = new MappingMetaData(properties);
     }
 
-    private static Set<Class> managedClassesFromProperties(ClassLoader cl, Properties properties) throws ClassNotFoundException {
+    private static Set<Class> managedClassesFromProperties(ClassLoader cl, Properties properties) {
         Set<Class> managedClasses = new HashSet<Class>();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             if (key.indexOf(".") < 0) {
                 String className = (String) entry.getValue();
-                Class clazz = cl.loadClass(className);
-                managedClasses.add(clazz);
+                try {
+                    managedClasses.add(cl.loadClass(className));
+                } catch (NoClassDefFoundError e) {
+                    LOGGER.warn("Could not load class: {} due to {}",className, e.getMessage());
+                } catch (ClassNotFoundException e) {
+                    LOGGER.warn("Could not load class: {}", className);
+                }
             }
         }
         return managedClasses;
     }
 
-    private static Set<Class> managedClassesFromProperties(Bundle bundle, Properties properties) throws ClassNotFoundException {
+    private static Set<Class> managedClassesFromProperties(Bundle bundle, Properties properties) {
         Set<Class> managedClasses = new HashSet<Class>();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             if (key.indexOf(".") < 0) {
                 String className = (String) entry.getValue();
-                Class clazz = bundle.loadClass(className);
-                managedClasses.add(clazz);
+                try {
+                    managedClasses.add(bundle.loadClass(className));
+                } catch (NoClassDefFoundError e) {
+                    LOGGER.warn("Could not load class: {} due to {}",className, e.getMessage());
+                } catch (ClassNotFoundException e) {
+                    LOGGER.warn("Could not load class: {}", className);
+                }
             }
         }
         return managedClasses;
@@ -205,6 +219,8 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     private Metadata parseInternal(Element element, ParserContext parserContext, String beanTypeName, String className) {
         MutableBeanMetadata beanMetaData = parserContext.createMetadata(MutableBeanMetadata.class);
         beanMetaData.setClassName(className);
+        beanMetaData.setScope(BeanMetadata.SCOPE_SINGLETON);
+        beanMetaData.setActivation(BeanMetadata.ACTIVATION_EAGER);
         beanMetaData.setRuntimeClass(managedClassesByName.get(className));
         if (beanMetaData.getRuntimeClass() == null) {
             throw new ComponentDefinitionException("Unknown bean class: " + className);
