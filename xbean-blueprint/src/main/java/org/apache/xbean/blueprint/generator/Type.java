@@ -40,7 +40,7 @@ public class Type {
 
     public static Type newArrayType(String type, int dimensions) {
         if (type == null) throw new NullPointerException("type");
-        if (dimensions < 1) throw new IllegalArgumentException("dimensions must be atleast one");
+        if (dimensions < 1) throw new IllegalArgumentException("dimensions must be at least one");
         StringBuffer buf = new StringBuffer(type.length() + (dimensions * 2));
         buf.append(type);
         for (int i = 0; i < dimensions; i ++) {
@@ -85,10 +85,10 @@ public class Type {
         return super.equals(obj);
     }
 
-    private static final Set primitives;
+    private static final Set<String> primitives;
 
     static {
-        Set set = new HashSet();
+        Set<String> set = new HashSet<String>();
         set.add("boolean");
         set.add("byte");
         set.add("char");
