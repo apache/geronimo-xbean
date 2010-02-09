@@ -28,6 +28,7 @@ import java.beans.PropertyEditor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,6 +36,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.apache.aries.blueprint.NamespaceHandler;
 import org.apache.aries.blueprint.ParserContext;
@@ -129,12 +133,15 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
     private static Set<Class> managedClassesFromProperties(ClassLoader cl, Properties properties) {
         Set<Class> managedClasses = new HashSet<Class>();
+        Properties methods = new Properties();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             if (key.indexOf(".") < 0) {
                 String className = (String) entry.getValue();
                 try {
-                    managedClasses.add(cl.loadClass(className));
+                    Class<?> beanClass = cl.loadClass(className);
+                    managedClasses.add(beanClass);
+                    findAnnotations(key, beanClass, methods);
                 } catch (NoClassDefFoundError e) {
                     LOGGER.warn("Could not load class: {} due to {}",className, e.getMessage());
                 } catch (ClassNotFoundException e) {
@@ -142,17 +149,21 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 }
             }
         }
+        properties.putAll(methods);
         return managedClasses;
     }
 
     private static Set<Class> managedClassesFromProperties(Bundle bundle, Properties properties) {
         Set<Class> managedClasses = new HashSet<Class>();
+        Properties methods = new Properties();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             if (key.indexOf(".") < 0) {
                 String className = (String) entry.getValue();
                 try {
-                    managedClasses.add(bundle.loadClass(className));
+                    Class<?> beanClass = bundle.loadClass(className);
+                    managedClasses.add(beanClass);
+                    findAnnotations(key, beanClass, methods);
                 } catch (NoClassDefFoundError e) {
                     LOGGER.warn("Could not load class: {} due to {}",className, e.getMessage());
                 } catch (ClassNotFoundException e) {
@@ -160,7 +171,19 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 }
             }
         }
+        properties.putAll(methods);
         return managedClasses;
+    }
+
+    private static void findAnnotations(String key, Class<?> beanClass, Properties methods) {
+        for (Method m: beanClass.getMethods()) {
+            if (m.isAnnotationPresent(PostConstruct.class)) {
+                methods.put(key  + ".initMethod", m.getName());
+            }
+            if (m.isAnnotationPresent(PreDestroy.class)) {
+                methods.put(key + ".destroyMethod", m.getName());
+            }
+        }
     }
 
     private Map<String, Class<? extends PropertyEditor>> propertyEditorsFromProperties(Bundle bundle, Properties properties) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
