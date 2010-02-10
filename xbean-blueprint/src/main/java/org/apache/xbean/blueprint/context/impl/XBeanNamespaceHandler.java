@@ -57,6 +57,10 @@ import org.osgi.service.blueprint.reflect.MapEntry;
 import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.NonNullMetadata;
 import org.osgi.service.blueprint.reflect.NullMetadata;
+import org.osgi.service.blueprint.reflect.RefMetadata;
+import org.osgi.service.blueprint.reflect.ReferenceMetadata;
+import org.osgi.service.blueprint.reflect.ServiceReferenceMetadata;
+import org.osgi.service.blueprint.reflect.ValueMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -143,7 +147,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     managedClasses.add(beanClass);
                     findAnnotations(key, beanClass, methods);
                 } catch (NoClassDefFoundError e) {
-                    LOGGER.warn("Could not load class: {} due to {}",className, e.getMessage());
+                    LOGGER.warn("Could not load class: {} due to {}", className, e.getMessage());
                 } catch (ClassNotFoundException e) {
                     LOGGER.warn("Could not load class: {}", className);
                 }
@@ -165,7 +169,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     managedClasses.add(beanClass);
                     findAnnotations(key, beanClass, methods);
                 } catch (NoClassDefFoundError e) {
-                    LOGGER.warn("Could not load class: {} due to {}",className, e.getMessage());
+                    LOGGER.warn("Could not load class: {} due to {}", className, e.getMessage());
                 } catch (ClassNotFoundException e) {
                     LOGGER.warn("Could not load class: {}", className);
                 }
@@ -176,9 +180,9 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private static void findAnnotations(String key, Class<?> beanClass, Properties methods) {
-        for (Method m: beanClass.getMethods()) {
+        for (Method m : beanClass.getMethods()) {
             if (m.isAnnotationPresent(PostConstruct.class)) {
-                methods.put(key  + ".initMethod", m.getName());
+                methods.put(key + ".initMethod", m.getName());
             }
             if (m.isAnnotationPresent(PreDestroy.class)) {
                 methods.put(key + ".destroyMethod", m.getName());
@@ -190,7 +194,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
-            if (key.endsWith(".propertyEditor") ) {
+            if (key.endsWith(".propertyEditor")) {
                 String className = (String) entry.getValue();
                 Class<? extends PropertyEditor> clazz = bundle.loadClass(className).asSubclass(PropertyEditor.class);
                 propertyEditors.put(className, clazz);
@@ -198,11 +202,12 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         }
         return propertyEditors;
     }
+
     private Map<String, Class<? extends PropertyEditor>> propertyEditorsFromProperties(ClassLoader classLoader, Properties properties) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
-            if (key.endsWith(".propertyEditor") ) {
+            if (key.endsWith(".propertyEditor")) {
                 String className = (String) entry.getValue();
                 Class<? extends PropertyEditor> clazz = classLoader.loadClass(className).asSubclass(PropertyEditor.class);
                 propertyEditors.put(className, clazz);
@@ -613,11 +618,42 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
 
     private Metadata get(MutableMapMetadata map, NonNullMetadata keyValue) {
         for (MapEntry entry : map.getEntries()) {
-            if (entry.getKey().equals(keyValue)) {
+            if (equals(entry.getKey(), keyValue)) {
                 return entry.getValue();
             }
         }
         return null;
+    }
+
+    private boolean equals(NonNullMetadata key1, NonNullMetadata key2) {
+        if (key1 == key2) return true;
+        if (key1.getClass() != key2.getClass()) return false;
+        if (key1 instanceof RefMetadata) return ((RefMetadata) key1).getComponentId().equals(((RefMetadata) key2).getComponentId());
+        if (key1 instanceof ReferenceMetadata) {
+            if (((ReferenceMetadata) key1).getTimeout() != ((ReferenceMetadata) key2).getTimeout()) return false;
+        }
+        if (key1 instanceof ServiceReferenceMetadata) {
+            ServiceReferenceMetadata sr1 = (ServiceReferenceMetadata) key1;
+            ServiceReferenceMetadata sr2 = (ServiceReferenceMetadata) key2;
+            return sr1.getAvailability() == sr2.getAvailability()
+                    && sr1.getInterface().equals(sr2.getInterface())
+                    && sr1.getComponentName().equals(sr2.getComponentName())
+                    && sr1.getFilter().equals(sr2.getFilter())
+                    && sr1.getReferenceListeners().equals(sr2.getReferenceListeners())
+
+                    && sr1.getId().equals(sr2.getId())
+                    && sr1.getActivation() == sr2.getActivation()
+                    && sr1.getDependsOn().equals(sr2.getDependsOn());
+        }
+        if (key1 instanceof ValueMetadata) {
+            ValueMetadata v1 = (ValueMetadata) key1;
+            ValueMetadata v2 = (ValueMetadata) key2;
+            if (v1.getStringValue() != null ? v1.getStringValue().equals(v2.getStringValue()) : v2.getStringValue() == null
+                    && v1.getType() != null ? v1.getType().equals(v2.getType()) : v2.getType() == null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasKey(MutableMapMetadata map, NonNullMetadata keyValue) {
