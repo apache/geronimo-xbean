@@ -98,7 +98,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     public XBeanNamespaceHandler(String namespace, String schemaLocation, Bundle bundle, String propertiesLocation) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        URL propertiesUrl = bundle.getEntry(propertiesLocation);
+        URL propertiesUrl = bundle.getResource(propertiesLocation);
         InputStream in = propertiesUrl.openStream();
         Properties properties = new Properties();
         try {
