@@ -154,7 +154,7 @@ public class UrlSet {
     }
 
     public UrlSet relative(File file) throws MalformedURLException {
-        String urlPath = file.toURL().toExternalForm();
+        String urlPath = file.toURI().toURL().toExternalForm();
         Map<String, URL> urls = new HashMap<String, URL>();
         for (Map.Entry<String, URL> entry : this.urls.entrySet()) {
             String url = entry.getKey();
