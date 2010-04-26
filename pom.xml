@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!--
@@ -267,7 +268,7 @@
                         <instructions>
                             <Bundle-DocURL>${project.url}</Bundle-DocURL>
                             <Export-Package>org.apache.xbean.*;version=${pom.version}</Export-Package>
-                            <Private-Package />
+                            <Private-Package/>
                         </instructions>
                     </configuration>
                 </plugin>
@@ -285,9 +286,11 @@
     <modules>
         <module>xbean-classloader</module>
         <module>xbean-classpath</module>
+        <module>xbean-bundleutils</module>
         <module>xbean-finder</module>
         <module>xbean-naming</module>
         <module>xbean-reflect</module>
+        <module>xbean-blueprint</module>
         <module>xbean-spring</module>
         <module>xbean-telnet</module>
         <module>maven-xbean-plugin</module>
