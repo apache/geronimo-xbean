@@ -26,7 +26,7 @@
     </parent>
     <artifactId>xbean-bundleutils</artifactId>
     <packaging>bundle</packaging>
-    <name>xbean-bundleutils</name>
+    <name>Apache XBean OSGI Bundle Utilitiess</name>
 
     <dependencies>
         <dependency>
