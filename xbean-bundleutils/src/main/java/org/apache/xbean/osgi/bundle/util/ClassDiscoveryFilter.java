@@ -20,11 +20,13 @@ package org.apache.xbean.osgi.bundle.util;
 /**
  * @version $Rev$ $Date$
  */
-public interface DiscoveryFilter {
+public interface ClassDiscoveryFilter {
 
     public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange);
 
-    public boolean zipFileDiscoveryRequired(String url);
+    public boolean jarFileDiscoveryRequired(String url);
 
     public boolean directoryDiscoveryRequired(String url);
+
+    public boolean packageDiscoveryRequired(String packageName);
 }

@@ -43,18 +43,18 @@ import org.osgi.service.packageadmin.PackageAdmin;
  */
 public class BundleResourceFinder {
 
-    public static final DiscoveryFilter FULL_DISCOVERY_FILTER = new DummyDiscoveryFilter();
+    public static final ResourceDiscoveryFilter FULL_DISCOVERY_FILTER = new DummyDiscoveryFilter();
     private final Bundle bundle;
     private final PackageAdmin packageAdmin;
     private final String prefix;
     private final String suffix;
-    private DiscoveryFilter discoveryFilter;
+    private ResourceDiscoveryFilter discoveryFilter;
 
     public BundleResourceFinder(PackageAdmin packageAdmin, Bundle bundle, String prefix, String suffix) {
         this(packageAdmin, bundle, prefix, suffix, FULL_DISCOVERY_FILTER);
     }
 
-    public BundleResourceFinder(PackageAdmin packageAdmin, Bundle bundle, String prefix, String suffix, DiscoveryFilter discoveryFilter) {
+    public BundleResourceFinder(PackageAdmin packageAdmin, Bundle bundle, String prefix, String suffix, ResourceDiscoveryFilter discoveryFilter) {
         this.packageAdmin = packageAdmin;
         this.bundle = bundle;
         this.prefix = prefix.trim();
@@ -208,7 +208,7 @@ public class BundleResourceFinder {
 
     }
 
-    public static class DummyDiscoveryFilter implements DiscoveryFilter {
+    public static class DummyDiscoveryFilter implements ResourceDiscoveryFilter {
 
         @Override
         public boolean directoryDiscoveryRequired(String url) {
