@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.zip.ZipEntry;
 
 import org.apache.xbean.osgi.bundle.util.BundleResourceFinder;
-import org.apache.xbean.osgi.bundle.util.DiscoveryFilter;
+import org.apache.xbean.osgi.bundle.util.ResourceDiscoveryFilter;
 import org.osgi.framework.Bundle;
 import org.osgi.service.packageadmin.PackageAdmin;
 
@@ -39,7 +39,7 @@ public class BundleAnnotationFinder extends AbstractFinder {
         this(packageAdmin, bundle, BundleResourceFinder.FULL_DISCOVERY_FILTER);
     }
 
-    public BundleAnnotationFinder(PackageAdmin packageAdmin, Bundle bundle, DiscoveryFilter discoveryFilter) throws Exception {
+    public BundleAnnotationFinder(PackageAdmin packageAdmin, Bundle bundle, ResourceDiscoveryFilter discoveryFilter) throws Exception {
         this.bundle = bundle;
         BundleResourceFinder bundleResourceFinder = new BundleResourceFinder(packageAdmin, bundle, "", ".class", discoveryFilter);
         bundleResourceFinder.find(new AnnotationFindingCallback());

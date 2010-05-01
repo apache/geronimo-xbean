@@ -41,36 +41,34 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.packageadmin.RequiredBundle;
 
 /**
- * Finds all available classes to a bundle by scanning Bundle-ClassPath, 
+ * Finds all available classes to a bundle by scanning Bundle-ClassPath,
  * Import-Package, and Require-Bundle headers of the given bundle and its fragments.
  * DynamicImport-Package header is not considered during scanning.
- * 
+ *
  * @version $Rev$ $Date$
  */
 public class BundleClassFinder {
-   
+
+    public static final ClassDiscoveryFilter FULL_CLASS_DISCOVERY_FILTER = new DummyDiscoveryFilter();
+    public static final ClassDiscoveryFilter IMPORTED_PACKAGE_EXCLUSIVE_FILTER = new NonImportedPackageDiscoveryFilter();
     private static final String EXT = ".class";
     private static final String PATTERN = "*.class";
-    
+
     private Bundle bundle;
-    private boolean scanImportPackages;
     private PackageAdmin packageAdmin;
     private Map<Bundle, Set<String>> classMap;
-    
+    private ClassDiscoveryFilter discoveryFilter;
+
     public BundleClassFinder(PackageAdmin packageAdmin, Bundle bundle) {
+        this(packageAdmin, bundle, FULL_CLASS_DISCOVERY_FILTER);
+    }
+
+    public BundleClassFinder(PackageAdmin packageAdmin, Bundle bundle, ClassDiscoveryFilter discoveryFilter){
         this.packageAdmin = packageAdmin;
-        this.bundle = bundle;  
-        this.scanImportPackages = true;
+        this.bundle = bundle;
+        this.discoveryFilter = discoveryFilter;
     }
-    
-    public void setScanImportPackages(boolean searchImports) {
-        this.scanImportPackages = searchImports;
-    }
-    
-    public boolean getScanImportPackages() {
-        return this.scanImportPackages;
-    }
-    
+
     public List<Class> loadClasses(Set<String> classes) {
         List<Class> loadedClasses = new ArrayList<Class>();
         for (String clazz : classes) {
@@ -82,63 +80,64 @@ public class BundleClassFinder {
         }
         return loadedClasses;
     }
-    
+
     /**
-     * Finds all available classes to the bundle. Some of the classes in the returned set 
+     * Finds all available classes to the bundle. Some of the classes in the returned set
      * might not be loadable.
-     * 
-     * @return classes visible to the bundle. Not all classes returned might be loadable. 
+     *
+     * @return classes visible to the bundle. Not all classes returned might be loadable.
      */
-    public Set<String> find() {    
+    public Set<String> find() {
         Set<String> classes = new LinkedHashSet<String>();
-        
         classMap = new HashMap<Bundle, Set<String>>();
-        
-        scanImportPackages(classes, bundle, bundle);    
-        scanRequireBundles(classes, bundle);
-        scanBundleClassPath(classes, bundle);
-        
-        Bundle[] fragments = packageAdmin.getFragments(bundle);
-        if (fragments != null) {
-            for (Bundle fragment : fragments) {
-                scanImportPackages(classes, bundle, fragment);
-                scanRequireBundles(classes, fragment);
-                scanBundleClassPath(classes, fragment);
+        if (discoveryFilter.rangeDiscoveryRequired(DiscoveryRange.IMPORT_PACKAGES)) {
+            scanImportPackages(classes, bundle, bundle);
+        }
+        if (discoveryFilter.rangeDiscoveryRequired(DiscoveryRange.REQUIRED_BUNDLES)) {
+            scanRequireBundles(classes, bundle);
+        }
+        if (discoveryFilter.rangeDiscoveryRequired(DiscoveryRange.BUNDLE_CLASSPATH)) {
+            scanBundleClassPath(classes, bundle);
+        }
+        if (discoveryFilter.rangeDiscoveryRequired(DiscoveryRange.FRAGMENT_BUNDLES)) {
+            Bundle[] fragments = packageAdmin.getFragments(bundle);
+            if (fragments != null) {
+                for (Bundle fragment : fragments) {
+                    scanImportPackages(classes, bundle, fragment);
+                    scanRequireBundles(classes, fragment);
+                    scanBundleClassPath(classes, fragment);
+                }
             }
         }
-        
         classMap.clear();
-        
         return classes;
     }
-    
+
     private void scanImportPackages(Collection<String> classes, Bundle host, Bundle fragment) {
-        if (!scanImportPackages) {
-            return;
-        }
-        BundleDescription description = new BundleDescription(fragment.getHeaders());        
+        BundleDescription description = new BundleDescription(fragment.getHeaders());
         List<BundleDescription.ImportPackage> imports = description.getExternalImports();
         for (BundleDescription.ImportPackage packageImport : imports) {
-            ExportedPackage[] exports = packageAdmin.getExportedPackages(packageImport.getName());
-            Bundle wiredBundle = isWired(host, exports);
-            if (wiredBundle != null) {
-                Set<String> allClasses = findAllClasses(wiredBundle);
-                addMatchingClasses(classes, allClasses, packageImport.getName());
+            if (discoveryFilter.packageDiscoveryRequired(packageImport.getName())) {
+                ExportedPackage[] exports = packageAdmin.getExportedPackages(packageImport.getName());
+                Bundle wiredBundle = isWired(host, exports);
+                if (wiredBundle != null) {
+                    Set<String> allClasses = findAllClasses(wiredBundle);
+                    addMatchingClasses(classes, allClasses, packageImport.getName());
+                }
             }
-        }  
+        }
     }
-    
+
     private Set<String> findAllClasses(Bundle bundle) {
         Set<String> allClasses = classMap.get(bundle);
         if (allClasses == null) {
-            BundleClassFinder finder = new BundleClassFinder(packageAdmin, bundle);
-            finder.setScanImportPackages(false);
+            BundleClassFinder finder = new BundleClassFinder(packageAdmin, bundle, IMPORTED_PACKAGE_EXCLUSIVE_FILTER);
             allClasses = finder.find();
             classMap.put(bundle, allClasses);
         }
         return allClasses;
     }
-    
+
     private void addMatchingClasses(Collection<String> classes, Set<String> allClasses, String packageName) {
         String prefix = packageName + ".";
         for (String clazz : allClasses) {
@@ -147,7 +146,7 @@ public class BundleClassFinder {
             }
         }
     }
-    
+
     private void scanRequireBundles(Collection<String> classes, Bundle bundle) {
         BundleDescription description = new BundleDescription(bundle.getHeaders());
         List<RequireBundle> requiredBundleList = description.getRequireBundle();
@@ -155,16 +154,18 @@ public class BundleClassFinder {
             RequiredBundle[] requiredBundles = packageAdmin.getRequiredBundles(requiredBundle.getName());
             Bundle wiredBundle = isWired(bundle, requiredBundles);
             if (wiredBundle != null) {
-                Set<String> allClasses = findAllClasses(wiredBundle);                
+                Set<String> allClasses = findAllClasses(wiredBundle);
                 BundleDescription wiredBundleDescription = new BundleDescription(wiredBundle.getHeaders());
                 List<ExportPackage> exportPackages = wiredBundleDescription.getExportPackage();
                 for (ExportPackage exportPackage : exportPackages) {
-                    addMatchingClasses(classes, allClasses, exportPackage.getName());
+                    if (discoveryFilter.packageDiscoveryRequired(exportPackage.getName())) {
+                        addMatchingClasses(classes, allClasses, exportPackage.getName());
+                    }
                 }
             }
         }
     }
-    
+
     private void scanBundleClassPath(Collection<String> resources, Bundle bundle) {
         BundleDescription description = new BundleDescription(bundle.getHeaders());
         List<HeaderEntry> paths = description.getBundleClassPath();
@@ -185,21 +186,27 @@ public class BundleClassFinder {
                 }
             }
         }
-    }    
-    
+    }
+
     private void scanDirectory(Collection<String> classes, Bundle bundle, String basePath) {
         basePath = addSlash(basePath);
+        if (!discoveryFilter.directoryDiscoveryRequired(basePath)) {
+            return;
+        }
         Enumeration e = bundle.findEntries(basePath, PATTERN, true);
         if (e != null) {
             while (e.hasMoreElements()) {
                 URL u = (URL) e.nextElement();
-                String name = u.getPath().substring(basePath.length());                
+                String name = u.getPath().substring(basePath.length());
                 classes.add(toClassName(name));
             }
         }
     }
-    
-    private void scanZip(Collection<String> classes, Bundle bundle, String zipName) {   
+
+    private void scanZip(Collection<String> classes, Bundle bundle, String zipName) {
+        if (!discoveryFilter.jarFileDiscoveryRequired(zipName)) {
+            return;
+        }
         URL zipEntry = bundle.getEntry(zipName);
         if (zipEntry == null) {
             return;
@@ -222,20 +229,20 @@ public class BundleClassFinder {
             }
         }
     }
-    
+
     private static String toClassName(String name) {
         name = name.substring(0, name.length() - EXT.length());
         name = name.replaceAll("/", ".");
         return name;
     }
-    
+
     private static String addSlash(String name) {
         if (!name.endsWith("/")) {
             name = name + "/";
         }
         return name;
     }
-    
+
     private static Bundle isWired(Bundle bundle, ExportedPackage[] exports) {
         if (exports != null) {
             for (ExportedPackage exportedPackage : exports) {
@@ -251,7 +258,7 @@ public class BundleClassFinder {
         }
         return null;
     }
-    
+
     private static Bundle isWired(Bundle bundle, RequiredBundle[] requiredBundles) {
         if (requiredBundles != null) {
             for (RequiredBundle requiredBundle : requiredBundles) {
@@ -267,5 +274,50 @@ public class BundleClassFinder {
         }
         return null;
     }
-    
+
+    public static class DummyDiscoveryFilter implements ClassDiscoveryFilter {
+
+        @Override
+        public boolean directoryDiscoveryRequired(String url) {
+            return true;
+        }
+
+        @Override
+        public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
+            return true;
+        }
+
+        @Override
+        public boolean jarFileDiscoveryRequired(String url) {
+            return true;
+        }
+
+        @Override
+        public boolean packageDiscoveryRequired(String packageName) {
+            return true;
+        }
+    }
+
+    public static class NonImportedPackageDiscoveryFilter implements ClassDiscoveryFilter {
+
+        @Override
+        public boolean directoryDiscoveryRequired(String url) {
+            return true;
+        }
+
+        @Override
+        public boolean jarFileDiscoveryRequired(String url) {
+            return true;
+        }
+
+        @Override
+        public boolean packageDiscoveryRequired(String packageName) {
+            return true;
+        }
+
+        @Override
+        public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
+           return !discoveryRange.equals(DiscoveryRange.IMPORT_PACKAGES);
+        }
+    }
 }
