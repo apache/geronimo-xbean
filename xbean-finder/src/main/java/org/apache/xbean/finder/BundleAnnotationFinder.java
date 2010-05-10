@@ -57,7 +57,7 @@ public class BundleAnnotationFinder extends AbstractFinder {
 
     private class AnnotationFindingCallback implements BundleResourceFinder.ResourceFinderCallback {
 
-        @Override
+      
         public void foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
             InputStream in = url.openStream();
             try {
@@ -67,7 +67,7 @@ public class BundleAnnotationFinder extends AbstractFinder {
             }
         }
 
-        @Override
+       
         public void foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception {
             readClassDef(in);
         }
