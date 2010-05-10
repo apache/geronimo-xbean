@@ -210,17 +210,17 @@ public class BundleResourceFinder {
 
     public static class DummyDiscoveryFilter implements ResourceDiscoveryFilter {
 
-        @Override
+
         public boolean directoryDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
             return true;
         }
 
-        @Override
+
         public boolean zipFileDiscoveryRequired(String url) {
             return true;
         }

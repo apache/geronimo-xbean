@@ -335,22 +335,22 @@ public class BundleClassFinder {
 
     public static class DummyDiscoveryFilter implements ClassDiscoveryFilter {
 
-        @Override
+
         public boolean directoryDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
             return true;
         }
 
-        @Override
+
         public boolean jarFileDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean packageDiscoveryRequired(String packageName) {
             return true;
         }
@@ -358,22 +358,22 @@ public class BundleClassFinder {
 
     public static class NonImportedPackageDiscoveryFilter implements ClassDiscoveryFilter {
 
-        @Override
+
         public boolean directoryDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean jarFileDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean packageDiscoveryRequired(String packageName) {
             return true;
         }
 
-        @Override
+
         public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
             return !discoveryRange.equals(DiscoveryRange.IMPORT_PACKAGES);
         }
@@ -387,22 +387,22 @@ public class BundleClassFinder {
             this.expectedPckageName = expectedPckageName;
         }
 
-        @Override
+
         public boolean directoryDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean jarFileDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean packageDiscoveryRequired(String packageName) {
             return expectedPckageName.equals(packageName);
         }
 
-        @Override
+
         public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
             return !discoveryRange.equals(DiscoveryRange.IMPORT_PACKAGES);
         }
@@ -419,22 +419,22 @@ public class BundleClassFinder {
             this.acceptedPackageNames = acceptedPackageNames;
         }
 
-        @Override
+
         public boolean directoryDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean jarFileDiscoveryRequired(String url) {
             return true;
         }
 
-        @Override
+
         public boolean packageDiscoveryRequired(String packageName) {
             return acceptedPackageNames.contains(packageName) && classDiscoveryFilter.packageDiscoveryRequired(packageName);
         }
 
-        @Override
+
         public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
             return !discoveryRange.equals(DiscoveryRange.IMPORT_PACKAGES);
         }
