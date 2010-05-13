@@ -1,39 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
   Spring XML Beans DTD
   Authors: Rod Johnson, Juergen Hoeller, Alef Arendsen, Colin Sampaleanu
-  
+
   This defines a simple and consistent way of creating a namespace
   of JavaBeans objects, managed by a Spring BeanFactory, read by
   XmlBeanDefinitionReader (with DefaultXmlBeanDefinitionParser).
-  
+
   This document type is used by most Spring functionality, including
   web application contexts, which are based on bean factories.
-  
+
   Each "bean" element in this document defines a JavaBean.
   Typically the bean class is specified, along with JavaBean properties
   and/or constructor arguments.
-  
+
   Bean instances can be "singletons" (shared instances) or "prototypes"
   (independent instances). Further scopes are supposed to be built on top
   of the core BeanFactory infrastructure and are therefore not part of it.
-  
+
   References among beans are supported, i.e. setting a JavaBean property
   or a constructor argument to refer to another bean in the same factory
   (or an ancestor factory).
-  
+
   As alternative to bean references, "inner bean definitions" can be used.
   Singleton flags of such inner bean definitions are effectively ignored:
   Inner beans are typically anonymous prototypes.
-  
+
   There is also support for lists, sets, maps, and java.util.Properties
   as bean property types or constructor argument types.
-  
+
   As the format is simple, a DTD is sufficient, and there's no need
   for a schema at this point.
-  
+
   XML documents that conform to this DTD should declare the following doctype:
-  
+
   <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
   	"http://www.springframework.org/dtd/spring-beans.dtd">
 -->
@@ -115,7 +131,7 @@
   <!-- The alias name to define for the bean. -->
   <!--
     Defines a single (usually named) bean.
-    
+
     A bean definition may contain nested tags for constructor arguments,
     property values, lookup methods, and replaced methods. Mixing constructor
     injection and setter injection on the same bean is explicitly supported.
@@ -192,7 +208,7 @@
   </xs:element>
   <!--
     Beans can be identified by an id, to enable reference checking.
-    
+
     There are constraints on a valid XML id: if you want to reference your bean
     in Java code using a name that's illegal as an XML id, use the optional
     "name" attribute. If neither is given, the bean class name is used as id
@@ -208,17 +224,17 @@
   -->
   <!--
     Optionally specify a parent bean definition.
-    
+
     Will use the bean class of the parent if none specified, but can
     also override it. In the latter case, the child bean class must be
     compatible with the parent, i.e. accept the parent's property values
     and constructor argument values, if any.
-    
+
     A child bean definition will inherit constructor argument values,
     property values and method overrides from the parent, with the option
     to add new values. If init method, destroy method, factory bean and/or factory
     method are specified, they will override the corresponding parent settings.
-    
+
     The remaining settings will always be taken from the child definition:
     depends on, autowire mode, dependency check, singleton, lazy init.
   -->
@@ -233,7 +249,7 @@
     be returned by all calls to getBean() with the id),
     or a "prototype" (independent instance resulting from each call to
     getBean(). Default is singleton.
-    
+
     Singletons are most commonly used, and are ideal for multi-threaded
     service objects.
   -->
@@ -246,38 +262,38 @@
     Optional attribute controlling whether to "autowire" bean properties.
     This is an automagical process in which bean references don't need to be coded
     explicitly in the XML bean definition file, but Spring works out dependencies.
-    
+
     There are 5 modes:
-    
+
     1. "no"
     The traditional Spring default. No automagical wiring. Bean references
     must be defined in the XML file via the <ref> element. We recommend this
     in most cases as it makes documentation more explicit.
-    
+
     2. "byName"
     Autowiring by property name. If a bean of class Cat exposes a dog property,
     Spring will try to set this to the value of the bean "dog" in the current factory.
     If there is no matching bean by name, nothing special happens;
     use dependency-check="objects" to raise an error in that case.
-    
+
     3. "byType"
     Autowiring if there is exactly one bean of the property type in the bean factory.
     If there is more than one, a fatal error is raised, and you can't use byType
     autowiring for that bean. If there is none, nothing special happens;
     use dependency-check="objects" to raise an error in that case.
-    
+
     4. "constructor"
     Analogous to "byType" for constructor arguments. If there isn't exactly one bean
     of the constructor argument type in the bean factory, a fatal error is raised.
-    
+
     5. "autodetect"
     Chooses "constructor" or "byType" through introspection of the bean class.
     If a default constructor is found, "byType" gets applied.
-    
+
     The latter two are similar to PicoContainer and make bean factories simple to
     configure for small namespaces, but doesn't work as well as standard Spring
     behaviour for bigger applications.
-    
+
     Note that explicit dependencies, i.e. "property" and "constructor-arg" elements,
     always override autowiring. Autowire behaviour can be combined with dependency
     checking, which will be performed after all autowiring has been completed.
@@ -286,7 +302,7 @@
     Optional attribute controlling whether to check whether all this
     beans dependencies, expressed in its properties, are satisfied.
     Default is no dependency checking.
-    
+
     "simple" type dependency checking includes primitives and String
     "object" includes collaborators (other beans in the factory)
     "all" includes both types of dependency checking
@@ -294,7 +310,7 @@
   <!--
     The names of the beans that this bean depends on being initialized.
     The bean factory will guarantee that these beans get initialized before.
-    
+
     Note that dependencies are normally expressed through bean properties or
     constructor arguments. This property should just be necessary for other kinds
     of dependencies like statics (*ugh*) or database preparation on startup.
@@ -314,7 +330,7 @@
     create this object. Use constructor-arg elements to specify arguments
     to the factory method, if it takes arguments. Autowiring does not apply
     to factory methods.
-    
+
     If the "class" attribute is present, the factory method will be a static
     method on the class specified by the "class" attribute on this bean
     definition. Often this will be the same class as that of the constructed
@@ -322,16 +338,16 @@
     to a constructor. However, it may be on a different class. In that case,
     the created object will *not* be of the class specified in the "class"
     attribute. This is analogous to FactoryBean behavior.
-    
+
     If the "factory-bean" attribute is present, the "class" attribute is not
     used, and the factory method will be an instance method on the object
     returned from a getBean call with the specified bean name. The factory
     bean may be defined as a singleton or a prototype.
-    
+
     The factory method can have any number of arguments. Autowiring is not
     supported. Use indexed constructor-arg elements in conjunction with the
     factory-method attribute.
-    
+
     Setter Injection can be used in conjunction with a factory method.
     Method Injection cannot, as the factory method returns an instance,
     which will be used when the container creates the bean.
@@ -349,10 +365,10 @@
     This is an alternative to "autowire constructor".
     Arguments correspond to either a specific index of the constructor argument
     list or are supposed to be matched generically by type.
-    
+
     Note: A single generic argument value will just be used once, rather than
     potentially matched multiple times (as of Spring 1.1).
-    
+
     constructor-arg elements are also used in conjunction with the factory-method
     element to construct beans using static or instance factory methods.
   -->
@@ -450,7 +466,7 @@
   <!--
     Similar to the lookup method mechanism, the replaced-method element is used to control
     IoC container method overriding: Method Injection. This mechanism allows the overriding
-    of a method with arbitrary code. 
+    of a method with arbitrary code.
   -->
   <xs:element name="replaced-method">
     <xs:complexType>
@@ -464,7 +480,7 @@
   <!--
     Name of the method whose implementation should be replaced by the IoC container.
     If this method is not overloaded, there's no need to use arg-type subelements.
-    If this method is overloaded, arg-type subelements must be used for all 
+    If this method is overloaded, arg-type subelements must be used for all
     override definitions for the method.
   -->
   <!--
@@ -483,13 +499,13 @@
     </xs:complexType>
   </xs:element>
   <!--
-    Specification of the type of an overloaded method argument as a String. 
+    Specification of the type of an overloaded method argument as a String.
     For convenience, this may be a substring of the FQN. E.g. all the
     following would match "java.lang.String":
     - java.lang.String
     - String
     - Str
-    
+
     As the number of arguments will be checked also, this convenience can often
     be used to save typing.
   -->
@@ -540,7 +556,7 @@
     machinery. This makes it possible for application developers
     to write custom PropertyEditor implementations that can
     convert strings to objects.
-    
+
     Note that this is recommended for simple objects only.
     Configure more complex objects by populating JavaBean
     properties with references to other beans.

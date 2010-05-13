@@ -36,7 +36,7 @@
     <description>xbean-blueprint provides a schema-driven namespace handler for Apache Aries Blueprint</description>
 
     <properties>
-        <pax.logging.version>1.4.1-SNAPSHOT</pax.logging.version>
+        <pax.logging.version>1.5.0</pax.logging.version>
 
     </properties>
     <dependencies>
@@ -59,7 +59,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-         
+
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>
             <artifactId>pax-logging-api</artifactId>
