@@ -36,7 +36,7 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
 
-    <version>3.8-SNAPSHOT</version>
+    <version>3.7-SNAPSHOT</version>
 
     <description>
         XBean is a plugin based server architecture.
@@ -331,7 +331,7 @@
                         <instructions>
                             <Bundle-DocURL>${project.url}</Bundle-DocURL>
                             <Export-Package>org.apache.xbean.*;version=${pom.version}</Export-Package>
-                            <Private-Package />
+                            <Private-Package/>
                         </instructions>
                     </configuration>
                 </plugin>
