@@ -26,7 +26,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>3.7-SNAPSHOT</version>
+        <version>3.7</version>
     </parent>
 
     <artifactId>xbean-blueprint</artifactId>
@@ -138,14 +138,14 @@
                             <tasks>
                                 <taskdef classname="org.apache.xbean.blueprint.generator.MappingGeneratorTask" name="mapping">
                                     <classpath>
-                                        <pathelement path="${basedir}/target/classes"/>
-                                        <pathelement path="${basedir}/target/test-classes"/>
-                                        <path refid="maven.runtime.classpath"/>
+                                        <pathelement path="${basedir}/target/classes" />
+                                        <pathelement path="${basedir}/target/test-classes" />
+                                        <path refid="maven.runtime.classpath" />
                                     </classpath>
                                 </taskdef>
-                                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-classes/"/>
+                                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-classes/" />
                                 <!--<copy todir="${basedir}/target/test-classes">-->
-                                    <!--<fileset dir="${basedir}/target/test-generated"/>-->
+                                    <!--<fileset dir="${basedir}/target/test-generated" />-->
                                 <!--</copy>-->
                             </tasks>
                         </configuration>
