@@ -189,11 +189,12 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
             logger.warn("Unable to check the interface " + interfaceName, e);
             return false;
         } finally {
-            if (in != null)
+            if (in != null) {
                 try {
                     in.close();
                 } catch (Exception e) {
                 }
+            }
         }
     }
 
@@ -205,7 +206,10 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
     private boolean isSuperClassAssignable(String superClassName) {
         if (targetClassNames.contains(superClassName)) {
             return true;
+        } else if (superClassName.equals("java/lang/Object")) {
+            return false;
         }
+        
         //Check parent class
         URL url = bundle.getResource("/" + superClassName + ".class");
         if (url == null) {
@@ -216,28 +220,27 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
         try {
             in = url.openStream();
             ClassReader classReader = new ClassReader(in);
-            String[] superInterfaceNames = classReader.getInterfaces();
+            
             //Check interfaces
+            String[] superInterfaceNames = classReader.getInterfaces();            
             for (String superInterfaceName : superInterfaceNames) {
                 if (isInterfaceAssignable(superInterfaceName)) {
                     return true;
-                }
+                }                
             }
+            
             //Check className
-            if (classReader.getSuperName().equals("java/lang/Object")) {
-                return targetClassNames.contains("java/lang/Object");
-            } else {
-                return isSuperClassAssignable(classReader.getSuperName());
-            }
+            return isSuperClassAssignable(classReader.getSuperName());            
         } catch (IOException e) {
             logger.warn("Unable to check the super class  " + superClassName, e);
             return false;
         } finally {
-            if (in != null)
+            if (in != null) {
                 try {
                     in.close();
                 } catch (Exception e) {
                 }
+            }
         }
     }
 
