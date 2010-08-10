@@ -108,6 +108,24 @@ public class ObjectRecipeTest extends TestCase {
         doTest(objectRecipe, PERSON_FACTORY_4_ARG);
     }
 
+    public void testWhitespaceInjection() throws Exception {
+        String name = " Foo Bar ";
+        char ch = ' ';
+        
+        ObjectRecipe objectRecipe = new ObjectRecipe(Value.class);
+        objectRecipe.setProperty("name", name);
+        objectRecipe.setProperty("type", " ");
+        Value c = (Value) objectRecipe.create();
+        
+        assertEquals(name, c.name);
+        assertEquals(ch, c.type);
+    }
+    
+    public static class Value {
+        public String name;
+        public char type;
+    }
+    
     private void doTest(ObjectRecipe objectRecipe, Person.ConstructionCalled expectedConstruction) throws Exception {
         Person expected = new Person("Joe", 21, new URL("http://www.acme.org"), new Car("Mini", "Cooper", 2008));
 

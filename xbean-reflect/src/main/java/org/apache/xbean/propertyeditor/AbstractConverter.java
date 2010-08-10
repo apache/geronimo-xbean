@@ -27,6 +27,7 @@ import java.beans.PropertyEditorSupport;
  */
 public abstract class AbstractConverter extends PropertyEditorSupport implements Converter {
     private final Class type;
+    private final boolean trim;
 
     /**
      * Creates an abstract converter for the specified type.
@@ -34,9 +35,14 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
      * @param type type of the property editor
      */
     protected AbstractConverter(Class type) {
+        this(type, true);
+    }
+    
+    protected AbstractConverter(Class type, boolean trim) {
         super();
         if (type == null) throw new NullPointerException("type is null");
         this.type = type;
+        this.trim = trim;
     }
 
     public final Class getType() {
@@ -50,7 +56,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
     }
 
     public final void setAsText(String text) {
-        Object value = toObject(text.trim());
+        Object value = toObject((trim) ? text.trim() : text);
         super.setValue(value);
     }
 
@@ -77,7 +83,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
             return null;
         }
 
-        Object value = toObjectImpl(text.trim());
+        Object value = toObjectImpl((trim) ? text.trim() : text);
         return value;
     }
 
