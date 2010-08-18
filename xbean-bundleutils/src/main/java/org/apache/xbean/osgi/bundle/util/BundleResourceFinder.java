@@ -48,17 +48,37 @@ public class BundleResourceFinder {
     private final PackageAdmin packageAdmin;
     private final String prefix;
     private final String suffix;
+    private final String osgiSuffix;
+    private final boolean extendedMatching;
     private ResourceDiscoveryFilter discoveryFilter;
 
     public BundleResourceFinder(PackageAdmin packageAdmin, Bundle bundle, String prefix, String suffix) {
         this(packageAdmin, bundle, prefix, suffix, FULL_DISCOVERY_FILTER);
     }
 
+    /**
+     * Set up a BundleResourceFinder
+     * The suffix may contain a path fragment, unlike the bundle.findEntries method.
+     *
+     * @param packageAdmin package admin for finding fragments
+     * @param bundle bundle to search
+     * @param prefix search only paths and zip files starting with this prefix
+     * @param suffix return only entries ending in this suffix.
+     * @param discoveryFilter filter for matching directories and zip files.
+     */
     public BundleResourceFinder(PackageAdmin packageAdmin, Bundle bundle, String prefix, String suffix, ResourceDiscoveryFilter discoveryFilter) {
         this.packageAdmin = packageAdmin;
         this.bundle = bundle;
-        this.prefix = prefix.trim();
+        this.prefix = addSlash(prefix.trim());
         this.suffix = suffix.trim();
+        int pos = this.suffix.lastIndexOf("/");
+        if (pos > -1) {
+            osgiSuffix = this.suffix.substring(pos + 1, this.suffix.length());
+            extendedMatching = true;
+        } else {
+            osgiSuffix = "*" + this.suffix;
+            extendedMatching = false;
+        }
         this.discoveryFilter = discoveryFilter;
     }
 
@@ -103,7 +123,7 @@ public class BundleResourceFinder {
                     scanZip(callback, bundle, name);
                 } else {
                     // assume it's a directory
-                    scanDirectory(callback, bundle, addSlash(prefix) + name);
+                    scanDirectory(callback, bundle, name + prefix);
                 }
             }
         }
@@ -113,10 +133,13 @@ public class BundleResourceFinder {
         if (!discoveryFilter.directoryDiscoveryRequired(basePath)) {
             return;
         }
-        Enumeration e = bundle.findEntries(basePath, "*" + suffix, true);
+        Enumeration e = bundle.findEntries(basePath, osgiSuffix, true);
         if (e != null) {
             while (e.hasMoreElements()) {
-                callback.foundInDirectory(bundle, basePath, (URL) e.nextElement());
+                URL url = (URL) e.nextElement();
+                if (!extendedMatching || suffixMatches(url.getPath())) {
+                    callback.foundInDirectory(bundle, basePath, url);
+                }
             }
         }
     }
@@ -168,7 +191,9 @@ public class BundleResourceFinder {
     }
 
     private static String addSlash(String name) {
-        if (!name.endsWith("/")) {
+        if (name == null ) return "";
+        name = name.trim();
+        if (!name.isEmpty() && !name.endsWith("/")) {
             name = name + "/";
         }
         return name;
