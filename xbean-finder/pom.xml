@@ -34,7 +34,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-bundleutils</artifactId>            
+            <artifactId>xbean-bundleutils</artifactId>  
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -68,7 +68,12 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Import-Package>*,org.objectweb.asm;version=3.1,org.objectweb.asm.commons;version=3.1</Import-Package>
+                        <Export-Package>org.apache.xbean.finder.*;version=${pom.version}</Export-Package>
+                        <Import-Package>
+                            org.objectweb.asm;version=3.1,
+                            org.objectweb.asm.commons;version=3.1,
+                            *
+                        </Import-Package>
                     </instructions>
                 </configuration>
             </plugin>
