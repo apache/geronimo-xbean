@@ -47,7 +47,7 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
     private final static String META_INF_1 = "META-INF/";
     private final static String META_INF_2 = "/META-INF/";
     
-    private final Bundle bundle;
+    protected final Bundle bundle;
     private boolean searchWiredBundles;
 
     public BundleClassLoader(Bundle bundle) {
@@ -77,12 +77,12 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
     public String toString() {
         return "[BundleClassLoader] " + bundle;
     }
-
+    
     @Override
     public URL getResource(String name) {
         URL resource = bundle.getResource(name);
         if (resource == null && isMetaInfResource(name)) {
-            LinkedHashSet<Bundle> wiredBundles = BundleUtils.getWiredBundles(bundle);
+            LinkedHashSet<Bundle> wiredBundles = getWiredBundles();
             Iterator<Bundle> iterator = wiredBundles.iterator();
             while (iterator.hasNext() && resource == null) {                
                 resource = iterator.next().getResource(name);
@@ -98,7 +98,7 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
         if (isMetaInfResource(name)) {
             ArrayList<URL> allResources = new ArrayList<URL>();
             addToList(allResources, e);
-            LinkedHashSet<Bundle> wiredBundles = BundleUtils.getWiredBundles(bundle);
+            LinkedHashSet<Bundle> wiredBundles = getWiredBundles();
             for (Bundle wiredBundle : wiredBundles) {
                 Enumeration<URL> resources = wiredBundle.getResources(name);
                 addToList(allResources, resources);
@@ -121,7 +121,11 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
         return searchWiredBundles;
     }
     
-    private boolean isMetaInfResource(String name) {
+    protected LinkedHashSet<Bundle> getWiredBundles() {
+        return BundleUtils.getWiredBundles(bundle);
+    }
+    
+    protected boolean isMetaInfResource(String name) {
         return searchWiredBundles && name != null && (name.startsWith(META_INF_1) || name.startsWith(META_INF_2));
     }
       
