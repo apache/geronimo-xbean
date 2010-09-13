@@ -44,6 +44,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 public class BundleResourceFinder {
 
     public static final ResourceDiscoveryFilter FULL_DISCOVERY_FILTER = new DummyDiscoveryFilter();
+    
     private final Bundle bundle;
     private final PackageAdmin packageAdmin;
     private final String prefix;
@@ -84,13 +85,17 @@ public class BundleResourceFinder {
 
     public void find(ResourceFinderCallback callback) throws Exception {
         if (discoveryFilter.rangeDiscoveryRequired(DiscoveryRange.BUNDLE_CLASSPATH)) {
-            scanBundleClassPath(callback, bundle);
+            if (!scanBundleClassPath(callback, bundle)) {
+                return;
+            }
         }
         if (packageAdmin != null && discoveryFilter.rangeDiscoveryRequired(DiscoveryRange.FRAGMENT_BUNDLES)) {
             Bundle[] fragments = packageAdmin.getFragments(bundle);
             if (fragments != null) {
                 for (Bundle fragment : fragments) {
-                    scanBundleClassPath(callback, fragment);
+                    if (!scanBundleClassPath(callback, fragment)) {
+                        return;
+                    }
                 }
             }
         }
@@ -107,50 +112,58 @@ public class BundleResourceFinder {
         return resources;
     }
 
-    private void scanBundleClassPath(ResourceFinderCallback callback, Bundle bundle) throws Exception {
+    private boolean scanBundleClassPath(ResourceFinderCallback callback, Bundle bundle) throws Exception {
         BundleDescription desc = new BundleDescription(bundle.getHeaders());
         List<HeaderEntry> paths = desc.getBundleClassPath();
+        boolean continueScanning = true;
         if (paths.isEmpty()) {
-            scanDirectory(callback, bundle, prefix);
+            continueScanning = scanDirectory(callback, bundle, prefix);
         } else {
             for (HeaderEntry path : paths) {
                 String name = path.getName();
                 if (name.equals(".") || name.equals("/")) {
                     // scan root
-                    scanDirectory(callback, bundle, prefix);
+                    continueScanning = scanDirectory(callback, bundle, prefix);
                 } else if (name.endsWith(".jar") || name.endsWith(".zip")) {
                     // scan embedded jar/zip
-                    scanZip(callback, bundle, name);
+                    continueScanning = scanZip(callback, bundle, name);
                 } else {
                     // assume it's a directory
-                    scanDirectory(callback, bundle, name + prefix);
+                    continueScanning = scanDirectory(callback, bundle, name + prefix);
+                }
+                if (!continueScanning) {
+                    break;
                 }
             }
         }
+        return continueScanning;
     }
 
-    private void scanDirectory(ResourceFinderCallback callback, Bundle bundle, String basePath) throws Exception {
+    private boolean scanDirectory(ResourceFinderCallback callback, Bundle bundle, String basePath) throws Exception {
         if (!discoveryFilter.directoryDiscoveryRequired(basePath)) {
-            return;
+            return true;
         }
         Enumeration e = bundle.findEntries(basePath, osgiSuffix, true);
         if (e != null) {
             while (e.hasMoreElements()) {
                 URL url = (URL) e.nextElement();
                 if (!extendedMatching || suffixMatches(url.getPath())) {
-                    callback.foundInDirectory(bundle, basePath, url);
+                    if (!callback.foundInDirectory(bundle, basePath, url)) {
+                        return false;
+                    }
                 }
             }
         }
+        return true;
     }
 
-    private void scanZip(ResourceFinderCallback callback, Bundle bundle, String zipName) throws Exception {
+    private boolean scanZip(ResourceFinderCallback callback, Bundle bundle, String zipName) throws Exception {
         if (!discoveryFilter.zipFileDiscoveryRequired(zipName)) {
-            return;
+            return true;
         }
         URL zipEntry = bundle.getEntry(zipName);
         if (zipEntry == null) {
-            return;
+            return true;
         }
         try {
             ZipInputStream in = new ZipInputStream(zipEntry.openStream());
@@ -158,12 +171,15 @@ public class BundleResourceFinder {
             while ((entry = in.getNextEntry()) != null) {
                 String name = entry.getName();
                 if (prefixMatches(name) && suffixMatches(name)) {
-                    callback.foundInJar(bundle, zipName, entry, new ZipEntryInputStream(in));
+                    if (!callback.foundInJar(bundle, zipName, entry, new ZipEntryInputStream(in))) {
+                        return false;
+                    }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
     private static class ZipEntryInputStream extends FilterInputStream {
@@ -200,9 +216,19 @@ public class BundleResourceFinder {
     }
 
     public interface ResourceFinderCallback {
-        void foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception;
+        /**
+         * Resource found in a directory in a bundle.
+         * 
+         * @return true to continue scanning, false to abort scanning.
+         */
+        boolean foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception;
 
-        void foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception;
+        /**         
+         * Resource found in a jar file in a bundle.
+         * 
+         * @return true to continue scanning, false to abort scanning.
+         */
+        boolean foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception;
     }
 
     public static class DefaultResourceFinderCallback implements ResourceFinderCallback {
@@ -221,30 +247,29 @@ public class BundleResourceFinder {
             return resources;
         }
 
-        public void foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
+        public boolean foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
             resources.add(url);
+            return true;
         }
 
-        public void foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception {
+        public boolean foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception {
             URL jarURL = bundle.getEntry(jarName);
             URL url = new URL("jar:" + jarURL.toString() + "!/" + entry.getName());
             resources.add(url);
+            return true;
         }
 
     }
 
     public static class DummyDiscoveryFilter implements ResourceDiscoveryFilter {
 
-
-        public boolean directoryDiscoveryRequired(String url) {
-            return true;
-        }
-
-
         public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange) {
             return true;
         }
-
+        
+        public boolean directoryDiscoveryRequired(String url) {
+            return true;
+        }
 
         public boolean zipFileDiscoveryRequired(String url) {
             return true;
