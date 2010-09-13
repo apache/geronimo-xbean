@@ -56,20 +56,21 @@ public class BundleAnnotationFinder extends AbstractFinder {
     }
 
     private class AnnotationFindingCallback implements BundleResourceFinder.ResourceFinderCallback {
-
       
-        public void foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
+        public boolean foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
             InputStream in = url.openStream();
             try {
                 readClassDef(in);
             } finally {
                 in.close();
             }
+            return true;
         }
 
        
-        public void foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception {
+        public boolean foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception {
             readClassDef(in);
+            return true;
         }
     }
 
