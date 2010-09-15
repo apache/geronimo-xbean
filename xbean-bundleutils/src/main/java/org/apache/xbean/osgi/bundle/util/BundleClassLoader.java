@@ -48,6 +48,7 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
     private final static String META_INF_2 = "/META-INF/";
     
     protected final Bundle bundle;
+    private LinkedHashSet<Bundle> wiredBundles = null;
     private boolean searchWiredBundles;
 
     public BundleClassLoader(Bundle bundle) {
@@ -121,8 +122,11 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
         return searchWiredBundles;
     }
     
-    protected LinkedHashSet<Bundle> getWiredBundles() {
-        return BundleUtils.getWiredBundles(bundle);
+    protected synchronized LinkedHashSet<Bundle> getWiredBundles() {
+        if (wiredBundles == null) {
+            wiredBundles = BundleUtils.getWiredBundles(bundle);
+        }
+        return wiredBundles;
     }
     
     protected boolean isMetaInfResource(String name) {
