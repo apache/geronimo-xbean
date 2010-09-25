@@ -201,7 +201,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
         if (value == null) {
             throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " does not exist");
         } else if (!(value instanceof Context)) {
-            throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " does is not a context");
+            throw new NotContextException("The intermediate context " + name.get(name.size() - 1) + " is not a context");
         } else {
             return (Context) value;
         }
@@ -226,7 +226,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
 
     protected void addDeepBinding(Name name, Object value, boolean rebind, boolean createIntermediateContexts) throws NamingException {
         if (name == null) throw new NullPointerException("name is null");
-        if (value == null) throw new NullPointerException("value is null");
+        if (value == null) throw new NullPointerException("value is null for name: " + name);
 
         if (name.isEmpty()) {
             throw new InvalidNameException("Name is empty");
