@@ -115,7 +115,17 @@ public class ContextFederation {
 
                     // don't overwrite existing bindings
                     if (!bindings.containsKey(bindingName)) {
-                        bindings.put(bindingName, binding.getObject());
+                        try {
+                            bindings.put(bindingName, binding.getObject());
+                        } catch (RuntimeException e) {
+                            // if this is a wrapped NamingException, unwrap and throw the original 
+                            Throwable cause = e.getCause(); 
+                            if (cause != null && cause instanceof NamingException ) {
+                                throw (NamingException)cause; 
+                            }
+                            // Wrap this into a RuntimeException.  
+                            throw (NamingException)new NamingException("Could retrieve bound instance " + name).initCause(e);
+                        }
                     }
                 }
             } catch (NotContextException e) {
