@@ -295,18 +295,18 @@ public abstract class AbstractFinder {
     }
 
     public class Annotatable {
-        private final List<ClassFinder.AnnotationInfo> annotations = new ArrayList<ClassFinder.AnnotationInfo>();
+        private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
 
         public Annotatable(AnnotatedElement element) {
             for (Annotation annotation : element.getAnnotations()) {
-                annotations.add(new ClassFinder.AnnotationInfo(annotation.annotationType().getName()));
+                annotations.add(new AnnotationInfo(annotation.annotationType().getName()));
             }
         }
 
         public Annotatable() {
         }
 
-        public List<ClassFinder.AnnotationInfo> getAnnotations() {
+        public List<AnnotationInfo> getAnnotations() {
             return annotations;
         }
 
@@ -315,12 +315,12 @@ public abstract class AbstractFinder {
     public static interface Info {
         String getName();
 
-        List<ClassFinder.AnnotationInfo> getAnnotations();
+        List<AnnotationInfo> getAnnotations();
     }
 
     public class PackageInfo extends Annotatable implements Info {
         private final String name;
-        private final ClassFinder.ClassInfo info;
+        private final ClassInfo info;
         private final Package pkg;
 
         public PackageInfo(Package pkg){
@@ -331,7 +331,7 @@ public abstract class AbstractFinder {
         }
 
         public PackageInfo(String name) {
-            info = new ClassFinder.ClassInfo(name, null);
+            info = new ClassInfo(name, null);
             this.name = name;
             this.pkg = null;
         }
@@ -347,11 +347,11 @@ public abstract class AbstractFinder {
 
     public class ClassInfo extends Annotatable implements Info {
         private String name;
-        private final List<ClassFinder.MethodInfo> methods = new ArrayList<ClassFinder.MethodInfo>();
-        private final List<ClassFinder.MethodInfo> constructors = new ArrayList<ClassFinder.MethodInfo>();
+        private final List<MethodInfo> methods = new ArrayList<MethodInfo>();
+        private final List<MethodInfo> constructors = new ArrayList<MethodInfo>();
         private String superType;
         private final List<String> interfaces = new ArrayList<String>();
-        private final List<ClassFinder.FieldInfo> fields = new ArrayList<ClassFinder.FieldInfo>();
+        private final List<FieldInfo> fields = new ArrayList<FieldInfo>();
         private Class<?> clazz;
         private ClassNotFoundException notFound;
 
@@ -372,7 +372,7 @@ public abstract class AbstractFinder {
         	  return name.substring(0,name.lastIndexOf("."));
         }
 
-        public List<ClassFinder.MethodInfo> getConstructors() {
+        public List<MethodInfo> getConstructors() {
             return constructors;
         }
 
@@ -380,11 +380,11 @@ public abstract class AbstractFinder {
             return interfaces;
         }
 
-        public List<ClassFinder.FieldInfo> getFields() {
+        public List<FieldInfo> getFields() {
             return fields;
         }
 
-        public List<ClassFinder.MethodInfo> getMethods() {
+        public List<MethodInfo> getMethods() {
             return methods;
         }
 
@@ -420,7 +420,7 @@ public abstract class AbstractFinder {
         private final ClassInfo declaringClass;
         private final String returnType;
         private final String name;
-        private final List<List<ClassFinder.AnnotationInfo>> parameterAnnotations = new ArrayList<List<ClassFinder.AnnotationInfo>>();
+        private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList<List<AnnotationInfo>>();
 
         public MethodInfo(ClassInfo info, Constructor constructor){
             super(constructor);
@@ -442,14 +442,14 @@ public abstract class AbstractFinder {
             this.returnType = returnType;
         }
 
-        public List<List<ClassFinder.AnnotationInfo>> getParameterAnnotations() {
+        public List<List<AnnotationInfo>> getParameterAnnotations() {
             return parameterAnnotations;
         }
 
-        public List<ClassFinder.AnnotationInfo> getParameterAnnotations(int index) {
+        public List<AnnotationInfo> getParameterAnnotations(int index) {
             if (index >= parameterAnnotations.size()) {
                 for (int i = parameterAnnotations.size(); i <= index; i++) {
-                    List<ClassFinder.AnnotationInfo> annotationInfos = new ArrayList<ClassFinder.AnnotationInfo>();
+                    List<AnnotationInfo> annotationInfos = new ArrayList<AnnotationInfo>();
                     parameterAnnotations.add(i, annotationInfos);
                 }
             }
@@ -556,7 +556,7 @@ public abstract class AbstractFinder {
                     }
                 } else {
                     // the class uses generics
-                    new SignatureReader(signature).accept(new ClassFinder.GenericAwareInfoBuildingVisitor(ClassFinder.GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
+                    new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
                 }
                 info = classInfo;
                 classInfos.add(classInfo);
@@ -571,21 +571,21 @@ public abstract class AbstractFinder {
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
             info.getAnnotations().add(annotationInfo);
             getAnnotationInfos(annotationInfo.getName()).add(info);
-            return new ClassFinder.InfoBuildingVisitor(annotationInfo);
+            return new InfoBuildingVisitor(annotationInfo);
         }
 
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             ClassInfo classInfo = ((ClassInfo) info);
             FieldInfo fieldInfo = new FieldInfo(classInfo, name, desc);
             classInfo.getFields().add(fieldInfo);
-            return new ClassFinder.InfoBuildingVisitor(fieldInfo);
+            return new InfoBuildingVisitor(fieldInfo);
         }
 
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             ClassInfo classInfo = ((ClassInfo) info);
             MethodInfo methodInfo = new MethodInfo(classInfo, name, desc);
             classInfo.getMethods().add(methodInfo);
-            return new ClassFinder.InfoBuildingVisitor(methodInfo);
+            return new InfoBuildingVisitor(methodInfo);
         }
 
         public AnnotationVisitor visitParameterAnnotation(int param, String desc, boolean visible) {
@@ -593,7 +593,7 @@ public abstract class AbstractFinder {
             List<AnnotationInfo> annotationInfos = methodInfo.getParameterAnnotations(param);
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
             annotationInfos.add(annotationInfo);
-            return new ClassFinder.InfoBuildingVisitor(annotationInfo);
+            return new InfoBuildingVisitor(annotationInfo);
         }
     }
 
@@ -608,18 +608,18 @@ public abstract class AbstractFinder {
         }
 
         private Info info;
-        private ClassFinder.GenericAwareInfoBuildingVisitor.TYPE type;
-        private ClassFinder.GenericAwareInfoBuildingVisitor.STATE state;
+        private GenericAwareInfoBuildingVisitor.TYPE type;
+        private GenericAwareInfoBuildingVisitor.STATE state;
 
         private static boolean debug = false;
 
         public GenericAwareInfoBuildingVisitor() {
         }
 
-        public GenericAwareInfoBuildingVisitor(ClassFinder.GenericAwareInfoBuildingVisitor.TYPE type, Info info) {
+        public GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE type, Info info) {
             this.type = type;
             this.info = info;
-            this.state = ClassFinder.GenericAwareInfoBuildingVisitor.STATE.BEGIN;
+            this.state = GenericAwareInfoBuildingVisitor.STATE.BEGIN;
         }
 
         public void visitFormalTypeParameter(String s) {
@@ -628,7 +628,7 @@ public abstract class AbstractFinder {
                 case BEGIN:
                     ((ClassInfo) info).name += "<" + s;
             }
-            state = ClassFinder.GenericAwareInfoBuildingVisitor.STATE.FORMAL_TYPE_PARAM;
+            state = GenericAwareInfoBuildingVisitor.STATE.FORMAL_TYPE_PARAM;
         }
 
         public SignatureVisitor visitClassBound() {
@@ -643,14 +643,14 @@ public abstract class AbstractFinder {
 
         public SignatureVisitor visitSuperclass() {
             if (debug) System.out.println(" visitSuperclass()");
-            state = ClassFinder.GenericAwareInfoBuildingVisitor.STATE.SUPERCLASS;
+            state = GenericAwareInfoBuildingVisitor.STATE.SUPERCLASS;
             return this;
         }
 
         public SignatureVisitor visitInterface() {
             if (debug) System.out.println(" visitInterface()");
             ((ClassInfo) info).getInterfaces().add("");
-            state = ClassFinder.GenericAwareInfoBuildingVisitor.STATE.INTERFACE;
+            state = GenericAwareInfoBuildingVisitor.STATE.INTERFACE;
             return this;
         }
 
@@ -748,7 +748,7 @@ public abstract class AbstractFinder {
                         ((ClassInfo) info).name += ">";
                     }
             }
-            state = ClassFinder.GenericAwareInfoBuildingVisitor.STATE.END;
+            state = GenericAwareInfoBuildingVisitor.STATE.END;
         }
 
         private String javaName(String name) {
