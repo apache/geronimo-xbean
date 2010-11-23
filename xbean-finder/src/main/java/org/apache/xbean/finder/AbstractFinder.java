@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,13 +48,105 @@ import org.objectweb.asm.signature.SignatureVisitor;
  */
 public abstract class AbstractFinder {
     private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
-    protected final List<ClassInfo> classInfos = new ArrayList<ClassInfo>();
+    protected final Map<String, ClassInfo> classInfos = new HashMap<String, ClassInfo>();
     private final List<String> classesNotLoaded = new ArrayList<String>();
     private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
 
     protected abstract URL getResource(String className);
 
     protected abstract Class<?> loadClass(String fixedName) throws ClassNotFoundException;
+
+    /**
+     * The link() method must be called to successfully use the findSubclasses and findImplementations methods
+     * @return
+     * @throws IOException
+     */
+    public AbstractFinder link() throws IOException {
+        for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
+
+            linkParent(classInfo);
+        }
+
+        for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
+
+            linkInterfaces(classInfo);
+        }
+
+        return this;
+    }
+
+    private void linkParent(ClassInfo classInfo) throws IOException {
+        if (classInfo.superType == null) return;
+        if (classInfo.superType.equals("java.lang.Object")) return;
+        
+        ClassInfo parentInfo = classInfo.superclassInfo;
+
+        if (parentInfo == null) {
+
+            parentInfo = classInfos.get(classInfo.superType);
+
+            if (parentInfo == null) {
+
+                if (classInfo.clazz != null) {
+                    readClassDef(((Class<?>) classInfo.clazz).getSuperclass());
+                } else {
+                    readClassDef(classInfo.superType);
+                }
+
+                parentInfo = classInfos.get(classInfo.superType);
+
+                if (parentInfo == null) return;
+                
+                linkParent(parentInfo);
+            }
+
+            classInfo.superclassInfo = parentInfo;
+        }
+
+        if (!parentInfo.subclassInfos.contains(classInfo)) {
+            parentInfo.subclassInfos.add(classInfo);
+        }
+    }
+
+    private void linkInterfaces(ClassInfo classInfo) throws IOException {
+        final List<ClassInfo> infos = new ArrayList<ClassInfo>();
+
+        if (classInfo.clazz != null){
+            final Class<?>[] interfaces = classInfo.clazz.getInterfaces();
+
+            for (Class<?> clazz : interfaces) {
+                ClassInfo interfaceInfo = classInfos.get(clazz.getName());
+
+                if (interfaceInfo == null){
+                    readClassDef(clazz);
+                }
+
+                interfaceInfo = classInfos.get(clazz.getName());
+
+                if (interfaceInfo != null) {
+                    infos.add(interfaceInfo);
+                }
+            }
+        } else {
+            for (String className : classInfo.interfaces) {
+                ClassInfo interfaceInfo = classInfos.get(className);
+
+                if (interfaceInfo == null){
+                    readClassDef(className);
+                }
+
+                interfaceInfo = classInfos.get(className);
+
+                if (interfaceInfo != null) {
+                    infos.add(interfaceInfo);
+                }
+            }
+        }
+
+        for (ClassInfo info : infos) {
+            linkInterfaces(info);
+        }
+    }
 
     public boolean isAnnotationPresent(Class<? extends Annotation> annotation) {
         List<Info> infos = annotated.get(annotation.getName());
@@ -138,7 +231,7 @@ public abstract class AbstractFinder {
             }
         }
         boolean annClassFound;
-        List<ClassInfo> tempClassInfos = new ArrayList<ClassInfo>(classInfos);
+        List<ClassInfo> tempClassInfos = new ArrayList<ClassInfo>(classInfos.values());
         do {
             annClassFound = false;
             for (int pos = 0; pos < tempClassInfos.size(); pos++) {
@@ -266,7 +359,7 @@ public abstract class AbstractFinder {
     public List<Class> findClassesInPackage(String packageName, boolean recursive) {
         classesNotLoaded.clear();
         List<Class> classes = new ArrayList<Class>();
-        for (ClassInfo classInfo : classInfos) {
+        for (ClassInfo classInfo : classInfos.values()) {
             try {
                 if (recursive && classInfo.getPackageName().startsWith(packageName)){
                     classes.add(classInfo.get());
@@ -280,18 +373,199 @@ public abstract class AbstractFinder {
         return classes;
     }
 
+    public <T> List<Class<? extends T>> findSubclasses(Class<T> clazz) {
+        if (clazz == null) throw new NullPointerException("class cannot be null");
+
+        classesNotLoaded.clear();
+
+        final ClassInfo classInfo = classInfos.get(clazz.getName());
+
+        List<Class<? extends T>> found = new ArrayList<Class<? extends T>>();
+        List<Class<? extends T>> found2 = new LinkedList<Class<? extends T>>();
+
+        if (classInfo == null) return found;
+
+        findSubclasses(classInfo, found);
+
+        return found;
+    }
+
+    private <T> void findSubclasses(ClassInfo classInfo, List<Class<? extends T>> found) {
+
+        for (ClassInfo subclassInfo : classInfo.subclassInfos) {
+
+            try {
+                found.add(subclassInfo.get());
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(subclassInfo.getName());
+            }
+
+            findSubclasses(subclassInfo, found);
+        }
+    }
+
+    private <T> List<Class<? extends T>> _findSubclasses(Class<T> clazz) {
+        if (clazz == null) throw new NullPointerException("class cannot be null");
+
+        List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
+
+
+        for (ClassInfo classInfo : classInfos.values()) {
+
+            try {
+
+                if (clazz.getName().equals(classInfo.superType)) {
+
+                    if (clazz.isAssignableFrom(classInfo.get())) {
+
+                        classes.add(classInfo.get());
+
+                        classes.addAll(_findSubclasses(classInfo.get()));
+                    }
+                }
+
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(classInfo.getName());
+            }
+
+        }
+
+        return classes;
+    }
+
+    public <T> List<Class<? extends T>> findImplementations(Class<T> clazz) {
+        if (clazz == null) throw new NullPointerException("class cannot be null");
+        if (!clazz.isInterface()) new IllegalArgumentException("class must be an interface");
+        classesNotLoaded.clear();
+
+        final String interfaceName = clazz.getName();
+
+        // Collect all interfaces extending the main interface (recursively)
+        // Collect all implementations of interfaces
+        // i.e. all *directly* implementing classes
+        List<ClassInfo> infos = collectImplementations(interfaceName);
+
+        // Collect all subclasses of implementations
+        List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
+        for (ClassInfo info : infos) {
+            try {
+                final Class<? extends T> impl = (Class<? extends T>) info.get();
+
+                if (clazz.isAssignableFrom(impl)) {
+                    classes.add(impl);
+
+                    // Optimization: Don't need to call this method if parent class was already searched
+
+
+
+                    classes.addAll(_findSubclasses(impl));
+                }
+
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(info.getName());
+            }
+        }
+        return classes;
+    }
+
+    private List<ClassInfo> collectImplementations(String interfaceName) {
+        final List<ClassInfo> infos = new ArrayList<ClassInfo>();
+
+        for (ClassInfo classInfo : classInfos.values()) {
+
+            if (classInfo.interfaces.contains(interfaceName)) {
+
+                infos.add(classInfo);
+
+                try {
+
+                    final Class clazz = classInfo.get();
+
+                    if (clazz.isInterface() && !clazz.isAnnotation()) {
+
+                        infos.addAll(collectImplementations(classInfo.name));
+
+                    }
+                    
+                } catch (ClassNotFoundException ignore) {
+                    // we'll deal with this later
+                }
+            }
+        }
+        return infos;
+    }
+
     protected List<Info> getAnnotationInfos(String name) {
         List<Info> infos = annotated.get(name);
         if (infos == null) {
-            infos = new ArrayList<Info>();
+            infos = new SingleLinkedList<Info>();
             annotated.put(name, infos);
         }
         return infos;
     }
 
+    protected void readClassDef(String className) {
+        if (!className.endsWith(".class")) {
+            className = className.replace('.', '/') + ".class";
+        }
+        try {
+            URL resource = getResource(className);
+            if (resource != null) {
+                InputStream in = resource.openStream();
+                try {
+                    readClassDef(in);
+                } finally {
+                    in.close();
+                }
+            } else {
+                new Exception("Could not load " + className).printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     protected void readClassDef(InputStream in) throws IOException {
         ClassReader classReader = new ClassReader(in);
         classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
+    }
+
+    protected void readClassDef(Class clazz) {
+        List<Info> infos = new ArrayList<Info>();
+
+        Package aPackage = clazz.getPackage();
+        if (aPackage != null){
+            final PackageInfo info = new PackageInfo(aPackage);
+            for (AnnotationInfo annotation : info.getAnnotations()) {
+                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
+                if (!annotationInfos.contains(info)) {
+                    annotationInfos.add(info);
+                }
+            }
+        }
+
+        ClassInfo classInfo = new ClassInfo(clazz);
+        infos.add(classInfo);
+        classInfos.put(clazz.getName(), classInfo);
+        for (Method method : clazz.getDeclaredMethods()) {
+            infos.add(new MethodInfo(classInfo, method));
+        }
+
+        for (Constructor constructor : clazz.getConstructors()) {
+            infos.add(new MethodInfo(classInfo, constructor));
+        }
+
+        for (Field field : clazz.getDeclaredFields()) {
+            infos.add(new FieldInfo(classInfo, field));
+        }
+
+        for (Info info : infos) {
+            for (AnnotationInfo annotation : info.getAnnotations()) {
+                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
+                annotationInfos.add(info);
+            }
+        }
     }
 
     public class Annotatable {
@@ -343,17 +617,35 @@ public abstract class AbstractFinder {
         public Package get() throws ClassNotFoundException {
             return (pkg != null)?pkg:info.get().getPackage();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            PackageInfo that = (PackageInfo) o;
+
+            if (name != null ? !name.equals(that.name) : that.name != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return name != null ? name.hashCode() : 0;
+        }
     }
 
     public class ClassInfo extends Annotatable implements Info {
         private String name;
-        private final List<MethodInfo> methods = new ArrayList<MethodInfo>();
-        private final List<MethodInfo> constructors = new ArrayList<MethodInfo>();
+        private final List<MethodInfo> methods = new SingleLinkedList<MethodInfo>();
+        private final List<MethodInfo> constructors = new SingleLinkedList<MethodInfo>();
         private String superType;
-        private final List<String> interfaces = new ArrayList<String>();
-        private final List<FieldInfo> fields = new ArrayList<FieldInfo>();
+        private ClassInfo superclassInfo;
+        private final List<ClassInfo> subclassInfos = new SingleLinkedList<ClassInfo>();
+        private final List<String> interfaces = new SingleLinkedList<String>();
+        private final List<FieldInfo> fields = new SingleLinkedList<FieldInfo>();
         private Class<?> clazz;
-        private ClassNotFoundException notFound;
 
         public ClassInfo(Class clazz) {
             super(clazz);
@@ -361,6 +653,9 @@ public abstract class AbstractFinder {
             this.name = clazz.getName();
             Class superclass = clazz.getSuperclass();
             this.superType = superclass != null ? superclass.getName(): null;
+            for (Class intrface : clazz.getInterfaces()) {
+                this.interfaces.add(intrface.getName());
+            }
         }
 
         public ClassInfo(String name, String superType) {
@@ -369,7 +664,7 @@ public abstract class AbstractFinder {
         }
 
         public String getPackageName(){
-        	  return name.substring(0,name.lastIndexOf("."));
+            return name.indexOf(".") > 0 ? name.substring(0, name.lastIndexOf(".")) : "" ;
         }
 
         public List<MethodInfo> getConstructors() {
@@ -398,18 +693,15 @@ public abstract class AbstractFinder {
 
         public Class get() throws ClassNotFoundException {
             if (clazz != null) return clazz;
-            if (notFound != null) throw notFound;
             try {
                 String fixedName = name.replaceFirst("<.*>", "");
                 this.clazz = loadClass(fixedName);
                 return clazz;
             } catch (ClassNotFoundException notFound) {
                 classesNotLoaded.add(name);
-                this.notFound = notFound;
                 throw notFound;
             }
         }
-
 
         public String toString() {
             return name;
@@ -544,6 +836,7 @@ public abstract class AbstractFinder {
             this.info = info;
         }
 
+        @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             if (name.endsWith("package-info")) {
                 info = new PackageInfo(javaName(name));
@@ -559,7 +852,7 @@ public abstract class AbstractFinder {
                     new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
                 }
                 info = classInfo;
-                classInfos.add(classInfo);
+                classInfos.put(classInfo.getName(), classInfo);
             }
         }
 
@@ -567,6 +860,7 @@ public abstract class AbstractFinder {
             return (name == null)? null:name.replace('/', '.');
         }
 
+        @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
             info.getAnnotations().add(annotationInfo);
@@ -574,6 +868,7 @@ public abstract class AbstractFinder {
             return new InfoBuildingVisitor(annotationInfo);
         }
 
+        @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             ClassInfo classInfo = ((ClassInfo) info);
             FieldInfo fieldInfo = new FieldInfo(classInfo, name, desc);
@@ -581,6 +876,7 @@ public abstract class AbstractFinder {
             return new InfoBuildingVisitor(fieldInfo);
         }
 
+        @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             ClassInfo classInfo = ((ClassInfo) info);
             MethodInfo methodInfo = new MethodInfo(classInfo, name, desc);
@@ -588,6 +884,7 @@ public abstract class AbstractFinder {
             return new InfoBuildingVisitor(methodInfo);
         }
 
+        @Override
         public AnnotationVisitor visitParameterAnnotation(int param, String desc, boolean visible) {
             MethodInfo methodInfo = ((MethodInfo) info);
             List<AnnotationInfo> annotationInfos = methodInfo.getParameterAnnotations(param);

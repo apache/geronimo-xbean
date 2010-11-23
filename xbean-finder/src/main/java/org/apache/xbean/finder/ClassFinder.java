@@ -132,40 +132,11 @@ public class ClassFinder extends AbstractFinder {
 
     public ClassFinder(List<Class> classes){
         this.classLoader = null;
-        List<Info> infos = new ArrayList<Info>();
-        List<Package> packages = new ArrayList<Package>();
         for (Class clazz : classes) {
-
             try {
-                Package aPackage = clazz.getPackage();
-                if (aPackage != null && !packages.contains(aPackage)){
-                    infos.add(new PackageInfo(aPackage));
-                    packages.add(aPackage);
-                }
-
-                ClassInfo classInfo = new ClassInfo(clazz);
-                infos.add(classInfo);
-                classInfos.add(classInfo);
-                for (Method method : clazz.getDeclaredMethods()) {
-                    infos.add(new MethodInfo(classInfo, method));
-                }
-
-                for (Constructor constructor : clazz.getConstructors()) {
-                    infos.add(new MethodInfo(classInfo, constructor));
-                }
-
-                for (Field field : clazz.getDeclaredFields()) {
-                    infos.add(new FieldInfo(classInfo, field));
-                }
+                readClassDef(clazz);
             } catch (NoClassDefFoundError e) {
                 throw new NoClassDefFoundError("Could not fully load class: " + clazz.getName() + "\n due to:" + e.getMessage() + "\n in classLoader: \n" + clazz.getClassLoader());
-            }
-        }
-
-        for (Info info : infos) {
-            for (AnnotationInfo annotation : info.getAnnotations()) {
-                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
-                annotationInfos.add(info);
             }
         }
     }
@@ -253,25 +224,4 @@ public class ClassFinder extends AbstractFinder {
         return classNames;
     }
 
-    protected void readClassDef(String className) {
-        if (!className.endsWith(".class")) {
-            className = className.replace('.', '/') + ".class";
-        }
-        try {
-            URL resource = getResource(className);
-            if (resource != null) {
-                InputStream in = resource.openStream();
-                try {
-                    readClassDef(in);
-                } finally {
-                    in.close();
-                }
-            } else {
-                new Exception("Could not load " + className).printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 }
