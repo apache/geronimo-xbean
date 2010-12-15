@@ -151,5 +151,17 @@ public class SingleLinkedListTest extends TestCase {
             // pass
         }
     }
+    
+    public void testIsEmpty() {
+        SingleLinkedList<String> temp = new SingleLinkedList<String>();
+        assertTrue(temp.isEmpty());
+        assertEquals(0, temp.size());
+        temp.add("one"); 
+        assertFalse(temp.isEmpty());
+        assertEquals(1, temp.size());
+        temp.clear(); 
+        assertTrue(temp.isEmpty());
+        assertEquals(0, temp.size());
+    }
 
 }

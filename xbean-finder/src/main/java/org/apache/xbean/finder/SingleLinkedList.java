@@ -45,7 +45,7 @@ public class SingleLinkedList<E> implements List<E> {
     }
 
     public boolean isEmpty() {
-        return size() > 0;
+        return size() == 0;
     }
 
     public boolean contains(Object o) {
@@ -116,6 +116,7 @@ public class SingleLinkedList<E> implements List<E> {
 
     public void clear() {
         this.entry = null;
+        this.size = 0; 
     }
 
     public E get(int index) {
