@@ -169,7 +169,7 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
             return true;
         }
         //Check ancestor intefaces
-        URL url = bundle.getResource("/" + interfaceName + ".class");
+        URL url = bundle.getResource(interfaceName + ".class");
         if (url == null) {
             //TODO what should we do if we do not find the interface ?
             return false;
@@ -211,7 +211,7 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
         }
         
         //Check parent class
-        URL url = bundle.getResource("/" + superClassName + ".class");
+        URL url = bundle.getResource(superClassName + ".class");
         if (url == null) {
             //TODO what should we do if we do not find the super class ?
             return false;
