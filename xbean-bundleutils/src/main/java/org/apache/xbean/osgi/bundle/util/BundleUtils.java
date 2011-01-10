@@ -38,14 +38,59 @@ import org.osgi.service.packageadmin.PackageAdmin;
  */
 public class BundleUtils {
 
+    /**
+     *  Based on the constant field values, if it is bigger than the RESOLVED status value, the bundle has been resolved by the framework
+     * @param bundle
+     * @return true if the bundle is resolved, or false if not.
+     */
+    public static boolean isResolved(Bundle bundle) {
+        return bundle.getState() >= Bundle.RESOLVED;
+    }
+
+    /**
+     * resolve method will try to load the Object.class, the behavior triggers a resolved request to the OSGI framework.
+     * @param bundle
+     */
+    public static void resolve(Bundle bundle) {
+        if (isFragment(bundle)) {
+            return;
+        }
+        try {
+            bundle.loadClass(Object.class.getName());
+        } catch (Exception e) {
+        }
+    }
+
+    /**
+     * If the bundle fulfills the conditions below, it could be started
+     * a. Not in the UNINSTALLED status.
+     * b. Not in the STARTING status.
+     * c. Not a fragment bundle.
+     * @param bundle
+     * @return
+     */
     public static boolean canStart(Bundle bundle) {
         return (bundle.getState() != Bundle.UNINSTALLED) && (bundle.getState() != Bundle.STARTING) && (!isFragment(bundle));
     }
 
+    /**
+     * If the bundle fulfills the conditions below, it could be stopped
+     * a. Not in the UNINSTALLED status.
+     * b. Not in the STOPPING status.
+     * c. Not a fragment bundle.
+     * @param bundle
+     * @return
+     */
     public static boolean canStop(Bundle bundle) {
         return (bundle.getState() != Bundle.UNINSTALLED) && (bundle.getState() != Bundle.STOPPING) && (!isFragment(bundle));
     }
 
+    /**
+     * If the bundle fulfills the conditions below, it could be un-installed
+     * a. Not in the UNINSTALLED status.
+     * @param bundle
+     * @return
+     */
     public static boolean canUninstall(Bundle bundle) {
         return bundle.getState() != Bundle.UNINSTALLED;
     }
