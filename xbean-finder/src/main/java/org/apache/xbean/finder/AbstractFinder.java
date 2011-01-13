@@ -572,7 +572,7 @@ public abstract class AbstractFinder {
         private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
 
         public Annotatable(AnnotatedElement element) {
-            for (Annotation annotation : element.getAnnotations()) {
+            for (Annotation annotation : getAnnotations(element)) {
                 annotations.add(new AnnotationInfo(annotation.annotationType().getName()));
             }
         }
@@ -582,6 +582,32 @@ public abstract class AbstractFinder {
 
         public List<AnnotationInfo> getAnnotations() {
             return annotations;
+        }
+        
+        /**
+         * Utility method to get around some errors caused by 
+         * interactions between the Equinox class loaders and 
+         * the OpenJPA transformation process.  There is a window 
+         * where the OpenJPA transformation process can cause 
+         * an annotation being processed to get defined in a 
+         * classloader during the actual defineClass call for 
+         * that very class (e.g., recursively).  This results in 
+         * a LinkageError exception.  If we see one of these, 
+         * retry the request.  Since the annotation will be 
+         * defined on the second pass, this should succeed.  If 
+         * we get a second exception, then it's likely some 
+         * other problem. 
+         * 
+         * @param element The AnnotatedElement we need information for.
+         * 
+         * @return An array of the Annotations defined on the element. 
+         */
+        private Annotation[] getAnnotations(AnnotatedElement element) {
+            try {
+                return element.getAnnotations();
+            } catch (LinkageError e) {
+                return element.getAnnotations();
+            }
         }
 
     }
