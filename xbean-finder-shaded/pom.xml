@@ -32,8 +32,8 @@
     <name>Apache XBean :: Finder shaded (repackaged)</name>
 
     <properties>
-        <xbean.osgi.export>org.apache.xbean.finder;version=${pom.version}</xbean.osgi.export>
-        <xbean.osgi.import>org.apache.xbean.finder;version=${pom.version},org.apache.xbean.asm;version=3.1,org.apache.xbean.asm.commons;version=3.1</xbean.osgi.import>
+        <xbean.osgi.export>org.apache.xbean.finder;version=${project.version}</xbean.osgi.export>
+        <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm;version=3.1,org.apache.xbean.asm.commons;version=3.1</xbean.osgi.import>
     </properties>
 
     <build>
@@ -79,7 +79,7 @@
                       <configuration>
                           <tasks>
                               <delete dir="${project.build.directory}/classes" />
-                              <unzip src="${project.build.directory}/xbean-finder-shaded-${pom.version}.jar" dest="${project.build.directory}/classes" />
+                              <unzip src="${project.build.directory}/xbean-finder-shaded-${project.version}.jar" dest="${project.build.directory}/classes" />
                           </tasks>
                       </configuration>
                   </execution>
@@ -112,12 +112,12 @@
         <dependency>
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-finder</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
         </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-asm-shaded</artifactId>
-        <version>${version}</version>
+        <version>${project.version}</version>
       </dependency>
     </dependencies>
 </project>

@@ -78,7 +78,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>!org.apache.xbean.asm.*,org.apache.xbean.*;version=${pom.version}</Export-Package>
+                        <Export-Package>!org.apache.xbean.asm.*,org.apache.xbean.*;version=${project.version}</Export-Package>
                         <Import-Package>*,org.apache.log4j;resolution:=optional,org.apache.commons.logging;resolution:=optional,org.objectweb.asm;resolution:=optional;version=3.1,org.objectweb.asm.commons;resolution:=optional;version=3.1,org.apache.xbean.asm;resolution:=optional;version=3.1,org.apache.xbean.asm.commons;resolution:=optional;version=3.1</Import-Package>
                     </instructions>
                 </configuration>
