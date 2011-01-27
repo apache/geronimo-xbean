@@ -68,7 +68,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>org.apache.xbean.finder.*;version=${pom.version}</Export-Package>
+                        <Export-Package>org.apache.xbean.finder.*;version=${project.version}</Export-Package>
                         <Import-Package>
                             org.objectweb.asm;version=3.1,
                             org.objectweb.asm.commons;version=3.1,
