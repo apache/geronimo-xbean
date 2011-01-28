@@ -16,10 +16,13 @@
  */
 package org.apache.xbean.finder;
 
-import junit.framework.TestCase;
-
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * @version $Rev$ $Date$
@@ -72,6 +75,14 @@ public class ClassFinderDepthTest extends TestCase {
 
         assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
         assertImplementations(finder, Hue.class, HSB.class, Color.class, Red.class, Crimson.class);
+    }
+    
+    public void testAnnotationImpl() throws Exception {
+        URL url1 = new File("/Users/david/.m2/repository/org/apache/geronimo/specs/geronimo-jcdi_1.0_spec/1.0/geronimo-jcdi_1.0_spec-1.0.jar").toURI().toURL();
+        URL url2 = new File("/Users/david/.m2/repository/org/jboss/jsr299/tck/jsr299-tck-impl/1.0.4.CR1/jsr299-tck-impl-1.0.4.CR1.jar").toURI().toURL();
+
+        ClassLoader parent = getClass().getClassLoader();
+        final AbstractFinder finder = new ClassFinder(new URLClassLoader(new URL[] {url1, url2}, parent)).link();
     }
 
     private void assertSubclasses(AbstractFinder finder, Class<?> clazz, Class... subclasses) {

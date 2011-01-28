@@ -19,6 +19,13 @@ package org.apache.xbean.finder;
 /**
  * @version $Rev$ $Date$
  */
+
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import junit.framework.TestCase;
 import org.acme.BarUrlHandler;
 import org.acme.FooUrlHandler;
@@ -28,13 +35,6 @@ import org.acme.Two;
 import org.acme.javaURLContextFactory;
 import org.acme.kernelURLContextFactory;
 import org.acme.ldapURLContextFactory;
-
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.ArrayList;
 
 public class ResourceFinderTest extends TestCase {
     ResourceFinder resourceFinder = new ResourceFinder("META-INF/");
@@ -84,7 +84,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAllStrings() throws Exception {
-        List<String> manifests = null;
+        List<String> manifests;
         try {
             manifests = resourceFinder.findAllStrings("MANIFEST.MF");
         } catch (Exception thisIsLegal) {
@@ -155,7 +155,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAllClasses() throws Exception {
-        List<Class> classes = resourceFinder.findAllClasses("java.io.Serializable");
+        List<Class<?>> classes = resourceFinder.findAllClasses("java.io.Serializable");
         assertEquals("size", 1, classes.size());
         assertEquals(One.class, classes.get(0));
 
@@ -170,7 +170,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAvailableClasses() throws Exception {
-        List<Class> classes = resourceFinder.findAvailableClasses("java.io.Serializable");
+        List<Class<?>> classes = resourceFinder.findAvailableClasses("java.io.Serializable");
         assertEquals("size", 1, classes.size());
         assertEquals(One.class, classes.get(0));
 
@@ -179,7 +179,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAllClasses() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAllClasses("serializables");
+        Map<String, Class<?>> resourcesMap = resourceFinder.mapAllClasses("serializables");
 
         assertEquals("map size", 3, resourcesMap.size());
         assertTrue("map contains key 'one'", resourcesMap.containsKey("one"));
@@ -202,7 +202,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAvailableClasses() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAvailableClasses("externalizables");
+        Map<String, Class<?>> resourcesMap = resourceFinder.mapAvailableClasses("externalizables");
 
         assertEquals("map size", 2, resourcesMap.size());
         assertTrue("map contains key 'one'", resourcesMap.containsKey("one"));
@@ -233,7 +233,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAllImplementations() throws Exception {
-        List<Class> classes = resourceFinder.findAllImplementations(java.io.Serializable.class);
+        List<Class<? extends java.io.Serializable>> classes = resourceFinder.findAllImplementations(java.io.Serializable.class);
         assertEquals("size", 1, classes.size());
         assertEquals(One.class, classes.get(0));
 
@@ -247,7 +247,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAllImplementations() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAllImplementations(javax.naming.spi.ObjectFactory.class);
+        Map<String, Class<? extends javax.naming.spi.ObjectFactory>> resourcesMap = resourceFinder.mapAllImplementations(javax.naming.spi.ObjectFactory.class);
 
         assertEquals("map size", 3, resourcesMap.size());
         assertTrue("map contains key 'java'", resourcesMap.containsKey("java"));
@@ -270,7 +270,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAvailableImplementations() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAvailableImplementations(java.net.URLStreamHandler.class);
+        Map<String, Class<? extends java.net.URLStreamHandler>> resourcesMap = resourceFinder.mapAvailableImplementations(java.net.URLStreamHandler.class);
 
         assertEquals("map size", 2, resourcesMap.size());
         assertTrue("map contains key 'bar'", resourcesMap.containsKey("bar"));

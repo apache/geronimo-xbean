@@ -81,8 +81,8 @@ public class BundleClassFinder {
         this.discoveryFilter = discoveryFilter;
     }
 
-    public List<Class> loadClasses(Set<String> classes) {
-        List<Class> loadedClasses = new ArrayList<Class>(classes.size());
+    public List<Class<?>> loadClasses(Set<String> classes) {
+        List<Class<?>> loadedClasses = new ArrayList<Class<?>>(classes.size());
         for (String clazz : classes) {
             try {
                 loadedClasses.add(bundle.loadClass(clazz));

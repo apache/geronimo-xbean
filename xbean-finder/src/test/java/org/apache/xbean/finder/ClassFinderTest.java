@@ -16,22 +16,34 @@
  */
 package org.apache.xbean.finder;
 
-import junit.framework.TestCase;
-import org.acme.bar.Get;
-import org.acme.bar.ParamA;
-import org.acme.bar.Construct;
-import org.acme.bar.Type;
-import org.acme.bar.AnnType;
-import org.acme.bar.FullyAnnotated;
-import org.acme.foo.*;
-
-import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
+
+import junit.framework.TestCase;
+import org.acme.bar.AnnType;
+import org.acme.bar.Construct;
+import org.acme.bar.FullyAnnotated;
+import org.acme.bar.Get;
+import org.acme.bar.ParamA;
+import org.acme.bar.Type;
+import org.acme.foo.Blue;
+import org.acme.foo.Color;
+import org.acme.foo.Deployable;
+import org.acme.foo.FamilyHalloween;
+import org.acme.foo.FunnyFamilyHalloween;
+import org.acme.foo.GenericHoliday;
+import org.acme.foo.Green;
+import org.acme.foo.Halloween;
+import org.acme.foo.Holiday;
+import org.acme.foo.Primary;
+import org.acme.foo.Property;
+import org.acme.foo.Red;
+import org.acme.foo.StringGenericHoliday;
+import org.acme.foo.Thanksgiving;
+import org.acme.foo.ValentinesDay;
 
 /**
  * @author David Blevins
@@ -66,7 +78,7 @@ public class ClassFinderTest extends TestCase {
     public void testFindAnnotatedClasses() throws Exception {
 
         Class[] expected = {Halloween.class, Thanksgiving.class, ValentinesDay.class, GenericHoliday.class};
-        List<Class> actual = classFinder.findAnnotatedClasses(Holiday.class);
+        List<Class<?>> actual = classFinder.findAnnotatedClasses(Holiday.class);
 
         assertNotNull(actual);
         assertEquals(expected.length, actual.size());
@@ -95,7 +107,7 @@ public class ClassFinderTest extends TestCase {
 
     public void testFindInheritedAnnotatedClassesInherited() throws Exception {
         Class[] expected = {FunnyFamilyHalloween.class, FamilyHalloween.class, Halloween.class, Thanksgiving.class, ValentinesDay.class, GenericHoliday.class, StringGenericHoliday.class};
-        List<Class> actual = classFinder.findInheritedAnnotatedClasses(Holiday.class);
+        List<Class<?>> actual = classFinder.findInheritedAnnotatedClasses(Holiday.class);
 
         assertNotNull(actual);
         assertEquals(expected.length, actual.size());
@@ -155,11 +167,11 @@ public class ClassFinderTest extends TestCase {
         testFindAnnotatedPackages();
     }
     public void testFindClassesInPackage() throws Exception{
-    	List<Class> classesInPackage = classFinder.findClassesInPackage("org.acme.foo", false);
-    	Class[] classesArray = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class,
+    	List<Class<?>> classesInPackage = classFinder.findClassesInPackage("org.acme.foo", false);
+    	Class<?>[] classesArray = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class,
                 Red.CandyApple.class, Red.Pink.class, Halloween.class, Holiday.class, Deployable.class, Primary.class,
                 Property.class, Thanksgiving.class, ValentinesDay.class};
-    	List<Class> classes = Arrays.asList(classesArray);
+    	List<Class<?>> classes = Arrays.asList(classesArray);
     	assertEquals(true, classesInPackage.containsAll(classes));
     }
 }

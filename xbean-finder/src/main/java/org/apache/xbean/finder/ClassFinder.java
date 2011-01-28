@@ -19,9 +19,6 @@ package org.apache.xbean.finder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -126,13 +123,13 @@ public class ClassFinder extends AbstractFinder {
         }
     }
 
-    public ClassFinder(Class... classes){
+    public ClassFinder(Class<?>... classes){
         this(Arrays.asList(classes));
     }
 
-    public ClassFinder(List<Class> classes){
+    public ClassFinder(List<Class<?>> classes){
         this.classLoader = null;
-        for (Class clazz : classes) {
+        for (Class<?> clazz : classes) {
             try {
                 readClassDef(clazz);
             } catch (NoClassDefFoundError e) {
