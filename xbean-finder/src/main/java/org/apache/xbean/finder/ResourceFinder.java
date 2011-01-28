@@ -312,9 +312,9 @@ public class ResourceFinder {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public Class findClass(String uri) throws IOException, ClassNotFoundException {
+    public Class<?> findClass(String uri) throws IOException, ClassNotFoundException {
         String className = findString(uri);
-        return (Class) classLoader.loadClass(className);
+        return classLoader.loadClass(className);
     }
 
     /**
@@ -328,11 +328,11 @@ public class ResourceFinder {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public List<Class> findAllClasses(String uri) throws IOException, ClassNotFoundException {
-        List<Class> classes = new ArrayList<Class>();
+    public List<Class<?>> findAllClasses(String uri) throws IOException, ClassNotFoundException {
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         List<String> strings = findAllStrings(uri);
         for (String className : strings) {
-            Class clazz = classLoader.loadClass(className);
+            Class<?> clazz = classLoader.loadClass(className);
             classes.add(clazz);
         }
         return classes;
@@ -349,13 +349,13 @@ public class ResourceFinder {
      * @return
      * @throws IOException if classLoader.getResources throws an exception
      */
-    public List<Class> findAvailableClasses(String uri) throws IOException {
+    public List<Class<?>> findAvailableClasses(String uri) throws IOException {
         resourcesNotLoaded.clear();
-        List<Class> classes = new ArrayList<Class>();
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         List<String> strings = findAvailableStrings(uri);
         for (String className : strings) {
             try {
-                Class clazz = classLoader.loadClass(className);
+                Class<?> clazz = classLoader.loadClass(className);
                 classes.add(clazz);
             } catch (Exception notAvailable) {
                 resourcesNotLoaded.add(className);
@@ -387,14 +387,13 @@ public class ResourceFinder {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public Map<String, Class> mapAllClasses(String uri) throws IOException, ClassNotFoundException {
-        Map<String, Class> classes = new HashMap<String, Class>();
+    public Map<String, Class<?>> mapAllClasses(String uri) throws IOException, ClassNotFoundException {
+        Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
         Map<String, String> map = mapAllStrings(uri);
-        for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String string = (String) entry.getKey();
-            String className = (String) entry.getValue();
-            Class clazz = classLoader.loadClass(className);
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String string = entry.getKey();
+            String className = entry.getValue();
+            Class<?> clazz = classLoader.loadClass(className);
             classes.put(string, clazz);
         }
         return classes;
@@ -423,16 +422,15 @@ public class ResourceFinder {
      * @return
      * @throws IOException if classLoader.getResources throws an exception
      */
-    public Map<String, Class> mapAvailableClasses(String uri) throws IOException {
+    public Map<String, Class<?>> mapAvailableClasses(String uri) throws IOException {
         resourcesNotLoaded.clear();
-        Map<String, Class> classes = new HashMap<String, Class>();
+        Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
         Map<String, String> map = mapAvailableStrings(uri);
-        for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String string = (String) entry.getKey();
-            String className = (String) entry.getValue();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String string = entry.getKey();
+            String className = entry.getValue();
             try {
-                Class clazz = classLoader.loadClass(className);
+                Class<?> clazz = classLoader.loadClass(className);
                 classes.put(string, clazz);
             } catch (Exception notAvailable) {
                 resourcesNotLoaded.add(className);
@@ -468,9 +466,9 @@ public class ResourceFinder {
      * @throws ClassNotFoundException if the class found is not loadable
      * @throws ClassCastException     if the class found is not assignable to the specified superclass or interface
      */
-    public Class findImplementation(Class interfase) throws IOException, ClassNotFoundException {
+    public Class<?> findImplementation(Class<?> interfase) throws IOException, ClassNotFoundException {
         String className = findString(interfase.getName());
-        Class impl = classLoader.loadClass(className);
+        Class<?> impl = classLoader.loadClass(className);
         if (!interfase.isAssignableFrom(impl)) {
             throw new ClassCastException("Class not of type: " + interfase.getName());
         }
@@ -502,14 +500,11 @@ public class ResourceFinder {
      * @throws ClassNotFoundException if the class found is not loadable
      * @throws ClassCastException     if the class found is not assignable to the specified superclass or interface
      */
-    public List<Class> findAllImplementations(Class interfase) throws IOException, ClassNotFoundException {
-        List<Class> implementations = new ArrayList<Class>();
+    public <T> List<Class<? extends T>> findAllImplementations(Class<T> interfase) throws IOException, ClassNotFoundException {
+        List<Class<? extends T>> implementations = new ArrayList<Class<? extends T>>();
         List<String> strings = findAllStrings(interfase.getName());
         for (String className : strings) {
-            Class impl = classLoader.loadClass(className);
-            if (!interfase.isAssignableFrom(impl)) {
-                throw new ClassCastException("Class not of type: " + interfase.getName());
-            }
+            Class<? extends T> impl = classLoader.loadClass(className).asSubclass(interfase);
             implementations.add(impl);
         }
         return implementations;
@@ -538,15 +533,15 @@ public class ResourceFinder {
      * @return
      * @throws IOException if classLoader.getResources throws an exception
      */
-    public List<Class> findAvailableImplementations(Class interfase) throws IOException {
+    public <T> List<Class<? extends T>> findAvailableImplementations(Class<T> interfase) throws IOException {
         resourcesNotLoaded.clear();
-        List<Class> implementations = new ArrayList<Class>();
+        List<Class<? extends T>> implementations = new ArrayList<Class<? extends T>>();
         List<String> strings = findAvailableStrings(interfase.getName());
         for (String className : strings) {
             try {
-                Class impl = classLoader.loadClass(className);
+                Class<?> impl = classLoader.loadClass(className);
                 if (interfase.isAssignableFrom(impl)) {
-                    implementations.add(impl);
+                    implementations.add(impl.asSubclass(interfase));
                 } else {
                     resourcesNotLoaded.add(className);
                 }
@@ -582,17 +577,13 @@ public class ResourceFinder {
      * @throws ClassNotFoundException if the class found is not loadable
      * @throws ClassCastException     if the class found is not assignable to the specified superclass or interface
      */
-    public Map<String, Class> mapAllImplementations(Class interfase) throws IOException, ClassNotFoundException {
-        Map<String, Class> implementations = new HashMap<String, Class>();
+    public <T> Map<String, Class<? extends T>> mapAllImplementations(Class<T> interfase) throws IOException, ClassNotFoundException {
+        Map<String, Class<? extends T>> implementations = new HashMap<String, Class<? extends T>>();
         Map<String, String> map = mapAllStrings(interfase.getName());
-        for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String string = (String) entry.getKey();
-            String className = (String) entry.getValue();
-            Class impl = classLoader.loadClass(className);
-            if (!interfase.isAssignableFrom(impl)) {
-                throw new ClassCastException("Class not of type: " + interfase.getName());
-            }
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String string = entry.getKey();
+            String className = entry.getValue();
+            Class<? extends T> impl = classLoader.loadClass(className).asSubclass(interfase);
             implementations.put(string, impl);
         }
         return implementations;
@@ -621,18 +612,17 @@ public class ResourceFinder {
      * @return
      * @throws IOException if classLoader.getResources throws an exception
      */
-    public Map<String, Class> mapAvailableImplementations(Class interfase) throws IOException {
+    public <T> Map<String, Class<? extends T>> mapAvailableImplementations(Class<T> interfase) throws IOException {
         resourcesNotLoaded.clear();
-        Map<String, Class> implementations = new HashMap<String, Class>();
+        Map<String, Class<? extends T>> implementations = new HashMap<String, Class<? extends T>>();
         Map<String, String> map = mapAvailableStrings(interfase.getName());
-        for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String string = (String) entry.getKey();
-            String className = (String) entry.getValue();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String string = entry.getKey();
+            String className = entry.getValue();
             try {
-                Class impl = classLoader.loadClass(className);
+                Class<?> impl = classLoader.loadClass(className);
                 if (interfase.isAssignableFrom(impl)) {
-                    implementations.put(string, impl);
+                    implementations.put(string, impl.asSubclass(interfase));
                 } else {
                     resourcesNotLoaded.add(className);
                 }

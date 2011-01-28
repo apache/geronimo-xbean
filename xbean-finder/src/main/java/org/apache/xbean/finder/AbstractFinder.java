@@ -31,7 +31,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -190,9 +189,9 @@ public abstract class AbstractFinder {
         return packages;
     }
 
-    public List<Class> findAnnotatedClasses(Class<? extends Annotation> annotation) {
+    public List<Class<?>> findAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class> classes = new ArrayList<Class>();
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof ClassInfo) {
@@ -217,9 +216,9 @@ public abstract class AbstractFinder {
      * @param annotation
      * @return list of directly or indirectly (inherited) annotated classes
      */
-    public List<Class> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
+    public List<Class<?>> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class> classes = new ArrayList<Class>();
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             try {
@@ -356,9 +355,9 @@ public abstract class AbstractFinder {
         return fields;
     }
 
-    public List<Class> findClassesInPackage(String packageName, boolean recursive) {
+    public List<Class<?>> findClassesInPackage(String packageName, boolean recursive) {
         classesNotLoaded.clear();
-        List<Class> classes = new ArrayList<Class>();
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         for (ClassInfo classInfo : classInfos.values()) {
             try {
                 if (recursive && classInfo.getPackageName().startsWith(packageName)){
@@ -381,26 +380,25 @@ public abstract class AbstractFinder {
         final ClassInfo classInfo = classInfos.get(clazz.getName());
 
         List<Class<? extends T>> found = new ArrayList<Class<? extends T>>();
-        List<Class<? extends T>> found2 = new LinkedList<Class<? extends T>>();
 
         if (classInfo == null) return found;
 
-        findSubclasses(classInfo, found);
+        findSubclasses(classInfo, found, clazz);
 
         return found;
     }
 
-    private <T> void findSubclasses(ClassInfo classInfo, List<Class<? extends T>> found) {
+    private <T> void findSubclasses(ClassInfo classInfo, List<Class<? extends T>> found, Class<T> clazz) {
 
         for (ClassInfo subclassInfo : classInfo.subclassInfos) {
 
             try {
-                found.add(subclassInfo.get());
+                found.add(subclassInfo.get().asSubclass(clazz));
             } catch (ClassNotFoundException e) {
                 classesNotLoaded.add(subclassInfo.getName());
             }
 
-            findSubclasses(subclassInfo, found);
+            findSubclasses(subclassInfo, found, clazz);
         }
     }
 
@@ -418,9 +416,9 @@ public abstract class AbstractFinder {
 
                     if (clazz.isAssignableFrom(classInfo.get())) {
 
-                        classes.add(classInfo.get());
+                        classes.add(classInfo.get().asSubclass(clazz));
 
-                        classes.addAll(_findSubclasses(classInfo.get()));
+                        classes.addAll(_findSubclasses(classInfo.get().asSubclass(clazz)));
                     }
                 }
 
@@ -505,6 +503,14 @@ public abstract class AbstractFinder {
     }
 
     protected void readClassDef(String className) {
+        int pos = className.indexOf("<");
+        if (pos > -1) {
+            className = className.substring(0, pos);
+        }
+        pos = className.indexOf(">");
+        if (pos > -1) {
+            className = className.substring(0, pos);
+        }
         if (!className.endsWith(".class")) {
             className = className.replace('.', '/') + ".class";
         }
@@ -717,7 +723,7 @@ public abstract class AbstractFinder {
             return superType;
         }
 
-        public Class get() throws ClassNotFoundException {
+        public Class<?> get() throws ClassNotFoundException {
             if (clazz != null) return clazz;
             try {
                 String fixedName = name.replaceFirst("<.*>", "");
