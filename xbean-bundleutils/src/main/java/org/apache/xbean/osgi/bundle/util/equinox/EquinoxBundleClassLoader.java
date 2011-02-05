@@ -17,57 +17,45 @@
  * under the License.
  */
 
-package org.apache.xbean.osgi.bundle.util;
+package org.apache.xbean.osgi.bundle.util.equinox;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 
+import org.apache.xbean.osgi.bundle.util.BundleResourceHelper;
+import org.apache.xbean.osgi.bundle.util.DelegatingBundle;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 
 /**
  * ClassLoader for a {@link Bundle}. 
  * <br/>
- * In OSGi, resource lookup on resources in the <i>META-INF</i> directory using {@link Bundle#getResource(String)} or 
- * {@link Bundle#getResources(String)} does not return the resources found in the wired bundles of the bundle 
- * (wired via <i>Import-Package</i> or <i>DynamicImport-Package</i>). This class loader implementation provides 
- * {@link #getResource(String) and {@link #getResources(String)} methods that do delegate such resource lookups to
- * the wired bundles. 
- * <br/>
- * The URLs returned by {@link Bundle#getResource(String)} or {@link Bundle#getResources(String)} methods are 
- * OSGi framework specific &quot;bundle&quot; URLs. This sometimes can cause problems with 3rd party libraries
- * which do not understand how to interpret the &quot;bundle&quot; URLs. This ClassLoader implementation, if enabled,
- * can return <tt>jar</tt> URLs for resources found in embedded jars in the bundle. If a resource is found within a
- * directory in the bundle the URL returned for that resource is unconverted.
+ * This ClassLoader implementation extends the {@link URLClassLoader} and converts resource &quot;bundle&quot;
+ * URLs (found in directories or embedded jar files) into regular <tt>jar</tt> URLs. 
+ * This ClassLoader implementation will only work on Equinox framework.
  * 
  * @version $Rev$ $Date$
  */
-public class BundleClassLoader extends ClassLoader implements BundleReference {
+public class EquinoxBundleClassLoader extends URLClassLoader implements BundleReference {
 
-    protected final Bundle bundle;
-    protected final BundleResourceHelper resourceHelper;
-
-    public BundleClassLoader(Bundle bundle) {
-        this(bundle, true, false);
-    }
-        
-    public BundleClassLoader(Bundle bundle, boolean searchWiredBundles) {
-        this(bundle, searchWiredBundles, false);
+    private final Bundle bundle;
+    private final BundleResourceHelper resourceHelper;
+    
+    public EquinoxBundleClassLoader(Bundle bundle) {
+        super(new URL[] {});
+        this.bundle = bundle;
+        this.resourceHelper = new EquinoxBundleResourceHelper(getBundle());
+        this.resourceHelper.setSearchWiredBundles(true);
+        this.resourceHelper.setConvertResourceUrls(true);
     }
     
-    public BundleClassLoader(Bundle bundle, boolean searchWiredBundles, boolean convertResourceUrls) {
-        this.bundle = bundle;
-        this.resourceHelper = new BundleResourceHelper(getBundle());
-        this.resourceHelper.setSearchWiredBundles(searchWiredBundles);
-        this.resourceHelper.setConvertResourceUrls(convertResourceUrls);
-    }
-
     @Override
     public String toString() {
-        return "[BundleClassLoader] " + bundle;
+        return "[EquinoxBundleClassLoader] " + bundle;
     }
-    
+  
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         Class clazz = bundle.loadClass(name);
@@ -139,7 +127,7 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
     public Bundle getBundle() {
         return getBundle(true);
     }
-
+    
     @Override
     public int hashCode() {
         return bundle.hashCode();
@@ -153,8 +141,8 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
         if (other == null || !other.getClass().equals(getClass())) {
             return false;
         }
-        BundleClassLoader otherBundleClassLoader = (BundleClassLoader) other;
+        EquinoxBundleClassLoader otherBundleClassLoader = (EquinoxBundleClassLoader) other;
         return this.bundle == otherBundleClassLoader.bundle;
     }
-
+    
 }
