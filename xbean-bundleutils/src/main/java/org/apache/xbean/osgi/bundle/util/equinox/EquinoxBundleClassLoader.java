@@ -43,12 +43,16 @@ public class EquinoxBundleClassLoader extends URLClassLoader implements BundleRe
     private final Bundle bundle;
     private final BundleResourceHelper resourceHelper;
     
-    public EquinoxBundleClassLoader(Bundle bundle) {
+    public EquinoxBundleClassLoader(Bundle bundle) {      
+        this(bundle, 
+             BundleResourceHelper.getSearchWiredBundles(true), 
+             BundleResourceHelper.getConvertResourceUrls(true));
+    }
+    
+    public EquinoxBundleClassLoader(Bundle bundle, boolean searchWiredBundles, boolean convertResourceUrls) {
         super(new URL[] {});
         this.bundle = bundle;
-        this.resourceHelper = new EquinoxBundleResourceHelper(getBundle());
-        this.resourceHelper.setSearchWiredBundles(true);
-        this.resourceHelper.setConvertResourceUrls(true);
+        this.resourceHelper = new EquinoxBundleResourceHelper(getBundle(), searchWiredBundles, convertResourceUrls);
     }
     
     @Override

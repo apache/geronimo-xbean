@@ -42,8 +42,8 @@ public class EquinoxBundleResourceHelper extends BundleResourceHelper {
 
     private URLConverter converter;
     
-    public EquinoxBundleResourceHelper(Bundle bundle) {
-        super(bundle);
+    public EquinoxBundleResourceHelper(Bundle bundle, boolean searchWiredBundles, boolean convertResourceUrls) {
+        super(bundle, searchWiredBundles, convertResourceUrls);
         init();
     }
 

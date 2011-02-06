@@ -51,6 +51,9 @@ import org.osgi.service.packageadmin.PackageAdmin;
  */
 public class BundleResourceHelper {
 
+    public static final String SEARCH_WIRED_BUNDLES = BundleResourceHelper.class.getName() + ".searchWiredBundles";
+    public static final String CONVERT_RESOURCE_URLS = BundleResourceHelper.class.getName() + ".convertResourceUrls";
+    
     private final static String META_INF_1 = "META-INF/";
     private final static String META_INF_2 = "/META-INF/";
     
@@ -60,7 +63,15 @@ public class BundleResourceHelper {
     protected boolean convertResourceUrls;
   
     public BundleResourceHelper(Bundle bundle) {
+        this(bundle,      
+             BundleResourceHelper.getSearchWiredBundles(false), 
+             BundleResourceHelper.getConvertResourceUrls(false));
+    }
+    
+    public BundleResourceHelper(Bundle bundle, boolean searchWiredBundles, boolean convertResourceUrls) {
         this.bundle = bundle;
+        this.searchWiredBundles = searchWiredBundles;
+        this.convertResourceUrls = convertResourceUrls;
     }
 
     public void setSearchWiredBundles(boolean search) {
@@ -240,5 +251,15 @@ public class BundleResourceHelper {
             }
         });                   
         return resources;           
+    }
+    
+    public static boolean getSearchWiredBundles(boolean defaultValue) {
+        String value = System.getProperty(SEARCH_WIRED_BUNDLES);
+        return (value == null) ? defaultValue : Boolean.parseBoolean(value);        
+    }
+    
+    public static boolean getConvertResourceUrls(boolean defaultValue) {
+        String value = System.getProperty(CONVERT_RESOURCE_URLS);
+        return (value == null) ? defaultValue : Boolean.parseBoolean(value);        
     }
 }
