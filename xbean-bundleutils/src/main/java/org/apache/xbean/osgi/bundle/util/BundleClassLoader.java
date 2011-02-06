@@ -49,18 +49,20 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
     protected final BundleResourceHelper resourceHelper;
 
     public BundleClassLoader(Bundle bundle) {
-        this(bundle, true, false);
+        this(bundle, 
+             BundleResourceHelper.getSearchWiredBundles(true), 
+             BundleResourceHelper.getConvertResourceUrls(false));
     }
         
     public BundleClassLoader(Bundle bundle, boolean searchWiredBundles) {
-        this(bundle, searchWiredBundles, false);
+        this(bundle, 
+             searchWiredBundles, 
+             BundleResourceHelper.getConvertResourceUrls(false));
     }
     
     public BundleClassLoader(Bundle bundle, boolean searchWiredBundles, boolean convertResourceUrls) {
         this.bundle = bundle;
-        this.resourceHelper = new BundleResourceHelper(getBundle());
-        this.resourceHelper.setSearchWiredBundles(searchWiredBundles);
-        this.resourceHelper.setConvertResourceUrls(convertResourceUrls);
+        this.resourceHelper = new BundleResourceHelper(getBundle(), searchWiredBundles, convertResourceUrls);
     }
 
     @Override

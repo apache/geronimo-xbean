@@ -32,7 +32,9 @@ import org.osgi.framework.Bundle;
 public class BundleResourceClassLoader extends BundleClassLoader {
 
     public BundleResourceClassLoader(Bundle bundle) {
-        super(bundle, true, true);
+        super(bundle, 
+              BundleResourceHelper.getSearchWiredBundles(true), 
+              BundleResourceHelper.getConvertResourceUrls(true));
     }
 
     @Override
