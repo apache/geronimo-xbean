@@ -75,7 +75,7 @@ public class EquinoxBundleClassLoader extends URLClassLoader implements BundleRe
     }
     
     @Override
-    public Enumeration<URL> getResources(String name) throws IOException {
+    public Enumeration<URL> findResources(String name) throws IOException {
         return resourceHelper.getResources(name);
     }
     
