@@ -49,6 +49,18 @@
                     <namespace>http://xbean.apache.org/schemas/classloader</namespace>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            org.springframework.beans.factory*;resolution:=optional,
+                            *
+                        </Import-Package>
+                    </instructions>
+              </configuration>
+            </plugin>
         </plugins>
     </build>
 
