@@ -35,7 +35,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public class MetaAnnotatedMethodTest extends TestCase {
 
     public void test() throws Exception {
-        MetaAnnotationFinder finder = new MetaAnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class)).link();
+        AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class)).link();
 
         Map<String, AnnotatedMethod<Method>> map = new HashMap<String, AnnotatedMethod<Method>>();
 

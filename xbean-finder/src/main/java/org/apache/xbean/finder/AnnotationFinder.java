@@ -1,50 +1,55 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
+
 package org.apache.xbean.finder;
 
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.AnnotatedElement;
-import java.net.URL;
-import java.net.JarURLConnection;
-import java.net.URLDecoder;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
+import java.util.Set;
 
 /**
  * ClassFinder searches the classpath of the specified classloader for
@@ -54,137 +59,168 @@ import java.util.jar.JarInputStream;
  * loaded unless they match the requirements of a called findAnnotated* method.
  * Once loaded, these classes are cached.
  *
- * The getClassesNotLoaded() method can be used immediately after any find*
- * method to get a list of classes which matched the find requirements (i.e.
- * contained the annotation), but were unable to be loaded.
- *
- * @author David Blevins
  * @version $Rev$ $Date$
  */
-public class ClassFinder {
-    private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
-    private final List<ClassInfo> classInfos = new ArrayList<ClassInfo>();
+public class AnnotationFinder {
 
-    private final ClassLoader classLoader;
+    private final Set<Class<? extends Annotation>> metaroots = new HashSet<Class<? extends Annotation>>();
+    {
+        metaroots.add(Metatype.class);
+    }
+
+    private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
+
+    protected final Map<String, ClassInfo> classInfos = new HashMap<String, ClassInfo>();
     private final List<String> classesNotLoaded = new ArrayList<String>();
     private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
+    private final Archive archive;
 
-    /**
-     * Creates a ClassFinder that will search the urls in the specified classloader
-     * excluding the urls in the classloader's parent.
-     *
-     * To include the parent classloader, use:
-     *
-     *    new ClassFinder(classLoader, false);
-     *
-     * To exclude the parent's parent, use:
-     *
-     *    new ClassFinder(classLoader, classLoader.getParent().getParent());
-     *
-     * @param classLoader source of classes to scan
-     * @throws Exception if something goes wrong
-     */
-    public ClassFinder(ClassLoader classLoader) throws Exception {
-        this(classLoader, true);
-    }
+    public AnnotationFinder(Archive archive) {
+        this.archive = archive;
 
-    /**
-     * Creates a ClassFinder that will search the urls in the specified classloader.
-     *
-     * @param classLoader source of classes to scan
-     * @param excludeParent Allegedly excludes classes from parent classloader, whatever that might mean
-     * @throws Exception if something goes wrong.
-     */
-    public ClassFinder(ClassLoader classLoader, boolean excludeParent) throws Exception {
-        this(classLoader, getUrls(classLoader, excludeParent));
-    }
-
-    /**
-     * Creates a ClassFinder that will search the urls in the specified classloader excluding
-     * the urls in the 'exclude' classloader.
-     *
-     * @param classLoader source of classes to scan
-     * @param exclude source of classes to exclude from scanning
-     * @throws Exception if something goes wrong
-     */
-    public ClassFinder(ClassLoader classLoader, ClassLoader exclude) throws Exception {
-        this(classLoader, getUrls(classLoader, exclude));
-    }
-
-    public ClassFinder(ClassLoader classLoader, URL url) {
-        this(classLoader, Arrays.asList(url));
-    }
-
-    public ClassFinder(ClassLoader classLoader, Collection<URL> urls) {
-        this.classLoader = classLoader;
-
-        List<String> classNames = new ArrayList<String>();
-        for (URL location : urls) {
+        for (String className : this.archive) {
             try {
-                if (location.getProtocol().equals("jar")) {
-                    classNames.addAll(jar(location));
-                } else if (location.getProtocol().equals("file")) {
-                    try {
-                        // See if it's actually a jar
-                        URL jarUrl = new URL("jar", "", location.toExternalForm() + "!/");
-                        JarURLConnection juc = (JarURLConnection) jarUrl.openConnection();
-                        juc.getJarFile();
-                        classNames.addAll(jar(jarUrl));
-                    } catch (IOException e) {
-                        classNames.addAll(file(location));
-                    }
-                }
-            } catch (Exception e) {
+                readClassDef(archive.getBytecode(className));
+            } catch (NoClassDefFoundError e) {
+                throw new NoClassDefFoundError("Could not fully load class: " + className + "\n due to:" + e.getMessage());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
 
-        for (String className : classNames) {
-            readClassDef(className);
+
+    /**
+     * The link() method must be called to successfully use the findSubclasses and findImplementations methods
+     *
+     * @return
+     * @throws java.io.IOException
+     */
+    public AnnotationFinder link() throws IOException, ClassNotFoundException {
+        for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
+
+            linkParent(classInfo);
         }
+
+        for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
+
+            linkInterfaces(classInfo);
+
+        }
+
+        // diff new and old lists
+        resolveAnnotations(new ArrayList<String>());
+
+        return this;
     }
 
-    public ClassFinder(Class... classes){
-        this(Arrays.asList(classes));
-    }
+    /**
+     * Used to support meta annotations
+     * <p/>
+     * Once the list of classes has been read from the Archive, we
+     * iterate over all the annotations that are used by those classes
+     * and recursively resolve any annotations those annotations use.
+     *
+     * @param scanned
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    private void resolveAnnotations(List<String> scanned) throws ClassNotFoundException, IOException {
 
-    public ClassFinder(List<Class> classes){
-        this.classLoader = null;
-        List<Info> infos = new ArrayList<Info>();
-        List<Package> packages = new ArrayList<Package>();
-        for (Class clazz : classes) {
+        // Get a list of the annotations that exist before we start
+        List<String> annotations = new ArrayList<String>(annotated.keySet());
 
+        for (String annotation : annotations) {
+            if (scanned.contains(annotation)) continue;
+            readClassDef(annotation);
+        }
+
+        for (Info info : annotated.get(Metatype.class.getName())) {
             try {
-                Package aPackage = clazz.getPackage();
-                if (aPackage != null && !packages.contains(aPackage)){
-                    infos.add(new PackageInfo(aPackage));
-                    packages.add(aPackage);
-                }
-
-                ClassInfo classInfo = new ClassInfo(clazz);
-                infos.add(classInfo);
-                classInfos.add(classInfo);
-                for (Method method : clazz.getDeclaredMethods()) {
-                    infos.add(new MethodInfo(classInfo, method));
-                }
-
-                for (Constructor constructor : clazz.getConstructors()) {
-                    infos.add(new MethodInfo(classInfo, constructor));
-                }
-
-                for (Field field : clazz.getDeclaredFields()) {
-                    infos.add(new FieldInfo(classInfo, field));
-                }
-            } catch (NoClassDefFoundError e) {
-                throw new NoClassDefFoundError("Could not fully load class: " + clazz.getName() + "\n due to:" + e.getMessage() + "\n in classLoader: \n" + clazz.getClassLoader());
+                readClassDef(info.getName() + "$$");
+            } catch (ClassNotFoundException e) {
+                // we don't care, this is only a convenience
             }
         }
 
-        for (Info info : infos) {
-            for (AnnotationInfo annotation : info.getAnnotations()) {
-                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
-                annotationInfos.add(info);
+        // If the "annotated" list has grown, then we must scan those
+        if (annotated.keySet().size() != annotations.size()) {
+            resolveAnnotations(annotations);
+        }
+    }
+
+    private void linkParent(ClassInfo classInfo) throws IOException, ClassNotFoundException {
+        if (classInfo.superType == null) return;
+        if (classInfo.superType.equals("java.lang.Object")) return;
+
+        ClassInfo parentInfo = classInfo.superclassInfo;
+
+        if (parentInfo == null) {
+
+            parentInfo = classInfos.get(classInfo.superType);
+
+            if (parentInfo == null) {
+
+                if (classInfo.clazz != null) {
+                    readClassDef(((Class<?>) classInfo.clazz).getSuperclass());
+                } else {
+                    readClassDef(classInfo.superType);
+                }
+
+                parentInfo = classInfos.get(classInfo.superType);
+
+                if (parentInfo == null) return;
+
+                linkParent(parentInfo);
             }
+
+            classInfo.superclassInfo = parentInfo;
+        }
+
+        if (!parentInfo.subclassInfos.contains(classInfo)) {
+            parentInfo.subclassInfos.add(classInfo);
+        }
+    }
+
+    private void linkInterfaces(ClassInfo classInfo) throws IOException, ClassNotFoundException {
+        final List<ClassInfo> infos = new ArrayList<ClassInfo>();
+
+        if (classInfo.clazz != null) {
+            final Class<?>[] interfaces = classInfo.clazz.getInterfaces();
+
+            for (Class<?> clazz : interfaces) {
+                ClassInfo interfaceInfo = classInfos.get(clazz.getName());
+
+                if (interfaceInfo == null) {
+                    readClassDef(clazz);
+                }
+
+                interfaceInfo = classInfos.get(clazz.getName());
+
+                if (interfaceInfo != null) {
+                    infos.add(interfaceInfo);
+                }
+            }
+        } else {
+            for (String className : classInfo.interfaces) {
+                ClassInfo interfaceInfo = classInfos.get(className);
+
+                if (interfaceInfo == null) {
+                    readClassDef(className);
+                }
+
+                interfaceInfo = classInfos.get(className);
+
+                if (interfaceInfo != null) {
+                    infos.add(interfaceInfo);
+                }
+            }
+        }
+
+        for (ClassInfo info : infos) {
+            linkInterfaces(info);
         }
     }
 
@@ -203,13 +239,14 @@ public class ClassFinder {
      * results from the last findAnnotated* method call.
      * <p/>
      * This method is not thread safe.
+     *
      * @return an unmodifiable live view of classes that could not be loaded in previous findAnnotated* call.
      */
     public List<String> getClassesNotLoaded() {
         return Collections.unmodifiableList(classesNotLoaded);
     }
 
-    public List<Package> findAnnotatedPackages(Class<? extends Annotation> annotation) {
+    public List<AnnotatedTarget<Package>> findAnnotatedPackages(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<Package> packages = new ArrayList<Package>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
@@ -227,12 +264,12 @@ public class ClassFinder {
                 }
             }
         }
-        return packages;
+        return null;
     }
 
-    public List<Class> findAnnotatedClasses(Class<? extends Annotation> annotation) {
+    public List<Class<?>> findAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class> classes = new ArrayList<Class>();
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof ClassInfo) {
@@ -251,27 +288,67 @@ public class ClassFinder {
         return classes;
     }
 
+    public List<AnnotatedTarget<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
+        classesNotLoaded.clear();
+        Set<Class<?>> classes = findMetaAnnotatedClasses(annotation, new HashSet<Class<?>>());
+
+        List<AnnotatedTarget<Class<?>>> list = new ArrayList<AnnotatedTarget<Class<?>>>();
+
+        for (Class<?> clazz : classes) {
+            list.add(new MetaAnnotatedClass(clazz));
+        }
+
+        return list;
+    }
+
+    private Set<Class<?>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation, Set<Class<?>> classes) {
+        List<Info> infos = getAnnotationInfos(annotation.getName());
+        for (Info info : infos) {
+            if (info instanceof ClassInfo) {
+                ClassInfo classInfo = (ClassInfo) info;
+                try {
+                    Class clazz = classInfo.get();
+
+                    if (classes.contains(clazz)) continue;
+
+                    // double check via proper reflection
+                    if (clazz.isAnnotationPresent(annotation)) {
+                        classes.add(clazz);
+                    }
+
+                    String meta = info.getMetaAnnotationName();
+                    if (meta != null) {
+                        classes.addAll(findMetaAnnotatedClasses((Class<? extends Annotation>) clazz, classes));
+                    }
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(classInfo.getName());
+                }
+            }
+        }
+        return classes;
+    }
+
     /**
      * Naive implementation - works extremelly slow O(n^3)
      *
      * @param annotation
      * @return list of directly or indirectly (inherited) annotated classes
      */
-    public List<Class> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
+    public List<AnnotatedTarget<Class<?>>> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class> classes = new ArrayList<Class>();
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             try {
-            	if(info instanceof ClassInfo){
-                   classes.add(((ClassInfo) info).get());
-            	}
+                if (info instanceof ClassInfo) {
+                    classes.add(((ClassInfo) info).get());
+                }
             } catch (ClassNotFoundException cnfe) {
                 // TODO: ignored, but a log message would be appropriate
             }
         }
         boolean annClassFound;
-        List<ClassInfo> tempClassInfos = new ArrayList<ClassInfo>(classInfos);
+        List<ClassInfo> tempClassInfos = new ArrayList<ClassInfo>(classInfos.values());
         do {
             annClassFound = false;
             for (int pos = 0; pos < tempClassInfos.size(); pos++) {
@@ -289,9 +366,9 @@ public class ClassFinder {
                     }
                     // check whether any interface is annotated
                     List<String> interfces = classInfo.getInterfaces();
-                    for (String interfce: interfces) {
+                    for (String interfce : interfces) {
                         for (Class clazz : classes) {
-                            if (interfce.replaceFirst("<.*>","").equals(clazz.getName())) {
+                            if (interfce.replaceFirst("<.*>", "").equals(clazz.getName())) {
                                 classes.add(classInfo.get());
                                 tempClassInfos.remove(pos);
                                 annClassFound = true;
@@ -306,7 +383,7 @@ public class ClassFinder {
                 }
             }
         } while (annClassFound);
-        return classes;
+        return null;
     }
 
     public List<Method> findAnnotatedMethods(Class<? extends Annotation> annotation) {
@@ -338,7 +415,66 @@ public class ClassFinder {
         return methods;
     }
 
-    public List<Constructor> findAnnotatedConstructors(Class<? extends Annotation> annotation) {
+    public List<AnnotatedMethod<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
+        classesNotLoaded.clear();
+
+        Set<Method> methods = findMetaAnnotatedMethods(annotation, new HashSet<Method>(), new HashSet<String>());
+
+        List<AnnotatedMethod<Method>> targets = new ArrayList<AnnotatedMethod<Method>>();
+
+        for (Method method : methods) {
+            targets.add(new MetaAnnotatedMethod(method));
+        }
+
+        return targets;
+    }
+
+    private Set<Method> findMetaAnnotatedMethods(Class<? extends Annotation> annotation, Set<Method> methods, Set<String> seen) {
+        List<Info> infos = getAnnotationInfos(annotation.getName());
+
+        for (Info info : infos) {
+
+            String meta = info.getMetaAnnotationName();
+            if (meta != null) {
+                if (meta.equals(annotation.getName())) continue;
+                if (!seen.add(meta)) continue;
+
+
+                ClassInfo metaInfo = classInfos.get(meta);
+
+                Class<?> clazz;
+                try {
+                    clazz = metaInfo.get();
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(metaInfo.getName());
+                    continue;
+                }
+
+                findMetaAnnotatedMethods((Class<? extends Annotation>) clazz, methods, seen);
+
+            } else if (info instanceof MethodInfo && !((MethodInfo) info).isConstructor()) {
+
+                MethodInfo methodInfo = (MethodInfo) info;
+
+                ClassInfo classInfo = methodInfo.getDeclaringClass();
+
+                try {
+                    Class clazz = classInfo.get();
+                    for (Method method : clazz.getDeclaredMethods()) {
+                        if (method.isAnnotationPresent(annotation)) {
+                            methods.add(method);
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(classInfo.getName());
+                }
+            }
+        }
+
+        return methods;
+    }
+
+    public List<AnnotatedMethod<Constructor>> findAnnotatedConstructors(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<ClassInfo> seen = new ArrayList<ClassInfo>();
         List<Constructor> constructors = new ArrayList<Constructor>();
@@ -364,10 +500,10 @@ public class ClassFinder {
                 }
             }
         }
-        return constructors;
+        return null;
     }
 
-    public List<Field> findAnnotatedFields(Class<? extends Annotation> annotation) {
+    public List<AnnotatedMember<Field>> findAnnotatedFields(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<ClassInfo> seen = new ArrayList<ClassInfo>();
         List<Field> fields = new ArrayList<Field>();
@@ -393,17 +529,17 @@ public class ClassFinder {
                 }
             }
         }
-        return fields;
+        return null;
     }
 
-    public List<Class> findClassesInPackage(String packageName, boolean recursive) {
+    public List<Class<?>> findClassesInPackage(String packageName, boolean recursive) {
         classesNotLoaded.clear();
-        List<Class> classes = new ArrayList<Class>();
-        for (ClassInfo classInfo : classInfos) {
+        List<Class<?>> classes = new ArrayList<Class<?>>();
+        for (ClassInfo classInfo : classInfos.values()) {
             try {
-                if (recursive && classInfo.getPackageName().startsWith(packageName)){
+                if (recursive && classInfo.getPackageName().startsWith(packageName)) {
                     classes.add(classInfo.get());
-                } else if (classInfo.getPackageName().equals(packageName)){
+                } else if (classInfo.getPackageName().equals(packageName)) {
                     classes.add(classInfo.get());
                 }
             } catch (ClassNotFoundException e) {
@@ -413,82 +549,187 @@ public class ClassFinder {
         return classes;
     }
 
-    private static Collection<URL> getUrls(ClassLoader classLoader, boolean excludeParent) throws IOException {
-        return getUrls(classLoader, excludeParent? classLoader.getParent() : null);
+    public <T> List<Class<? extends T>> findSubclasses(Class<T> clazz) {
+        if (clazz == null) throw new NullPointerException("class cannot be null");
+
+        classesNotLoaded.clear();
+
+        final ClassInfo classInfo = classInfos.get(clazz.getName());
+
+        List<Class<? extends T>> found = new ArrayList<Class<? extends T>>();
+
+        if (classInfo == null) return found;
+
+        findSubclasses(classInfo, found, clazz);
+
+        return found;
     }
 
-    private static Collection<URL> getUrls(ClassLoader classLoader, ClassLoader excludeParent) throws IOException {
-        UrlSet urlSet = new UrlSet(classLoader);
-        if (excludeParent != null){
-            urlSet = urlSet.exclude(excludeParent);
+    private <T> void findSubclasses(ClassInfo classInfo, List<Class<? extends T>> found, Class<T> clazz) {
+
+        for (ClassInfo subclassInfo : classInfo.subclassInfos) {
+
+            try {
+                found.add(subclassInfo.get().asSubclass(clazz));
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(subclassInfo.getName());
+            }
+
+            findSubclasses(subclassInfo, found, clazz);
         }
-        return urlSet.getUrls();
     }
 
-    private List<String> file(URL location) {
-        List<String> classNames = new ArrayList<String>();
-        File dir = new File(URLDecoder.decode(location.getPath()));
-        if (dir.getName().equals("META-INF")) {
-            dir = dir.getParentFile(); // Scrape "META-INF" off
+    private <T> List<Class<? extends T>> _findSubclasses(Class<T> clazz) {
+        if (clazz == null) throw new NullPointerException("class cannot be null");
+
+        List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
+
+
+        for (ClassInfo classInfo : classInfos.values()) {
+
+            try {
+
+                if (clazz.getName().equals(classInfo.superType)) {
+
+                    if (clazz.isAssignableFrom(classInfo.get())) {
+
+                        classes.add(classInfo.get().asSubclass(clazz));
+
+                        classes.addAll(_findSubclasses(classInfo.get().asSubclass(clazz)));
+                    }
+                }
+
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(classInfo.getName());
+            }
+
         }
-        if (dir.isDirectory()) {
-            scanDir(dir, classNames, "");
-        }
-        return classNames;
+
+        return classes;
     }
 
-    private void scanDir(File dir, List<String> classNames, String packageName) {
-        File[] files = dir.listFiles();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                scanDir(file, classNames, packageName + file.getName() + ".");
-            } else if (file.getName().endsWith(".class")) {
-                String name = file.getName();
-                name = name.replaceFirst(".class$", "");
-                if (name.contains(".")) continue;
-                classNames.add(packageName + name);
+    public <T> List<Class<? extends T>> findImplementations(Class<T> clazz) {
+        if (clazz == null) throw new NullPointerException("class cannot be null");
+        if (!clazz.isInterface()) new IllegalArgumentException("class must be an interface");
+        classesNotLoaded.clear();
+
+        final String interfaceName = clazz.getName();
+
+        // Collect all interfaces extending the main interface (recursively)
+        // Collect all implementations of interfaces
+        // i.e. all *directly* implementing classes
+        List<ClassInfo> infos = collectImplementations(interfaceName);
+
+        // Collect all subclasses of implementations
+        List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
+        for (ClassInfo info : infos) {
+            try {
+                final Class<? extends T> impl = (Class<? extends T>) info.get();
+
+                if (clazz.isAssignableFrom(impl)) {
+                    classes.add(impl);
+
+                    // Optimization: Don't need to call this method if parent class was already searched
+
+
+                    classes.addAll(_findSubclasses(impl));
+                }
+
+            } catch (ClassNotFoundException e) {
+                classesNotLoaded.add(info.getName());
             }
         }
+        return classes;
     }
 
-    private List<String> jar(URL location) throws IOException {
-        String jarPath = location.getFile();
-        if (jarPath.indexOf("!") > -1){
-            jarPath = jarPath.substring(0, jarPath.indexOf("!"));
-        }
-        URL url = new URL(jarPath);
-        InputStream in = url.openStream();
-        try {
-            JarInputStream jarStream = new JarInputStream(in);
-            return jar(jarStream);
-        } finally {
-            in.close();
-        }
-    }
+    private List<ClassInfo> collectImplementations(String interfaceName) {
+        final List<ClassInfo> infos = new ArrayList<ClassInfo>();
 
-    private List<String> jar(JarInputStream jarStream) throws IOException {
-        List<String> classNames = new ArrayList<String>();
+        for (ClassInfo classInfo : classInfos.values()) {
 
-        JarEntry entry;
-        while ((entry = jarStream.getNextJarEntry()) != null) {
-            if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
-                continue;
+            if (classInfo.interfaces.contains(interfaceName)) {
+
+                infos.add(classInfo);
+
+                try {
+
+                    final Class clazz = classInfo.get();
+
+                    if (clazz.isInterface() && !clazz.isAnnotation()) {
+
+                        infos.addAll(collectImplementations(classInfo.name));
+
+                    }
+
+                } catch (ClassNotFoundException ignore) {
+                    // we'll deal with this later
+                }
             }
-            String className = entry.getName();
-            className = className.replaceFirst(".class$", "");
-            if (className.contains(".")) continue;
-            className = className.replace('/', '.');
-            classNames.add(className);
+        }
+        return infos;
+    }
+
+    protected List<Info> getAnnotationInfos(String name) {
+        List<Info> infos = annotated.get(name);
+        if (infos == null) {
+            infos = new SingleLinkedList<Info>();
+            annotated.put(name, infos);
+        }
+        return infos;
+    }
+
+    protected void readClassDef(String className) throws ClassNotFoundException, IOException {
+        if (classInfos.containsKey(className)) return;
+        readClassDef(archive.getBytecode(className));
+    }
+
+    protected void readClassDef(InputStream in) throws IOException {
+        ClassReader classReader = new ClassReader(in);
+        classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
+    }
+
+    protected void readClassDef(Class clazz) {
+        List<Info> infos = new ArrayList<Info>();
+
+        Package aPackage = clazz.getPackage();
+        if (aPackage != null) {
+            final PackageInfo info = new PackageInfo(aPackage);
+            for (AnnotationInfo annotation : info.getAnnotations()) {
+                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
+                if (!annotationInfos.contains(info)) {
+                    annotationInfos.add(info);
+                }
+            }
         }
 
-        return classNames;
+        ClassInfo classInfo = new ClassInfo(clazz);
+        infos.add(classInfo);
+        classInfos.put(clazz.getName(), classInfo);
+        for (Method method : clazz.getDeclaredMethods()) {
+            infos.add(new MethodInfo(classInfo, method));
+        }
+
+        for (Constructor constructor : clazz.getConstructors()) {
+            infos.add(new MethodInfo(classInfo, constructor));
+        }
+
+        for (Field field : clazz.getDeclaredFields()) {
+            infos.add(new FieldInfo(classInfo, field));
+        }
+
+        for (Info info : infos) {
+            for (AnnotationInfo annotation : info.getAnnotations()) {
+                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
+                annotationInfos.add(info);
+            }
+        }
     }
 
     public class Annotatable {
         private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
 
         public Annotatable(AnnotatedElement element) {
-            for (Annotation annotation : element.getAnnotations()) {
+            for (Annotation annotation : getAnnotations(element)) {
                 annotations.add(new AnnotationInfo(annotation.annotationType().getName()));
             }
         }
@@ -496,16 +737,54 @@ public class ClassFinder {
         public Annotatable() {
         }
 
+        public Annotation[] getDeclaredAnnotations() {
+            return new Annotation[0];
+        }
+
         public List<AnnotationInfo> getAnnotations() {
             return annotations;
+        }
+
+        public String getMetaAnnotationName() {
+            return null;
+        }
+
+        /**
+         * Utility method to get around some errors caused by
+         * interactions between the Equinox class loaders and
+         * the OpenJPA transformation process.  There is a window
+         * where the OpenJPA transformation process can cause
+         * an annotation being processed to get defined in a
+         * classloader during the actual defineClass call for
+         * that very class (e.g., recursively).  This results in
+         * a LinkageError exception.  If we see one of these,
+         * retry the request.  Since the annotation will be
+         * defined on the second pass, this should succeed.  If
+         * we get a second exception, then it's likely some
+         * other problem.
+         *
+         * @param element The AnnotatedElement we need information for.
+         * @return An array of the Annotations defined on the element.
+         */
+        private Annotation[] getAnnotations(AnnotatedElement element) {
+            try {
+                return element.getAnnotations();
+            } catch (LinkageError e) {
+                return element.getAnnotations();
+            }
         }
 
     }
 
     public static interface Info {
+
+        String getMetaAnnotationName();
+
         String getName();
 
         List<AnnotationInfo> getAnnotations();
+
+        Annotation[] getDeclaredAnnotations();
     }
 
     public class PackageInfo extends Annotatable implements Info {
@@ -513,7 +792,7 @@ public class ClassFinder {
         private final ClassInfo info;
         private final Package pkg;
 
-        public PackageInfo(Package pkg){
+        public PackageInfo(Package pkg) {
             super(pkg);
             this.pkg = pkg;
             this.name = pkg.getName();
@@ -531,26 +810,48 @@ public class ClassFinder {
         }
 
         public Package get() throws ClassNotFoundException {
-            return (pkg != null)?pkg:info.get().getPackage();
+            return (pkg != null) ? pkg : info.get().getPackage();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            PackageInfo that = (PackageInfo) o;
+
+            if (name != null ? !name.equals(that.name) : that.name != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return name != null ? name.hashCode() : 0;
         }
     }
 
     public class ClassInfo extends Annotatable implements Info {
         private String name;
-        private final List<MethodInfo> methods = new ArrayList<MethodInfo>();
-        private final List<MethodInfo> constructors = new ArrayList<MethodInfo>();
+        private final List<MethodInfo> methods = new SingleLinkedList<MethodInfo>();
+        private final List<MethodInfo> constructors = new SingleLinkedList<MethodInfo>();
         private String superType;
-        private final List<String> interfaces = new ArrayList<String>();
-        private final List<FieldInfo> fields = new ArrayList<FieldInfo>();
+        private ClassInfo superclassInfo;
+        private final List<ClassInfo> subclassInfos = new SingleLinkedList<ClassInfo>();
+        private final List<String> interfaces = new SingleLinkedList<String>();
+        private final List<FieldInfo> fields = new SingleLinkedList<FieldInfo>();
         private Class<?> clazz;
-        private ClassNotFoundException notFound;
+
 
         public ClassInfo(Class clazz) {
             super(clazz);
             this.clazz = clazz;
             this.name = clazz.getName();
             Class superclass = clazz.getSuperclass();
-            this.superType = superclass != null ? superclass.getName(): null;
+            this.superType = superclass != null ? superclass.getName() : null;
+            for (Class intrface : clazz.getInterfaces()) {
+                this.interfaces.add(intrface.getName());
+            }
         }
 
         public ClassInfo(String name, String superType) {
@@ -558,8 +859,24 @@ public class ClassFinder {
             this.superType = superType;
         }
 
-        public String getPackageName(){
-        	  return name.substring(0,name.lastIndexOf("."));
+        @Override
+        public String getMetaAnnotationName() {
+            for (AnnotationInfo info : getAnnotations()) {
+                if (info.getName().equals(Metatype.class.getName())) return name;
+            }
+
+            if (name.endsWith("$$")) {
+                ClassInfo info = classInfos.get(name.substring(0, name.length() - 2));
+                if (info != null) {
+                    return info.getMetaAnnotationName();
+                }
+            }
+
+            return null;
+        }
+
+        public String getPackageName() {
+            return name.indexOf(".") > 0 ? name.substring(0, name.lastIndexOf(".")) : "";
         }
 
         public List<MethodInfo> getConstructors() {
@@ -586,15 +903,18 @@ public class ClassFinder {
             return superType;
         }
 
-        public Class get() throws ClassNotFoundException {
+        public boolean isAnnotation() {
+            return "java.lang.Object".equals(superType) && interfaces.size() == 1 && "java.lang.annotation.Annotation".equals(interfaces.get(0));
+        }
+
+        public Class<?> get() throws ClassNotFoundException {
             if (clazz != null) return clazz;
-            if (notFound != null) throw notFound;
             try {
-                this.clazz = classLoader.loadClass(name.replaceFirst("<.*>",""));
+                String fixedName = name.replaceFirst("<.*>", "");
+                this.clazz = archive.loadClass(fixedName);
                 return clazz;
             } catch (ClassNotFoundException notFound) {
                 classesNotLoaded.add(name);
-                this.notFound = notFound;
                 throw notFound;
             }
         }
@@ -606,28 +926,49 @@ public class ClassFinder {
 
     public class MethodInfo extends Annotatable implements Info {
         private final ClassInfo declaringClass;
-        private final String returnType;
+        private final String descriptor;
         private final String name;
         private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList<List<AnnotationInfo>>();
+        private Member method;
 
-        public MethodInfo(ClassInfo info, Constructor constructor){
+        public MethodInfo(ClassInfo info, Constructor constructor) {
             super(constructor);
             this.declaringClass = info;
             this.name = "<init>";
-            this.returnType = Void.TYPE.getName();
+            this.descriptor = null;
         }
 
-        public MethodInfo(ClassInfo info, Method method){
+        public MethodInfo(ClassInfo info, Method method) {
             super(method);
             this.declaringClass = info;
             this.name = method.getName();
-            this.returnType = method.getReturnType().getName();
+            this.descriptor = method.getReturnType().getName();
+            this.method = method;
         }
 
-        public MethodInfo(ClassInfo declarignClass, String name, String returnType) {
+        public MethodInfo(ClassInfo declarignClass, String name, String descriptor) {
             this.declaringClass = declarignClass;
             this.name = name;
-            this.returnType = returnType;
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public String getMetaAnnotationName() {
+            return declaringClass.getMetaAnnotationName();
+        }
+
+        @Override
+        public Annotation[] getDeclaredAnnotations() {
+            super.getDeclaredAnnotations();
+            try {
+                return ((AnnotatedElement) get()).getDeclaredAnnotations();
+            } catch (ClassNotFoundException e) {
+                return super.getDeclaredAnnotations();
+            }
+        }
+
+        public boolean isConstructor() {
+            return getName().equals("<init>");
         }
 
         public List<List<AnnotationInfo>> getParameterAnnotations() {
@@ -652,13 +993,50 @@ public class ClassFinder {
             return declaringClass;
         }
 
-        public String getReturnType() {
-            return returnType;
-        }
-
         public String toString() {
             return declaringClass + "@" + name;
         }
+
+        public Member get() throws ClassNotFoundException {
+            if (method == null) {
+                method = toMethod();
+            }
+
+            return method;
+        }
+
+        private Method toMethod() throws ClassNotFoundException {
+            org.objectweb.asm.commons.Method method = new org.objectweb.asm.commons.Method(name, descriptor);
+
+            Class<?> clazz = this.declaringClass.get();
+            List<Class> parameterTypes = new ArrayList<Class>();
+
+            for (Type type : method.getArgumentTypes()) {
+                String paramType = type.getClassName();
+                try {
+                    parameterTypes.add(Classes.forName(paramType, clazz.getClassLoader()));
+                } catch (ClassNotFoundException cnfe) {
+                    throw new IllegalStateException("Parameter class could not be loaded for type " + paramType, cnfe);
+                }
+            }
+
+            Class[] parameters = parameterTypes.toArray(new Class[parameterTypes.size()]);
+
+            IllegalStateException noSuchMethod = null;
+            while (clazz != null) {
+                try {
+                    return clazz.getDeclaredMethod(name, parameters);
+                } catch (NoSuchMethodException e) {
+                    if (noSuchMethod == null) {
+                        noSuchMethod = new IllegalStateException("Callback method does not exist: " + clazz.getName() + "." + name, e);
+                    }
+                    clazz = clazz.getSuperclass();
+                }
+            }
+
+            throw noSuchMethod;
+        }
+
     }
 
     public class FieldInfo extends Annotatable implements Info {
@@ -666,7 +1044,7 @@ public class ClassFinder {
         private final String type;
         private final ClassInfo declaringClass;
 
-        public FieldInfo(ClassInfo info, Field field){
+        public FieldInfo(ClassInfo info, Field field) {
             super(field);
             this.declaringClass = info;
             this.name = field.getName();
@@ -699,7 +1077,7 @@ public class ClassFinder {
     public class AnnotationInfo extends Annotatable implements Info {
         private final String name;
 
-        public AnnotationInfo(Annotation annotation){
+        public AnnotationInfo(Annotation annotation) {
             this(annotation.getClass().getName());
         }
 
@@ -708,8 +1086,7 @@ public class ClassFinder {
         }
 
         public AnnotationInfo(String name) {
-            name = name.replaceAll("^L|;$", "");
-            name = name.replace('/', '.');
+            name = Type.getType(name).getClassName();
             this.name = name.intern();
         }
 
@@ -722,38 +1099,6 @@ public class ClassFinder {
         }
     }
 
-    private List<Info> getAnnotationInfos(String name) {
-        List<Info> infos = annotated.get(name);
-        if (infos == null) {
-            infos = new ArrayList<Info>();
-            annotated.put(name, infos);
-        }
-        return infos;
-    }
-
-    private void readClassDef(String className) {
-        if (!className.endsWith(".class")) {
-            className = className.replace('.', '/') + ".class";
-        }
-        try {
-            URL resource = classLoader.getResource(className);
-            if (resource != null) {
-                InputStream in = resource.openStream();
-                try {
-                    ClassReader classReader = new ClassReader(in);
-                    classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
-                } finally {
-                    in.close();
-                }
-            } else {
-                new Exception("Could not load " + className).printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public class InfoBuildingVisitor extends EmptyVisitor {
         private Info info;
 
@@ -764,10 +1109,12 @@ public class ClassFinder {
             this.info = info;
         }
 
+        @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             if (name.endsWith("package-info")) {
                 info = new PackageInfo(javaName(name));
             } else {
+
                 ClassInfo classInfo = new ClassInfo(javaName(name), javaName(superName));
 
                 if (signature == null) {
@@ -779,14 +1126,26 @@ public class ClassFinder {
                     new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
                 }
                 info = classInfo;
-                classInfos.add(classInfo);                
+
+                classInfos.put(classInfo.getName(), classInfo);
             }
         }
 
         private String javaName(String name) {
-            return (name == null)? null:name.replace('/', '.');
+            return (name == null) ? null : name.replace('/', '.');
         }
 
+        @Override
+        public void visitInnerClass(String name, String outerName, String innerName, int access) {
+            super.visitInnerClass(name, outerName, innerName, access);
+        }
+
+        @Override
+        public void visitAttribute(Attribute attribute) {
+            super.visitAttribute(attribute);
+        }
+
+        @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
             info.getAnnotations().add(annotationInfo);
@@ -794,6 +1153,7 @@ public class ClassFinder {
             return new InfoBuildingVisitor(annotationInfo);
         }
 
+        @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             ClassInfo classInfo = ((ClassInfo) info);
             FieldInfo fieldInfo = new FieldInfo(classInfo, name, desc);
@@ -801,13 +1161,17 @@ public class ClassFinder {
             return new InfoBuildingVisitor(fieldInfo);
         }
 
+        @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             ClassInfo classInfo = ((ClassInfo) info);
             MethodInfo methodInfo = new MethodInfo(classInfo, name, desc);
+
             classInfo.getMethods().add(methodInfo);
             return new InfoBuildingVisitor(methodInfo);
         }
 
+
+        @Override
         public AnnotationVisitor visitParameterAnnotation(int param, String desc, boolean visible) {
             MethodInfo methodInfo = ((MethodInfo) info);
             List<AnnotationInfo> annotationInfos = methodInfo.getParameterAnnotations(param);
@@ -828,18 +1192,18 @@ public class ClassFinder {
         }
 
         private Info info;
-        private TYPE type;
-        private STATE state;
+        private GenericAwareInfoBuildingVisitor.TYPE type;
+        private GenericAwareInfoBuildingVisitor.STATE state;
 
         private static boolean debug = false;
 
         public GenericAwareInfoBuildingVisitor() {
         }
 
-        public GenericAwareInfoBuildingVisitor(TYPE type, Info info) {
+        public GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE type, Info info) {
             this.type = type;
             this.info = info;
-            this.state = STATE.BEGIN;
+            this.state = GenericAwareInfoBuildingVisitor.STATE.BEGIN;
         }
 
         public void visitFormalTypeParameter(String s) {
@@ -848,7 +1212,7 @@ public class ClassFinder {
                 case BEGIN:
                     ((ClassInfo) info).name += "<" + s;
             }
-            state = STATE.FORMAL_TYPE_PARAM;
+            state = GenericAwareInfoBuildingVisitor.STATE.FORMAL_TYPE_PARAM;
         }
 
         public SignatureVisitor visitClassBound() {
@@ -863,14 +1227,14 @@ public class ClassFinder {
 
         public SignatureVisitor visitSuperclass() {
             if (debug) System.out.println(" visitSuperclass()");
-            state = STATE.SUPERCLASS;
+            state = GenericAwareInfoBuildingVisitor.STATE.SUPERCLASS;
             return this;
         }
 
         public SignatureVisitor visitInterface() {
             if (debug) System.out.println(" visitInterface()");
             ((ClassInfo) info).getInterfaces().add("");
-            state = STATE.INTERFACE;
+            state = GenericAwareInfoBuildingVisitor.STATE.INTERFACE;
             return this;
         }
 
@@ -968,12 +1332,286 @@ public class ClassFinder {
                         ((ClassInfo) info).name += ">";
                     }
             }
-            state = STATE.END;
+            state = GenericAwareInfoBuildingVisitor.STATE.END;
         }
 
         private String javaName(String name) {
-            return (name == null)? null:name.replace('/', '.');
+            return (name == null) ? null : name.replace('/', '.');
         }
-        
+
+    }
+
+    /**
+     * @version $Rev$ $Date$
+     */
+    public abstract class MetaAnnotatedTarget<T> implements AnnotatedTarget<T> {
+        protected final Map<Class<? extends Annotation>, MetaAnnotation> found = new HashMap<Class<? extends Annotation>, MetaAnnotation>();
+        protected final T target;
+
+        public MetaAnnotatedTarget(T target) {
+            this.target = target;
+        }
+
+        @Override
+        public T getTarget() {
+            return target;
+        }
+
+        @Override
+        public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+            return found.containsKey(annotationClass);
+        }
+
+        @Override
+        public TypeVariable<?>[] getTypeParameters() {
+            return ((Class<?>) getTarget()).getTypeParameters();
+        }
+
+        @Override
+        public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+            MetaAnnotation<T> annotation = found.get(annotationClass);
+            return (annotation == null) ? null : annotation.getAnnotation();
+        }
+
+        @Override
+        public Annotation[] getAnnotations() {
+            Annotation[] annotations = new Annotation[found.size()];
+
+            int i = 0;
+            for (MetaAnnotation annotation : found.values()) {
+                annotations[i++] = annotation.getAnnotation();
+            }
+
+            return annotations;
+        }
+
+        protected void unroll(Class<? extends Annotation> clazz, int depth) {
+            if (!isMetaAnnotation(clazz)) return;
+
+            for (Annotation annotation : getDeclaredMetaAnnotations(clazz)) {
+                Class<? extends Annotation> type = annotation.annotationType();
+
+                MetaAnnotation existing = found.get(type);
+
+                if (existing != null) {
+                    if (existing.getDepth() > depth) {
+//                        System.out.println("OVERWRITE " + type);
+                        //overwrite
+                        found.put(type, new MetaAnnotation(annotation, depth, clazz));
+                        unroll(type, depth + 1);
+                    } else if (existing.getDepth() < depth) {
+//                        System.out.println("IGNORE " + type);
+                        // ignore, what we have already is higher priority
+                    } else {
+//                        System.out.println("CONFLICT " + type);
+                        // They are the same depth and therefore conflicting
+                        existing.getConflicts().add(new MetaAnnotation(annotation, depth, clazz));
+                    }
+                } else {
+//                    System.out.println("NEW " + type);
+                    found.put(type, new MetaAnnotation(annotation, depth, clazz));
+                    unroll(type, depth + 1);
+                }
+            }
+        }
+
+        private Collection<Annotation> getDeclaredMetaAnnotations(Class<? extends Annotation> clazz) {
+            Map<Class, Annotation> map = new HashMap<Class, Annotation>();
+
+            for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+                map.put(annotation.annotationType(), annotation);
+            }
+
+            for (Info info : annotated.get(clazz.getName())) {
+                if (!clazz.getName().equals(info.getMetaAnnotationName())) continue;
+                for (Annotation annotation : info.getDeclaredAnnotations()) {
+                    map.put(annotation.annotationType(), annotation);
+                }
+
+            }
+
+            Class[] invalid = {
+                    Target.class,
+                    Retention.class,
+                    Documented.class,
+                    Metatype.class,
+                    clazz
+            };
+
+            for (Class c : invalid) {
+                map.remove(c);
+            }
+
+            return map.values();
+        }
+
+        private boolean isMetaAnnotation(Class<? extends Annotation> clazz) {
+            if (!clazz.isAnnotation()) return false;
+
+            for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+                if (metaroots.contains(annotation.annotationType())) return true;
+            }
+
+            return false;
+        }
+
+    }
+
+    private static class MetaAnnotation<T extends Annotation> {
+        private final Class<?> declaringClass;
+        private final T annotation;
+        private final int depth;
+
+        private final List<MetaAnnotation<T>> conflicts = new ArrayList<MetaAnnotation<T>>();
+
+        private MetaAnnotation(T annotation, int depth, Class<?> declaringClass) {
+            this.annotation = annotation;
+            this.depth = depth;
+            this.declaringClass = declaringClass;
+        }
+
+        public T getAnnotation() {
+            return annotation;
+        }
+
+        public int getDepth() {
+            return depth;
+        }
+
+        public Class<?> getDeclaringClass() {
+            return declaringClass;
+        }
+
+        public List<MetaAnnotation<T>> getConflicts() {
+            return conflicts;
+        }
+    }
+
+    private class MetaAnnotatedClass extends MetaAnnotatedTarget<Class<?>> {
+
+        private MetaAnnotatedClass(Class<?> clazz) {
+            super(clazz);
+            for (Annotation annotation : getTarget().getDeclaredAnnotations()) {
+                found.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, getTarget()));
+                unroll(annotation.annotationType(), 1);
+            }
+        }
+
+        @Override
+        public Annotation[] getDeclaredAnnotations() {
+            return getTarget().getDeclaredAnnotations();
+        }
+    }
+
+
+    private class MetaAnnotatedField extends MetaAnnotatedTarget<Field> {
+
+        private MetaAnnotatedField(Field target) {
+            super(target);
+            for (Annotation annotation : target.getDeclaredAnnotations()) {
+                found.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, target.getDeclaringClass()));
+                unroll(annotation.annotationType(), 1);
+            }
+        }
+
+        @Override
+        public Annotation[] getDeclaredAnnotations() {
+            return getTarget().getDeclaredAnnotations();
+        }
+    }
+
+    private class MetaAnnotatedMethod extends MetaAnnotatedTarget<Method> implements AnnotatedMethod<Method> {
+
+        private Method target;
+
+        private MetaAnnotatedMethod(Method target) {
+            super(target);
+            for (Annotation annotation : target.getDeclaredAnnotations()) {
+                found.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, target.getDeclaringClass()));
+                unroll(annotation.annotationType(), 1);
+            }
+
+        }
+
+        @Override
+        public Annotation[] getDeclaredAnnotations() {
+            return getTarget().getDeclaredAnnotations();
+        }
+
+        @Override
+        public Annotation[][] getParameterAnnotations() {
+            return getTarget().getParameterAnnotations();
+        }
+
+        @Override
+        public Class<?> getDeclaringClass() {
+            return getTarget().getDeclaringClass();
+        }
+
+        @Override
+        public String getName() {
+            return getTarget().getName();
+        }
+
+        @Override
+        public int getModifiers() {
+            return getTarget().getModifiers();
+        }
+
+        @Override
+        public TypeVariable<Method>[] getTypeParameters() {
+            return getTarget().getTypeParameters();
+        }
+
+        @Override
+        public Class<?>[] getParameterTypes() {
+            return getTarget().getParameterTypes();
+        }
+
+        @Override
+        public java.lang.reflect.Type[] getGenericParameterTypes() {
+            return getTarget().getGenericParameterTypes();
+        }
+
+        @Override
+        public Class<?>[] getExceptionTypes() {
+            return getTarget().getExceptionTypes();
+        }
+
+        @Override
+        public java.lang.reflect.Type[] getGenericExceptionTypes() {
+            return getTarget().getGenericExceptionTypes();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return getTarget().equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return getTarget().hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return getTarget().toString();
+        }
+
+        @Override
+        public String toGenericString() {
+            return getTarget().toGenericString();
+        }
+
+        @Override
+        public boolean isVarArgs() {
+            return getTarget().isVarArgs();
+        }
+
+        @Override
+        public boolean isSynthetic() {
+            return getTarget().isSynthetic();
+        }
+
     }
 }
