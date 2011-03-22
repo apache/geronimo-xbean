@@ -40,7 +40,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public class MetaAnnotatedClassTest extends TestCase {
 
     public void test() throws Exception {
-        MetaAnnotationFinder finder = new MetaAnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Fake.class, Store.class, Farm.class, None.class)).link();
+        AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Fake.class, Store.class, Farm.class, None.class)).link();
 
         Map<Class<?>, AnnotatedTarget<Class<?>>> map = new HashMap<Class<?>, AnnotatedTarget<Class<?>>>();
 
