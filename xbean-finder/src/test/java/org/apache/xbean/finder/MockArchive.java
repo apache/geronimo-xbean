@@ -16,30 +16,42 @@
  */
 package org.apache.xbean.finder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * @version $Rev$ $Date$
  */
-public class PackageFilteredArchive extends PrefixFilteredArchive {
+public class MockArchive implements Archive {
+    private final List<String> list = new ArrayList<String>();
 
-    public PackageFilteredArchive(Archive archive, String... prefixes) {
-        this(archive, Arrays.asList(prefixes));
+    public MockArchive(String... classNames) {
+        this(Arrays.asList(classNames));
     }
-
-    public PackageFilteredArchive(Archive archive, Iterable<String> prefixes) {
-        super(archive, normalize(prefixes));
-    }
-
-    private static Iterable<String> normalize(Iterable<String> prefixes) {
-        List<String> list = new ArrayList<String>();
-        // Ensure the package name ends in a dot
-        for (String prefix : prefixes) {
-            if (!prefix.endsWith(".")) prefix += ".";
-            list.add(prefix);
+    
+    public MockArchive(Iterable<String> classNames) {
+        for (String className : classNames) {
+            list.add(className);
         }
-        return list;
     }
+
+    @Override
+    public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
+        return null;
+    }
+
+    @Override
+    public Class<?> loadClass(String className) throws ClassNotFoundException {
+        return null;
+    }
+
+    @Override
+    public Iterator<String> iterator() {
+        return list.iterator();
+    }
+
 }

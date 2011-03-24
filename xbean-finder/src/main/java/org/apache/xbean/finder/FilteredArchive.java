@@ -20,28 +20,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.regex.Pattern;
 
 /**
  * @version $Rev$ $Date$
  */
-public class RegexFilteredArchive implements Archive {
-
-    private final Pattern include;
-    private final Pattern exclude;
+public class FilteredArchive implements Archive {
 
     private final Archive archive;
 
-    public RegexFilteredArchive(Archive archive, String include, String exclude) {
+    private final Filter filter;
+
+    public FilteredArchive(Archive archive, Filter filter) {
         this.archive = archive;
-        this.include = (".*".equals(include)) ? null : Pattern.compile(include);
-        this.exclude = ("".equals(exclude)) ? null : Pattern.compile(exclude);
+        this.filter = filter;
     }
 
-    public RegexFilteredArchive(Archive archive, Pattern include, Pattern exclude) {
-        this.archive = archive;
-        this.include = include;
-        this.exclude = exclude;
+    public static interface Filter {
+        boolean accept(String className);
     }
 
     @Override
@@ -56,15 +51,15 @@ public class RegexFilteredArchive implements Archive {
 
     @Override
     public Iterator<String> iterator() {
-        return new Filter(archive.iterator());
+        return new FilteredIterator(archive.iterator());
     }
 
-    private final class Filter implements Iterator<String> {
+    private final class FilteredIterator implements Iterator<String> {
         private final Iterator<String> it;
 
         private String next;
 
-        private Filter(Iterator<String> it) {
+        private FilteredIterator(Iterator<String> it) {
             this.it = it;
         }
 
@@ -93,11 +88,12 @@ public class RegexFilteredArchive implements Archive {
 
         private void seek() {
             while (next == null && it.hasNext()) {
+
                 next = it.next();
 
-                if (include != null && include.matcher(next).matches()) break;
-                if (exclude != null && exclude.matcher(next).matches()) next = null;
+                if (filter.accept(next)) return;
 
+                next = null;
             }
         }
 
