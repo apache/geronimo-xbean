@@ -20,11 +20,13 @@ import junit.framework.TestCase;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -172,6 +174,14 @@ public class MetaAnnotatedClassTest extends TestCase {
     }
 
 
+    // 100% your own annotations, even the @Metatype annotation
+    // Any annotation called @Metatype and annotated with itself works
+    @Metatype
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ANNOTATION_TYPE)
+    public @interface Metatype {
+    }
+
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
     public static @interface Color {
@@ -202,7 +212,8 @@ public class MetaAnnotatedClassTest extends TestCase {
 
     @Metatype
     @Color("egg")
-    @Chicken // Circular
+    @Chicken
+    // Circular
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
     public static @interface Egg {
@@ -211,7 +222,8 @@ public class MetaAnnotatedClassTest extends TestCase {
 
     @Metatype
     @Color("chicken")
-    @Egg // Circular
+    @Egg
+    // Circular
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
     public static @interface Chicken {
