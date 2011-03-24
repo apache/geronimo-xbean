@@ -64,9 +64,6 @@ import java.util.Set;
 public class AnnotationFinder {
 
     private final Set<Class<? extends Annotation>> metaroots = new HashSet<Class<? extends Annotation>>();
-    {
-        metaroots.add(Metatype.class);
-    }
 
     private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
 
@@ -137,11 +134,20 @@ public class AnnotationFinder {
             readClassDef(annotation);
         }
 
-        for (Info info : annotated.get(Metatype.class.getName())) {
-            try {
-                readClassDef(info.getName() + "$$");
-            } catch (ClassNotFoundException e) {
-                // we don't care, this is only a convenience
+        for (ClassInfo classInfo : classInfos.values()) {
+            if (isMetaRoot(classInfo)) {
+                metaroots.add((Class<? extends Annotation>) classInfo.get());
+            }
+        }
+
+        for (Class<? extends Annotation> metaroot : metaroots) {
+            List<Info> infoList = annotated.get(metaroot.getName());
+            for (Info info : infoList) {
+                try {
+                    readClassDef(info.getName() + "$$");
+                } catch (ClassNotFoundException e) {
+                    // we don't care, this is only a convenience
+                }
             }
         }
 
@@ -149,6 +155,19 @@ public class AnnotationFinder {
         if (annotated.keySet().size() != annotations.size()) {
             resolveAnnotations(annotations);
         }
+    }
+
+    private boolean isMetaRoot(ClassInfo classInfo) {
+        if (!classInfo.isAnnotation()) return false;
+
+        String name = classInfo.getName();
+        if (!name.equals("Metatype") && !name.endsWith(".Metatype") && !name.endsWith("$Metatype")) return false;
+
+        for (AnnotationInfo info : classInfo.getAnnotations()) {
+            if (info.getName().equals(name)) return true;
+        }
+        
+        return true;
     }
 
     private void linkParent(ClassInfo classInfo) throws IOException, ClassNotFoundException {
@@ -862,7 +881,9 @@ public class AnnotationFinder {
         @Override
         public String getMetaAnnotationName() {
             for (AnnotationInfo info : getAnnotations()) {
-                if (info.getName().equals(Metatype.class.getName())) return name;
+                for (Class<? extends Annotation> metaroot : metaroots) {
+                    if (info.getName().equals(metaroot.getName())) return name;
+                }
             }
 
             if (name.endsWith("$$")) {
@@ -1434,7 +1455,6 @@ public class AnnotationFinder {
                     Target.class,
                     Retention.class,
                     Documented.class,
-                    Metatype.class,
                     clazz
             };
 
@@ -1442,6 +1462,10 @@ public class AnnotationFinder {
                 map.remove(c);
             }
 
+            for (Class<? extends Annotation> metaroot : metaroots) {
+                map.remove(metaroot);
+            }
+            
             return map.values();
         }
 
