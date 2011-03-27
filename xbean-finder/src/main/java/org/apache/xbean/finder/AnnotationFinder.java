@@ -97,7 +97,7 @@ public class AnnotationFinder implements IAnnotationFinder {
      * @return
      * @throws java.io.IOException
      */
-    public AnnotationFinder link() throws IOException, ClassNotFoundException {
+    public AnnotationFinder link() {
         for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
 
             linkParent(classInfo);
@@ -126,7 +126,7 @@ public class AnnotationFinder implements IAnnotationFinder {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    private void resolveAnnotations(List<String> scanned) throws ClassNotFoundException, IOException {
+    private void resolveAnnotations(List<String> scanned) {
 
         // Get a list of the annotations that exist before we start
         List<String> annotations = new ArrayList<String>(annotated.keySet());
@@ -138,18 +138,18 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         for (ClassInfo classInfo : classInfos.values()) {
             if (isMetaRoot(classInfo)) {
-                metaroots.add((Class<? extends Annotation>) classInfo.get());
+                try {
+                    metaroots.add((Class<? extends Annotation>) classInfo.get());
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(classInfo.getName());
+                }
             }
         }
 
         for (Class<? extends Annotation> metaroot : metaroots) {
             List<Info> infoList = annotated.get(metaroot.getName());
             for (Info info : infoList) {
-                try {
-                    readClassDef(info.getName() + "$$");
-                } catch (ClassNotFoundException e) {
-                    // we don't care, this is only a convenience
-                }
+                readClassDef(info.getName() + "$$");
             }
         }
 
@@ -172,7 +172,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         return true;
     }
 
-    private void linkParent(ClassInfo classInfo) throws IOException, ClassNotFoundException {
+    private void linkParent(ClassInfo classInfo) {
         if (classInfo.superType == null) return;
         if (classInfo.superType.equals("java.lang.Object")) return;
 
@@ -205,7 +205,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
-    private void linkInterfaces(ClassInfo classInfo) throws IOException, ClassNotFoundException {
+    private void linkInterfaces(ClassInfo classInfo) {
         final List<ClassInfo> infos = new ArrayList<ClassInfo>();
 
         if (classInfo.clazz != null) {
@@ -772,9 +772,14 @@ public class AnnotationFinder implements IAnnotationFinder {
         return infos;
     }
 
-    protected void readClassDef(String className) throws ClassNotFoundException, IOException {
+    protected void readClassDef(String className) {
         if (classInfos.containsKey(className)) return;
-        readClassDef(archive.getBytecode(className));
+        try {
+            readClassDef(archive.getBytecode(className));
+        } catch (Exception e) {
+            if (className.endsWith("$$")) return;
+            classesNotLoaded.add(className);
+        }
     }
 
     protected void readClassDef(InputStream in) throws IOException {
