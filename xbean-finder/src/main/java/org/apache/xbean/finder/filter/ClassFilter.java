@@ -14,18 +14,37 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
-
-import java.io.IOException;
-import java.io.InputStream;
+package org.apache.xbean.finder.filter;
 
 /**
  * @version $Rev$ $Date$
  */
-public interface Archive extends Iterable<String> {
+public class ClassFilter implements Filter {
 
-    InputStream getBytecode(String className) throws IOException, ClassNotFoundException;
+    private final String name;
 
-    Class<?> loadClass(String className) throws ClassNotFoundException;
+    public ClassFilter(String name) {
+        assert name != null;
+        this.name = name;
+    }
 
+    @Override
+    public boolean accept(String name) {
+        return this.name.equals(name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ClassFilter that = (ClassFilter) o;
+
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

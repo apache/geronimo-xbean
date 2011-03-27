@@ -17,6 +17,7 @@
 package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
+import org.apache.xbean.finder.archive.ClassesArchive;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;

@@ -16,6 +16,8 @@
  */
 package org.apache.xbean.finder;
 
+import org.apache.xbean.finder.archive.Archive;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

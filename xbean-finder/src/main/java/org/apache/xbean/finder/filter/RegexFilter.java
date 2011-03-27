@@ -14,24 +14,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
+package org.apache.xbean.finder.filter;
+
+import java.util.regex.Pattern;
 
 /**
  * @version $Rev$ $Date$
  */
-public class PackageFilter implements Filter {
+public class RegexFilter implements Filter {
 
-    private final String packageName;
+    private final Pattern pattern;
 
-    public PackageFilter(String packageName) {
-        assert packageName != null;
-        if (!packageName.endsWith(".")) packageName += ".";
-        this.packageName = packageName;
+    public RegexFilter(String expression) {
+        this(Pattern.compile(expression));
+    }
+
+    public RegexFilter(Pattern pattern) {
+        assert pattern != null;
+        this.pattern = pattern;
     }
 
     @Override
     public boolean accept(String name) {
-        return name.startsWith(packageName);
+        return pattern.matcher(name).matches();
     }
 
     @Override
@@ -39,13 +44,13 @@ public class PackageFilter implements Filter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PackageFilter that = (PackageFilter) o;
+        RegexFilter that = (RegexFilter) o;
 
-        return packageName.equals(that.packageName);
+        return pattern.pattern().equals(that.pattern.pattern());
     }
 
     @Override
     public int hashCode() {
-        return packageName.hashCode();
+        return pattern.hashCode();
     }
 }

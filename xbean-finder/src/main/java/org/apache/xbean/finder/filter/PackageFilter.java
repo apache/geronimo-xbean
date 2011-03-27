@@ -14,23 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
+package org.apache.xbean.finder.filter;
 
 /**
  * @version $Rev$ $Date$
  */
-public class ClassFilter implements Filter {
+public class PackageFilter implements Filter {
 
-    private final String name;
+    private final String packageName;
 
-    public ClassFilter(String name) {
-        assert name != null;
-        this.name = name;
+    public PackageFilter(String packageName) {
+        assert packageName != null;
+        if (!packageName.endsWith(".")) packageName += ".";
+        this.packageName = packageName;
     }
 
     @Override
     public boolean accept(String name) {
-        return this.name.equals(name);
+        return name.startsWith(packageName);
     }
 
     @Override
@@ -38,13 +39,13 @@ public class ClassFilter implements Filter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ClassFilter that = (ClassFilter) o;
+        PackageFilter that = (PackageFilter) o;
 
-        return name.equals(that.name);
+        return packageName.equals(that.packageName);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return packageName.hashCode();
     }
 }

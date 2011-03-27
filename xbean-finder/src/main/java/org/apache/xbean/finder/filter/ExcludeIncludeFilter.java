@@ -14,39 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+package org.apache.xbean.finder.filter;
 
 /**
- * @version $Rev$ $Date$
+ * First, all Exclude directives are evaluated; if any match, the className is denied unless it also matches an Include directive.
+ * Any classNames which do not match any Include or Exclude directives are permitted.
  */
-public class FilterList implements Filter {
+public class ExcludeIncludeFilter implements Filter {
 
-    private final List<Filter> filters = new ArrayList<Filter>();
+    private final Filter include;
+    private final Filter exclude;
 
-    public FilterList(Filter... filters) {
-        this(Arrays.asList(filters));
-    }
-
-    public FilterList(Iterable<Filter> filters) {
-        for (Filter filter : filters) {
-            this.filters.add(filter);
-        }
+    public ExcludeIncludeFilter(Filter include, Filter exclude) {
+        this.include = include;
+        this.exclude = exclude;
     }
 
     @Override
     public boolean accept(String name) {
-        for (Filter filter : filters) {
-            if (filter.accept(name)) return true;
-        }
-
-        return false;
-    }
-
-    public List<Filter> getFilters() {
-        return filters;
+        if (exclude.accept(name)) return include.accept(name);
+        return true;
     }
 }

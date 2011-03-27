@@ -17,6 +17,8 @@
 package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
+import org.apache.xbean.finder.archive.FilteredArchive;
+import org.apache.xbean.finder.filter.Filter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -123,12 +125,12 @@ public class FilteredArchiveTest extends TestCase {
                 "org.apache.xbean.finder.AnnotatedMethod",
                 "org.apache.xbean.finder.AnnotatedTarget",
                 "org.apache.xbean.finder.AnnotationFinder",
-                "org.apache.xbean.finder.Archive",
+                "org.apache.xbean.finder.archive.Archive",
                 "org.apache.xbean.finder.BundleAnnotationFinder",
-                "org.apache.xbean.finder.BundleArchive",
+                "org.apache.xbean.finder.archive.BundleArchive",
                 "org.apache.xbean.finder.BundleAssignableClassFinder",
-                "org.apache.xbean.finder.ClassesArchive",
-                "org.apache.xbean.finder.ClasspathArchive",
+                "org.apache.xbean.finder.archive.ClassesArchive",
+                "org.apache.xbean.finder.archive.ClasspathArchive",
                 "org.apache.xbean.finder.MetaAnnotation",
                 "org.apache.xbean.finder.PackageFilteredArchive",
                 "org.apache.xbean.finder.PrefixFilteredArchive",
