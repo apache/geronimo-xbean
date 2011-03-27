@@ -16,6 +16,10 @@
  */
 package org.apache.xbean.finder;
 
+import org.apache.xbean.finder.filter.Filter;
+import org.apache.xbean.finder.filter.Filters;
+import org.apache.xbean.finder.filter.RegexFilter;
+
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Collection;
@@ -27,6 +31,9 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.io.IOException;
 import java.io.File;
+
+import static org.apache.xbean.finder.filter.Filters.invert;
+import static org.apache.xbean.finder.filter.Filters.patterns;
 
 /**
  * @version $Rev$ $Date$
@@ -96,7 +103,7 @@ public class UrlSet {
     }
 
     public UrlSet exclude(String pattern) throws MalformedURLException {
-        return exclude(matching(pattern));
+        return filter(invert(patterns(pattern)));
     }
 
     /**
@@ -142,15 +149,19 @@ public class UrlSet {
         return urlSet;
     }
 
-    public UrlSet matching(String pattern) {
+    public UrlSet filter(Filter filter) {
         Map<String, URL> urls = new HashMap<String, URL>();
         for (Map.Entry<String, URL> entry : this.urls.entrySet()) {
             String url = entry.getKey();
-            if (url.matches(pattern)){
+            if (filter.accept(url)){
                 urls.put(url, entry.getValue());
             }
         }
         return new UrlSet(urls);
+    }
+
+    public UrlSet matching(String pattern) {
+        return filter(patterns(pattern));
     }
 
     public UrlSet relative(File file) throws MalformedURLException {

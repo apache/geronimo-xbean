@@ -86,6 +86,26 @@ public class Filters {
         return new FilterList(unwrapped);
     }
 
+    /**
+     * Will invert the meaning of this filter by wrapping it with
+     * a filter that negates the return of the accept method.
+     *
+     * If the passed in filter is already wrapped, it will be
+     * unwrapped and returned.  This is to prevent endless wrapping
+     * if the invert method is called many times.
+     * 
+     * @param filter
+     * @return
+     */
+    public static Filter invert(Filter filter) {
+        if (filter instanceof NegativeFilter) {
+            NegativeFilter negativeFilter = (NegativeFilter) filter;
+            return negativeFilter.getFilter();
+        }
+
+        return new NegativeFilter(filter);
+    }
+
     private static void unwrap(List<Filter> filters, Set<Filter> unwrapped) {
         for (Filter filter : filters) {
             if (filter instanceof FilterList) {
@@ -97,5 +117,21 @@ public class Filters {
         }
     }
 
+    private static final class NegativeFilter implements Filter {
+        private final Filter filter;
+
+        public NegativeFilter(Filter filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean accept(String name) {
+            return !filter.accept(name);
+        }
+
+        public Filter getFilter() {
+            return filter;
+        }
+    }
 
 }
