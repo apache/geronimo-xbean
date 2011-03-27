@@ -23,10 +23,14 @@ package org.apache.xbean.finder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +49,7 @@ import org.objectweb.asm.signature.SignatureVisitor;
 /**
  * @version $Rev$ $Date$
  */
-public abstract class AbstractFinder {
+public abstract class AbstractFinder implements IAnnotationFinder {
     private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
     protected final Map<String, ClassInfo> classInfos = new HashMap<String, ClassInfo>();
     private final List<String> classesNotLoaded = new ArrayList<String>();
@@ -210,6 +214,41 @@ public abstract class AbstractFinder {
         return classes;
     }
 
+    @Override
+    public List<AnnotatedTarget<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
+        List<Class<?>> classes = findAnnotatedClasses(annotation);
+        List<AnnotatedTarget<Class<?>>> list = new ArrayList<AnnotatedTarget<Class<?>>>();
+        for (final Class<?> clazz : classes) {
+            list.add(new AnnotatedTarget<Class<?>>(){
+                @Override
+                public Class<?> getTarget() {
+                    return clazz;
+                }
+
+                @Override
+                public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+                    return getTarget().isAnnotationPresent(annotationClass);
+                }
+
+                @Override
+                public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                    return getTarget().getAnnotation(annotationClass);
+                }
+
+                @Override
+                public Annotation[] getAnnotations() {
+                    return getTarget().getAnnotations();
+                }
+
+                @Override
+                public Annotation[] getDeclaredAnnotations() {
+                    return getTarget().getDeclaredAnnotations();
+                }
+            });
+        }
+        return list;
+    }
+
     /**
      * Naive implementation - works extremelly slow O(n^3)
      *
@@ -297,6 +336,111 @@ public abstract class AbstractFinder {
         return methods;
     }
 
+    @Override
+    public List<AnnotatedMethod<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
+        List<Method> methods = findAnnotatedMethods(annotation);
+        List<AnnotatedMethod<Method>> list = new ArrayList<AnnotatedMethod<Method>>();
+        for (final Method method : methods) {
+            list.add(new AnnotatedMethod<Method>(){
+                @Override
+                public Method getTarget() {
+                    return method;
+                }
+
+                @Override
+                public Class<?> getDeclaringClass() {
+                    return getTarget().getDeclaringClass();
+                }
+
+                @Override
+                public String getName() {
+                    return getTarget().getName();
+                }
+
+                @Override
+                public int getModifiers() {
+                    return getTarget().getModifiers();
+                }
+
+                @Override
+                public Class<?>[] getParameterTypes() {
+                    return getTarget().getParameterTypes();
+                }
+
+                @Override
+                public Type[] getGenericParameterTypes() {
+                    return getTarget().getGenericParameterTypes();
+                }
+
+                @Override
+                public Class<?>[] getExceptionTypes() {
+                    return getTarget().getExceptionTypes();
+                }
+
+                @Override
+                public Type[] getGenericExceptionTypes() {
+                    return getTarget().getGenericExceptionTypes();
+                }
+
+                @Override
+                public boolean equals(Object obj) {
+                    return getTarget().equals(obj);
+                }
+
+                @Override
+                public int hashCode() {
+                    return getTarget().hashCode();
+                }
+
+                @Override
+                public String toString() {
+                    return getTarget().toString();
+                }
+
+                @Override
+                public String toGenericString() {
+                    return getTarget().toGenericString();
+                }
+
+                @Override
+                public boolean isVarArgs() {
+                    return getTarget().isVarArgs();
+                }
+
+                @Override
+                public boolean isSynthetic() {
+                    return getTarget().isSynthetic();
+                }
+
+                @Override
+                public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                    return getTarget().getAnnotation(annotationClass);
+                }
+
+                @Override
+                public Annotation[] getDeclaredAnnotations() {
+                    return getTarget().getDeclaredAnnotations();
+                }
+
+                @Override
+                public Annotation[][] getParameterAnnotations() {
+                    return getTarget().getParameterAnnotations();
+                }
+
+                @Override
+                public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+                    return getTarget().isAnnotationPresent(annotationClass);
+                }
+
+                @Override
+                public Annotation[] getAnnotations() {
+                    return getTarget().getAnnotations();
+                }
+            });
+        }
+        return list;
+    }
+
     public List<Constructor> findAnnotatedConstructors(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<ClassInfo> seen = new ArrayList<ClassInfo>();
@@ -353,6 +497,79 @@ public abstract class AbstractFinder {
             }
         }
         return fields;
+    }
+
+    @Override
+    public List<AnnotatedMember<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
+        List<Field> fields = findAnnotatedFields(annotation);
+        List<AnnotatedMember<Field>> list = new ArrayList<AnnotatedMember<Field>>();
+        for (final Field field : fields) {
+            list.add(new AnnotatedMember<Field>(){
+                @Override
+                public Field getTarget() {
+                    return field;
+                }
+
+                @Override
+                public Class<?> getDeclaringClass() {
+                    return getTarget().getDeclaringClass();
+                }
+
+                @Override
+                public String getName() {
+                    return getTarget().getName();
+                }
+
+                @Override
+                public int getModifiers() {
+                    return getTarget().getModifiers();
+                }
+
+                @Override
+                public boolean isSynthetic() {
+                    return getTarget().isSynthetic();
+                }
+
+                @Override
+                public boolean equals(Object obj) {
+                    return getTarget().equals(obj);
+                }
+
+                @Override
+                public int hashCode() {
+                    return getTarget().hashCode();
+                }
+
+                @Override
+                public String toString() {
+                    return getTarget().toString();
+                }
+
+                @Override
+                public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                    return getTarget().getAnnotation(annotationClass);
+                }
+
+                @Override
+                public Annotation[] getDeclaredAnnotations() {
+                    return getTarget().getDeclaredAnnotations();
+                }
+
+                @Override
+                public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+                    return getTarget().isAnnotationPresent(annotationClass);
+                }
+
+                @Override
+                public Annotation[] getAnnotations() {
+                    return getTarget().getAnnotations();
+                }
+
+                
+            });
+        }
+
+        return list;
     }
 
     public List<Class<?>> findClassesInPackage(String packageName, boolean recursive) {

@@ -61,28 +61,28 @@ public class FilteredArchiveTest extends TestCase {
         assertEquals(i + " items were the same", expected.hasNext(), actual.hasNext());
     }
 
-    public static class Nothing implements FilteredArchive.Filter {
+    public static class Nothing implements Filter {
 
         @Override
-        public boolean accept(String className) {
+        public boolean accept(String name) {
             return true;
         }
     }
 
-    public static class All implements FilteredArchive.Filter {
+    public static class All implements Filter {
 
         @Override
-        public boolean accept(String className) {
+        public boolean accept(String name) {
             return false;
         }
     }
 
-    public static class Half implements FilteredArchive.Filter {
+    public static class Half implements Filter {
 
         private boolean accept;
 
         @Override
-        public boolean accept(String className) {
+        public boolean accept(String name) {
             return accept = !accept;
         }
     }

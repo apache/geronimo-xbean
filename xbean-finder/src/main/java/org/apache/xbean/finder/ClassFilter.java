@@ -19,7 +19,7 @@ package org.apache.xbean.finder;
 /**
  * @version $Rev$ $Date$
  */
-public class ClassFilter implements FilteredArchive.Filter {
+public class ClassFilter implements Filter {
 
     private final String name;
 
@@ -29,8 +29,8 @@ public class ClassFilter implements FilteredArchive.Filter {
     }
 
     @Override
-    public boolean accept(String className) {
-        return name.equals(className);
+    public boolean accept(String name) {
+        return this.name.equals(name);
     }
 
     @Override

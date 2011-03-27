@@ -27,7 +27,7 @@ public class FiltersTest extends TestCase {
     }
 
     public void testPackages() throws Exception {
-        FilteredArchive.Filter filter = Filters.packages("org.foo", "org.bar");
+        Filter filter = Filters.packages("org.foo", "org.bar");
 
         assertTrue(filter.accept("org.foo.Red"));
         assertTrue(filter.accept("org.bar.Orange"));
@@ -39,7 +39,7 @@ public class FiltersTest extends TestCase {
     }
 
     public void testClasses() throws Exception {
-        FilteredArchive.Filter filter = Filters.classes("org.foo.Red", "org.foo.Blue");
+        Filter filter = Filters.classes("org.foo.Red", "org.foo.Blue");
 
         assertTrue(filter.accept("org.foo.Red"));
         assertTrue(filter.accept("org.foo.Blue"));
@@ -50,7 +50,7 @@ public class FiltersTest extends TestCase {
     }
 
     public void testPatterns() throws Exception {
-        FilteredArchive.Filter filter = Filters.patterns("org\\.foo\\..*", ".*\\.Blue");
+        Filter filter = Filters.patterns("org\\.foo\\..*", ".*\\.Blue");
 
         assertTrue(filter.accept("org.foo.Red"));
         assertTrue(filter.accept("org.foo.Blue"));
@@ -89,7 +89,7 @@ public class FiltersTest extends TestCase {
     }
 
     public void testIncludeExclude() {
-        FilteredArchive.Filter filter = new IncludeExcludeFilter(Filters.packages("org.foo", "org.bar"), Filters.packages("org.foo.util"));
+        Filter filter = new IncludeExcludeFilter(Filters.packages("org.foo", "org.bar"), Filters.packages("org.foo.util"));
 
         assertTrue(filter.accept("org.foo.Red"));
         assertTrue(filter.accept("org.bar.Red"));
@@ -99,7 +99,7 @@ public class FiltersTest extends TestCase {
     }
 
     public void testExcludeInclude() {
-        FilteredArchive.Filter filter = new ExcludeIncludeFilter(Filters.packages("org.foo.util"), Filters.packages("org.foo", "org.bar"));
+        Filter filter = new ExcludeIncludeFilter(Filters.packages("org.foo.util"), Filters.packages("org.foo", "org.bar"));
 
         assertFalse(filter.accept("org.foo.Red"));
         assertFalse(filter.accept("org.bar.Red"));

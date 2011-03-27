@@ -20,19 +20,19 @@ package org.apache.xbean.finder;
  * First, all Exclude directives are evaluated; if any match, the className is denied unless it also matches an Include directive.
  * Any classNames which do not match any Include or Exclude directives are permitted.
  */
-public class ExcludeIncludeFilter implements FilteredArchive.Filter {
+public class ExcludeIncludeFilter implements Filter {
 
-    private final FilteredArchive.Filter include;
-    private final FilteredArchive.Filter exclude;
+    private final Filter include;
+    private final Filter exclude;
 
-    public ExcludeIncludeFilter(FilteredArchive.Filter include, FilteredArchive.Filter exclude) {
+    public ExcludeIncludeFilter(Filter include, Filter exclude) {
         this.include = include;
         this.exclude = exclude;
     }
 
     @Override
-    public boolean accept(String className) {
-        if (exclude.accept(className)) return include.accept(className);
+    public boolean accept(String name) {
+        if (exclude.accept(name)) return include.accept(name);
         return true;
     }
 }

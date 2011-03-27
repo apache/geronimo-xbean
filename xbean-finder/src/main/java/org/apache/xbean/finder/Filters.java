@@ -27,15 +27,15 @@ import java.util.Set;
  * @version $Rev$ $Date$
  */
 public class Filters {
-    private static final FilteredArchive.Filter NONE = new FilteredArchive.Filter() {
+    private static final Filter NONE = new Filter() {
         @Override
-        public boolean accept(String className) {
+        public boolean accept(String name) {
             return false;
         }
     };
 
-    public static FilteredArchive.Filter packages(String... packages) {
-        List<FilteredArchive.Filter> filters = new ArrayList<FilteredArchive.Filter>();
+    public static Filter packages(String... packages) {
+        List<Filter> filters = new ArrayList<Filter>();
         for (String s : packages) {
             filters.add(new PackageFilter(s));
         }
@@ -43,8 +43,8 @@ public class Filters {
         return optimize(filters);
     }
 
-    public static FilteredArchive.Filter classes(String... classes) {
-        List<FilteredArchive.Filter> filters = new ArrayList<FilteredArchive.Filter>();
+    public static Filter classes(String... classes) {
+        List<Filter> filters = new ArrayList<Filter>();
         for (String s : classes) {
             filters.add(new ClassFilter(s));
         }
@@ -52,8 +52,8 @@ public class Filters {
         return optimize(filters);
     }
 
-    public static FilteredArchive.Filter patterns(String... patterns) {
-        List<FilteredArchive.Filter> filters = new ArrayList<FilteredArchive.Filter>();
+    public static Filter patterns(String... patterns) {
+        List<Filter> filters = new ArrayList<Filter>();
         for (String s : patterns) {
             filters.add(new RegexFilter(s));
         }
@@ -62,21 +62,21 @@ public class Filters {
     }
 
 
-    public static FilteredArchive.Filter optimize(FilteredArchive.Filter... filters) {
+    public static Filter optimize(Filter... filters) {
         return optimize(Arrays.asList(filters));
     }
 
-    public static FilteredArchive.Filter optimize(List<FilteredArchive.Filter>... filterss) {
-        Set<FilteredArchive.Filter> unwrapped = new LinkedHashSet<FilteredArchive.Filter>();
+    public static Filter optimize(List<Filter>... filterss) {
+        Set<Filter> unwrapped = new LinkedHashSet<Filter>();
 
-        for (List<FilteredArchive.Filter> filters : filterss) {
+        for (List<Filter> filters : filterss) {
             unwrap(filters, unwrapped);
         }
 
         if (unwrapped.size() > 1) {
-            Iterator<FilteredArchive.Filter> iterator = unwrapped.iterator();
+            Iterator<Filter> iterator = unwrapped.iterator();
             while (iterator.hasNext()) {
-                FilteredArchive.Filter filter = iterator.next();
+                Filter filter = iterator.next();
                 if (filter == NONE) iterator.remove();
             }
         }
@@ -86,8 +86,8 @@ public class Filters {
         return new FilterList(unwrapped);
     }
 
-    private static void unwrap(List<FilteredArchive.Filter> filters, Set<FilteredArchive.Filter> unwrapped) {
-        for (FilteredArchive.Filter filter : filters) {
+    private static void unwrap(List<Filter> filters, Set<Filter> unwrapped) {
+        for (Filter filter : filters) {
             if (filter instanceof FilterList) {
                 FilterList filterList = (FilterList) filter;
                 unwrap(filterList.getFilters(), unwrapped);

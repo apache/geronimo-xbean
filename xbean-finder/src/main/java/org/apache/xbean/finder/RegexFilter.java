@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 /**
  * @version $Rev$ $Date$
  */
-public class RegexFilter implements FilteredArchive.Filter {
+public class RegexFilter implements Filter {
 
     private final Pattern pattern;
 
@@ -35,8 +35,8 @@ public class RegexFilter implements FilteredArchive.Filter {
     }
 
     @Override
-    public boolean accept(String className) {
-        return pattern.matcher(className).matches();
+    public boolean accept(String name) {
+        return pattern.matcher(name).matches();
     }
 
     @Override

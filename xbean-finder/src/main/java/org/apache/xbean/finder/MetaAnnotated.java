@@ -16,39 +16,12 @@
  */
 package org.apache.xbean.finder;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
-* @version $Rev$ $Date$
-*/
-public class MetaAnnotation<T extends Annotation> {
-    private final Class<?> declaringClass;
-    private final T annotation;
-    private final int depth;
+ * @version $Rev$ $Date$
+ */
+public interface MetaAnnotated {
 
-    private final List<MetaAnnotation<T>> conflicts = new ArrayList<MetaAnnotation<T>>();
-
-    MetaAnnotation(T annotation, int depth, Class<?> declaringClass) {
-        this.annotation = annotation;
-        this.depth = depth;
-        this.declaringClass = declaringClass;
-    }
-
-    public T getAnnotation() {
-        return annotation;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public Class<?> getDeclaringClass() {
-        return declaringClass;
-    }
-
-    public List<MetaAnnotation<T>> getConflicts() {
-        return conflicts;
-    }
+    public Collection<MetaAnnotation<?>> getMetaAnnotations();
 }
