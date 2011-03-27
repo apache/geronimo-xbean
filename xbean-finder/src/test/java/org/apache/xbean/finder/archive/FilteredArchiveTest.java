@@ -14,10 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
+package org.apache.xbean.finder.archive;
 
 import junit.framework.TestCase;
-import org.apache.xbean.finder.archive.FilteredArchive;
 import org.apache.xbean.finder.filter.Filter;
 
 import java.util.ArrayList;
