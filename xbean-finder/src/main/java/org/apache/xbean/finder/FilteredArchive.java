@@ -35,10 +35,6 @@ public class FilteredArchive implements Archive {
         this.filter = filter;
     }
 
-    public static interface Filter {
-        boolean accept(String className);
-    }
-
     @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         return archive.getBytecode(className);

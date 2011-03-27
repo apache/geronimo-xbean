@@ -19,7 +19,7 @@ package org.apache.xbean.finder;
 /**
  * @version $Rev$ $Date$
  */
-public class PackageFilter implements FilteredArchive.Filter {
+public class PackageFilter implements Filter {
 
     private final String packageName;
 
@@ -30,8 +30,8 @@ public class PackageFilter implements FilteredArchive.Filter {
     }
 
     @Override
-    public boolean accept(String className) {
-        return className.startsWith(packageName);
+    public boolean accept(String name) {
+        return name.startsWith(packageName);
     }
 
     @Override

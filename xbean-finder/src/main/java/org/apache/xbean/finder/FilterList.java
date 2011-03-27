@@ -23,30 +23,30 @@ import java.util.List;
 /**
  * @version $Rev$ $Date$
  */
-public class FilterList implements FilteredArchive.Filter {
+public class FilterList implements Filter {
 
-    private final List<FilteredArchive.Filter> filters = new ArrayList<FilteredArchive.Filter>();
+    private final List<Filter> filters = new ArrayList<Filter>();
 
-    public FilterList(FilteredArchive.Filter... filters) {
+    public FilterList(Filter... filters) {
         this(Arrays.asList(filters));
     }
 
-    public FilterList(Iterable<FilteredArchive.Filter> filters) {
-        for (FilteredArchive.Filter filter : filters) {
+    public FilterList(Iterable<Filter> filters) {
+        for (Filter filter : filters) {
             this.filters.add(filter);
         }
     }
 
     @Override
-    public boolean accept(String className) {
-        for (FilteredArchive.Filter filter : filters) {
-            if (filter.accept(className)) return true;
+    public boolean accept(String name) {
+        for (Filter filter : filters) {
+            if (filter.accept(name)) return true;
         }
 
         return false;
     }
 
-    public List<FilteredArchive.Filter> getFilters() {
+    public List<Filter> getFilters() {
         return filters;
     }
 }

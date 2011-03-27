@@ -22,7 +22,7 @@ import java.lang.reflect.GenericDeclaration;
 /**
  * @version $Rev$ $Date$
  */
-public interface AnnotatedTarget<T> extends AnnotatedElement, GenericDeclaration {
+public interface AnnotatedTarget<T> extends AnnotatedElement {
 
     T getTarget();
 
