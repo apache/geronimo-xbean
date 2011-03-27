@@ -14,40 +14,41 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
+package org.apache.xbean.finder.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 /**
+ * TODO Unfinished
  * @version $Rev$ $Date$
  */
-public class ClassesArchive implements Archive {
+public class ClasspathArchive implements Archive {
 
-    private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
-    private final Map<String, Class<?>> classes = new LinkedHashMap<String, Class<?>>();
+    private final List<URL> urls = new ArrayList<URL>();
+    private final ClassLoader loader;
 
-    public ClassesArchive(Class<?>... classes) {
-        this(Arrays.asList(classes));
+    public ClasspathArchive(ClassLoader loader, URL... urls) {
+        this(loader, Arrays.asList(urls));
     }
 
-    public ClassesArchive(Iterable<Class<?>> classes) {
-        for (Class<?> clazz : classes) {
-            this.classes.put(clazz.getName(), clazz);
-            loaders.add(clazz.getClassLoader());
+    public ClasspathArchive(ClassLoader loader, Iterable<URL> urls) {
+        this.loader = loader;
+        for (URL url : urls) {
+            this.urls.add(url);
         }
     }
 
     @Override
     public Iterator<String> iterator() {
-        return classes.keySet().iterator();
+        // TODO
+        return Collections.EMPTY_LIST.iterator();
     }
 
     @Override
@@ -63,26 +64,15 @@ public class ClassesArchive implements Archive {
         if (!className.endsWith(".class")) {
             className = className.replace('.', '/') + ".class";
         }
-        for (ClassLoader loader : loaders) {
-            URL resource = loader.getResource(className);
-            if (resource != null) return resource.openStream();
-        }
+
+        URL resource = loader.getResource(className);
+        if (resource != null) return resource.openStream();
 
         throw new ClassNotFoundException(className);
     }
 
     @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
-        Class<?> clazz = classes.get(className);
-        if (clazz != null) return clazz;
-
-        for (ClassLoader loader : loaders) {
-            try {
-                return loader.loadClass(className);
-            } catch (ClassNotFoundException e) {
-            }
-        }
-
-        throw new ClassNotFoundException(className);
+        return loader.loadClass(className);
     }
 }

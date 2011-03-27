@@ -17,6 +17,7 @@
 package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
+import org.apache.xbean.finder.util.SingleLinkedList;
 
 import java.util.ArrayList;
 import java.util.Arrays;

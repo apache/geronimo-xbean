@@ -20,6 +20,9 @@
 
 package org.apache.xbean.finder;
 
+import org.apache.xbean.finder.archive.Archive;
+import org.apache.xbean.finder.util.Classes;
+import org.apache.xbean.finder.util.SingleLinkedList;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;

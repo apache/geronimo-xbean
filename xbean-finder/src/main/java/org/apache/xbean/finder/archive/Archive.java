@@ -14,26 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
+package org.apache.xbean.finder.archive;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * First, all Include directives are evaluated; at least one must match, or the className is rejected.
- * Next, all Exclude directives are evaluated. If any matches, the className is rejected.
- * Last, any classNames which do not match an Include or a Exclude directive are denied by default.
+ * @version $Rev$ $Date$
  */
-public class IncludeExcludeFilter implements Filter {
+public interface Archive extends Iterable<String> {
 
-    private Filter include;
-    private Filter exclude;
+    InputStream getBytecode(String className) throws IOException, ClassNotFoundException;
 
-    public IncludeExcludeFilter(Filter include, Filter exclude) {
-        this.include = include;
-        this.exclude = exclude;
-    }
+    Class<?> loadClass(String className) throws ClassNotFoundException;
 
-    @Override
-    public boolean accept(String name) {
-        if (include.accept(name)) return !exclude.accept(name);
-        return false;
-    }
 }

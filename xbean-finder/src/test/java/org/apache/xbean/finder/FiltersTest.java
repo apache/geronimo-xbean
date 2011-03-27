@@ -17,6 +17,12 @@
 package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
+import org.apache.xbean.finder.filter.ClassFilter;
+import org.apache.xbean.finder.filter.ExcludeIncludeFilter;
+import org.apache.xbean.finder.filter.Filter;
+import org.apache.xbean.finder.filter.FilterList;
+import org.apache.xbean.finder.filter.Filters;
+import org.apache.xbean.finder.filter.IncludeExcludeFilter;
 
 /**
  * @version $Rev$ $Date$

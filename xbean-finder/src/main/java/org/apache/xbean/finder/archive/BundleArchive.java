@@ -14,35 +14,36 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
+package org.apache.xbean.finder.archive;
+
+import org.apache.xbean.osgi.bundle.util.BundleResourceFinder;
+import org.apache.xbean.osgi.bundle.util.ResourceDiscoveryFilter;
+import org.osgi.framework.Bundle;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.zip.ZipEntry;
 
 /**
  * TODO Unfinished
  * @version $Rev$ $Date$
  */
-public class ClasspathArchive implements Archive {
+public class BundleArchive implements Archive {
 
-    private final List<URL> urls = new ArrayList<URL>();
-    private final ClassLoader loader;
+    private final Bundle bundle;
 
-    public ClasspathArchive(ClassLoader loader, URL... urls) {
-        this(loader, Arrays.asList(urls));
+    public BundleArchive(PackageAdmin packageAdmin, Bundle bundle) throws Exception {
+        this(packageAdmin, bundle, BundleResourceFinder.FULL_DISCOVERY_FILTER);
     }
 
-    public ClasspathArchive(ClassLoader loader, Iterable<URL> urls) {
-        this.loader = loader;
-        for (URL url : urls) {
-            this.urls.add(url);
-        }
+    public BundleArchive(PackageAdmin packageAdmin, Bundle bundle, ResourceDiscoveryFilter discoveryFilter) throws Exception {
+        this.bundle = bundle;
+        BundleResourceFinder bundleResourceFinder = new BundleResourceFinder(packageAdmin, bundle, "", ".class", discoveryFilter);
+        bundleResourceFinder.find(new AnnotationFindingCallback());
     }
 
     @Override
@@ -65,14 +66,37 @@ public class ClasspathArchive implements Archive {
             className = className.replace('.', '/') + ".class";
         }
 
-        URL resource = loader.getResource(className);
+        URL resource = bundle.getResource(className);
         if (resource != null) return resource.openStream();
 
         throw new ClassNotFoundException(className);
     }
 
     @Override
-    public Class<?> loadClass(String className) throws ClassNotFoundException {
-        return loader.loadClass(className);
+    public Class<?> loadClass(String s) throws ClassNotFoundException {
+        return bundle.loadClass(s);
     }
+
+    private class AnnotationFindingCallback implements BundleResourceFinder.ResourceFinderCallback {
+
+        public boolean foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
+            InputStream in = url.openStream();
+            try {
+                //TODO
+//                readClassDef(in);
+            } finally {
+                in.close();
+            }
+            return true;
+        }
+
+
+        public boolean foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception {
+            //TODO
+//            readClassDef(in);
+            return true;
+        }
+    }
+
+
 }

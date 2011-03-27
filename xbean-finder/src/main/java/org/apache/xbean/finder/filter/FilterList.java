@@ -14,43 +14,39 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.finder;
+package org.apache.xbean.finder.filter;
 
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @version $Rev$ $Date$
  */
-public class RegexFilter implements Filter {
+public class FilterList implements Filter {
 
-    private final Pattern pattern;
+    private final List<Filter> filters = new ArrayList<Filter>();
 
-    public RegexFilter(String expression) {
-        this(Pattern.compile(expression));
+    public FilterList(Filter... filters) {
+        this(Arrays.asList(filters));
     }
 
-    public RegexFilter(Pattern pattern) {
-        assert pattern != null;
-        this.pattern = pattern;
+    public FilterList(Iterable<Filter> filters) {
+        for (Filter filter : filters) {
+            this.filters.add(filter);
+        }
     }
 
     @Override
     public boolean accept(String name) {
-        return pattern.matcher(name).matches();
+        for (Filter filter : filters) {
+            if (filter.accept(name)) return true;
+        }
+
+        return false;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        RegexFilter that = (RegexFilter) o;
-
-        return pattern.pattern().equals(that.pattern.pattern());
-    }
-
-    @Override
-    public int hashCode() {
-        return pattern.hashCode();
+    public List<Filter> getFilters() {
+        return filters;
     }
 }
