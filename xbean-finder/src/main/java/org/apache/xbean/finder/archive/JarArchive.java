@@ -18,67 +18,25 @@ package org.apache.xbean.finder.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 /**
- * Supports JarArchive and FileArchive URLs
- *
  * @version $Rev$ $Date$
  */
-public class ClasspathArchive extends CompositeArchive {
+public class JarArchive implements Archive {
 
-    private final List<URL> urls = new ArrayList<URL>();
     private final ClassLoader loader;
+    private final URL url;
 
-    public ClasspathArchive(ClassLoader loader, URL... urls) {
-        this(loader, Arrays.asList(urls));
-    }
-
-    public ClasspathArchive(ClassLoader loader, Iterable<URL> urls) {
-        super(archives(loader, urls));
+    public JarArchive(ClassLoader loader, URL url) {
+        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a file url: " + url);
         this.loader = loader;
-
-    }
-
-    public static List<Archive> archives(ClassLoader loader, Iterable<URL> urls) {
-        List<Archive> archives = new ArrayList<Archive>();
-
-        for (URL location : urls) {
-            try {
-
-                if (location.getProtocol().equals("jar")) {
-
-                    archives.add(new JarArchive(loader, location));
-
-                } else if (location.getProtocol().equals("file")) {
-
-                    try {
-
-                        // See if it's actually a jar
-
-                        URL jarUrl = new URL("jar", "", location.toExternalForm() + "!/");
-                        JarURLConnection juc = (JarURLConnection) jarUrl.openConnection();
-                        juc.getJarFile();
-
-                        archives.add(new JarArchive(loader, jarUrl));
-
-                    } catch (IOException e) {
-
-                        archives.add(new FileArchive(loader, location));
-
-                    }
-                }
-            } catch (Exception e) {
-                // TODO This is what we did before, so not too urgent to change, but not ideal
-                e.printStackTrace();
-            }
-        }
-
-        return archives;
+        this.url = url;
     }
 
     @Override
@@ -101,8 +59,52 @@ public class ClasspathArchive extends CompositeArchive {
         throw new ClassNotFoundException(className);
     }
 
+
     @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         return loader.loadClass(className);
     }
+
+    @Override
+    public Iterator<String> iterator() {
+        try {
+            return jar(url).iterator();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private List<String> jar(URL location) throws IOException {
+        String jarPath = location.getFile();
+        if (jarPath.indexOf("!") > -1){
+            jarPath = jarPath.substring(0, jarPath.indexOf("!"));
+        }
+        URL url = new URL(jarPath);
+        InputStream in = url.openStream();
+        try {
+            JarInputStream jarStream = new JarInputStream(in);
+            return jar(jarStream);
+        } finally {
+            in.close();
+        }
+    }
+
+    private List<String> jar(JarInputStream jarStream) throws IOException {
+        List<String> classNames = new ArrayList<String>();
+
+        JarEntry entry;
+        while ((entry = jarStream.getNextJarEntry()) != null) {
+            if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
+                continue;
+            }
+            String className = entry.getName();
+            className = className.replaceFirst(".class$", "");
+            if (className.contains(".")) continue;
+            className = className.replace('/', '.');
+            classNames.add(className);
+        }
+
+        return classNames;
+    }
+
 }
