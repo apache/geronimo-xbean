@@ -16,14 +16,13 @@
  */
 package org.apache.xbean.finder;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.GenericDeclaration;
+import java.util.Collection;
 
 /**
  * @version $Rev$ $Date$
  */
-public interface AnnotatedTarget<T> extends AnnotatedElement {
+public interface MetaAnnotated<T> extends Annotated<T> {
 
-    T getTarget();
+    public Collection<MetaAnnotation<?>> getMetaAnnotations();
 
 }

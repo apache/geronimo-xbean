@@ -16,11 +16,40 @@
  */
 package org.apache.xbean.finder;
 
-import java.lang.reflect.Member;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 
 /**
- * @version $Rev$ $Date$
- */
-public interface AnnotatedMember<T> extends Annotated<T>, Member {
+* @version $Rev$ $Date$
+*/
+public class MetaAnnotatedField extends MetaAnnotatedObject<Field> implements AnnotatedMember<Field> {
 
+    public MetaAnnotatedField(Field field) {
+        super(field, unroll(field.getDeclaringClass(), field));
+    }
+
+    @Override
+    public Annotation[] getDeclaredAnnotations() {
+        return get().getDeclaredAnnotations();
+    }
+
+    @Override
+    public Class<?> getDeclaringClass() {
+        return get().getDeclaringClass();
+    }
+
+    @Override
+    public String getName() {
+        return get().getName();
+    }
+
+    @Override
+    public int getModifiers() {
+        return get().getModifiers();
+    }
+
+    @Override
+    public boolean isSynthetic() {
+        return get().isSynthetic();
+    }
 }

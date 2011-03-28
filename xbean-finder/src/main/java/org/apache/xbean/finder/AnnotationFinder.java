@@ -36,16 +36,12 @@ import org.objectweb.asm.signature.SignatureVisitor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,7 +52,7 @@ import java.util.Set;
 /**
  * ClassFinder searches the classpath of the specified classloader for
  * packages, classes, constructors, methods, or fields with specific annotations.
- *
+ * <p/>
  * For security reasons ASM is used to find the annotations.  Classes are not
  * loaded unless they match the requirements of a called findAnnotated* method.
  * Once loaded, these classes are cached.
@@ -168,7 +164,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         for (AnnotationInfo info : classInfo.getAnnotations()) {
             if (info.getName().equals(name)) return true;
         }
-        
+
         return true;
     }
 
@@ -314,14 +310,14 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     @Override
-    public List<AnnotatedTarget<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
+    public List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         Set<Class<?>> classes = findMetaAnnotatedClasses(annotation, new HashSet<Class<?>>());
 
-        List<AnnotatedTarget<Class<?>>> list = new ArrayList<AnnotatedTarget<Class<?>>>();
+        List<Annotated<Class<?>>> list = new ArrayList<Annotated<Class<?>>>();
 
         for (Class<?> clazz : classes) {
-            list.add(new MetaAnnotatedClass(clazz, unrollClass(clazz)));
+            list.add(new MetaAnnotatedClass(clazz));
         }
 
         return list;
@@ -444,15 +440,15 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     @Override
-    public List<AnnotatedMethod<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
+    public List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
         Set<Method> methods = findMetaAnnotatedMethods(annotation, new HashSet<Method>(), new HashSet<String>());
 
-        List<AnnotatedMethod<Method>> targets = new ArrayList<AnnotatedMethod<Method>>();
+        List<Annotated<Method>> targets = new ArrayList<Annotated<Method>>();
 
         for (Method method : methods) {
-            targets.add(new MetaAnnotatedMethod(method, unrollMethod(method)));
+            targets.add(new MetaAnnotatedMethod(method));
         }
 
         return targets;
@@ -504,15 +500,15 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     @Override
-    public List<AnnotatedMember<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
+    public List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
         Set<Field> fields = findMetaAnnotatedFields(annotation, new HashSet<Field>(), new HashSet<String>());
 
-        List<AnnotatedMember<Field>> targets = new ArrayList<AnnotatedMember<Field>>();
+        List<Annotated<Field>> targets = new ArrayList<Annotated<Field>>();
 
         for (Field field : fields) {
-            targets.add(new MetaAnnotatedField(field, unrollField(field)));
+            targets.add(new MetaAnnotatedField(field));
         }
 
         return targets;
@@ -1175,7 +1171,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         public String toString() {
             return declaringClass + "#" + name;
         }
-        
+
         @Override
         public String getMetaAnnotationName() {
             return declaringClass.getMetaAnnotationName();
@@ -1479,291 +1475,4 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     }
 
-    private void unroll(Class<? extends Annotation> clazz, int depth, Map<Class<? extends Annotation>, MetaAnnotation<?>> found) {
-        if (!isMetaAnnotation(clazz)) return;
-
-        for (Annotation annotation : getDeclaredMetaAnnotations(clazz)) {
-            Class<? extends Annotation> type = annotation.annotationType();
-
-            MetaAnnotation existing = found.get(type);
-
-            if (existing != null) {
-
-                if (existing.getDepth() > depth) {
-
-                    // OVERWRITE
-
-                    found.put(type, new MetaAnnotation(annotation, depth, clazz));
-
-                    unroll(type, depth + 1, found);
-
-                } else if (existing.getDepth() < depth) {
-
-                    // IGNORE
-
-                    // ignore, what we have already is higher priority
-
-                } else {
-
-                    // CONFLICT
-
-                    // They are the same depth and therefore conflicting
-                    existing.getConflicts().add(new MetaAnnotation(annotation, depth, clazz));
-
-                }
-
-            } else {
-
-                // NEW
-
-                found.put(type, new MetaAnnotation(annotation, depth, clazz));
-
-                unroll(type, depth + 1, found);
-
-            }
-        }
-    }
-
-    private Collection<Annotation> getDeclaredMetaAnnotations(Class<? extends Annotation> clazz) {
-
-        Map<Class, Annotation> map = new HashMap<Class, Annotation>();
-
-        // pull in the annotations declared on this annotation
-
-        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
-            map.put(annotation.annotationType(), annotation);
-        }
-
-        // pull in the meta-annotations from infos annotated with this
-        // these include special inner-classes that serve as adapters
-        
-        for (Info info : annotated.get(clazz.getName())) {
-
-            if (!clazz.getName().equals(info.getMetaAnnotationName())) continue;
-
-            for (Annotation annotation : info.getDeclaredAnnotations()) {
-                map.put(annotation.annotationType(), annotation);
-            }
-
-        }
-
-        map.remove(Target.class);
-        map.remove(Retention.class);
-        map.remove(Documented.class);
-        map.remove(clazz);
-
-        for (Class<? extends Annotation> metaroot : metaroots) {
-            map.remove(metaroot);
-        }
-
-        return map.values();
-    }
-
-    private boolean isMetaAnnotation(Class<? extends Annotation> clazz) {
-        if (!clazz.isAnnotation()) return false;
-
-        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
-            if (metaroots.contains(annotation.annotationType())) return true;
-        }
-
-        return false;
-    }
-
-    private Map<Class<? extends Annotation>, MetaAnnotation<?>> unrollClass(Class<?> clazz) {
-        Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
-        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
-            map.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, clazz));
-            unroll(annotation.annotationType(), 1, map);
-        }
-        return map;
-    }
-
-    private Map<Class<? extends Annotation>, MetaAnnotation<?>> unrollField(Field target) {
-        Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
-        for (Annotation annotation : target.getDeclaredAnnotations()) {
-            map.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, target.getDeclaringClass()));
-            unroll(annotation.annotationType(), 1, map);
-        }
-        return map;
-    }
-
-    private Map<Class<? extends Annotation>, MetaAnnotation<?>> unrollMethod(Method target) {
-        Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
-        for (Annotation annotation : target.getDeclaredAnnotations()) {
-            map.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, target.getDeclaringClass()));
-            unroll(annotation.annotationType(), 1, map);
-        }
-        return map;
-    }
-
-    private static abstract class MetaAnnotatedTarget<T> implements AnnotatedTarget<T>, MetaAnnotated {
-        protected final Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
-        protected final T target;
-
-        public MetaAnnotatedTarget(T target, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
-            this.target = target;
-            this.annotations.putAll(annotations);
-        }
-
-        @Override
-        public T getTarget() {
-            return target;
-        }
-
-        @Override
-        public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
-            return annotations.containsKey(annotationClass);
-        }
-
-        @Override
-        public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-            MetaAnnotation<T> annotation = (MetaAnnotation<T>) annotations.get(annotationClass);
-            return (annotation == null) ? null : annotation.getAnnotation();
-        }
-
-        @Override
-        public Annotation[] getAnnotations() {
-            Annotation[] annotations = new Annotation[this.annotations.size()];
-
-            int i = 0;
-            for (MetaAnnotation annotation : this.annotations.values()) {
-                annotations[i++] = annotation.getAnnotation();
-            }
-
-            return annotations;
-        }
-
-        @Override
-        public Collection<MetaAnnotation<?>> getMetaAnnotations() {
-            return Collections.unmodifiableCollection(annotations.values());
-        }
-    }
-
-    private static class MetaAnnotatedClass extends MetaAnnotatedTarget<Class<?>> {
-
-        private MetaAnnotatedClass(Class<?> clazz, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
-            super(clazz, annotations);
-        }
-
-        @Override
-        public Annotation[] getDeclaredAnnotations() {
-            return getTarget().getDeclaredAnnotations();
-        }
-    }
-
-
-    private static class MetaAnnotatedField extends MetaAnnotatedTarget<Field> implements AnnotatedMember<Field>{
-
-        private MetaAnnotatedField(Field target, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
-            super(target, annotations);
-        }
-
-        @Override
-        public Annotation[] getDeclaredAnnotations() {
-            return getTarget().getDeclaredAnnotations();
-        }
-
-        @Override
-        public Class<?> getDeclaringClass() {
-            return getTarget().getDeclaringClass();
-        }
-
-        @Override
-        public String getName() {
-            return getTarget().getName();
-        }
-
-        @Override
-        public int getModifiers() {
-            return getTarget().getModifiers();
-        }
-
-        @Override
-        public boolean isSynthetic() {
-            return getTarget().isSynthetic();
-        }
-    }
-
-    private static class MetaAnnotatedMethod extends MetaAnnotatedTarget<Method> implements AnnotatedMethod<Method> {
-
-        private MetaAnnotatedMethod(Method target, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
-            super(target, annotations);
-        }
-
-        @Override
-        public Annotation[] getDeclaredAnnotations() {
-            return getTarget().getDeclaredAnnotations();
-        }
-
-        @Override
-        public Annotation[][] getParameterAnnotations() {
-            return getTarget().getParameterAnnotations();
-        }
-
-        @Override
-        public Class<?> getDeclaringClass() {
-            return getTarget().getDeclaringClass();
-        }
-
-        @Override
-        public String getName() {
-            return getTarget().getName();
-        }
-
-        @Override
-        public int getModifiers() {
-            return getTarget().getModifiers();
-        }
-
-        @Override
-        public Class<?>[] getParameterTypes() {
-            return getTarget().getParameterTypes();
-        }
-
-        @Override
-        public java.lang.reflect.Type[] getGenericParameterTypes() {
-            return getTarget().getGenericParameterTypes();
-        }
-
-        @Override
-        public Class<?>[] getExceptionTypes() {
-            return getTarget().getExceptionTypes();
-        }
-
-        @Override
-        public java.lang.reflect.Type[] getGenericExceptionTypes() {
-            return getTarget().getGenericExceptionTypes();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return getTarget().equals(obj);
-        }
-
-        @Override
-        public int hashCode() {
-            return getTarget().hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return getTarget().toString();
-        }
-
-        @Override
-        public String toGenericString() {
-            return getTarget().toGenericString();
-        }
-
-        @Override
-        public boolean isVarArgs() {
-            return getTarget().isVarArgs();
-        }
-
-        @Override
-        public boolean isSynthetic() {
-            return getTarget().isSynthetic();
-        }
-
-    }
 }

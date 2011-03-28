@@ -36,7 +36,7 @@ public class MetaAnnotation<T extends Annotation> {
         this.declaringClass = declaringClass;
     }
 
-    public T getAnnotation() {
+    public T get() {
         return annotation;
     }
 

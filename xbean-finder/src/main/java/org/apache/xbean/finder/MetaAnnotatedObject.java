@@ -1,0 +1,244 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.apache.xbean.finder;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Arrays.asList;
+
+/**
+* @version $Rev$ $Date$
+*/
+public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
+    protected final Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
+    protected final T target;
+
+    MetaAnnotatedObject(T target, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
+        this.target = target;
+        this.annotations.putAll(annotations);
+    }
+
+    @Override
+    public T get() {
+        return target;
+    }
+
+    @Override
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+        return annotations.containsKey(annotationClass);
+    }
+
+    @Override
+    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+        MetaAnnotation<T> annotation = (MetaAnnotation<T>) annotations.get(annotationClass);
+        return (annotation == null) ? null : annotation.get();
+    }
+
+    @Override
+    public Annotation[] getAnnotations() {
+        Annotation[] annotations = new Annotation[this.annotations.size()];
+
+        int i = 0;
+        for (MetaAnnotation annotation : this.annotations.values()) {
+            annotations[i++] = annotation.get();
+        }
+
+        return annotations;
+    }
+
+    @Override
+    public Collection<MetaAnnotation<?>> getMetaAnnotations() {
+        return Collections.unmodifiableCollection(annotations.values());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return get().equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return get().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return get().toString();
+    }
+
+    
+    private static void unroll(Class<? extends Annotation> clazz, int depth, Map<Class<? extends Annotation>, MetaAnnotation<?>> found) {
+        if (!isMetaAnnotation(clazz)) return;
+
+        for (Annotation annotation : getDeclaredMetaAnnotations(clazz)) {
+            Class<? extends Annotation> type = annotation.annotationType();
+
+            MetaAnnotation existing = found.get(type);
+
+            if (existing != null) {
+
+                if (existing.getDepth() > depth) {
+
+                    // OVERWRITE
+
+                    found.put(type, new MetaAnnotation(annotation, depth, clazz));
+
+                    unroll(type, depth + 1, found);
+
+                } else if (existing.getDepth() < depth) {
+
+                    // IGNORE
+
+                    // ignore, what we have already is higher priority
+
+                } else {
+
+                    // CONFLICT
+
+                    // They are the same depth and therefore conflicting
+                    existing.getConflicts().add(new MetaAnnotation(annotation, depth, clazz));
+
+                }
+
+            } else {
+
+                // NEW
+
+                found.put(type, new MetaAnnotation(annotation, depth, clazz));
+
+                unroll(type, depth + 1, found);
+
+            }
+        }
+    }
+
+    private static boolean isMetaAnnotation(Class<? extends Annotation> clazz) {
+        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+            if (isMetatypeAnnotation(annotation.annotationType())) return true;
+        }
+
+        return false;
+    }
+
+    private static Collection<Annotation> getDeclaredMetaAnnotations(Class<? extends Annotation> clazz) {
+
+        Map<Class, Annotation> map = new HashMap<Class, Annotation>();
+
+        // pull in the annotations declared on this annotation
+
+        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+            map.put(annotation.annotationType(), annotation);
+        }
+
+        List<Annotation[]> groups = new ArrayList<Annotation[]>();
+
+        Class<? extends Annotation> metatype = getMetatype(clazz);
+        if (metatype != null) {
+            try {
+                Class<?> def = clazz.getClassLoader().loadClass(clazz.getName() + "$$");
+
+                List<AnnotatedElement> elements = new ArrayList<AnnotatedElement>();
+
+                elements.addAll(asList(def.getDeclaredFields()));
+                elements.addAll(asList(def.getDeclaredConstructors()));
+                elements.addAll(asList(def.getDeclaredMethods()));
+
+                for (Method method : def.getDeclaredMethods()) {
+                    for (Annotation[] array : method.getParameterAnnotations()) {
+                        groups.add(array);
+                    }
+                }
+
+                for (Constructor constructor : def.getDeclaredConstructors()) {
+                    for (Annotation[] array : constructor.getParameterAnnotations()) {
+                        groups.add(array);
+                    }
+                }
+
+                for (AnnotatedElement element : elements) {
+                    groups.add(element.getDeclaredAnnotations());
+                }
+
+                for (Annotation[] annotations : groups) {
+                    if (contains(annotations, clazz)) {
+                        for (Annotation annotation : annotations) {
+                            map.put(annotation.annotationType(), annotation);
+                        }
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                // inner class is optional
+            }
+        }
+
+        map.remove(Target.class);
+        map.remove(Retention.class);
+        map.remove(Documented.class);
+        map.remove(metatype);
+        map.remove(clazz);
+
+        return map.values();
+    }
+
+    private static boolean contains(Annotation[] annotations, Class<? extends Annotation> clazz) {
+        for (Annotation annotation : annotations) {
+            if (clazz.equals(annotation.annotationType())) return true;
+        }
+        return false;
+    }
+
+    private static Class<? extends Annotation> getMetatype(Class<? extends Annotation> clazz) {
+        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+            Class<? extends Annotation> type = annotation.annotationType();
+
+            if (isMetatypeAnnotation(type)) return type;
+        }
+
+        return null;
+    }
+
+    private static boolean isMetatypeAnnotation(Class<? extends Annotation> type) {
+        return type.getSimpleName().equals("Metatype") && type.isAnnotationPresent(type);
+    }
+
+    protected static Map<Class<? extends Annotation>, MetaAnnotation<?>> unroll(Class<?> declaringClass, AnnotatedElement element) {
+        
+        Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
+
+        for (Annotation annotation : element.getDeclaredAnnotations()) {
+
+            map.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, declaringClass));
+
+            unroll(annotation.annotationType(), 1, map);
+
+        }
+        
+        return map;
+    }
+}
