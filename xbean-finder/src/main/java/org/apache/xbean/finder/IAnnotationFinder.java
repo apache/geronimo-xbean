@@ -49,9 +49,9 @@ public interface IAnnotationFinder {
 
     <T> List<Class<? extends T>> findImplementations(Class<T> clazz);
 
-    List<AnnotatedMethod<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation);
+    List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation);
 
-    List<AnnotatedMember<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation);
+    List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation);
 
-    List<AnnotatedTarget<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation);
+    List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation);
 }

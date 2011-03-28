@@ -45,11 +45,11 @@ public class MetaAnnotatedClassTest extends TestCase {
     public void test() throws Exception {
         AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Fake.class, Store.class, Farm.class, None.class)).link();
 
-        Map<Class<?>, AnnotatedTarget<Class<?>>> map = new HashMap<Class<?>, AnnotatedTarget<Class<?>>>();
+        Map<Class<?>, Annotated<Class<?>>> map = new HashMap<Class<?>, Annotated<Class<?>>>();
 
-        List<AnnotatedTarget<Class<?>>> metas = finder.findMetaAnnotatedClasses(Color.class);
-        for (AnnotatedTarget<Class<?>> meta : metas) {
-            AnnotatedTarget<Class<?>> oldValue = map.put(meta.getTarget(), meta);
+        List<Annotated<Class<?>>> metas = finder.findMetaAnnotatedClasses(Color.class);
+        for (Annotated<Class<?>> meta : metas) {
+            Annotated<Class<?>> oldValue = map.put(meta.get(), meta);
             assertNull("no duplicates allowed", oldValue);
         }
 
@@ -59,7 +59,7 @@ public class MetaAnnotatedClassTest extends TestCase {
         // Check the positive scenarios
 
         { // Circle
-            AnnotatedTarget<Class<?>> target = map.get(Circle.class);
+            Annotated<Class<?>> target = map.get(Circle.class);
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -70,7 +70,7 @@ public class MetaAnnotatedClassTest extends TestCase {
         }
 
         { // Square
-            AnnotatedTarget<Class<?>> target = map.get(Square.class);
+            Annotated<Class<?>> target = map.get(Square.class);
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -86,7 +86,7 @@ public class MetaAnnotatedClassTest extends TestCase {
         }
 
         { // Triangle
-            AnnotatedTarget<Class<?>> target = map.get(Triangle.class);
+            Annotated<Class<?>> target = map.get(Triangle.class);
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -107,10 +107,10 @@ public class MetaAnnotatedClassTest extends TestCase {
         }
 
         { // Fake -- should not get more than we asked for
-            AnnotatedTarget<Class<?>> target = map.get(Fake.class);
+            Annotated<Class<?>> target = map.get(Fake.class);
             assertNull(target);
 
-            List<AnnotatedTarget<Class<?>>> list = finder.findMetaAnnotatedClasses(NotMeta.class);
+            List<Annotated<Class<?>>> list = finder.findMetaAnnotatedClasses(NotMeta.class);
             assertEquals(1, list.size());
 
             target = list.get(0);
@@ -124,7 +124,7 @@ public class MetaAnnotatedClassTest extends TestCase {
 
 
         { // Circular - Egg wins
-            AnnotatedTarget<Class<?>> target = map.get(Store.class);
+            Annotated<Class<?>> target = map.get(Store.class);
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -145,7 +145,7 @@ public class MetaAnnotatedClassTest extends TestCase {
         }
 
         { // Circular - Chicken wins
-            AnnotatedTarget<Class<?>> target = map.get(Farm.class);
+            Annotated<Class<?>> target = map.get(Farm.class);
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));

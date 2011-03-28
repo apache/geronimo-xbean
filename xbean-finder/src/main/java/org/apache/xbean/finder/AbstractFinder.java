@@ -213,36 +213,11 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     @Override
-    public List<AnnotatedTarget<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
+    public List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
         List<Class<?>> classes = findAnnotatedClasses(annotation);
-        List<AnnotatedTarget<Class<?>>> list = new ArrayList<AnnotatedTarget<Class<?>>>();
+        List<Annotated<Class<?>>> list = new ArrayList<Annotated<Class<?>>>();
         for (final Class<?> clazz : classes) {
-            list.add(new AnnotatedTarget<Class<?>>(){
-                @Override
-                public Class<?> getTarget() {
-                    return clazz;
-                }
-
-                @Override
-                public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
-                    return getTarget().isAnnotationPresent(annotationClass);
-                }
-
-                @Override
-                public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-                    return getTarget().getAnnotation(annotationClass);
-                }
-
-                @Override
-                public Annotation[] getAnnotations() {
-                    return getTarget().getAnnotations();
-                }
-
-                @Override
-                public Annotation[] getDeclaredAnnotations() {
-                    return getTarget().getDeclaredAnnotations();
-                }
-            });
+            list.add(new MetaAnnotatedClass(clazz));
         }
         return list;
     }
@@ -335,106 +310,11 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     @Override
-    public List<AnnotatedMethod<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
+    public List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
         List<Method> methods = findAnnotatedMethods(annotation);
-        List<AnnotatedMethod<Method>> list = new ArrayList<AnnotatedMethod<Method>>();
+        List<Annotated<Method>> list = new ArrayList<Annotated<Method>>();
         for (final Method method : methods) {
-            list.add(new AnnotatedMethod<Method>(){
-                @Override
-                public Method getTarget() {
-                    return method;
-                }
-
-                @Override
-                public Class<?> getDeclaringClass() {
-                    return getTarget().getDeclaringClass();
-                }
-
-                @Override
-                public String getName() {
-                    return getTarget().getName();
-                }
-
-                @Override
-                public int getModifiers() {
-                    return getTarget().getModifiers();
-                }
-
-                @Override
-                public Class<?>[] getParameterTypes() {
-                    return getTarget().getParameterTypes();
-                }
-
-                @Override
-                public Type[] getGenericParameterTypes() {
-                    return getTarget().getGenericParameterTypes();
-                }
-
-                @Override
-                public Class<?>[] getExceptionTypes() {
-                    return getTarget().getExceptionTypes();
-                }
-
-                @Override
-                public Type[] getGenericExceptionTypes() {
-                    return getTarget().getGenericExceptionTypes();
-                }
-
-                @Override
-                public boolean equals(Object obj) {
-                    return getTarget().equals(obj);
-                }
-
-                @Override
-                public int hashCode() {
-                    return getTarget().hashCode();
-                }
-
-                @Override
-                public String toString() {
-                    return getTarget().toString();
-                }
-
-                @Override
-                public String toGenericString() {
-                    return getTarget().toGenericString();
-                }
-
-                @Override
-                public boolean isVarArgs() {
-                    return getTarget().isVarArgs();
-                }
-
-                @Override
-                public boolean isSynthetic() {
-                    return getTarget().isSynthetic();
-                }
-
-                @Override
-                public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-                    return getTarget().getAnnotation(annotationClass);
-                }
-
-                @Override
-                public Annotation[] getDeclaredAnnotations() {
-                    return getTarget().getDeclaredAnnotations();
-                }
-
-                @Override
-                public Annotation[][] getParameterAnnotations() {
-                    return getTarget().getParameterAnnotations();
-                }
-
-                @Override
-                public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
-                    return getTarget().isAnnotationPresent(annotationClass);
-                }
-
-                @Override
-                public Annotation[] getAnnotations() {
-                    return getTarget().getAnnotations();
-                }
-            });
+            list.add(new MetaAnnotatedMethod(method));
         }
         return list;
     }
@@ -498,73 +378,11 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     @Override
-    public List<AnnotatedMember<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
+    public List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
         List<Field> fields = findAnnotatedFields(annotation);
-        List<AnnotatedMember<Field>> list = new ArrayList<AnnotatedMember<Field>>();
+        List<Annotated<Field>> list = new ArrayList<Annotated<Field>>();
         for (final Field field : fields) {
-            list.add(new AnnotatedMember<Field>(){
-                @Override
-                public Field getTarget() {
-                    return field;
-                }
-
-                @Override
-                public Class<?> getDeclaringClass() {
-                    return getTarget().getDeclaringClass();
-                }
-
-                @Override
-                public String getName() {
-                    return getTarget().getName();
-                }
-
-                @Override
-                public int getModifiers() {
-                    return getTarget().getModifiers();
-                }
-
-                @Override
-                public boolean isSynthetic() {
-                    return getTarget().isSynthetic();
-                }
-
-                @Override
-                public boolean equals(Object obj) {
-                    return getTarget().equals(obj);
-                }
-
-                @Override
-                public int hashCode() {
-                    return getTarget().hashCode();
-                }
-
-                @Override
-                public String toString() {
-                    return getTarget().toString();
-                }
-
-                @Override
-                public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-                    return getTarget().getAnnotation(annotationClass);
-                }
-
-                @Override
-                public Annotation[] getDeclaredAnnotations() {
-                    return getTarget().getDeclaredAnnotations();
-                }
-
-                @Override
-                public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
-                    return getTarget().isAnnotationPresent(annotationClass);
-                }
-
-                @Override
-                public Annotation[] getAnnotations() {
-                    return getTarget().getAnnotations();
-                }
-
-                
-            });
+            list.add(new MetaAnnotatedField(field));
         }
 
         return list;

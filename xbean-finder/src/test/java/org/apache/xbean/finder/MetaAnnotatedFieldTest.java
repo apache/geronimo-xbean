@@ -40,11 +40,11 @@ public class MetaAnnotatedFieldTest extends TestCase {
     public void test() throws Exception {
         AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class)).link();
 
-        Map<String, AnnotatedMember<Field>> map = new HashMap<String, AnnotatedMember<Field>>();
+        Map<String, Annotated<Field>> map = new HashMap<String, Annotated<Field>>();
 
-        List<AnnotatedMember<Field>> fields = finder.findMetaAnnotatedFields(Color.class);
-        for (AnnotatedMember<Field> field : fields) {
-            AnnotatedMember<Field> oldValue = map.put(field.getName(), field);
+        List<Annotated<Field>> fields = finder.findMetaAnnotatedFields(Color.class);
+        for (Annotated<Field> field : fields) {
+            Annotated<Field> oldValue = map.put(field.get().getName(), field);
             assertNull("no duplicates allowed", oldValue);
         }
 
@@ -53,7 +53,7 @@ public class MetaAnnotatedFieldTest extends TestCase {
 
         // Check the positive scenarios
         {
-            AnnotatedTarget<Field> target = map.get("circle");
+            Annotated<Field> target = map.get("circle");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -72,7 +72,7 @@ public class MetaAnnotatedFieldTest extends TestCase {
         }
 
         {
-            AnnotatedTarget<Field> target = map.get("square");
+            Annotated<Field> target = map.get("square");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -91,7 +91,7 @@ public class MetaAnnotatedFieldTest extends TestCase {
         }
 
         {
-            AnnotatedTarget<Field> target = map.get("triangle");
+            Annotated<Field> target = map.get("triangle");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -115,7 +115,7 @@ public class MetaAnnotatedFieldTest extends TestCase {
         }
 
         { // Circular - Egg wins
-            AnnotatedTarget<Field> target = map.get("store");
+            Annotated<Field> target = map.get("store");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -139,7 +139,7 @@ public class MetaAnnotatedFieldTest extends TestCase {
         }
 
         { // Circular - Chicken wins
-            AnnotatedTarget<Field> target = map.get("farm");
+            Annotated<Field> target = map.get("farm");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));

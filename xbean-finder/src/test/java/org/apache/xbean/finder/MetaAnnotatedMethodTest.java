@@ -40,11 +40,11 @@ public class MetaAnnotatedMethodTest extends TestCase {
     public void test() throws Exception {
         AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class)).link();
 
-        Map<String, AnnotatedMethod<Method>> map = new HashMap<String, AnnotatedMethod<Method>>();
+        Map<String, Annotated<Method>> map = new HashMap<String, Annotated<Method>>();
 
-        List<AnnotatedMethod<Method>> methods = finder.findMetaAnnotatedMethods(Color.class);
-        for (AnnotatedMethod<Method> method : methods) {
-            AnnotatedMethod<Method> oldValue = map.put(method.getName(), method);
+        List<Annotated<Method>> methods = finder.findMetaAnnotatedMethods(Color.class);
+        for (Annotated<Method> method : methods) {
+            Annotated<Method> oldValue = map.put(method.get().getName(), method);
             assertNull("no duplicates allowed", oldValue);
         }
 
@@ -53,7 +53,7 @@ public class MetaAnnotatedMethodTest extends TestCase {
 
         // Check the positive scenarios
         {
-            AnnotatedTarget<Method> target = map.get("circle");
+            Annotated<Method> target = map.get("circle");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -72,7 +72,7 @@ public class MetaAnnotatedMethodTest extends TestCase {
         }
 
         {
-            AnnotatedTarget<Method> target = map.get("square");
+            Annotated<Method> target = map.get("square");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -91,7 +91,7 @@ public class MetaAnnotatedMethodTest extends TestCase {
         }
 
         {
-            AnnotatedTarget<Method> target = map.get("triangle");
+            Annotated<Method> target = map.get("triangle");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -115,7 +115,7 @@ public class MetaAnnotatedMethodTest extends TestCase {
         }
 
         { // Circular - Egg wins
-            AnnotatedTarget<Method> target = map.get("store");
+            Annotated<Method> target = map.get("store");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
@@ -139,7 +139,7 @@ public class MetaAnnotatedMethodTest extends TestCase {
         }
 
         { // Circular - Chicken wins
-            AnnotatedTarget<Method> target = map.get("farm");
+            Annotated<Method> target = map.get("farm");
             assertNotNull(target);
 
             assertTrue(target.isAnnotationPresent(Color.class));
