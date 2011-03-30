@@ -53,6 +53,10 @@ public class MetaAnnotatedClassTest extends TestCase {
             assertNull("no duplicates allowed", oldValue);
         }
 
+        // MetaAnnotation classes themselves are not included
+        assertNull(map.get(Red.class));
+        assertNull(map.get(Crimson.class));
+
         // Check the negative scenario
         assertFalse(map.containsKey(None.class));
 

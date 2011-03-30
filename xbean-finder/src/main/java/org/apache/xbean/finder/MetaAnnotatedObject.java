@@ -138,14 +138,6 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
         }
     }
 
-    private static boolean isMetaAnnotation(Class<? extends Annotation> clazz) {
-        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
-            if (isMetatypeAnnotation(annotation.annotationType())) return true;
-        }
-
-        return false;
-    }
-
     private static Collection<Annotation> getDeclaredMetaAnnotations(Class<? extends Annotation> clazz) {
 
         Map<Class, Annotation> map = new HashMap<Class, Annotation>();
@@ -221,6 +213,14 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
         }
 
         return null;
+    }
+
+    private static boolean isMetaAnnotation(Class<? extends Annotation> clazz) {
+        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+            if (isMetatypeAnnotation(annotation.annotationType())) return true;
+        }
+
+        return false;
     }
 
     private static boolean isMetatypeAnnotation(Class<? extends Annotation> type) {

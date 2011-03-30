@@ -317,11 +317,26 @@ public class AnnotationFinder implements IAnnotationFinder {
         List<Annotated<Class<?>>> list = new ArrayList<Annotated<Class<?>>>();
 
         for (Class<?> clazz : classes) {
+            if (Annotation.class.isAssignableFrom(clazz) && isMetaAnnotation((Class<? extends Annotation>) clazz)) continue;
             list.add(new MetaAnnotatedClass(clazz));
         }
 
         return list;
     }
+
+    private static boolean isMetaAnnotation(Class<? extends Annotation> clazz) {
+        for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+            if (isMetatypeAnnotation(annotation.annotationType())) return true;
+        }
+
+        return false;
+    }
+
+    private static boolean isMetatypeAnnotation(Class<? extends Annotation> type) {
+        return type.getSimpleName().equals("Metatype") && type.isAnnotationPresent(type);
+    }
+
+
 
     private Set<Class<?>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation, Set<Class<?>> classes) {
         List<Info> infos = getAnnotationInfos(annotation.getName());
