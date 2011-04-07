@@ -81,6 +81,10 @@ public class ClasspathArchive extends CompositeArchive {
         return archives;
     }
 
+    public static List<Archive> archives(ClassLoader loader, URL... urls) {
+        return archives(loader, Arrays.asList(urls));
+    }
+
     @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         int pos = className.indexOf("<");
