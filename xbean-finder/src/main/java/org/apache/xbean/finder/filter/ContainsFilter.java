@@ -19,22 +19,22 @@ package org.apache.xbean.finder.filter;
 /**
  * @version $Rev$ $Date$
  */
-public class ClassFilter implements Filter {
+public class ContainsFilter implements Filter {
 
-    private final String name;
+    private final String token;
 
-    public ClassFilter(String name) {
-        assert name != null;
-        this.name = name;
+    public ContainsFilter(String token) {
+        assert token != null;
+        this.token = token;
     }
 
-    public String getName() {
-        return name;
+    public String getToken() {
+        return token;
     }
 
     @Override
     public boolean accept(String name) {
-        return this.name.equals(name);
+        return name.contains(token);
     }
 
     @Override
@@ -42,13 +42,13 @@ public class ClassFilter implements Filter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ClassFilter that = (ClassFilter) o;
+        ContainsFilter that = (ContainsFilter) o;
 
-        return name.equals(that.name);
+        return token.equals(that.token);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return token.hashCode();
     }
 }

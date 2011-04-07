@@ -16,25 +16,31 @@
  */
 package org.apache.xbean.finder.filter;
 
+import java.util.regex.Pattern;
+
 /**
  * @version $Rev$ $Date$
  */
-public class ClassFilter implements Filter {
+public class PatternFilter implements Filter {
 
-    private final String name;
+    private final Pattern pattern;
 
-    public ClassFilter(String name) {
-        assert name != null;
-        this.name = name;
+    public PatternFilter(String expression) {
+        this(Pattern.compile(expression));
     }
 
-    public String getName() {
-        return name;
+    public PatternFilter(Pattern pattern) {
+        assert pattern != null;
+        this.pattern = pattern;
+    }
+
+    public Pattern getPattern() {
+        return pattern;
     }
 
     @Override
     public boolean accept(String name) {
-        return this.name.equals(name);
+        return pattern.matcher(name).matches();
     }
 
     @Override
@@ -42,13 +48,13 @@ public class ClassFilter implements Filter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ClassFilter that = (ClassFilter) o;
+        PatternFilter that = (PatternFilter) o;
 
-        return name.equals(that.name);
+        return pattern.pattern().equals(that.pattern.pattern());
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return pattern.hashCode();
     }
 }

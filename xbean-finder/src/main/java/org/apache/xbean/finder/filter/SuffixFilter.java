@@ -19,22 +19,22 @@ package org.apache.xbean.finder.filter;
 /**
  * @version $Rev$ $Date$
  */
-public class ClassFilter implements Filter {
+public class SuffixFilter implements Filter {
 
-    private final String name;
+    private final String suffix;
 
-    public ClassFilter(String name) {
-        assert name != null;
-        this.name = name;
+    public SuffixFilter(String suffix) {
+        assert suffix != null;
+        this.suffix = suffix;
     }
 
-    public String getName() {
-        return name;
+    public String getSuffix() {
+        return suffix;
     }
 
     @Override
     public boolean accept(String name) {
-        return this.name.equals(name);
+        return name.endsWith(suffix);
     }
 
     @Override
@@ -42,13 +42,13 @@ public class ClassFilter implements Filter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ClassFilter that = (ClassFilter) o;
+        SuffixFilter that = (SuffixFilter) o;
 
-        return name.equals(that.name);
+        return suffix.equals(that.suffix);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return suffix.hashCode();
     }
 }

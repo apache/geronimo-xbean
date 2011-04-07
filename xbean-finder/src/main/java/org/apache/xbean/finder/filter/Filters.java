@@ -52,10 +52,37 @@ public class Filters {
         return optimize(filters);
     }
 
+    public static Filter prefixes(String... prefixes) {
+        List<Filter> filters = new ArrayList<Filter>();
+        for (String s : prefixes) {
+            filters.add(new PrefixFilter(s));
+        }
+
+        return optimize(filters);
+    }
+
+    public static Filter tokens(String... tokens) {
+        List<Filter> filters = new ArrayList<Filter>();
+        for (String s : tokens) {
+            filters.add(new ContainsFilter(s));
+        }
+
+        return optimize(filters);
+    }
+
+    public static Filter suffixes(String... suffixes) {
+        List<Filter> filters = new ArrayList<Filter>();
+        for (String s : suffixes) {
+            filters.add(new SuffixFilter(s));
+        }
+
+        return optimize(filters);
+    }
+
     public static Filter patterns(String... patterns) {
         List<Filter> filters = new ArrayList<Filter>();
         for (String s : patterns) {
-            filters.add(new RegexFilter(s));
+            filters.add(new PatternFilter(s));
         }
 
         return optimize(filters);
