@@ -17,8 +17,6 @@
 package org.apache.xbean.finder;
 
 import org.apache.xbean.finder.filter.Filter;
-import org.apache.xbean.finder.filter.Filters;
-import org.apache.xbean.finder.filter.RegexFilter;
 
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -85,12 +83,25 @@ public class UrlSet {
         return new UrlSet(urls);
     }
 
+
+    public UrlSet include(URL url){
+        Map<String, URL> urls = new HashMap<String, URL>(this.urls);
+        urls.put(url.toExternalForm(), url);
+        return new UrlSet(urls);
+    }
+
     public UrlSet exclude(UrlSet urlSet) {
         Map<String, URL> urls = new HashMap<String, URL>(this.urls);
         Map<String, URL> parentUrls = urlSet.urls;
         for (String url : parentUrls.keySet()) {
             urls.remove(url);
         }
+        return new UrlSet(urls);
+    }
+
+    public UrlSet exclude(URL url) {
+        Map<String, URL> urls = new HashMap<String, URL>(this.urls);
+        urls.remove(url.toExternalForm());
         return new UrlSet(urls);
     }
 
