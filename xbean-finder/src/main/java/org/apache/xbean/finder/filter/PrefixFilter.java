@@ -16,27 +16,25 @@
  */
 package org.apache.xbean.finder.filter;
 
-import java.util.regex.Pattern;
-
 /**
  * @version $Rev$ $Date$
  */
-public class RegexFilter implements Filter {
+public class PrefixFilter implements Filter {
 
-    private final Pattern pattern;
+    private final String prefix;
 
-    public RegexFilter(String expression) {
-        this(Pattern.compile(expression));
+    public PrefixFilter(String prefix) {
+        assert prefix != null;
+        this.prefix = prefix;
     }
 
-    public RegexFilter(Pattern pattern) {
-        assert pattern != null;
-        this.pattern = pattern;
+    public String getPrefix() {
+        return prefix;
     }
 
     @Override
     public boolean accept(String name) {
-        return pattern.matcher(name).matches();
+        return name.startsWith(prefix);
     }
 
     @Override
@@ -44,13 +42,13 @@ public class RegexFilter implements Filter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RegexFilter that = (RegexFilter) o;
+        PrefixFilter that = (PrefixFilter) o;
 
-        return pattern.pattern().equals(that.pattern.pattern());
+        return prefix.equals(that.prefix);
     }
 
     @Override
     public int hashCode() {
-        return pattern.hashCode();
+        return prefix.hashCode();
     }
 }

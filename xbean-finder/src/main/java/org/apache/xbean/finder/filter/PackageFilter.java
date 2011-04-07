@@ -29,6 +29,10 @@ public class PackageFilter implements Filter {
         this.packageName = packageName;
     }
 
+    public String getPackageName() {
+        return packageName;
+    }
+
     @Override
     public boolean accept(String name) {
         return name.startsWith(packageName);
