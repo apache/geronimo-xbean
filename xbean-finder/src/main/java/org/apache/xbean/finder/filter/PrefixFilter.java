@@ -51,4 +51,11 @@ public class PrefixFilter implements Filter {
     public int hashCode() {
         return prefix.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "PrefixFilter{" +
+                "prefix='" + prefix + '\'' +
+                '}';
+    }
 }

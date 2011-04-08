@@ -51,4 +51,11 @@ public class ContainsFilter implements Filter {
     public int hashCode() {
         return token.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "ContainsFilter{" +
+                "token='" + token + '\'' +
+                '}';
+    }
 }

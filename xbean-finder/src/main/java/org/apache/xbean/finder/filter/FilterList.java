@@ -49,4 +49,11 @@ public class FilterList implements Filter {
     public List<Filter> getFilters() {
         return filters;
     }
+
+    @Override
+    public String toString() {
+        return "FilterList{" +
+                "filters=" + filters +
+                '}';
+    }
 }

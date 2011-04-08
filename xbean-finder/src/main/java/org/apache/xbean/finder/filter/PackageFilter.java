@@ -52,4 +52,11 @@ public class PackageFilter implements Filter {
     public int hashCode() {
         return packageName.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "PackageFilter{" +
+                "package='" + packageName + '\'' +
+                '}';
+    }
 }

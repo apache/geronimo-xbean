@@ -51,4 +51,11 @@ public class SuffixFilter implements Filter {
     public int hashCode() {
         return suffix.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "SuffixFilter{" +
+                "suffix='" + suffix + '\'' +
+                '}';
+    }
 }
