@@ -21,6 +21,7 @@ import org.apache.xbean.finder.filter.Filter;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +37,7 @@ import static org.apache.xbean.finder.filter.Filters.patterns;
 /**
  * @version $Rev$ $Date$
  */
-public class UrlSet {
+public class UrlSet implements Iterable<URL> {
 
     private final Map<String,URL> urls;
 
@@ -191,6 +192,15 @@ public class UrlSet {
         return new ArrayList<URL>(urls.values());
     }
 
+    public int size() {
+        return urls.size();
+    }
+
+    @Override
+    public Iterator<URL> iterator() {
+        return getUrls().iterator();
+    }
+
     private static List<URL> getUrls(ClassLoader classLoader) throws IOException {
         List<URL> list = new ArrayList<URL>();
         ArrayList<URL> urls = Collections.list(classLoader.getResources("META-INF"));
@@ -203,5 +213,10 @@ public class UrlSet {
         }
         list.addAll(Collections.list(classLoader.getResources("")));
         return list;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + urls.size() + "]";
     }
 }

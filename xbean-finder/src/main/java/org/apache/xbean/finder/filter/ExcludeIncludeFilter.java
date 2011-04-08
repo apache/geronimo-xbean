@@ -35,4 +35,10 @@ public class ExcludeIncludeFilter implements Filter {
         if (exclude.accept(name)) return include.accept(name);
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Exclude." + exclude +
+                " Include." + include;
+    }
 }

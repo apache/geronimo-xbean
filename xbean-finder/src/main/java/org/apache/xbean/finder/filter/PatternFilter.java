@@ -57,4 +57,11 @@ public class PatternFilter implements Filter {
     public int hashCode() {
         return pattern.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "PatternFilter{" +
+                "pattern=" + pattern +
+                '}';
+    }
 }
