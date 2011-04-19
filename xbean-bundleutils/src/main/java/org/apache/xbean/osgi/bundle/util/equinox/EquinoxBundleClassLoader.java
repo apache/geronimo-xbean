@@ -52,7 +52,7 @@ public class EquinoxBundleClassLoader extends URLClassLoader implements BundleRe
     public EquinoxBundleClassLoader(Bundle bundle, boolean searchWiredBundles, boolean convertResourceUrls) {
         super(new URL[] {});
         this.bundle = bundle;
-        this.resourceHelper = new EquinoxBundleResourceHelper(getBundle(), searchWiredBundles, convertResourceUrls);
+        this.resourceHelper = new EquinoxBundleResourceHelper(bundle, searchWiredBundles, convertResourceUrls);
     }
     
     @Override

@@ -62,7 +62,7 @@ public class BundleClassLoader extends ClassLoader implements BundleReference {
     
     public BundleClassLoader(Bundle bundle, boolean searchWiredBundles, boolean convertResourceUrls) {
         this.bundle = bundle;
-        this.resourceHelper = new BundleResourceHelper(getBundle(), searchWiredBundles, convertResourceUrls);
+        this.resourceHelper = new BundleResourceHelper(bundle, searchWiredBundles, convertResourceUrls);
     }
 
     @Override
