@@ -112,7 +112,7 @@ public class BundleResourceHelper {
     
     private synchronized LinkedHashSet<Bundle> getWiredBundles() {
         if (wiredBundles == null) {
-            wiredBundles = BundleUtils.getWiredBundles(bundle);
+            wiredBundles = BundleUtils.getWiredBundles((bundle instanceof DelegatingBundle) ? ((DelegatingBundle) bundle).getMainBundle() : bundle);
         }
         return wiredBundles;
     }
