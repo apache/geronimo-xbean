@@ -43,7 +43,7 @@ import org.osgi.framework.BundleReference;
  * 
  * @version $Rev$ $Date$
  */
-public class BundleClassLoader extends ClassLoader implements BundleReference {
+public class BundleClassLoader extends ClassLoader implements DelegatingBundleReference {
 
     protected final Bundle bundle;
     protected final BundleResourceHelper resourceHelper;

@@ -112,8 +112,8 @@ public class BundleUtils {
      */
     public static Bundle getContextBundle(boolean unwrap) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader instanceof BundleClassLoader) {
-            return ((BundleClassLoader) classLoader).getBundle(unwrap);
+        if (classLoader instanceof DelegatingBundleReference) {
+            return ((DelegatingBundleReference) classLoader).getBundle(unwrap);
         } else if (classLoader instanceof BundleReference) {
             return ((BundleReference) classLoader).getBundle();
         } else {
