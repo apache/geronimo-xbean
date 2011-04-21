@@ -26,6 +26,7 @@ import java.util.Enumeration;
 
 import org.apache.xbean.osgi.bundle.util.BundleResourceHelper;
 import org.apache.xbean.osgi.bundle.util.DelegatingBundle;
+import org.apache.xbean.osgi.bundle.util.DelegatingBundleReference;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 
@@ -38,7 +39,7 @@ import org.osgi.framework.BundleReference;
  * 
  * @version $Rev$ $Date$
  */
-public class EquinoxBundleClassLoader extends URLClassLoader implements BundleReference {
+public class EquinoxBundleClassLoader extends URLClassLoader implements DelegatingBundleReference {
 
     private final Bundle bundle;
     private final BundleResourceHelper resourceHelper;
