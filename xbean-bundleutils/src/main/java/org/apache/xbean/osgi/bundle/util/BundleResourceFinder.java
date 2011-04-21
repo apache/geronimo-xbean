@@ -128,8 +128,8 @@ public class BundleResourceFinder {
                     // scan embedded jar/zip
                     continueScanning = scanZip(callback, bundle, name);
                 } else {
-                    // assume it's a directory
-                    continueScanning = scanDirectory(callback, bundle, name + prefix);
+                    // assume it's a directory                    
+                    continueScanning = scanDirectory(callback, bundle, prefix.startsWith("/") ? name + prefix : name + "/" + prefix);
                 }
                 if (!continueScanning) {
                     break;
