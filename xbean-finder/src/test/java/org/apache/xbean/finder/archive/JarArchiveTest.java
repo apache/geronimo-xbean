@@ -132,7 +132,7 @@ public class JarArchiveTest {
         assertFalse(0 == actual.size());
 
         for (Class clazz : classes) {
-            assertTrue(clazz.getName(), actual.contains(Blue.class.getName()));
+            assertTrue(clazz.getName(), actual.contains(clazz.getName()));
         }
 
         assertEquals(classes.length, actual.size());
