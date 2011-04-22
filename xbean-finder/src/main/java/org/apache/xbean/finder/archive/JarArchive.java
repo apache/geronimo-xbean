@@ -16,6 +16,7 @@
  */
 package org.apache.xbean.finder.archive;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -100,7 +101,7 @@ public class JarArchive implements Archive {
             String className = entry.getName();
             className = className.replaceFirst(".class$", "");
             if (className.contains(".")) continue;
-            className = className.replace('/', '.');
+            className = className.replace(File.separatorChar, '.');
             classNames.add(className);
         }
 
