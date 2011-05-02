@@ -105,7 +105,7 @@ public class BundleUtils {
      *
      * @param unwrap if true and if the bundle associated with the context classloader is a
      *        {@link DelegatingBundle}, this function will return the main application bundle
-     *        backing with the {@link DelegatingBundle}. Otherwise, the bundle associated with
+     *        backing the {@link DelegatingBundle}. Otherwise, the bundle associated with
      *        the context classloader is returned as is. See {@link BundleClassLoader#getBundle(boolean)}
      *        for more information.
      * @return The bundle associated with the current thread's context classloader. Might be null.
@@ -121,6 +121,18 @@ public class BundleUtils {
         }
     }
 
+    /**
+     * If the given bundle is a {@link DelegatingBundle} this function will return the main 
+     * application bundle backing the {@link DelegatingBundle}. Otherwise, the bundle
+     * passed in is returned as is.
+     */
+    public static Bundle unwrapBundle(Bundle bundle) {
+        if (bundle instanceof DelegatingBundle) {
+            return ((DelegatingBundle) bundle).getMainBundle();
+        }
+        return bundle;
+    }
+    
     /**
      * Works like {@link Bundle#getEntryPaths(String)} but also returns paths
      * in attached fragment bundles.
