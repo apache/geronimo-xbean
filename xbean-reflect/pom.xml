@@ -30,7 +30,7 @@
     <artifactId>xbean-reflect</artifactId>
     <packaging>bundle</packaging>
     <name>Apache XBean :: Reflect</name>
-    <description>xbean-reflect provides very flexible ways to creat objects and graphs of objects for DI frameworks</description>
+    <description>xbean-reflect provides very flexible ways to create objects and graphs of objects for DI frameworks</description>
     <dependencies>
         <dependency>
             <groupId>asm</groupId>

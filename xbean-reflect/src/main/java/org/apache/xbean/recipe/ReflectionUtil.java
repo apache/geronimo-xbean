@@ -41,21 +41,27 @@ import static org.apache.xbean.recipe.RecipeHelper.isAssignableFrom;
 
 public final class ReflectionUtil {
     private static ParameterNameLoader parameterNamesLoader;
+    
     static {
-        String[] impls = {"org.apache.xbean.recipe.XbeanAsmParameterNameLoader", "org.apache.xbean.recipe.AsmParameterNameLoader"};
-        for (String impl : impls) {
-            try {
-                Class<? extends ParameterNameLoader> loaderClass = ReflectionUtil.class.getClassLoader().loadClass(impl).asSubclass(ParameterNameLoader.class);
-                parameterNamesLoader = loaderClass.newInstance();
-                break;
-            } catch (Throwable ignored) {
-            }
+        if (isClassAvailable("org.apache.xbean.asm.ClassReader")) {
+            parameterNamesLoader = new XbeanAsmParameterNameLoader();
+        } else if (isClassAvailable("org.objectweb.asm.ClassReader")) {
+            parameterNamesLoader = new AsmParameterNameLoader();                    
         }
     }
-
+    
     private ReflectionUtil() {
     }
 
+    private static boolean isClassAvailable(String className) {
+        try {
+            ReflectionUtil.class.getClassLoader().loadClass(className);
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+    
     public static Field findField(Class typeClass, String propertyName, Object propertyValue, Set<Option> options) {
         if (typeClass == null) throw new NullPointerException("typeClass is null");
         if (propertyName == null) throw new NullPointerException("name is null");
