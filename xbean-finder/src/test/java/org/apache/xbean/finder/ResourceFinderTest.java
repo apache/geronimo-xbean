@@ -20,11 +20,18 @@ package org.apache.xbean.finder;
  * @version $Rev$ $Date$
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import junit.framework.TestCase;
 import org.acme.BarUrlHandler;
@@ -35,6 +42,7 @@ import org.acme.Two;
 import org.acme.javaURLContextFactory;
 import org.acme.kernelURLContextFactory;
 import org.acme.ldapURLContextFactory;
+import org.apache.xbean.finder.archive.Archives;
 
 public class ResourceFinderTest extends TestCase {
     ResourceFinder resourceFinder = new ResourceFinder("META-INF/");
@@ -349,6 +357,50 @@ public class ResourceFinderTest extends TestCase {
         assertEquals("star", "Naomi Watts", properties.getProperty("star"));
         assertEquals("year", "2005", properties.getProperty("year"));
     }
+
+
+    public void testWebinfJar() throws Exception {
+
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("WEB-INF/beans.xml", "<beans/>");
+
+        final File jarFile = Archives.jarArchive(map);
+
+        final URL jarFileUrl = jarFile.toURI().toURL();
+        final ResourceFinder finder = new ResourceFinder(jarFileUrl);
+
+        final URL beansXmlUrl = finder.find("WEB-INF/beans.xml");
+
+        assertNotNull(beansXmlUrl);
+    }
+
+
+    private static void readJarEntries(URL location, String basePath, Map<String, URL> resources) throws IOException {
+        JarURLConnection conn = (JarURLConnection) location.openConnection();
+        JarFile jarfile = null;
+        jarfile = conn.getJarFile();
+
+        Enumeration<JarEntry> entries = jarfile.entries();
+        while (entries != null && entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            String name = entry.getName();
+
+            if (entry.isDirectory() || !name.startsWith(basePath) || name.length() == basePath.length()) {
+                continue;
+            }
+
+            name = name.substring(basePath.length());
+
+            if (name.contains("/")) {
+                continue;
+            }
+
+            URL resource = new URL(location, name);
+            resources.put(name, resource);
+        }
+    }
+
+
 
     private void validateSimpsons(Properties properties) {
         assertEquals("props size", 6, properties.size());

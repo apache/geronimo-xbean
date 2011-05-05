@@ -23,11 +23,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -51,35 +47,7 @@ public class FileArchiveTest {
     @BeforeClass
     public static void classSetUp() throws Exception {
 
-        ClassLoader loader = FileArchiveTest.class.getClassLoader();
-
-        classpath = File.createTempFile("path with spaces", "classes");
-
-        assertTrue(classpath.delete());
-        assertTrue(classpath.mkdirs());
-
-        for (Class clazz : classes) {
-            String name = clazz.getName().replace('.', File.separatorChar) + ".class";
-            File file = new File(classpath, name);
-
-            File d = file.getParentFile();
-
-            if (!d.exists()) assertTrue(d.getAbsolutePath(), d.mkdirs());
-
-            URL resource = loader.getResource(name);
-            assertNotNull(resource);
-
-            InputStream in = new BufferedInputStream(resource.openStream());
-            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
-
-            int i = -1;
-            while ((i = in.read()) != -1) {
-                out.write(i);
-            }
-
-            out.close();
-            in.close();
-        }
+        classpath = Archives.fileArchive(classes);
     }
 
     @Before
