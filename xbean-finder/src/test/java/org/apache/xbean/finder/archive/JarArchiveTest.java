@@ -23,17 +23,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -53,35 +47,7 @@ public class JarArchiveTest {
     @BeforeClass
     public static void classSetUp() throws Exception {
 
-        ClassLoader loader = JarArchiveTest.class.getClassLoader();
-
-        classpath = File.createTempFile("path with spaces", "classes");
-
-        // Create the ZIP file
-        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(classpath)));
-
-        for (Class clazz : classes) {
-            String name = clazz.getName().replace('.', File.separatorChar) + ".class";
-
-            URL resource = loader.getResource(name);
-            assertNotNull(resource);
-
-            // Add ZIP entry to output stream.
-            out.putNextEntry(new ZipEntry(name));
-
-            InputStream in = new BufferedInputStream(resource.openStream());
-
-            int i = -1;
-            while ((i = in.read()) != -1) {
-                out.write(i);
-            }
-
-            // Complete the entry
-            out.closeEntry();
-        }
-
-        // Complete the ZIP file
-        out.close();
+        classpath = Archives.jarArchive(classes);
     }
 
     @Before
