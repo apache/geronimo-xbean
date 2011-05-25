@@ -124,7 +124,7 @@ public class ResourceFinder {
 
         URL resource = getResource(fullUri);
         if (resource == null) {
-            throw new IOException("Could not find resource '" + fullUri + "'");
+            throw new IOException("Could not find resource '" + path + uri + "'");
         }
 
         return resource;
@@ -925,7 +925,7 @@ public class ResourceFinder {
         }
     }
 
-    private URL getResource(String fullUri) {
+    public URL getResource(String fullUri) {
         if (urls == null){
             return classLoader.getResource(fullUri);
         }
