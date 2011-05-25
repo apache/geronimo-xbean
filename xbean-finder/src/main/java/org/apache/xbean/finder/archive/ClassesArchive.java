@@ -39,7 +39,11 @@ public class ClassesArchive implements Archive {
     }
 
     public ClassesArchive(Iterable<Class<?>> classes) {
+        assert classes != null;
+
         for (Class<?> clazz : classes) {
+            if (clazz == null) continue;
+            if (clazz.getClassLoader() == null) continue;
             this.classes.put(clazz.getName(), clazz);
             loaders.add(clazz.getClassLoader());
         }
@@ -52,6 +56,8 @@ public class ClassesArchive implements Archive {
 
     @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
+        assert className != null;
+
         int pos = className.indexOf("<");
         if (pos > -1) {
             className = className.substring(0, pos);
