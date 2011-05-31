@@ -57,6 +57,10 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     protected abstract Class<?> loadClass(String fixedName) throws ClassNotFoundException;
 
+    public List<String> getAnnotatedClassNames() {
+        return new ArrayList<String>(classInfos.keySet());
+    }
+
     /**
      * The link() method must be called to successfully use the findSubclasses and findImplementations methods
      * @return
@@ -908,14 +912,14 @@ public abstract class AbstractFinder implements IAnnotationFinder {
             } else {
                 ClassInfo classInfo = new ClassInfo(javaName(name), javaName(superName));
 
-                if (signature == null) {
+//                if (signature == null) {
                     for (String interfce : interfaces) {
                         classInfo.getInterfaces().add(javaName(interfce));
                     }
-                } else {
-                    // the class uses generics
-                    new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
-                }
+//                } else {
+//                    // the class uses generics
+//                    new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
+//                }
                 info = classInfo;
                 classInfos.put(classInfo.getName(), classInfo);
             }

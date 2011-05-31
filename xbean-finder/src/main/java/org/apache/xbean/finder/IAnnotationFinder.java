@@ -54,4 +54,6 @@ public interface IAnnotationFinder {
     List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation);
 
     List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation);
+
+    List<String> getAnnotatedClassNames();
 }
