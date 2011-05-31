@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.apache.xbean.finder.archive.ClassesArchive;
 
 /**
  * @version $Rev$ $Date$
@@ -30,7 +31,7 @@ import junit.framework.TestCase;
 public class ClassFinderDepthTest extends TestCase {
 
 
-    public static interface Hue {
+    public static interface Hue<T> {
     }
 
     public static interface Saturation {
@@ -39,10 +40,10 @@ public class ClassFinderDepthTest extends TestCase {
     public static interface Brightness {
     }
 
-    public static interface HSB extends Hue, Saturation, Brightness {
+    public static interface HSB<T> extends Hue<T>, Saturation, Brightness {
     }
 
-    public static class Color implements HSB {
+    public static class Color<T> implements HSB<T> {
     }
 
     public static class Red extends Color {
@@ -60,7 +61,7 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public void testFindSubclassesIncomplete() throws Exception {
-        final AbstractFinder finder = new ClassFinder(Crimson.class, Square.class).link();
+        final AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link();
 
         assertSubclasses(finder, Color.class, Red.class, Crimson.class);
         assertSubclasses(finder, Red.class, Crimson.class);
@@ -71,13 +72,14 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public void testFindImplementations() throws Exception {
-        final AbstractFinder finder = new ClassFinder(Crimson.class, Square.class).link();
+        final AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link();
 
         assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
         assertImplementations(finder, Hue.class, HSB.class, Color.class, Red.class, Crimson.class);
+        assertImplementations(finder, Saturation.class, HSB.class, Color.class, Red.class, Crimson.class);
     }
     
-    private void assertSubclasses(AbstractFinder finder, Class<?> clazz, Class... subclasses) {
+    private void assertSubclasses(AnnotationFinder finder, Class<?> clazz, Class... subclasses) {
         final List<Class<?>> classes = new ArrayList(finder.findSubclasses(clazz));
 
         for (Class subclass : subclasses) {
@@ -86,7 +88,7 @@ public class ClassFinderDepthTest extends TestCase {
         assertSize(classes, subclasses.length);
     }
 
-    private void assertImplementations(AbstractFinder finder, Class<?> clazz, Class... implementations) {
+    private void assertImplementations(AnnotationFinder finder, Class<?> clazz, Class... implementations) {
         final List<Class<?>> classes = new ArrayList(finder.findImplementations(clazz));
 
         for (Class subclass : implementations) {
