@@ -35,6 +35,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
+import org.osgi.service.packageadmin.ExportedPackage;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Bundle that delegates ClassLoader operations to a collection of {@link Bundle} objects. 
@@ -66,12 +68,40 @@ public class DelegatingBundle implements Bundle {
             try {
                 return bundle.loadClass(name);
             } catch (ClassNotFoundException ex) {
-                // ignore
+                int index = name.lastIndexOf('.');
+                if (index > 0) {
+                    /*
+                     * We got CNFE and if we are wired to a bundle that exports the 
+                     * given package then there is no hope of loading the class.
+                     */
+                    String packageName = name.substring(0, index);
+                    if (isWired(bundle, packageName)) {
+                        throw ex;
+                    } else {
+                        // ignore - try to load with next bundle
+                    }
+                } else {
+                    // no package name
+                    throw ex;
+                }                
             }
         }
         throw new ClassNotFoundException(name);
     }
 
+    private boolean isWired(Bundle importingBundle, String packageName) {
+        BundleContext context = bundle.getBundleContext();
+        ServiceReference reference = context.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin packageAdmin = (PackageAdmin) context.getService(reference);
+        try {
+            ExportedPackage[] packages = packageAdmin.getExportedPackages(packageName);
+            Bundle exportingBundle = BundleUtils.getWiredBundle(importingBundle, packages);
+            return (exportingBundle != null);
+        } finally {
+            context.ungetService(reference);
+        }
+    }
+    
     public URL getResource(String name) {
         URL resource = null;
         for (Bundle bundle : bundles) {

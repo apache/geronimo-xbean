@@ -238,7 +238,7 @@ public class BundleUtils {
         return wiredBundles;
     }
 
-    private static Bundle getWiredBundle(Bundle bundle, ExportedPackage[] exports) {
+    static Bundle getWiredBundle(Bundle bundle, ExportedPackage[] exports) {
         if (exports != null) {
             for (ExportedPackage exportedPackage : exports) {
                 Bundle[] importingBundles = exportedPackage.getImportingBundles();
