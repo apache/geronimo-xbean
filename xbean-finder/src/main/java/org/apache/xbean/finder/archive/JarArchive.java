@@ -21,9 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 /**
@@ -81,13 +83,30 @@ public class JarArchive implements Archive {
             jarPath = jarPath.substring(0, jarPath.indexOf("!"));
         }
         URL url = new URL(jarPath);
-        InputStream in = url.openStream();
-        try {
-            JarInputStream jarStream = new JarInputStream(in);
-            return jar(jarStream);
-        } finally {
-            in.close();
+        if ("file".equals(url.getProtocol())) { // ZipFile is faster than ZipInputStream
+            JarFile jarFile = new JarFile(url.getFile().replace("%20", " "));
+            return jar(jarFile);
+        } else {
+            InputStream in = url.openStream();
+            try {
+                JarInputStream jarStream = new JarInputStream(in);
+                return jar(jarStream);
+            } finally {
+                in.close();
+            }
         }
+    }
+
+    private List<String> jar(JarFile jarFile) {
+        List<String> classNames = new ArrayList<String>();
+
+        Enumeration<? extends JarEntry> jarEntries =jarFile.entries();
+        while (jarEntries.hasMoreElements()) {
+            JarEntry entry = jarEntries.nextElement();
+            addClassName(classNames, entry);
+        }
+
+        return classNames;
     }
 
     private List<String> jar(JarInputStream jarStream) throws IOException {
@@ -95,17 +114,23 @@ public class JarArchive implements Archive {
 
         JarEntry entry;
         while ((entry = jarStream.getNextJarEntry()) != null) {
-            if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
-                continue;
-            }
-            String className = entry.getName();
-            className = className.replaceFirst(".class$", "");
-            if (className.contains(".")) continue;
-            className = className.replace(File.separatorChar, '.');
-            classNames.add(className);
+            addClassName(classNames, entry);
         }
 
         return classNames;
     }
 
+    private void addClassName(List<String> classNames, JarEntry entry) {
+        if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
+            return;
+        }
+        String className = entry.getName();
+        className = className.replaceFirst(".class$", "");
+        if (className.contains(".")) {
+            return;
+        }
+        className = className.replace(File.separatorChar, '.');
+        classNames.add(className);
+    }
 }
+
