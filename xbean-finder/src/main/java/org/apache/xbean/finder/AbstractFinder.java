@@ -50,6 +50,7 @@ import org.objectweb.asm.signature.SignatureVisitor;
 public abstract class AbstractFinder implements IAnnotationFinder {
     private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
     protected final Map<String, ClassInfo> classInfos = new HashMap<String, ClassInfo>();
+    protected final Map<String, ClassInfo> originalInfos = new HashMap<String, ClassInfo>();
     private final List<String> classesNotLoaded = new ArrayList<String>();
     private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
 
@@ -58,7 +59,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     protected abstract Class<?> loadClass(String fixedName) throws ClassNotFoundException;
 
     public List<String> getAnnotatedClassNames() {
-        return new ArrayList<String>(classInfos.keySet());
+        return new ArrayList<String>(originalInfos.keySet());
     }
 
     /**
@@ -67,6 +68,12 @@ public abstract class AbstractFinder implements IAnnotationFinder {
      * @throws IOException
      */
     public AbstractFinder link() throws IOException {
+        // already linked?
+        if (originalInfos.size() > 0) return this;
+
+        // keep track of what was originally from the archives
+        originalInfos.putAll(classInfos);
+
         for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
 
             linkParent(classInfo);
