@@ -89,6 +89,11 @@ public class BundleClassLoader extends ClassLoader implements DelegatingBundleRe
         return resourceHelper.getResources(name);
     }
     
+    @Override
+    public Enumeration<URL> findResources (String name) throws IOException {
+        return this.getResources(name);
+    }
+    
     public void setSearchWiredBundles(boolean search) {
         resourceHelper.setSearchWiredBundles(search);
     }
