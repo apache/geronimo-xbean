@@ -568,10 +568,10 @@ public abstract class AbstractFinder implements IAnnotationFinder {
                     in.close();
                 }
             } else {
-                new Exception("Could not load " + className).printStackTrace();
+                classesNotLoaded.add(className + " (no resource found for class)");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            classesNotLoaded.add(className + e.getMessage());
         }
 
     }
