@@ -22,6 +22,11 @@ package org.apache.xbean.finder;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 
 import org.apache.xbean.osgi.bundle.util.BundleResourceFinder;
@@ -34,15 +39,21 @@ import org.osgi.service.packageadmin.PackageAdmin;
  */
 public class BundleAnnotationFinder extends AbstractFinder {
     private final Bundle bundle;
+    private final Set<String> paths;
 
     public BundleAnnotationFinder(PackageAdmin packageAdmin, Bundle bundle) throws Exception {
         this(packageAdmin, bundle, BundleResourceFinder.FULL_DISCOVERY_FILTER);
     }
 
     public BundleAnnotationFinder(PackageAdmin packageAdmin, Bundle bundle, ResourceDiscoveryFilter discoveryFilter) throws Exception {
+        this(packageAdmin, bundle, discoveryFilter, Collections.<String>emptySet());
+    }
+
+    public BundleAnnotationFinder(PackageAdmin packageAdmin, Bundle bundle, ResourceDiscoveryFilter discoveryFilter, Set<String> paths) throws Exception {
         this.bundle = bundle;
         BundleResourceFinder bundleResourceFinder = new BundleResourceFinder(packageAdmin, bundle, "", ".class", discoveryFilter);
         bundleResourceFinder.find(new AnnotationFindingCallback());
+        this.paths = paths;
     }
 
     @Override
@@ -55,12 +66,23 @@ public class BundleAnnotationFinder extends AbstractFinder {
         return bundle.loadClass(s);
     }
 
+    @Override
+    public List<String> getAnnotatedClassNames() {
+        List<String> classNames = new ArrayList<String>(originalInfos.size());
+        for (Map.Entry<String, ClassInfo> entry: originalInfos.entrySet()) {
+            if (paths.contains(entry.getValue().getPath())) {
+                classNames.add(entry.getKey());
+            }
+        }
+        return classNames;
+    }
+
     private class AnnotationFindingCallback implements BundleResourceFinder.ResourceFinderCallback {
       
         public boolean foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
             InputStream in = url.openStream();
             try {
-                readClassDef(in);
+                readClassDef(in, baseDir);
             } finally {
                 in.close();
             }
@@ -69,7 +91,7 @@ public class BundleAnnotationFinder extends AbstractFinder {
 
        
         public boolean foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream in) throws Exception {
-            readClassDef(in);
+            readClassDef(in, jarName);
             return true;
         }
     }

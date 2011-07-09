@@ -27,7 +27,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +40,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.commons.EmptyVisitor;
-import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 /**
@@ -577,8 +575,12 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     protected void readClassDef(InputStream in) throws IOException {
+        readClassDef(in, null);
+    }
+
+    protected void readClassDef(InputStream in, String path) throws IOException {
         ClassReader classReader = new ClassReader(in);
-        classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
+        classReader.accept(new InfoBuildingVisitor(path), ASM_FLAGS);
     }
 
     protected void readClassDef(Class clazz) {
@@ -721,6 +723,8 @@ public abstract class AbstractFinder implements IAnnotationFinder {
         private final List<ClassInfo> subclassInfos = new SingleLinkedList<ClassInfo>();
         private final List<String> interfaces = new SingleLinkedList<String>();
         private final List<FieldInfo> fields = new SingleLinkedList<FieldInfo>();
+        //e.g. bundle class path prefix.
+        private String path;
         private Class<?> clazz;
 
         public ClassInfo(Class clazz) {
@@ -781,6 +785,10 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
         public String toString() {
             return name;
+        }
+
+        public String getPath() {
+            return path;
         }
     }
 
@@ -904,8 +912,10 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public class InfoBuildingVisitor extends EmptyVisitor {
         private Info info;
+        private String path;
 
-        public InfoBuildingVisitor() {
+        public InfoBuildingVisitor(String path) {
+            this.path = path;
         }
 
         public InfoBuildingVisitor(Info info) {
@@ -918,7 +928,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
                 info = new PackageInfo(javaName(name));
             } else {
                 ClassInfo classInfo = new ClassInfo(javaName(name), javaName(superName));
-
+                classInfo.path = path;
 //                if (signature == null) {
                     for (String interfce : interfaces) {
                         classInfo.getInterfaces().add(javaName(interfce));
