@@ -49,29 +49,7 @@ public class ClasspathArchive extends CompositeArchive {
 
         for (URL location : urls) {
             try {
-
-                if (location.getProtocol().equals("jar")) {
-
-                    archives.add(new JarArchive(loader, location));
-
-                } else if (location.getProtocol().equals("file")) {
-
-                    try {
-
-                        // See if it's actually a jar
-
-                        URL jarUrl = new URL("jar", "", location.toExternalForm() + "!/");
-                        JarURLConnection juc = (JarURLConnection) jarUrl.openConnection();
-                        juc.getJarFile();
-
-                        archives.add(new JarArchive(loader, jarUrl));
-
-                    } catch (IOException e) {
-
-                        archives.add(new FileArchive(loader, location));
-
-                    }
-                }
+                archives.add(archive(loader, location));
             } catch (Exception e) {
                 // TODO This is what we did before, so not too urgent to change, but not ideal
                 e.printStackTrace();
@@ -79,6 +57,34 @@ public class ClasspathArchive extends CompositeArchive {
         }
 
         return archives;
+    }
+
+    public static Archive archive(ClassLoader loader, URL location) {
+
+        if (location.getProtocol().equals("jar")) {
+
+            return new JarArchive(loader, location);
+
+        } else if (location.getProtocol().equals("file")) {
+
+            try {
+
+                // See if it's actually a jar
+
+                URL jarUrl = new URL("jar", "", location.toExternalForm() + "!/");
+                JarURLConnection juc = (JarURLConnection) jarUrl.openConnection();
+                juc.getJarFile();
+
+                return new JarArchive(loader, jarUrl);
+
+            } catch (IOException e) {
+
+                return new FileArchive(loader, location);
+
+            }
+        }
+
+        throw new UnsupportedOperationException("unsupported archive type: " + location);
     }
 
     public static List<Archive> archives(ClassLoader loader, URL... urls) {

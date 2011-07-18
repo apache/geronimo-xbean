@@ -91,6 +91,10 @@ public class AnnotationFinder implements IAnnotationFinder {
         return new ArrayList<String>(originalInfos.keySet());
     }
 
+    public Archive getArchive() {
+        return archive;
+    }
+
     /**
      * The link() method must be called to successfully use the findSubclasses and findImplementations methods
      *
