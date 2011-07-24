@@ -17,6 +17,7 @@
 package org.apache.xbean.finder;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +26,6 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -844,7 +844,7 @@ public class ResourceFinder {
     }
 
     private static void readDirectoryEntries(URL location, Map<String, URL> resources) throws MalformedURLException {
-        File dir = new File(URLDecoder.decode(location.getPath()));
+        File dir = new File(decode(location.getPath()));
         if (dir.isDirectory()) {
             File[] files = dir.listFiles();
             for (File file : files) {
@@ -1030,7 +1030,7 @@ public class ResourceFinder {
                     buf.append(fixedResName);
                     String filename = buf.toString();
                     File file = new File(filename);
-                    File file2 = new File(URLDecoder.decode(filename));
+                    File file2 = new File(decode(filename));
 
                     if (file.exists() || file2.exists()) {
                         return targetURL(currentUrl, fixedResName);
@@ -1071,4 +1071,47 @@ public class ResourceFinder {
         String file = sb.toString();
         return new URL(base.getProtocol(), base.getHost(), base.getPort(), file, null);
     }
+
+    public static String decode(String fileName) {
+        if (fileName.indexOf('%') == -1) return fileName;
+
+        StringBuilder result = new StringBuilder(fileName.length());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        for (int i = 0; i < fileName.length();) {
+            char c = fileName.charAt(i);
+
+            if (c == '%') {
+                out.reset();
+                do {
+                    if (i + 2 >= fileName.length()) {
+                        throw new IllegalArgumentException("Incomplete % sequence at: " + i);
+                    }
+
+                    int d1 = Character.digit(fileName.charAt(i + 1), 16);
+                    int d2 = Character.digit(fileName.charAt(i + 2), 16);
+
+                    if (d1 == -1 || d2 == -1) {
+                        throw new IllegalArgumentException("Invalid % sequence (" + fileName.substring(i, i + 3) + ") at: " + String.valueOf(i));
+                    }
+
+                    out.write((byte) ((d1 << 4) + d2));
+
+                    i += 3;
+
+                } while (i < fileName.length() && fileName.charAt(i) == '%');
+
+
+                result.append(out.toString());
+
+                continue;
+            } else {
+                result.append(c);
+            }
+
+            i++;
+        }
+        return result.toString();
+    }
+
 }
