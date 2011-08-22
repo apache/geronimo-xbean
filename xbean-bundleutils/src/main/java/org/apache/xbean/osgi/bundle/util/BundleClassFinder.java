@@ -77,7 +77,7 @@ public class BundleClassFinder {
 
     public BundleClassFinder(PackageAdmin packageAdmin, Bundle bundle, ClassDiscoveryFilter discoveryFilter) {
         this.packageAdmin = packageAdmin;
-        this.bundle = bundle;
+        this.bundle = BundleUtils.unwrapBundle(bundle);
         this.discoveryFilter = discoveryFilter;
     }
 
