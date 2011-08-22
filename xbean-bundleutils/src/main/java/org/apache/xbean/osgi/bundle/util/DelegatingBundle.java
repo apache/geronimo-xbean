@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -42,42 +43,46 @@ import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
- * Bundle that delegates ClassLoader operations to a collection of {@link Bundle} objects. 
- * 
+ * Bundle that delegates ClassLoader operations to a collection of {@link Bundle} objects.
+ *
  * @version $Rev$ $Date$
  */
 public class DelegatingBundle implements Bundle {
 
-    private Collection<Bundle> bundles;
+    private CopyOnWriteArrayList<Bundle> bundles;
     private Bundle bundle;
     private BundleContext bundleContext;
 
     public DelegatingBundle(Collection<Bundle> bundles) {
-        this.bundles = bundles;
         if (bundles.isEmpty()) {
             throw new IllegalArgumentException("At least one bundle is required");
         }
+        this.bundles = new CopyOnWriteArrayList<Bundle>(bundles);
         // assume first Bundle is the main bundle
         this.bundle = bundles.iterator().next();
         this.bundleContext = new DelegatingBundleContext(this, bundle.getBundleContext());
     }
-       
+
+    public DelegatingBundle(Bundle bundle) {
+        this(Collections.singletonList(bundle));
+    }
+
     public Bundle getMainBundle() {
         return bundle;
     }
-    
+
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         try {
             return bundle.loadClass(name);
         } catch (ClassNotFoundException ex) {
             int index = name.lastIndexOf('.');
-            if (index > 0) {
+            if (index > 0 && bundles.size() > 1) {
                 // see if there are any bundles exporting the package
                 String packageName = name.substring(0, index);
                 Set<Bundle> packageBundles = getPackageBundles(packageName);
                 if (packageBundles == null) {
                     // package is NOT exported
-                    
+
                     Iterator<Bundle> iterator = bundles.iterator();
                     // skip first bundle
                     iterator.next();
@@ -90,12 +95,12 @@ public class DelegatingBundle implements Bundle {
                             // ignore
                         }
                     }
-                    
+
                     throw ex;
                 } else {
-                    // package is exported 
-                    
-                    // see if any of our bundles is wired to the exporter 
+                    // package is exported
+
+                    // see if any of our bundles is wired to the exporter
                     Bundle delegate = findFirstBundle(packageBundles);
                     if (delegate == null || delegate == bundle) {
                         // nope. no static wires but might need to check for dynamic wires in the future.
@@ -103,15 +108,15 @@ public class DelegatingBundle implements Bundle {
                     } else {
                         // yes. attempt to load the class from it
                         return delegate.loadClass(name);
-                    } 
+                    }
                 }
             }  else {
                 // no package name
                 throw ex;
-            }  
+            }
         }
     }
-    
+
     private Set<Bundle> getPackageBundles(String packageName) {
         BundleContext context = bundle.getBundleContext();
         ServiceReference reference = context.getServiceReference(PackageAdmin.class.getName());
@@ -136,25 +141,33 @@ public class DelegatingBundle implements Bundle {
             context.ungetService(reference);
         }
     }
-    
+
     private Bundle findFirstBundle(Set<Bundle> packageBundles) {
         Collection<Bundle> c1 = bundles;
         Collection<Bundle> c2 = packageBundles;
-        
+
         if (bundles instanceof Set<?> && bundles.size() > packageBundles.size()) {
             c1 = packageBundles;
             c2 = bundles;
         }
-        
+
         for (Bundle bundle : c1) {
             if (c2.contains(bundle)) {
                 return bundle;
             }
         }
-        
+
         return null;
     }
-    
+
+    public void addBundle(Bundle b) {
+        bundles.add(b);
+    }
+
+    public void removeBundle(Bundle b) {
+        bundles.remove(b);
+    }
+
     public URL getResource(String name) {
         URL resource = null;
         for (Bundle bundle : bundles) {
@@ -169,12 +182,12 @@ public class DelegatingBundle implements Bundle {
     public Enumeration<URL> getResources(String name) throws IOException {
         ArrayList<URL> allResources = new ArrayList<URL>();
         for (Bundle bundle : bundles) {
-            Enumeration<URL> e = (Enumeration<URL>) bundle.getResources(name);
+            Enumeration<URL> e = bundle.getResources(name);
             addToList(allResources, e);
         }
-        return Collections.enumeration(allResources); 
-    }    
-    
+        return Collections.enumeration(allResources);
+    }
+
     private static void addToList(List<URL> list, Enumeration<URL> enumeration) {
         if (enumeration != null) {
             while (enumeration.hasMoreElements()) {
@@ -186,7 +199,7 @@ public class DelegatingBundle implements Bundle {
     public BundleContext getBundleContext() {
         return bundleContext;
     }
-    
+
     public Enumeration findEntries(String arg0, String arg1, boolean arg2) {
         return bundle.findEntries(arg0, arg1, arg2);
     }
@@ -278,5 +291,5 @@ public class DelegatingBundle implements Bundle {
     public String toString() {
         return "[DelegatingBundle: " + bundles + "]";
     }
-           
+
 }
