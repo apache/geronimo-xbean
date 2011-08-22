@@ -69,7 +69,7 @@ public class BundleResourceFinder {
      */
     public BundleResourceFinder(PackageAdmin packageAdmin, Bundle bundle, String prefix, String suffix, ResourceDiscoveryFilter discoveryFilter) {
         this.packageAdmin = packageAdmin;
-        this.bundle = bundle;
+        this.bundle = BundleUtils.unwrapBundle(bundle);
         this.prefix = addSlash(prefix.trim());
         this.suffix = suffix.trim();
         int pos = this.suffix.lastIndexOf("/");

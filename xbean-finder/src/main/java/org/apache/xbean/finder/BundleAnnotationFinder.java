@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 
 import org.apache.xbean.osgi.bundle.util.BundleResourceFinder;
+import org.apache.xbean.osgi.bundle.util.BundleUtils;
 import org.apache.xbean.osgi.bundle.util.ResourceDiscoveryFilter;
 import org.osgi.framework.Bundle;
 import org.osgi.service.packageadmin.PackageAdmin;
@@ -50,8 +51,8 @@ public class BundleAnnotationFinder extends AbstractFinder {
     }
 
     public BundleAnnotationFinder(PackageAdmin packageAdmin, Bundle bundle, ResourceDiscoveryFilter discoveryFilter, Set<String> paths) throws Exception {
-        this.bundle = bundle;
-        BundleResourceFinder bundleResourceFinder = new BundleResourceFinder(packageAdmin, bundle, "", ".class", discoveryFilter);
+        this.bundle = BundleUtils.unwrapBundle(bundle);
+        BundleResourceFinder bundleResourceFinder = new BundleResourceFinder(packageAdmin, this.bundle, "", ".class", discoveryFilter);
         bundleResourceFinder.find(new AnnotationFindingCallback());
         this.paths = paths;
     }
