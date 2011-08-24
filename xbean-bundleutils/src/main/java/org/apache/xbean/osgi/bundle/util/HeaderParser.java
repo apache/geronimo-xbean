@@ -158,7 +158,48 @@ public class HeaderParser  {
         
         public void addDirective(String name, String value) {
             directives.put(name, value);
-        }        
-        
+        }
+
+        @Override
+        public String toString() {
+            return "HeaderElement [path=" + path + ", attributes=" + attributes + ", directives=" + directives + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
+            result = prime * result + ((directives == null) ? 0 : directives.hashCode());
+            result = prime * result + ((path == null) ? 0 : path.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            HeaderElement other = (HeaderElement) obj;
+            if (attributes == null) {
+                if (other.attributes != null)
+                    return false;
+            } else if (!attributes.equals(other.attributes))
+                return false;
+            if (directives == null) {
+                if (other.directives != null)
+                    return false;
+            } else if (!directives.equals(other.directives))
+                return false;
+            if (path == null) {
+                if (other.path != null)
+                    return false;
+            } else if (!path.equals(other.path))
+                return false;
+            return true;
+        }                
     }
 }
