@@ -36,10 +36,13 @@ public class HeaderParserTest extends TestCase {
         assertEquals("/foo/bar.xml", paths.get(1).getName());
         assertEquals(0, paths.get(1).getAttributes().size());
         assertEquals(0, paths.get(1).getDirectives().size());
+
+        assertEquals(paths, HeaderParser.parseHeader(HeaderBuilder.build(paths)));
     }
     
     public void testComplex() throws Exception {
-        List<HeaderElement> paths = HeaderParser.parseHeader("OSGI-INF/blueprint/comp1_named.xml;ignored-directive:=true,OSGI-INF/blueprint/comp2_named.xml;some-other-attribute=1");
+        String header = "OSGI-INF/blueprint/comp1_named.xml;ignored-directive:=true,OSGI-INF/blueprint/comp2_named.xml;some-other-attribute=1";
+        List<HeaderElement> paths = HeaderParser.parseHeader(header);
         assertEquals(2, paths.size());
         assertEquals("OSGI-INF/blueprint/comp1_named.xml", paths.get(0).getName());
         assertEquals(0, paths.get(0).getAttributes().size());
@@ -49,10 +52,12 @@ public class HeaderParserTest extends TestCase {
         assertEquals(1, paths.get(1).getAttributes().size());
         assertEquals("1", paths.get(1).getAttribute("some-other-attribute"));
         assertEquals(0, paths.get(1).getDirectives().size());
+        assertEquals(paths, HeaderParser.parseHeader(HeaderBuilder.build(paths)));
     }
 
     public void testPaths() throws Exception {
-        List<HeaderElement> paths = HeaderParser.parseHeader("OSGI-INF/blueprint/comp1_named.xml;ignored-directive:=true,OSGI-INF/blueprint/comp2_named.xml;foo.xml;a=b;1:=2;c:=d;4=5");
+        String header = "OSGI-INF/blueprint/comp1_named.xml;ignored-directive:=true,OSGI-INF/blueprint/comp2_named.xml;foo.xml;a=b;1:=2;c:=d;4=5";
+        List<HeaderElement> paths = HeaderParser.parseHeader(header);
         assertEquals(3, paths.size());
         assertEquals("OSGI-INF/blueprint/comp1_named.xml", paths.get(0).getName());
         assertEquals(0, paths.get(0).getAttributes().size());
@@ -68,10 +73,13 @@ public class HeaderParserTest extends TestCase {
         assertEquals(2, paths.get(2).getDirectives().size());
         assertEquals("d", paths.get(2).getDirective("c"));
         assertEquals("2", paths.get(2).getDirective("1"));
+        System.out.println(HeaderBuilder.build(paths));
+        assertEquals(paths, HeaderParser.parseHeader(HeaderBuilder.build(paths)));
     }
     
     public void testExportPackages() throws Exception {
-        List<HeaderElement> paths = HeaderParser.parseHeader("org.apache.geronimo.kernel.rmi;uses:=\"javax.rmi.ssl,org.apache.geronimo.gbean,org.slf4j\",org.apache.geronimo.kernel.proxy");
+        String header = "org.apache.geronimo.kernel.rmi;uses:=\"javax.rmi.ssl,org.apache.geronimo.gbean,org.slf4j\",org.apache.geronimo.kernel.proxy";
+        List<HeaderElement> paths = HeaderParser.parseHeader(header);
         assertEquals(2, paths.size());
         
         assertEquals("org.apache.geronimo.kernel.rmi", paths.get(0).getName());
@@ -82,10 +90,12 @@ public class HeaderParserTest extends TestCase {
         assertEquals("org.apache.geronimo.kernel.proxy", paths.get(1).getName());
         assertEquals(0, paths.get(1).getAttributes().size());
         assertEquals(0, paths.get(1).getDirectives().size());
+        assertEquals(paths, HeaderParser.parseHeader(HeaderBuilder.build(paths)));
     }
     
     public void testImportPackages() throws Exception {
-        List<HeaderElement> paths = HeaderParser.parseHeader("com.thoughtworks.xstream;version=\"1.3\",com.thoughtworks.xstream.converters");
+        String header = "com.thoughtworks.xstream;version=\"1.3\",com.thoughtworks.xstream.converters";
+        List<HeaderElement> paths = HeaderParser.parseHeader(header);
         assertEquals(2, paths.size());
         
         assertEquals("com.thoughtworks.xstream", paths.get(0).getName());
@@ -96,5 +106,7 @@ public class HeaderParserTest extends TestCase {
         assertEquals("com.thoughtworks.xstream.converters", paths.get(1).getName());
         assertEquals(0, paths.get(1).getAttributes().size());
         assertEquals(0, paths.get(1).getDirectives().size());
+
+        assertEquals(paths, HeaderParser.parseHeader(HeaderBuilder.build(paths)));
     }
 }
