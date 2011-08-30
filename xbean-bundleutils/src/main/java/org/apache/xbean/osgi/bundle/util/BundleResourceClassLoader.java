@@ -22,18 +22,18 @@ package org.apache.xbean.osgi.bundle.util;
 import org.osgi.framework.Bundle;
 
 /**
- * ClassLoader for a {@link Bundle}. 
+ * ClassLoader for a {@link Bundle}.
  * <br/>
  * This ClassLoader implementation extends the {@link BundleClassLoader} and returns resources embedded
- * in jar files in a bundle with <tt>jar</tt> URLs. 
- * 
+ * in jar files in a bundle with <tt>jar</tt> URLs.
+ *
  * @version $Rev$ $Date$
  */
 public class BundleResourceClassLoader extends BundleClassLoader {
 
     public BundleResourceClassLoader(Bundle bundle) {
-        super(bundle, 
-              BundleResourceHelper.getSearchWiredBundles(true), 
+        super(bundle,
+              BundleResourceHelper.getSearchWiredBundles(false),
               BundleResourceHelper.getConvertResourceUrls(true));
     }
 
@@ -41,5 +41,5 @@ public class BundleResourceClassLoader extends BundleClassLoader {
     public String toString() {
         return "[BundleResourceClassLoader] " + bundle;
     }
-   
+
 }
