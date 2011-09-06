@@ -49,12 +49,10 @@ public class ClassesArchive implements Archive {
         }
     }
 
-    @Override
     public Iterator<String> iterator() {
         return classes.keySet().iterator();
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         assert className != null;
 
@@ -77,7 +75,6 @@ public class ClassesArchive implements Archive {
         throw new ClassNotFoundException(className);
     }
 
-    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         Class<?> clazz = classes.get(className);
         if (clazz != null) return clazz;

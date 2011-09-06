@@ -255,7 +255,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
-    @Override
     public boolean isAnnotationPresent(Class<? extends Annotation> annotation) {
         List<Info> infos = annotated.get(annotation.getName());
         return infos != null && !infos.isEmpty();
@@ -274,12 +273,10 @@ public class AnnotationFinder implements IAnnotationFinder {
      *
      * @return an unmodifiable live view of classes that could not be loaded in previous findAnnotated* call.
      */
-    @Override
     public List<String> getClassesNotLoaded() {
         return Collections.unmodifiableList(classesNotLoaded);
     }
 
-    @Override
     public List<Package> findAnnotatedPackages(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<Package> packages = new ArrayList<Package>();
@@ -301,7 +298,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return packages;
     }
 
-    @Override
     public List<Class<?>> findAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<Class<?>> classes = new ArrayList<Class<?>>();
@@ -323,7 +319,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return classes;
     }
 
-    @Override
     public List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         Set<Class<?>> classes = findMetaAnnotatedClasses(annotation, new HashSet<Class<?>>());
@@ -385,7 +380,6 @@ public class AnnotationFinder implements IAnnotationFinder {
      * @param annotation
      * @return list of directly or indirectly (inherited) annotated classes
      */
-    @Override
     public List<Class<?>> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<Class<?>> classes = new ArrayList<Class<?>>();
@@ -438,7 +432,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return classes;
     }
 
-    @Override
     public List<Method> findAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<ClassInfo> seen = new ArrayList<ClassInfo>();
@@ -468,7 +461,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return methods;
     }
 
-    @Override
     public List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
@@ -528,7 +520,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return methods;
     }
 
-    @Override
     public List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
@@ -588,7 +579,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return fields;
     }
 
-    @Override
     public List<Constructor> findAnnotatedConstructors(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<ClassInfo> seen = new ArrayList<ClassInfo>();
@@ -618,7 +608,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return constructors;
     }
 
-    @Override
     public List<Field> findAnnotatedFields(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
         List<ClassInfo> seen = new ArrayList<ClassInfo>();
@@ -648,7 +637,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return fields;
     }
 
-    @Override
     public List<Class<?>> findClassesInPackage(String packageName, boolean recursive) {
         classesNotLoaded.clear();
         List<Class<?>> classes = new ArrayList<Class<?>>();
@@ -666,7 +654,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return classes;
     }
 
-    @Override
     public <T> List<Class<? extends T>> findSubclasses(Class<T> clazz) {
         if (clazz == null) throw new NullPointerException("class cannot be null");
 
@@ -726,7 +713,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         return classes;
     }
 
-    @Override
     public <T> List<Class<? extends T>> findImplementations(Class<T> clazz) {
         if (clazz == null) throw new NullPointerException("class cannot be null");
         if (!clazz.isInterface()) new IllegalArgumentException("class must be an interface");

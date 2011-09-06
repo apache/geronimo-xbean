@@ -32,7 +32,6 @@ public class PrefixFilter implements Filter {
         return prefix;
     }
 
-    @Override
     public boolean accept(String name) {
         return name.startsWith(prefix);
     }

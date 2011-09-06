@@ -37,17 +37,14 @@ public class FilteredArchive implements Archive {
         this.filter = filter;
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         return archive.getBytecode(className);
     }
 
-    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         return archive.loadClass(className);
     }
 
-    @Override
     public Iterator<String> iterator() {
         return new FilteredIterator(archive.iterator());
     }
@@ -61,7 +58,6 @@ public class FilteredArchive implements Archive {
             this.it = it;
         }
 
-        @Override
         public boolean hasNext() {
             if (next != null) return true;
             if (!it.hasNext()) return false;
@@ -69,7 +65,6 @@ public class FilteredArchive implements Archive {
             return hasNext();
         }
 
-        @Override
         public String next() {
             if (!hasNext()) throw new NoSuchElementException();
 
@@ -79,7 +74,6 @@ public class FilteredArchive implements Archive {
             return s;
         }
 
-        @Override
         public void remove() {
             it.remove();
         }

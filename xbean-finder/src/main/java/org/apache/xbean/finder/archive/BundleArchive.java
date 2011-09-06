@@ -46,13 +46,11 @@ public class BundleArchive implements Archive {
         bundleResourceFinder.find(new AnnotationFindingCallback());
     }
 
-    @Override
     public Iterator<String> iterator() {
         // TODO
         return Collections.EMPTY_LIST.iterator();
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         int pos = className.indexOf("<");
         if (pos > -1) {
@@ -72,7 +70,6 @@ public class BundleArchive implements Archive {
         throw new ClassNotFoundException(className);
     }
 
-    @Override
     public Class<?> loadClass(String s) throws ClassNotFoundException {
         return bundle.loadClass(s);
     }

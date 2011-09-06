@@ -44,23 +44,19 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
         this.annotations.putAll(annotations);
     }
 
-    @Override
     public T get() {
         return target;
     }
 
-    @Override
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
         return annotations.containsKey(annotationClass);
     }
 
-    @Override
     public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
         MetaAnnotation<T> annotation = (MetaAnnotation<T>) annotations.get(annotationClass);
         return (annotation == null) ? null : annotation.get();
     }
 
-    @Override
     public Annotation[] getAnnotations() {
         Annotation[] annotations = new Annotation[this.annotations.size()];
 
@@ -72,7 +68,6 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
         return annotations;
     }
 
-    @Override
     public Collection<MetaAnnotation<?>> getMetaAnnotations() {
         return Collections.unmodifiableCollection(annotations.values());
     }

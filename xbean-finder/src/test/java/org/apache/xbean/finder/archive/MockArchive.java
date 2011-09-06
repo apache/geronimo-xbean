@@ -41,17 +41,14 @@ public class MockArchive implements Archive {
         }
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         return null;
     }
 
-    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         return null;
     }
 
-    @Override
     public Iterator<String> iterator() {
         return list.iterator();
     }

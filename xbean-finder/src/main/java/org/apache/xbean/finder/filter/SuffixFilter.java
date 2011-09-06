@@ -32,7 +32,6 @@ public class SuffixFilter implements Filter {
         return suffix;
     }
 
-    @Override
     public boolean accept(String name) {
         return name.endsWith(suffix);
     }

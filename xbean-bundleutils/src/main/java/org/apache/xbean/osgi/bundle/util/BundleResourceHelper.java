@@ -224,7 +224,7 @@ public class BundleResourceHelper {
             }
             return Collections.enumeration(resources);
         } catch (Exception e) {
-            throw new IOException("Error discovering resources", e);
+            throw (IOException) new IOException("Error discovering resources: " + e).initCause(e);
         } finally {
             bundle.getBundleContext().ungetService(reference);
         }

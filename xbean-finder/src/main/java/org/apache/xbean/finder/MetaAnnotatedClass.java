@@ -35,7 +35,6 @@ public class MetaAnnotatedClass<T> extends MetaAnnotatedObject<Class<T>> {
         super(clazz, unroll(clazz, clazz));
     }
 
-    @Override
     public Annotation[] getDeclaredAnnotations() {
         return target.getDeclaredAnnotations();
     }

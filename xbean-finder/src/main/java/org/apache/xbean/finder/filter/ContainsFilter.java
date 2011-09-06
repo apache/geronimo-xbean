@@ -32,7 +32,6 @@ public class ContainsFilter implements Filter {
         return token;
     }
 
-    @Override
     public boolean accept(String name) {
         return name.contains(token);
     }

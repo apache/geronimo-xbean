@@ -42,7 +42,6 @@ public class JarArchive implements Archive {
         this.url = url;
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         int pos = className.indexOf("<");
         if (pos > -1) {
@@ -63,12 +62,10 @@ public class JarArchive implements Archive {
     }
 
 
-    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         return loader.loadClass(className);
     }
 
-    @Override
     public Iterator<String> iterator() {
         try {
             return jar(url).iterator();

@@ -28,62 +28,50 @@ public class MetaAnnotatedMethod extends MetaAnnotatedObject<Method> implements 
         super(method, unroll(method.getDeclaringClass(), method));
     }
 
-    @Override
     public Annotation[] getDeclaredAnnotations() {
         return target.getDeclaredAnnotations();
     }
 
-    @Override
     public Annotation[][] getParameterAnnotations() {
         return target.getParameterAnnotations();
     }
 
-    @Override
     public Class<?> getDeclaringClass() {
         return target.getDeclaringClass();
     }
 
-    @Override
     public String getName() {
         return target.getName();
     }
 
-    @Override
     public int getModifiers() {
         return target.getModifiers();
     }
 
-    @Override
     public Class<?>[] getParameterTypes() {
         return target.getParameterTypes();
     }
 
-    @Override
     public java.lang.reflect.Type[] getGenericParameterTypes() {
         return target.getGenericParameterTypes();
     }
 
-    @Override
     public Class<?>[] getExceptionTypes() {
         return target.getExceptionTypes();
     }
 
-    @Override
     public java.lang.reflect.Type[] getGenericExceptionTypes() {
         return target.getGenericExceptionTypes();
     }
 
-    @Override
     public String toGenericString() {
         return target.toGenericString();
     }
 
-    @Override
     public boolean isVarArgs() {
         return target.isVarArgs();
     }
 
-    @Override
     public boolean isSynthetic() {
         return target.isSynthetic();
     }

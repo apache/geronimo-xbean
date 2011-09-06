@@ -77,60 +77,48 @@ public class JexlPropertyPlaceholder extends CmPropertyPlaceholder {
 
     private class ConfigMap implements Map<String, Object> {
 
-        @Override
         public int size() {
             return 0;
         }
 
-        @Override
         public boolean isEmpty() {
             return false;
         }
 
-        @Override
         public boolean containsKey(Object o) {
             return getProperty((String) o) != null;
         }
 
-        @Override
         public boolean containsValue(Object o) {
             return false;
         }
 
-        @Override
         public Object get(Object o) {
             return getProperty((String) o);
         }
 
-        @Override
         public Object put(String s, Object o) {
             return null;
         }
 
-        @Override
         public Object remove(Object o) {
             return null;
         }
 
-        @Override
         public void putAll(Map<? extends String, ? extends Object> map) {
         }
 
-        @Override
         public void clear() {
         }
 
-        @Override
         public Set<String> keySet() {
             return null;
         }
 
-        @Override
         public Collection<Object> values() {
             return null;
         }
 
-        @Override
         public Set<Entry<String, Object>> entrySet() {
             return null;
         }

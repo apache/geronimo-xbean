@@ -32,7 +32,6 @@ public class ClassFilter implements Filter {
         return name;
     }
 
-    @Override
     public boolean accept(String name) {
         return this.name.equals(name);
     }

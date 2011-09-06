@@ -221,7 +221,6 @@ public abstract class AbstractFinder implements IAnnotationFinder {
         return classes;
     }
 
-    @Override
     public List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
         List<Class<?>> classes = findAnnotatedClasses(annotation);
         List<Annotated<Class<?>>> list = new ArrayList<Annotated<Class<?>>>();
@@ -318,7 +317,6 @@ public abstract class AbstractFinder implements IAnnotationFinder {
         return methods;
     }
 
-    @Override
     public List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
         List<Method> methods = findAnnotatedMethods(annotation);
         List<Annotated<Method>> list = new ArrayList<Annotated<Method>>();
@@ -386,7 +384,6 @@ public abstract class AbstractFinder implements IAnnotationFinder {
         return fields;
     }
 
-    @Override
     public List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
         List<Field> fields = findAnnotatedFields(annotation);
         List<Annotated<Field>> list = new ArrayList<Annotated<Field>>();

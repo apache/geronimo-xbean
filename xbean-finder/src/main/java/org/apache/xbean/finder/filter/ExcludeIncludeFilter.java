@@ -30,7 +30,6 @@ public class ExcludeIncludeFilter implements Filter {
         this.exclude = exclude;
     }
 
-    @Override
     public boolean accept(String name) {
         if (exclude.accept(name)) return include.accept(name);
         return true;

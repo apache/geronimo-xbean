@@ -28,7 +28,6 @@ import java.util.Set;
  */
 public class Filters {
     private static final Filter NONE = new Filter() {
-        @Override
         public boolean accept(String name) {
             return false;
         }
@@ -151,7 +150,6 @@ public class Filters {
             this.filter = filter;
         }
 
-        @Override
         public boolean accept(String name) {
             return !filter.accept(name);
         }

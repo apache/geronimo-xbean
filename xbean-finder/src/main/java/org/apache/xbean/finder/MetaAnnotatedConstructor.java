@@ -28,62 +28,50 @@ public class MetaAnnotatedConstructor<T> extends MetaAnnotatedObject<Constructor
         super(target, unroll(target.getDeclaringClass(), target));
     }
 
-    @Override
     public Annotation[] getDeclaredAnnotations() {
         return get().getDeclaredAnnotations();
     }
 
-    @Override
     public Annotation[][] getParameterAnnotations() {
         return get().getParameterAnnotations();
     }
 
-    @Override
     public Class<?> getDeclaringClass() {
         return get().getDeclaringClass();
     }
 
-    @Override
     public String getName() {
         return get().getName();
     }
 
-    @Override
     public int getModifiers() {
         return get().getModifiers();
     }
 
-    @Override
     public Class<?>[] getParameterTypes() {
         return get().getParameterTypes();
     }
 
-    @Override
     public java.lang.reflect.Type[] getGenericParameterTypes() {
         return get().getGenericParameterTypes();
     }
 
-    @Override
     public Class<?>[] getExceptionTypes() {
         return get().getExceptionTypes();
     }
 
-    @Override
     public java.lang.reflect.Type[] getGenericExceptionTypes() {
         return get().getGenericExceptionTypes();
     }
 
-    @Override
     public String toGenericString() {
         return get().toGenericString();
     }
 
-    @Override
     public boolean isVarArgs() {
         return get().isVarArgs();
     }
 
-    @Override
     public boolean isSynthetic() {
         return get().isSynthetic();
     }

@@ -196,7 +196,6 @@ public class UrlSet implements Iterable<URL> {
         return urls.size();
     }
 
-    @Override
     public Iterator<URL> iterator() {
         return getUrls().iterator();
     }
