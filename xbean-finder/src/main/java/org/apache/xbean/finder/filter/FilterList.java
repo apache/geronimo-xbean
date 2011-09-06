@@ -37,7 +37,6 @@ public class FilterList implements Filter {
         }
     }
 
-    @Override
     public boolean accept(String name) {
         for (Filter filter : filters) {
             if (filter.accept(name)) return true;

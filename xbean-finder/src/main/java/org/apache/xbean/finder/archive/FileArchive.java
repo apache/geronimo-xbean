@@ -43,7 +43,6 @@ public class FileArchive implements Archive {
         this.dir = dir;
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         int pos = className.indexOf("<");
         if (pos > -1) {
@@ -64,12 +63,10 @@ public class FileArchive implements Archive {
     }
 
 
-    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         return loader.loadClass(className);
     }
 
-    @Override
     public Iterator<String> iterator() {
         return file(dir).iterator();
     }

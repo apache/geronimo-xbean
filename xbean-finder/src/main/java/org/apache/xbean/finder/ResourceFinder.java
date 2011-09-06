@@ -741,9 +741,9 @@ public class ResourceFinder {
      * <p/>
      * Example classpath:
      * <p/>
-     * META-INF/jdbcDrivers/oracle.properties
-     * META-INF/jdbcDrivers/mysql.props
-     * META-INF/jdbcDrivers/derby
+ - META-INF/jdbcDrivers/oracle.properties
+ - META-INF/jdbcDrivers/mysql.props
+ - META-INF/jdbcDrivers/derby
      * <p/>
      * ResourceFinder finder = new ResourceFinder("META-INF/");
      * List<Properties> driversList = finder.findAvailableProperties("jdbcDrivers");

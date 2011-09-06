@@ -38,7 +38,6 @@ public class PatternFilter implements Filter {
         return pattern;
     }
 
-    @Override
     public boolean accept(String name) {
         return pattern.matcher(name).matches();
     }

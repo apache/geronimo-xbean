@@ -64,7 +64,6 @@ public class FilteredArchiveTest extends TestCase {
 
     public static class Nothing implements Filter {
 
-        @Override
         public boolean accept(String name) {
             return true;
         }
@@ -72,7 +71,6 @@ public class FilteredArchiveTest extends TestCase {
 
     public static class All implements Filter {
 
-        @Override
         public boolean accept(String name) {
             return false;
         }
@@ -82,7 +80,6 @@ public class FilteredArchiveTest extends TestCase {
 
         private boolean accept;
 
-        @Override
         public boolean accept(String name) {
             return accept = !accept;
         }

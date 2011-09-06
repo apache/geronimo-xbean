@@ -41,7 +41,6 @@ public class CompositeArchive implements Archive {
         }
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         for (Archive archive : archives) {
             try {
@@ -53,7 +52,6 @@ public class CompositeArchive implements Archive {
         throw new ClassNotFoundException(className);
     }
 
-    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         for (Archive archive : archives) {
             try {
@@ -65,7 +63,6 @@ public class CompositeArchive implements Archive {
         throw new ClassNotFoundException(className);
     }
 
-    @Override
     public Iterator<String> iterator() {
         return new CompositeIterator(archives);
     }
@@ -82,7 +79,6 @@ public class CompositeArchive implements Archive {
             }
         }
 
-        @Override
         public boolean hasNext() {
             if (current == null) return false;
             if (current.hasNext()) return true;
@@ -94,14 +90,12 @@ public class CompositeArchive implements Archive {
             return false;
         }
 
-        @Override
         public String next() {
             if (!hasNext()) throw new NoSuchElementException();
 
             return current.next();
         }
 
-        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

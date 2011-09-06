@@ -28,27 +28,22 @@ public class MetaAnnotatedField extends MetaAnnotatedObject<Field> implements An
         super(field, unroll(field.getDeclaringClass(), field));
     }
 
-    @Override
     public Annotation[] getDeclaredAnnotations() {
         return get().getDeclaredAnnotations();
     }
 
-    @Override
     public Class<?> getDeclaringClass() {
         return get().getDeclaringClass();
     }
 
-    @Override
     public String getName() {
         return get().getName();
     }
 
-    @Override
     public int getModifiers() {
         return get().getModifiers();
     }
 
-    @Override
     public boolean isSynthetic() {
         return get().isSynthetic();
     }

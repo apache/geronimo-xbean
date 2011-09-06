@@ -209,7 +209,7 @@ public class BundleResourceFinder {
     private static String addSlash(String name) {
         if (name == null ) return "";
         name = name.trim();
-        if (!name.isEmpty() && !name.endsWith("/")) {
+        if (name.length() != 0 && !name.endsWith("/")) {
             name = name + "/";
         }
         return name;
