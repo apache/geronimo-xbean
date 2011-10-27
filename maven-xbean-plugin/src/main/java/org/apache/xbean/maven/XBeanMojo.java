@@ -119,7 +119,12 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
      * @parameter 
      */
     private boolean generateSpringHandlersFile = true;
-    
+
+    /**
+     * @parameter
+     */
+    private boolean strictXsdOrder = true;
+
     /**
      * A list of additional GeneratorPlugins that should get used executed
      * when generating output.
@@ -176,7 +181,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
                 new XmlMetadataGenerator(outputDir.getAbsolutePath(), schema, generateSpringSchemasFile, generateSpringHandlersFile),
                 new DocumentationGenerator(schema),
-                new XsdGenerator(schema),
+                new XsdGenerator(schema, strictXsdOrder),
                 new WikiDocumentationGenerator(schema),
             };
 
