@@ -31,9 +31,14 @@ import java.util.List;
 public class XsdGenerator implements GeneratorPlugin {
     private final File destFile;
     private LogFacade log;
+    private boolean strictOrder;
 
     public XsdGenerator(File destFile) {
+        this(destFile, true);
+    }
+    public XsdGenerator(File destFile, boolean strictOrder) {
         this.destFile = destFile;
+        this.strictOrder = strictOrder;
     }
 
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
@@ -92,7 +97,11 @@ public class XsdGenerator implements GeneratorPlugin {
             }
         }
         if (complexCount > 0) {
-            out.println("      <xs:sequence>");
+            if(strictOrder){
+                out.println("      <xs:sequence>");
+            } else {
+                out.println("      <xs:choice minOccurs=\"0\" maxOccurs=\"unbounded\"><xs:choice>");
+            }
             for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
                 AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
                 if (!namespaceMapping.isSimpleType(attributeMapping.getType())) {
@@ -100,7 +109,11 @@ public class XsdGenerator implements GeneratorPlugin {
                 }
             }
             out.println("        <xs:any namespace='##other' minOccurs='0' maxOccurs='unbounded'/>");
-            out.println("      </xs:sequence>");
+            if(strictOrder){
+                out.println("      </xs:sequence>");
+            } else {
+                out.println("      </xs:choice></xs:choice>");
+            }
         }
 
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {

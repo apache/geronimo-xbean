@@ -42,6 +42,7 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
     private File destFile = new File("target/classes/schema.xsd");
     private String metaInfDir = "target/classes/";
     private String propertyEditorPaths = "org.apache.xbean.spring.context.impl";
+    private boolean strictXsdOrder = true;
 
     public File getDestFile() {
         return destFile;
@@ -83,6 +84,14 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
         this.propertyEditorPaths = propertyEditorPaths;
     }
 
+    public boolean isStrictXsdOrder() {
+        return strictXsdOrder;
+    }
+
+    public void setStrictXsdOrder(boolean strictXsdOrder) {
+        this.strictXsdOrder = strictXsdOrder;
+    }
+
     public void execute() throws BuildException {
         if (namespace == null) {
             throw new BuildException("'namespace' must be specified");
@@ -113,7 +122,7 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
                 new XmlMetadataGenerator(metaInfDir, destFile),
                 new DocumentationGenerator(destFile),
-                new XsdGenerator(destFile)
+                new XsdGenerator(destFile, strictXsdOrder)
             };
 
             // load the mappings
