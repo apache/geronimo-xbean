@@ -36,13 +36,6 @@
     <description>xbean-spring provides a schema-driven proprietary namespace handler for spring contexts</description>
 
     <properties>
-        <xbean.osgi.import.pkg>
-            com.thoughtworks.qdox*;resolution:=optional,
-            org.apache.tools.ant*;resolution:=optional,
-            org.springframework.core;resolution:=optional,
-            org.springframework.web*;resolution:=optional,
-            *
-        </xbean.osgi.import.pkg>
     </properties>
 
     <dependencies>
@@ -138,8 +131,9 @@
                         <Import-Package>
                             com.thoughtworks.qdox*;resolution:=optional,
                             org.apache.tools.ant*;resolution:=optional,
-                            org.springframework.core;resolution:=optional,
-                            org.springframework.web*;resolution:=optional,
+                            org.springframework.*;version="[2.5,4)",
+                            org.springframework.core;resolution:=optional;version="[2.5,4)",
+                            org.springframework.web*;resolution:=optional;version="[2.5,4)",
                             *
                         </Import-Package>
                         <DynamicImport-Package>META-INF.services.org.apache.xbean.spring.*,META-INF.services.org.xbean.spring</DynamicImport-Package>
