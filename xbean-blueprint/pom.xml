@@ -43,8 +43,14 @@
 
         <dependency>
             <groupId>org.apache.aries.blueprint</groupId>
-            <artifactId>org.apache.aries.blueprint</artifactId>
-            <version>0.2-incubating</version>
+            <artifactId>org.apache.aries.blueprint.api</artifactId>
+            <version>0.3.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.aries.blueprint</groupId>
+            <artifactId>org.apache.aries.blueprint.cm</artifactId>
+            <version>0.3</version>
             <scope>provided</scope>
         </dependency>
 
@@ -173,6 +179,9 @@
                             org.osgi.service.cm;version="[1.0,2.0)",
                             *
                         </Import-Package>
+                        <Private-Package>
+                            org.apache.aries.blueprint.compendium.cm
+                        </Private-Package>
                     </instructions>
                 </configuration>
             </plugin>
