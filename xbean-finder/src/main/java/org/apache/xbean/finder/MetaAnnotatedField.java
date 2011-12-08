@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
 public class MetaAnnotatedField extends MetaAnnotatedObject<Field> implements AnnotatedMember<Field> {
 
     public MetaAnnotatedField(Field field) {
-        super(field, unroll(field.getDeclaringClass(), field));
+        super(field, unroll(field));
     }
 
     public Annotation[] getDeclaredAnnotations() {
@@ -47,4 +47,5 @@ public class MetaAnnotatedField extends MetaAnnotatedObject<Field> implements An
     public boolean isSynthetic() {
         return get().isSynthetic();
     }
+
 }

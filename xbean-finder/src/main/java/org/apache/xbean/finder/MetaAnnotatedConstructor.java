@@ -24,8 +24,11 @@ import java.lang.reflect.Constructor;
  */
 public class MetaAnnotatedConstructor<T> extends MetaAnnotatedObject<Constructor<T>> implements AnnotatedMethod<Constructor<T>> {
 
+    private Annotation[][] parameterAnnotations;
+
     public MetaAnnotatedConstructor(Constructor<T> target) {
-        super(target, unroll(target.getDeclaringClass(), target));
+        super(target, unroll(target));
+        this.parameterAnnotations = unrollParameters(target.getParameterAnnotations());
     }
 
     public Annotation[] getDeclaredAnnotations() {
@@ -33,7 +36,7 @@ public class MetaAnnotatedConstructor<T> extends MetaAnnotatedObject<Constructor
     }
 
     public Annotation[][] getParameterAnnotations() {
-        return get().getParameterAnnotations();
+        return parameterAnnotations;
     }
 
     public Class<?> getDeclaringClass() {

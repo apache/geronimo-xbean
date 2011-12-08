@@ -18,6 +18,7 @@ package org.apache.xbean.finder;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
@@ -87,7 +88,7 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
         return get().toString();
     }
 
-    
+
     private static void unroll(Class<? extends Annotation> clazz, int depth, Map<Class<? extends Annotation>, MetaAnnotation<?>> found) {
         if (!isMetaAnnotation(clazz)) return;
 
@@ -102,7 +103,7 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
 
                     // OVERWRITE
 
-                    found.put(type, new MetaAnnotation(annotation, depth, clazz));
+                    found.put(type, new MetaAnnotation(annotation, depth));
 
                     unroll(type, depth + 1, found);
 
@@ -117,7 +118,7 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
                     // CONFLICT
 
                     // They are the same depth and therefore conflicting
-                    existing.getConflicts().add(new MetaAnnotation(annotation, depth, clazz));
+                    existing.getConflicts().add(new MetaAnnotation(annotation, depth));
 
                 }
 
@@ -125,7 +126,7 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
 
                 // NEW
 
-                found.put(type, new MetaAnnotation(annotation, depth, clazz));
+                found.put(type, new MetaAnnotation(annotation, depth));
 
                 unroll(type, depth + 1, found);
 
@@ -219,21 +220,63 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
     }
 
     private static boolean isMetatypeAnnotation(Class<? extends Annotation> type) {
-        return type.getSimpleName().equals("Metatype") && type.isAnnotationPresent(type);
+        if (isSelfAnnotated(type, "Metatype")) return true;
+
+        for (Annotation annotation : type.getAnnotations()) {
+            if (isSelfAnnotated(annotation.annotationType(), "Metaroot")) return true;
+        }
+
+        return false;
     }
 
-    protected static Map<Class<? extends Annotation>, MetaAnnotation<?>> unroll(Class<?> declaringClass, AnnotatedElement element) {
-        
-        Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
+    private static boolean isSelfAnnotated(Class<? extends Annotation> type, String name) {
+        return type.isAnnotationPresent(type) && type.getSimpleName().equals(name) && validTarget(type);
+    }
 
-        for (Annotation annotation : element.getDeclaredAnnotations()) {
+    private static boolean validTarget(Class<? extends Annotation> type) {
+        final Target target = type.getAnnotation(Target.class);
 
-            map.put(annotation.annotationType(), new MetaAnnotation(annotation, 0, declaringClass));
+        if (target == null) return false;
+
+        final ElementType[] targets = target.value();
+
+        return targets.length == 1 && targets[0] == ElementType.ANNOTATION_TYPE;
+    }
+
+    protected static Map<Class<? extends Annotation>, MetaAnnotation<?>> unroll(AnnotatedElement element) {
+        return unroll(element.getDeclaredAnnotations());
+    }
+
+    protected static Map<Class<? extends Annotation>, MetaAnnotation<?>> unroll(Annotation[] annotations) {
+        final Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
+
+        for (Annotation annotation : annotations) {
+
+            map.put(annotation.annotationType(), new MetaAnnotation(annotation, 0));
 
             unroll(annotation.annotationType(), 1, map);
 
         }
-        
+
         return map;
+    }
+
+    protected Annotation[][] unrollParameters(Annotation[][] parameterAnnotations) {
+        final Annotation[][] unrolledParameters = new Annotation[parameterAnnotations.length][];
+
+        int i = 0;
+        for (Annotation[] annotations : parameterAnnotations) {
+            final Map<Class<? extends Annotation>, MetaAnnotation<?>> map = unroll(annotations);
+
+            int j = 0;
+
+            final Annotation[] unrolled = new Annotation[map.size()];
+            for (MetaAnnotation<?> metaAnnotation : map.values()) {
+                unrolled[j++] = metaAnnotation.get();
+            }
+
+            unrolledParameters[i++] = unrolled;
+        }
+        return unrolledParameters;
     }
 }

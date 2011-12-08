@@ -32,7 +32,7 @@ import java.security.ProtectionDomain;
 public class MetaAnnotatedClass<T> extends MetaAnnotatedObject<Class<T>> {
 
     public MetaAnnotatedClass(Class<T> clazz) {
-        super(clazz, unroll(clazz, clazz));
+        super(clazz, unroll(clazz));
     }
 
     public Annotation[] getDeclaredAnnotations() {
@@ -257,19 +257,19 @@ public class MetaAnnotatedClass<T> extends MetaAnnotatedObject<Class<T>> {
             b[i] = new MetaAnnotatedMethod(a[i]);
         }
         return b;
-    } 
+    }
 
     private MetaAnnotatedMethod to(Method method) {
         return new MetaAnnotatedMethod(method);
     }
-    
+
     private MetaAnnotatedConstructor<?>[] to(Constructor<?>[] a) {
         MetaAnnotatedConstructor<?>[] b = new MetaAnnotatedConstructor[a.length];
         for (int i = 0; i < a.length; i++) {
             b[i] = new MetaAnnotatedConstructor(a[i]);
         }
         return b;
-    } 
+    }
 
     private MetaAnnotatedConstructor<?> to(Constructor<?> constructor) {
         return new MetaAnnotatedConstructor(constructor);
@@ -281,7 +281,7 @@ public class MetaAnnotatedClass<T> extends MetaAnnotatedObject<Class<T>> {
             b[i] = to(a[i]);
         }
         return b;
-    } 
+    }
 
     private MetaAnnotatedField[] to(Field[] a) {
         MetaAnnotatedField[] b = new MetaAnnotatedField[a.length];
@@ -289,10 +289,10 @@ public class MetaAnnotatedClass<T> extends MetaAnnotatedObject<Class<T>> {
             b[i] = new MetaAnnotatedField(a[i]);
         }
         return b;
-    } 
+    }
 
     private MetaAnnotatedField to(Field field) {
         return new MetaAnnotatedField(field);
     }
-    
+
 }
