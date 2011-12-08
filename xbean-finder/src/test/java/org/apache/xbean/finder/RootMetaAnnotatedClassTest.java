@@ -43,9 +43,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public class RootMetaAnnotatedClassTest extends TestCase {
 
     public void test() throws Exception {
-
-    }
-    public void _test() throws Exception {
         AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Fake.class, Store.class, Farm.class, None.class)).link();
 
         Map<Class<?>, Annotated<Class<?>>> map = new HashMap<Class<?>, Annotated<Class<?>>>();
