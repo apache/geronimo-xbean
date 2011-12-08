@@ -24,8 +24,12 @@ import java.lang.reflect.Method;
 */
 public class MetaAnnotatedMethod extends MetaAnnotatedObject<Method> implements AnnotatedMethod<Method> {
 
+    private final Annotation[][] parameterAnnotations;
+
     public MetaAnnotatedMethod(Method method) {
-        super(method, unroll(method.getDeclaringClass(), method));
+        super(method, unroll(method));
+
+        this.parameterAnnotations = unrollParameters(method.getParameterAnnotations());
     }
 
     public Annotation[] getDeclaredAnnotations() {
@@ -33,7 +37,7 @@ public class MetaAnnotatedMethod extends MetaAnnotatedObject<Method> implements 
     }
 
     public Annotation[][] getParameterAnnotations() {
-        return target.getParameterAnnotations();
+        return parameterAnnotations;
     }
 
     public Class<?> getDeclaringClass() {
@@ -75,8 +79,4 @@ public class MetaAnnotatedMethod extends MetaAnnotatedObject<Method> implements 
     public boolean isSynthetic() {
         return target.isSynthetic();
     }
-
-
-
-
 }

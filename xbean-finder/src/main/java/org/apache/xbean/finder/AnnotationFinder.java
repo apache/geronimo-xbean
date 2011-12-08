@@ -30,7 +30,6 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
-import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.io.IOException;
@@ -139,13 +138,24 @@ public class AnnotationFinder implements IAnnotationFinder {
     private void resolveAnnotations(List<String> scanned) {
 
         // Get a list of the annotations that exist before we start
-        List<String> annotations = new ArrayList<String>(annotated.keySet());
+        final List<String> annotations = new ArrayList<String>(annotated.keySet());
 
         for (String annotation : annotations) {
             if (scanned.contains(annotation)) continue;
             readClassDef(annotation);
         }
 
+//        for (ClassInfo classInfo : classInfos.values()) {
+//            for (AnnotationInfo annotationInfo : classInfo.getAnnotations()) {
+//                for (AnnotationInfo info : annotationInfo.getAnnotations()) {
+//                    final String annotation = info.getName();
+//
+//                    if (hasName(annotation, "Metaroot") && !scanned.contains(annotation)) {
+//                        readClassDef(annotation);
+//                    }
+//                }
+//            }
+//        }
         for (ClassInfo classInfo : classInfos.values()) {
             if (isMetaRoot(classInfo)) {
                 try {
@@ -172,14 +182,32 @@ public class AnnotationFinder implements IAnnotationFinder {
     private boolean isMetaRoot(ClassInfo classInfo) {
         if (!classInfo.isAnnotation()) return false;
 
-        String name = classInfo.getName();
-        if (!name.equals("Metatype") && !name.endsWith(".Metatype") && !name.endsWith("$Metatype")) return false;
+        if (isSelfAnnotated(classInfo, "Metatype")) return true;
+
+        for (AnnotationInfo annotationInfo : classInfo.getAnnotations()) {
+            final ClassInfo annotation = classInfos.get(annotationInfo.getName());
+            if (annotation == null) return false;
+            if (isSelfAnnotated(annotation, "Metaroot")) return true;
+        }
+
+        return false;
+    }
+
+    private boolean isSelfAnnotated(ClassInfo classInfo, String metatype) {
+        if (!classInfo.isAnnotation()) return false;
+
+        final String name = classInfo.getName();
+        if (!hasName(name, metatype)) return false;
 
         for (AnnotationInfo info : classInfo.getAnnotations()) {
             if (info.getName().equals(name)) return true;
         }
 
         return true;
+    }
+
+    private boolean hasName(String className, String simpleName) {
+        return className.equals(simpleName) || className.endsWith("." + simpleName) || className.endsWith("$" + simpleName);
     }
 
     private void linkParent(ClassInfo classInfo) {
