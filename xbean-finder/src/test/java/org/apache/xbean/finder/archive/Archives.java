@@ -107,7 +107,7 @@ public class Archives {
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(classpath)));
 
         for (Class clazz : classes) {
-            String name = clazz.getName().replace('.', File.separatorChar) + ".class";
+            String name = clazz.getName().replace('.', '/') + ".class";
 
             URL resource = loader.getResource(name);
             assertNotNull(resource);
