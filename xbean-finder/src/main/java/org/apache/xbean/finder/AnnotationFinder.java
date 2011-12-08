@@ -35,6 +35,8 @@ import org.objectweb.asm.signature.SignatureVisitor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -121,6 +123,8 @@ public class AnnotationFinder implements IAnnotationFinder {
         // diff new and old lists
         resolveAnnotations(new ArrayList<String>());
 
+        linkMetaAnnotations();
+
         return this;
     }
 
@@ -136,7 +140,6 @@ public class AnnotationFinder implements IAnnotationFinder {
      * @throws IOException
      */
     private void resolveAnnotations(List<String> scanned) {
-
         // Get a list of the annotations that exist before we start
         final List<String> annotations = new ArrayList<String>(annotated.keySet());
 
@@ -144,6 +147,12 @@ public class AnnotationFinder implements IAnnotationFinder {
             if (scanned.contains(annotation)) continue;
             readClassDef(annotation);
         }
+
+        // If the "annotated" list has grown, then we must scan those
+        if (annotated.keySet().size() != annotations.size()) {
+            resolveAnnotations(annotations);
+        }
+
 
 //        for (ClassInfo classInfo : classInfos.values()) {
 //            for (AnnotationInfo annotationInfo : classInfo.getAnnotations()) {
@@ -156,6 +165,9 @@ public class AnnotationFinder implements IAnnotationFinder {
 //                }
 //            }
 //        }
+    }
+
+    private void linkMetaAnnotations() {
         for (ClassInfo classInfo : classInfos.values()) {
             if (isMetaRoot(classInfo)) {
                 try {
@@ -172,17 +184,13 @@ public class AnnotationFinder implements IAnnotationFinder {
                 readClassDef(info.getName() + "$$");
             }
         }
-
-        // If the "annotated" list has grown, then we must scan those
-        if (annotated.keySet().size() != annotations.size()) {
-            resolveAnnotations(annotations);
-        }
     }
 
     private boolean isMetaRoot(ClassInfo classInfo) {
         if (!classInfo.isAnnotation()) return false;
 
         if (isSelfAnnotated(classInfo, "Metatype")) return true;
+        if (isSelfAnnotated(classInfo, "Metaroot")) return false;
 
         for (AnnotationInfo annotationInfo : classInfo.getAnnotations()) {
             final ClassInfo annotation = classInfos.get(annotationInfo.getName());
@@ -370,9 +378,28 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     private static boolean isMetatypeAnnotation(Class<? extends Annotation> type) {
-        return type.getSimpleName().equals("Metatype") && type.isAnnotationPresent(type);
+        if (isSelfAnnotated(type, "Metatype")) return true;
+
+        for (Annotation annotation : type.getAnnotations()) {
+            if (isSelfAnnotated(annotation.annotationType(), "Metaroot")) return true;
+        }
+
+        return false;
     }
 
+    private static boolean isSelfAnnotated(Class<? extends Annotation> type, String name) {
+        return type.isAnnotationPresent(type) && type.getSimpleName().equals(name) && validTarget(type);
+    }
+
+    private static boolean validTarget(Class<? extends Annotation> type) {
+        final Target target = type.getAnnotation(Target.class);
+
+        if (target == null) return false;
+
+        final ElementType[] targets = target.value();
+
+        return targets.length == 1 && targets[0] == ElementType.ANNOTATION_TYPE;
+    }
 
 
     private Set<Class<?>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation, Set<Class<?>> classes) {
