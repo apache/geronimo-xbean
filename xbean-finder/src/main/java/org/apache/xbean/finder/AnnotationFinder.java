@@ -189,12 +189,14 @@ public class AnnotationFinder implements IAnnotationFinder {
     private boolean isMetaRoot(ClassInfo classInfo) {
         if (!classInfo.isAnnotation()) return false;
 
+        if (classInfo.getName().equals("javax.annotation.Metatype")) return true;
         if (isSelfAnnotated(classInfo, "Metatype")) return true;
         if (isSelfAnnotated(classInfo, "Metaroot")) return false;
 
         for (AnnotationInfo annotationInfo : classInfo.getAnnotations()) {
             final ClassInfo annotation = classInfos.get(annotationInfo.getName());
             if (annotation == null) return false;
+            if (annotation.getName().equals("javax.annotation.Metaroot")) return true;
             if (isSelfAnnotated(annotation, "Metaroot")) return true;
         }
 
