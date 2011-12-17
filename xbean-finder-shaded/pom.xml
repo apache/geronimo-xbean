@@ -48,6 +48,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
@@ -59,6 +60,7 @@
                                     <include>org.apache.xbean:xbean-finder</include>
                                 </includes>
                                 <excludes>
+                                    <exclude>*:*:sources</exclude>
                                     <exclude>org.apache.xbean:xbean-asm-shaded</exclude>
                                     <exclude>junit:junit</exclude>
                                 </excludes>
