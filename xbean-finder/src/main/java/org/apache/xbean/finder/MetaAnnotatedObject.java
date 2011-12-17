@@ -220,9 +220,11 @@ public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
     }
 
     private static boolean isMetatypeAnnotation(Class<? extends Annotation> type) {
+        if (type.getName().equals("javax.annotation.Metatype")) return true;
         if (isSelfAnnotated(type, "Metatype")) return true;
 
         for (Annotation annotation : type.getAnnotations()) {
+            if (type.getName().equals("javax.annotation.Metaroot")) return true;
             if (isSelfAnnotated(annotation.annotationType(), "Metaroot")) return true;
         }
 
