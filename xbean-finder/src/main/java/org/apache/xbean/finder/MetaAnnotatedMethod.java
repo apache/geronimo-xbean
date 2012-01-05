@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 /**
 * @version $Rev$ $Date$
 */
-public class MetaAnnotatedMethod extends MetaAnnotatedObject<Method> implements AnnotatedMethod<Method> {
+public class MetaAnnotatedMethod extends MetaAnnotatedElement<Method> implements AnnotatedMethod<Method> {
 
     private final Annotation[][] parameterAnnotations;
 
@@ -30,10 +30,6 @@ public class MetaAnnotatedMethod extends MetaAnnotatedObject<Method> implements 
         super(method, unroll(method));
 
         this.parameterAnnotations = unrollParameters(method.getParameterAnnotations());
-    }
-
-    public Annotation[] getDeclaredAnnotations() {
-        return target.getDeclaredAnnotations();
     }
 
     public Annotation[][] getParameterAnnotations() {

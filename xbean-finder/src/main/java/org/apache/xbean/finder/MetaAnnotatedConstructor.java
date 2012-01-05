@@ -22,17 +22,13 @@ import java.lang.reflect.Constructor;
 /**
  * @version $Rev$ $Date$
  */
-public class MetaAnnotatedConstructor<T> extends MetaAnnotatedObject<Constructor<T>> implements AnnotatedMethod<Constructor<T>> {
+public class MetaAnnotatedConstructor<T> extends MetaAnnotatedElement<Constructor<T>> implements AnnotatedMethod<Constructor<T>> {
 
     private Annotation[][] parameterAnnotations;
 
     public MetaAnnotatedConstructor(Constructor<T> target) {
         super(target, unroll(target));
         this.parameterAnnotations = unrollParameters(target.getParameterAnnotations());
-    }
-
-    public Annotation[] getDeclaredAnnotations() {
-        return get().getDeclaredAnnotations();
     }
 
     public Annotation[][] getParameterAnnotations() {
