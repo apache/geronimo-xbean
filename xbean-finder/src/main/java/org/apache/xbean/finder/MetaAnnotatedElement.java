@@ -36,17 +36,21 @@ import static java.util.Arrays.asList;
 /**
 * @version $Rev$ $Date$
 */
-public abstract class MetaAnnotatedObject<T> implements MetaAnnotated<T> {
+public class MetaAnnotatedElement<T extends AnnotatedElement> implements  AnnotatedElement, MetaAnnotated<T> {
     protected final Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
     protected final T target;
 
-    MetaAnnotatedObject(T target, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
+    MetaAnnotatedElement(T target, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
         this.target = target;
         this.annotations.putAll(annotations);
     }
 
     public T get() {
         return target;
+    }
+
+    public Annotation[] getDeclaredAnnotations() {
+        return target.getDeclaredAnnotations();
     }
 
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {

@@ -22,14 +22,10 @@ import java.lang.reflect.Field;
 /**
 * @version $Rev$ $Date$
 */
-public class MetaAnnotatedField extends MetaAnnotatedObject<Field> implements AnnotatedMember<Field> {
+public class MetaAnnotatedField extends MetaAnnotatedElement<Field> implements AnnotatedMember<Field> {
 
     public MetaAnnotatedField(Field field) {
         super(field, unroll(field));
-    }
-
-    public Annotation[] getDeclaredAnnotations() {
-        return get().getDeclaredAnnotations();
     }
 
     public Class<?> getDeclaringClass() {

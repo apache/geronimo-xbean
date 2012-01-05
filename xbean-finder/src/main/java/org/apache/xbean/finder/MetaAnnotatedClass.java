@@ -29,14 +29,10 @@ import java.security.ProtectionDomain;
 /**
 * @version $Rev$ $Date$
 */
-public class MetaAnnotatedClass<T> extends MetaAnnotatedObject<Class<T>> {
+public class MetaAnnotatedClass<T> extends MetaAnnotatedElement<Class<T>> {
 
     public MetaAnnotatedClass(Class<T> clazz) {
         super(clazz, unroll(clazz));
-    }
-
-    public Annotation[] getDeclaredAnnotations() {
-        return target.getDeclaredAnnotations();
     }
 
     public MetaAnnotatedClass<?> forName(String className) throws ClassNotFoundException {
