@@ -40,6 +40,10 @@ public class MetaAnnotatedElement<T extends AnnotatedElement> implements  Annota
     protected final Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
     protected final T target;
 
+    public MetaAnnotatedElement(T element) {
+        this(element, unroll(element));
+    }
+
     MetaAnnotatedElement(T target, Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations) {
         this.target = target;
         this.annotations.putAll(annotations);
