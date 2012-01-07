@@ -53,6 +53,10 @@ public class UriSet implements Iterable<URI> {
         this.URIs = URIs;
     }
 
+    public UriSet include(String pattern) {
+        return filter(patterns(pattern));
+    }
+
     public UriSet include(UriSet URISet) {
         Map<String, URI> URIs = new HashMap<String, URI>(this.URIs);
         URIs.putAll(URISet.URIs);
