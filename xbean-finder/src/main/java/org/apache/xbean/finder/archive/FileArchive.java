@@ -16,6 +16,7 @@
  */
 package org.apache.xbean.finder.archive;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +58,7 @@ public class FileArchive implements Archive {
         }
 
         URL resource = loader.getResource(className);
-        if (resource != null) return resource.openStream();
+        if (resource != null) return new BufferedInputStream(resource.openStream());
 
         throw new ClassNotFoundException(className);
     }
