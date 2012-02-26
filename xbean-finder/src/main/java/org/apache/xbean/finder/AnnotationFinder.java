@@ -43,9 +43,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +73,80 @@ public class AnnotationFinder implements IAnnotationFinder {
     private final List<String> classesNotLoaded = new ArrayList<String>();
     private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
     private final Archive archive;
+
+    private AnnotationFinder(AnnotationFinder parent, Iterable<String> classNames) {
+        this.archive = new SubArchive(classNames);
+        this.metaroots.addAll(parent.metaroots);
+        for (Class<? extends Annotation> metaroot : metaroots) {
+            final ClassInfo info = parent.classInfos.get(metaroot.getName());
+            if (info == null) continue;
+            readClassDef(info);
+        }
+        for (String name : classNames) {
+            final ClassInfo info = parent.classInfos.get(name);
+            if (info == null) continue;
+            readClassDef(info);
+        }
+
+        resolveAnnotations(parent, new ArrayList<String>());
+        for (ClassInfo classInfo : classInfos.values()) {
+            if (isMetaRoot(classInfo)) {
+                try {
+                    metaroots.add((Class<? extends Annotation>) classInfo.get());
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(classInfo.getName());
+                }
+            }
+        }
+
+        for (Class<? extends Annotation> metaroot : metaroots) {
+            List<Info> infoList = annotated.get(metaroot.getName());
+            for (Info info : infoList) {
+                final String className = info.getName() + "$$";
+                final ClassInfo i = parent.classInfos.get(className);
+                if (i == null) continue;
+                readClassDef(i);
+            }
+        }
+    }
+
+    private void readClassDef(ClassInfo info) {
+        classInfos.put(info.name, info);
+        index(info);
+        index(info.constructors);
+        index(info.methods);
+        index(info.fields);
+    }
+
+    private void resolveAnnotations(AnnotationFinder parent, List<String> scanned) {
+        // Get a list of the annotations that exist before we start
+        final List<String> annotations = new ArrayList<String>(annotated.keySet());
+
+        for (String annotation : annotations) {
+            if (scanned.contains(annotation)) continue;
+            final ClassInfo info = parent.classInfos.get(annotation);
+            if (info == null) continue;
+            readClassDef(info);
+        }
+
+        // If the "annotated" list has grown, then we must scan those
+        if (annotated.keySet().size() != annotations.size()) {
+            resolveAnnotations(parent, annotations);
+        }
+    }
+
+
+    private void index(List<? extends Info> infos) {
+        for (Info i : infos) {
+            index(i);
+        }
+    }
+
+    private void index(Info i) {
+        for (AnnotationInfo annotationInfo : i.getAnnotations()) {
+            index(annotationInfo, i);
+        }
+    }
 
     public AnnotationFinder(Archive archive) {
         this.archive = archive;
@@ -832,6 +908,12 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     protected List<Info> getAnnotationInfos(String name) {
+        final List<Info> infos = annotated.get(name);
+        if (infos != null) return infos;
+        return Collections.EMPTY_LIST;
+    }
+
+    protected List<Info> initAnnotationInfos(String name) {
         List<Info> infos = annotated.get(name);
         if (infos == null) {
             infos = new SingleLinkedList<Info>();
@@ -862,7 +944,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         if (aPackage != null) {
             final PackageInfo info = new PackageInfo(aPackage);
             for (AnnotationInfo annotation : info.getAnnotations()) {
-                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
+                List<Info> annotationInfos = initAnnotationInfos(annotation.getName());
                 if (!annotationInfos.contains(info)) {
                     annotationInfos.add(info);
                 }
@@ -886,9 +968,53 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         for (Info info : infos) {
             for (AnnotationInfo annotation : info.getAnnotations()) {
-                List<Info> annotationInfos = getAnnotationInfos(annotation.getName());
+                List<Info> annotationInfos = initAnnotationInfos(annotation.getName());
                 annotationInfos.add(info);
             }
+        }
+    }
+
+    public AnnotationFinder select(Class<?>... clazz) {
+        String[] names = new String[clazz.length];
+        int i = 0;
+        for (Class<?> name : clazz) {
+            names[i++] = name.getName();
+        }
+
+        return new AnnotationFinder(this, Arrays.asList(names));
+    }
+
+    public AnnotationFinder select(String... clazz) {
+        return new AnnotationFinder(this, Arrays.asList(clazz));
+    }
+
+    public AnnotationFinder select(Iterable<String> clazz) {
+        return new AnnotationFinder(this, clazz);
+    }
+
+    public class SubArchive implements Archive {
+        private List<String> classes = new ArrayList<String>();
+
+        public SubArchive(String... classes) {
+            Collections.addAll(this.classes, classes);
+        }
+
+        public SubArchive(Iterable<String> classes) {
+            for (String name : classes) {
+                this.classes.add(name);
+            }
+        }
+
+        public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
+            return archive.getBytecode(className);
+        }
+
+        public Class<?> loadClass(String className) throws ClassNotFoundException {
+            return archive.loadClass(className);
+        }
+
+        public Iterator<String> iterator() {
+            return classes.iterator();
         }
     }
 
@@ -1305,6 +1431,10 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
+    private void index(AnnotationInfo annotationInfo, Info info) {
+        initAnnotationInfos(annotationInfo.getName()).add(info);
+    }
+
     public class InfoBuildingVisitor extends EmptyVisitor {
         private Info info;
 
@@ -1355,7 +1485,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
             info.getAnnotations().add(annotationInfo);
-            getAnnotationInfos(annotationInfo.getName()).add(info);
+            index(annotationInfo, info);
             return new InfoBuildingVisitor(annotationInfo);
         }
 
