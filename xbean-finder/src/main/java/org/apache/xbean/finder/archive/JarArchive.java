@@ -35,11 +35,16 @@ public class JarArchive implements Archive {
 
     private final ClassLoader loader;
     private final URL url;
+    private List<String> list;
 
     public JarArchive(ClassLoader loader, URL url) {
-        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a file url: " + url);
+        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a jar url: " + url);
         this.loader = loader;
         this.url = url;
+    }
+
+    public URL getUrl() {
+        return url;
     }
 
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
@@ -67,8 +72,11 @@ public class JarArchive implements Archive {
     }
 
     public Iterator<String> iterator() {
+        if (list != null) return list.iterator();
+
         try {
-            return jar(url).iterator();
+            list = jar(url);
+            return list.iterator();
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

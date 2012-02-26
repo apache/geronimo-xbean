@@ -33,6 +33,7 @@ public class FileArchive implements Archive {
 
     private final ClassLoader loader;
     private final File dir;
+    private List<String> list;
 
     public FileArchive(ClassLoader loader, URL url) {
         this.loader = loader;
@@ -42,6 +43,10 @@ public class FileArchive implements Archive {
     public FileArchive(ClassLoader loader, File dir) {
         this.loader = loader;
         this.dir = dir;
+    }
+
+    public File getDir() {
+        return dir;
     }
 
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
@@ -69,7 +74,10 @@ public class FileArchive implements Archive {
     }
 
     public Iterator<String> iterator() {
-        return file(dir).iterator();
+        if (list != null) return list.iterator();
+
+        list = file(dir);
+        return list.iterator();
     }
 
     private List<String> file(File dir) {
