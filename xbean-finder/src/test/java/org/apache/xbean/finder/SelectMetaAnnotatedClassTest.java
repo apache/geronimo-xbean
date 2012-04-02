@@ -16,7 +16,6 @@
  */
 package org.apache.xbean.finder;
 
-import com.sun.xml.internal.txw2.IllegalSignatureException;
 import junit.framework.TestCase;
 import org.apache.xbean.finder.archive.ClassesArchive;
 
