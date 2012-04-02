@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>4.2.0</version>
+            <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -72,6 +72,7 @@
                     <instructions>
                         <Import-Package>
                             org.eclipse.*;resolution:=optional,
+                            org.osgi.framework.wiring;resolution:=optional,
                             *
                         </Import-Package>
                     </instructions>

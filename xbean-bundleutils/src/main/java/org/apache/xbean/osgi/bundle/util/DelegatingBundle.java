@@ -19,6 +19,7 @@
 
 package org.apache.xbean.osgi.bundle.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -288,6 +289,18 @@ public class DelegatingBundle implements Bundle {
         bundle.update(arg0);
     }
 
+    public int compareTo(Bundle other) {
+        return bundle.compareTo(other);
+    }
+
+    public <A> A adapt(Class<A> type) {
+        return bundle.adapt(type);
+    }
+
+    public File getDataFile(String filename) {
+        return bundle.getDataFile(filename);
+    }
+    
     public String toString() {
         return "[DelegatingBundle: " + bundles + "]";
     }

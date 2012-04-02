@@ -30,6 +30,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
@@ -37,6 +40,17 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @version $Rev$ $Date$
  */
 public class BundleUtils {
+    
+    private static final boolean isOSGi43 = isOSGi43();
+    
+    private static boolean isOSGi43() {
+        try {
+            Class.forName("org.osgi.framework.wiring.BundleWiring");
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
 
     /**
      *  Based on the constant field values, if it is bigger than the RESOLVED status value, the bundle has been resolved by the framework
@@ -202,6 +216,14 @@ public class BundleUtils {
     }
 
     public static LinkedHashSet<Bundle> getWiredBundles(Bundle bundle) {
+        if (isOSGi43) {
+            return getWiredBundles43(bundle);
+        } else {
+            return getWiredBundles42(bundle);
+        }
+    }
+    
+    private static LinkedHashSet<Bundle> getWiredBundles42(Bundle bundle) {
         ServiceReference reference = bundle.getBundleContext().getServiceReference(PackageAdmin.class.getName());
         PackageAdmin packageAdmin = (PackageAdmin) bundle.getBundleContext().getService(reference);
         try {
@@ -210,7 +232,7 @@ public class BundleUtils {
             bundle.getBundleContext().ungetService(reference);
         }
     }
-
+    
     public static LinkedHashSet<Bundle> getWiredBundles(PackageAdmin packageAdmin, Bundle bundle) {
         BundleDescription description = new BundleDescription(bundle.getHeaders());
         // handle static wire via Import-Package
@@ -253,4 +275,24 @@ public class BundleUtils {
         }
         return null;
     }
+    
+    // OSGi 4.3 API
+    
+    private static LinkedHashSet<Bundle> getWiredBundles43(Bundle bundle) {
+        LinkedHashSet<Bundle> wiredBundles = new LinkedHashSet<Bundle>();
+        BundleWiring wiring = bundle.adapt(BundleWiring.class);
+        if (wiring != null) {
+            List<BundleWire> wires;
+            wires = wiring.getRequiredWires(BundleRevision.PACKAGE_NAMESPACE);
+            for (BundleWire wire : wires) {
+                wiredBundles.add(wire.getProviderWiring().getBundle());
+            }
+            wires = wiring.getRequiredWires(BundleRevision.BUNDLE_NAMESPACE);
+            for (BundleWire wire : wires) {
+                wiredBundles.add(wire.getProviderWiring().getBundle());
+            }
+        }        
+        return wiredBundles;
+    }
+    
 }

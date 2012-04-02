@@ -21,6 +21,7 @@ package org.apache.xbean.osgi.bundle.util;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Dictionary;
 
 import org.osgi.framework.Bundle;
@@ -73,11 +74,6 @@ public class DelegatingBundleContext implements BundleContext {
         return bundleContext.createFilter(arg0);
     }
 
-    public ServiceReference[] getAllServiceReferences(String arg0, String arg1)
-            throws InvalidSyntaxException {
-        return bundleContext.getAllServiceReferences(arg0, arg1);
-    }
-
     public Bundle getBundle(long arg0) {
         return bundleContext.getBundle(arg0);
     }
@@ -94,19 +90,30 @@ public class DelegatingBundleContext implements BundleContext {
         return bundleContext.getProperty(arg0);
     }
 
-    public Object getService(ServiceReference arg0) {
-        return bundleContext.getService(arg0);
+    public <S> S getService(ServiceReference<S> reference) {
+        return bundleContext.getService(reference);
     }
 
-    public ServiceReference getServiceReference(String arg0) {
-        return bundleContext.getServiceReference(arg0);
+    public ServiceReference<?> getServiceReference(String clazz) {
+        return bundleContext.getServiceReference(clazz);
     }
 
-    public ServiceReference[] getServiceReferences(String arg0, String arg1)
-            throws InvalidSyntaxException {
-        return bundleContext.getServiceReferences(arg0, arg1);
+    public ServiceReference<?>[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+        return bundleContext.getServiceReferences(clazz, filter);
     }
 
+    public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
+        return bundleContext.getServiceReference(clazz);
+    }
+
+    public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter) throws InvalidSyntaxException {
+        return bundleContext.getServiceReferences(clazz, filter);
+    }
+    
+    public ServiceReference<?>[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+        return bundleContext.getAllServiceReferences(clazz, filter);
+    }
+    
     public Bundle installBundle(String arg0, InputStream arg1) throws BundleException {
         return bundleContext.installBundle(arg0, arg1);
     }
@@ -115,12 +122,16 @@ public class DelegatingBundleContext implements BundleContext {
         return bundleContext.installBundle(arg0);
     }
 
-    public ServiceRegistration registerService(String arg0, Object arg1, Dictionary arg2) {
-        return bundleContext.registerService(arg0, arg1, arg2);
+    public ServiceRegistration<?> registerService(String clazz, Object service, Dictionary<String, ?> properties) {
+        return bundleContext.registerService(clazz, service, properties);
     }
 
-    public ServiceRegistration registerService(String[] arg0, Object arg1, Dictionary arg2) {
-        return bundleContext.registerService(arg0, arg1, arg2);
+    public ServiceRegistration<?> registerService(String[] classes, Object service, Dictionary<String, ?> properties) {
+        return bundleContext.registerService(classes, service, properties);
+    }
+    
+    public <S> ServiceRegistration<S> registerService(Class<S> clazz, S service, Dictionary<String, ?> properties) {
+        return bundleContext.registerService(clazz, service, properties);
     }
 
     public void removeBundleListener(BundleListener arg0) {
@@ -135,8 +146,12 @@ public class DelegatingBundleContext implements BundleContext {
         bundleContext.removeServiceListener(arg0);
     }
 
-    public boolean ungetService(ServiceReference arg0) {
-        return bundleContext.ungetService(arg0);
+    public boolean ungetService(ServiceReference<?> reference) {
+        return bundleContext.ungetService(reference);
+    }
+
+    public Bundle getBundle(String location) {
+        return bundleContext.getBundle(location);
     }
     
 }
