@@ -933,8 +933,12 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     protected void readClassDef(InputStream in) throws IOException {
-        ClassReader classReader = new ClassReader(in);
-        classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
+        try {
+            ClassReader classReader = new ClassReader(in);
+            classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
+        } finally {
+            in.close();
+        }
     }
 
     protected void readClassDef(Class clazz) {
