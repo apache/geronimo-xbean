@@ -25,7 +25,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>3.10-SNAPSHOT</version>
+        <version>3.10</version>
     </parent>
     <artifactId>xbean-finder-shaded</artifactId>
     <packaging>jar</packaging>
@@ -80,8 +80,8 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <delete dir="${project.build.directory}/classes"/>
-                                <unzip src="${project.build.directory}/xbean-finder-shaded-${project.version}.jar" dest="${project.build.directory}/classes"/>
+                                <delete dir="${project.build.directory}/classes" />
+                                <unzip src="${project.build.directory}/xbean-finder-shaded-${project.version}.jar" dest="${project.build.directory}/classes" />
                             </tasks>
                         </configuration>
                     </execution>
@@ -94,7 +94,7 @@
                     <excludeDependencies>true</excludeDependencies>
                     <instructions>
                         <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm,*;resolution:=optional</Import-Package>
-                        <Private-Package/>
+                        <Private-Package />
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>
