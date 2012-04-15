@@ -16,19 +16,16 @@
  */
 package org.apache.xbean.finder.archive;
 
-import java.io.BufferedInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
+import java.util.zip.ZipEntry;
 
 /**
  * @version $Rev$ $Date$
@@ -38,11 +35,25 @@ public class JarArchive implements Archive {
     private final ClassLoader loader;
     private final URL url;
     private List<String> list;
+    private final JarFile jar;
 
     public JarArchive(ClassLoader loader, URL url) {
 //        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a jar url: " + url);
-        this.loader = loader;
-        this.url = url;
+
+        try {
+            this.loader = loader;
+            this.url = url;
+            URL u = url;
+
+            String jarPath = url.getFile();
+            if (jarPath.contains("!")) {
+                jarPath = jarPath.substring(0, jarPath.indexOf("!"));
+                u = new URL(jarPath);
+            }
+            jar = new JarFile(u.getFile().replace("%20", " ")); // no more an url
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public URL getUrl() {
@@ -62,10 +73,10 @@ public class JarArchive implements Archive {
             className = className.replace('.', '/') + ".class";
         }
 
-        URL resource = loader.getResource(className);
-        if (resource != null) return new BufferedInputStream(resource.openStream());
+        ZipEntry entry = jar.getEntry(className);
+        if (entry == null) throw new ClassNotFoundException(className);
 
-        throw new ClassNotFoundException(className);
+        return jar.getInputStream(entry);
     }
 
 
@@ -79,55 +90,33 @@ public class JarArchive implements Archive {
 
     private class JarIterator implements Iterator<Entry> {
 
-        private final JarInputStream stream;
-        private final NonClosable nonClosable;
+        private final Enumeration<JarEntry> stream;
         private Entry next;
 
         private JarIterator() {
-            try {
-                URL u = url;
-
-                String jarPath = url.getFile();
-                if (jarPath.contains("!")){
-                    jarPath = jarPath.substring(0, jarPath.indexOf("!"));
-                    u = new URL(jarPath);
-                }
-                InputStream in = u.openStream();
-                in = new BufferedInputStream(in, 1024 * 50);
-                stream = new JarInputStream(in);
-                nonClosable = new NonClosable(stream);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+            stream = jar.entries();
         }
 
         private boolean advance() {
             if (next != null) return true;
 
-            try {
-                final JarEntry entry = stream.getNextJarEntry();
+            if (!stream.hasMoreElements()) return false;
 
-                if (entry == null) {
-                    next = null;
-                    return false;
-                }
+            final JarEntry entry = stream.nextElement();
 
-                if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
-                    return advance();
-                }
-
-                final String className = entry.getName().replaceFirst(".class$", "");
-
-                if (className.contains(".")) {
-                    return advance();
-                }
-
-                next = new ClassEntry(className.replace('/', '.'));
-
-                return true;
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
+            if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
+                return advance();
             }
+
+            final String className = entry.getName().replaceFirst(".class$", "");
+
+            if (className.contains(".")) {
+                return advance();
+            }
+
+            next = new ClassEntry(entry, className.replace('/', '.'));
+
+            return true;
         }
 
         public boolean hasNext() {
@@ -147,9 +136,11 @@ public class JarArchive implements Archive {
 
         private class ClassEntry implements Entry {
             private final String name;
+            private final JarEntry entry;
 
-            private ClassEntry(String name) {
+            private ClassEntry(JarEntry entry, String name) {
                 this.name = name;
+                this.entry = entry;
             }
 
             public String getName() {
@@ -157,18 +148,8 @@ public class JarArchive implements Archive {
             }
 
             public InputStream getBytecode() throws IOException {
-                return nonClosable;
+                return jar.getInputStream(entry);
             }
-        }
-    }
-
-    public static class NonClosable extends FilterInputStream {
-        public NonClosable(InputStream in) {
-            super(in);
-        }
-
-        @Override
-        public void close() throws IOException {
         }
     }
 }
