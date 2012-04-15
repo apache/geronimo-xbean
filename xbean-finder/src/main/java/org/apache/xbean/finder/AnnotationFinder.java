@@ -187,21 +187,39 @@ public class AnnotationFinder implements IAnnotationFinder {
      */
     public AnnotationFinder link() {
 
-        for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
+        enableFindSubclasses();
 
-            linkParent(classInfo);
-        }
+        enableFindImplementations();
 
+        enableMetaAnnotations();
+
+        return this;
+    }
+
+    public AnnotationFinder enableMetaAnnotations() {
+        // diff new and old lists
+        resolveAnnotations(new ArrayList<String>());
+
+        linkMetaAnnotations();
+
+        return this;
+    }
+
+    public AnnotationFinder enableFindImplementations() {
         for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
 
             linkInterfaces(classInfo);
 
         }
 
-        // diff new and old lists
-        resolveAnnotations(new ArrayList<String>());
+        return this;
+    }
 
-        linkMetaAnnotations();
+    public AnnotationFinder enableFindSubclasses() {
+        for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
+
+            linkParent(classInfo);
+        }
 
         return this;
     }
