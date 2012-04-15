@@ -22,10 +22,14 @@ import java.io.InputStream;
 /**
  * @version $Rev$ $Date$
  */
-public interface Archive extends Iterable<String> {
+public interface Archive extends Iterable<Archive.Entry> {
 
     InputStream getBytecode(String className) throws IOException, ClassNotFoundException;
 
     Class<?> loadClass(String className) throws ClassNotFoundException;
 
+    public interface Entry {
+        String getName();
+        InputStream getBytecode() throws IOException;
+    }
 }

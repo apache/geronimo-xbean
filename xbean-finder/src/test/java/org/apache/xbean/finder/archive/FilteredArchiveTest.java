@@ -49,13 +49,13 @@ public class FilteredArchiveTest extends TestCase {
         assertEquals(0, list.size());
     }
 
-    public static void assertEquals(Iterable<?> expectedList, Iterable<?> actualList) {
-        final Iterator<?> expected = expectedList.iterator();
-        final Iterator<?> actual = actualList.iterator();
+    public static void assertEquals(Iterable<Archive.Entry> expectedList, Iterable<Archive.Entry> actualList) {
+        final Iterator<Archive.Entry> expected = expectedList.iterator();
+        final Iterator<Archive.Entry> actual = actualList.iterator();
 
         int i = 0;
         while (expected.hasNext() && actual.hasNext()) {
-            assertEquals(expected.next(), actual.next());
+            assertEquals(expected.next().getName(), actual.next().getName());
             i++;
         }
 
@@ -85,11 +85,11 @@ public class FilteredArchiveTest extends TestCase {
         }
     }
 
-    public static <T> List<T> list(Iterable<T> iterable) {
-        List<T> list = new ArrayList<T>();
+    public static List<String> list(Iterable<Archive.Entry> iterable) {
+        List<String> list = new ArrayList<String>();
 
-        for (T t : iterable) {
-            list.add(t);
+        for (Archive.Entry t : iterable) {
+            list.add(t.getName());
         }
 
         return list;

@@ -17,26 +17,36 @@
 package org.apache.xbean.finder.archive;
 
 import junit.framework.TestCase;
+import org.apache.xbean.finder.filter.Filter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @version $Rev$ $Date$
  */
-public class ClassesArchiveTest extends TestCase {
-    private ClassesArchive archive;
+public class CompositeJarArchiveTest extends TestCase {
+    private CompositeArchive archive;
+    Class[] classes = {Blue.class, Green.class, Red.class};
 
     @Override
     protected void setUp() throws Exception {
-        archive = new ClassesArchive(Red.class, Green.class, Blue.class);
+
+        final File one = Archives.jarArchive(Red.class, Green.class);
+        final File two = Archives.jarArchive(Blue.class);
+
+        archive = new CompositeArchive(
+                new FilteredArchive(new CompositeArchive(new JarArchive(this.getClass().getClassLoader(), one.toURI().toURL())), new MyFilter()),
+                new FilteredArchive(new CompositeArchive(new JarArchive(this.getClass().getClassLoader(), two.toURI().toURL())), new MyFilter())
+        );
     }
 
     public void testGetBytecode() throws Exception {
 
-        assertNotNull(archive.getBytecode(Blue.class.getName()));
-        assertNotNull(archive.getBytecode(Green.class.getName()));
-        assertNotNull(archive.getBytecode(Red.class.getName()));
+        for (Class clazz : classes) {
+            assertNotNull(clazz.getName(), archive.getBytecode(clazz.getName()));
+        }
 
         try {
             archive.getBytecode("Fake");
@@ -47,9 +57,9 @@ public class ClassesArchiveTest extends TestCase {
     }
 
     public void testLoadClass() throws Exception {
-        assertEquals(Blue.class, archive.loadClass(Blue.class.getName()));
-        assertEquals(Green.class, archive.loadClass(Green.class.getName()));
-        assertEquals(Red.class, archive.loadClass(Red.class.getName()));
+        for (Class clazz : classes) {
+            assertEquals(clazz.getName(), clazz, archive.loadClass(clazz.getName()));
+        }
 
         try {
             archive.loadClass("Fake");
@@ -72,6 +82,7 @@ public class ClassesArchiveTest extends TestCase {
         assertEquals(3, classes.size());
     }
 
+
     public static class Red {
     }
 
@@ -81,4 +92,9 @@ public class ClassesArchiveTest extends TestCase {
     public static class Blue {
     }
 
+    private static class MyFilter implements Filter {
+        public boolean accept(String name) {
+            return true;
+        }
+    }
 }

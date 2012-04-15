@@ -91,8 +91,8 @@ public class JarArchiveTest {
     @Test
     public void testIterator() throws Exception {
         List<String> actual = new ArrayList<String>();
-        for (String classname : archive) {
-            actual.add(classname);
+        for (Archive.Entry entry : archive) {
+            actual.add(entry.getName());
         }
 
         assertFalse(0 == actual.size());
