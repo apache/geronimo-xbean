@@ -93,7 +93,7 @@ public class Archives {
         return classpath;
     }
 
-    public static File jarArchive(Class[] classes) throws IOException {
+    public static File jarArchive(Class... classes) throws IOException {
         return jarArchive(new HashMap<String, String>(), classes);
     }
 

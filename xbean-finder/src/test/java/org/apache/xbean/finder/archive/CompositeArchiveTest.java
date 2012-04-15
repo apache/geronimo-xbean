@@ -65,8 +65,8 @@ public class CompositeArchiveTest extends TestCase {
 
     public void testIterator() throws Exception {
         List<String> classes = new ArrayList<String>();
-        for (String classname : archive) {
-            classes.add(classname);
+        for (Archive.Entry entry : archive) {
+            classes.add(entry.getName());
         }
 
         assertFalse(0 == classes.size());

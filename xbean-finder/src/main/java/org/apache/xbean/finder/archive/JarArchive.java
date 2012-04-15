@@ -17,6 +17,7 @@
 package org.apache.xbean.finder.archive;
 
 import java.io.BufferedInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -38,7 +40,7 @@ public class JarArchive implements Archive {
     private List<String> list;
 
     public JarArchive(ClassLoader loader, URL url) {
-        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a jar url: " + url);
+//        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a jar url: " + url);
         this.loader = loader;
         this.url = url;
     }
@@ -71,71 +73,103 @@ public class JarArchive implements Archive {
         return loader.loadClass(className);
     }
 
-    public Iterator<String> iterator() {
-        if (list != null) return list.iterator();
-
-        try {
-            list = jar(url);
-            return list.iterator();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+    public Iterator<Entry> iterator() {
+        return new JarIterator();
     }
 
-    private List<String> jar(URL location) throws IOException {
-        String jarPath = location.getFile();
-        if (jarPath.indexOf("!") > -1){
-            jarPath = jarPath.substring(0, jarPath.indexOf("!"));
-        }
-        URL url = new URL(jarPath);
-        if ("file".equals(url.getProtocol())) { // ZipFile is faster than ZipInputStream
-            JarFile jarFile = new JarFile(url.getFile().replace("%20", " "));
-            return jar(jarFile);
-        } else {
-            InputStream in = url.openStream();
+    private class JarIterator implements Iterator<Entry> {
+
+        private final JarInputStream stream;
+        private final NonClosable nonClosable;
+        private Entry next;
+
+        private JarIterator() {
             try {
-                JarInputStream jarStream = new JarInputStream(in);
-                return jar(jarStream);
-            } finally {
-                in.close();
+                URL u = url;
+
+                String jarPath = url.getFile();
+                if (jarPath.contains("!")){
+                    jarPath = jarPath.substring(0, jarPath.indexOf("!"));
+                    u = new URL(jarPath);
+                }
+                InputStream in = u.openStream();
+                in = new BufferedInputStream(in, 1024 * 50);
+                stream = new JarInputStream(in);
+                nonClosable = new NonClosable(stream);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        private boolean advance() {
+            if (next != null) return true;
+
+            try {
+                final JarEntry entry = stream.getNextJarEntry();
+
+                if (entry == null) {
+                    next = null;
+                    return false;
+                }
+
+                if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
+                    return advance();
+                }
+
+                final String className = entry.getName().replaceFirst(".class$", "");
+
+                if (className.contains(".")) {
+                    return advance();
+                }
+
+                next = new ClassEntry(className.replace('/', '.'));
+
+                return true;
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        public boolean hasNext() {
+            return advance();
+        }
+
+        public Entry next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            Entry entry = next;
+            next = null;
+            return entry;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("remove");
+        }
+
+        private class ClassEntry implements Entry {
+            private final String name;
+
+            private ClassEntry(String name) {
+                this.name = name;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public InputStream getBytecode() throws IOException {
+                return nonClosable;
             }
         }
     }
 
-    private List<String> jar(JarFile jarFile) {
-        List<String> classNames = new ArrayList<String>();
-
-        Enumeration<? extends JarEntry> jarEntries =jarFile.entries();
-        while (jarEntries.hasMoreElements()) {
-            JarEntry entry = jarEntries.nextElement();
-            addClassName(classNames, entry);
+    public static class NonClosable extends FilterInputStream {
+        public NonClosable(InputStream in) {
+            super(in);
         }
 
-        return classNames;
-    }
-
-    private List<String> jar(JarInputStream jarStream) throws IOException {
-        List<String> classNames = new ArrayList<String>();
-
-        JarEntry entry;
-        while ((entry = jarStream.getNextJarEntry()) != null) {
-            addClassName(classNames, entry);
+        @Override
+        public void close() throws IOException {
         }
-
-        return classNames;
-    }
-
-    private void addClassName(List<String> classNames, JarEntry entry) {
-        if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
-            return;
-        }
-        String className = entry.getName();
-        className = className.replaceFirst(".class$", "");
-        if (className.contains(".")) {
-            return;
-        }
-        className = className.replace('/', '.');
-        classNames.add(className);
     }
 }
 

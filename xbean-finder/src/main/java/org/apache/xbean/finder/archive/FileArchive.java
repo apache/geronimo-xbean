@@ -73,7 +73,11 @@ public class FileArchive implements Archive {
         return loader.loadClass(className);
     }
 
-    public Iterator<String> iterator() {
+    public Iterator<Entry> iterator() {
+        return new ArchiveIterator(this, _iterator());
+    }
+
+    public Iterator<String> _iterator() {
         if (list != null) return list.iterator();
 
         list = file(dir);

@@ -46,8 +46,7 @@ public class BundleArchive implements Archive {
         bundleResourceFinder.find(new AnnotationFindingCallback());
     }
 
-    public Iterator<String> iterator() {
-        // TODO
+    public Iterator<Entry> iterator() {
         return Collections.EMPTY_LIST.iterator();
     }
 

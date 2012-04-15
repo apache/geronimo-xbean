@@ -63,14 +63,15 @@ public class CompositeArchive implements Archive {
         throw new ClassNotFoundException(className);
     }
 
-    public Iterator<String> iterator() {
+    public Iterator<Entry> iterator() {
+        if (archives.size() == 1) return archives.get(0).iterator();
         return new CompositeIterator(archives);
     }
 
-    private static class CompositeIterator implements Iterator<String> {
+    private static class CompositeIterator implements Iterator<Entry> {
 
         private Iterator<Archive> archives;
-        private Iterator<String> current;
+        private Iterator<Entry> current;
 
         private CompositeIterator(Iterable<Archive> archives) {
             this.archives = archives.iterator();
@@ -90,7 +91,7 @@ public class CompositeArchive implements Archive {
             return false;
         }
 
-        public String next() {
+        public Entry next() {
             if (!hasNext()) throw new NoSuchElementException();
 
             return current.next();

@@ -32,6 +32,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 import org.objectweb.asm.signature.SignatureVisitor;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -110,6 +111,10 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
+    public boolean hasMetaAnnotations() {
+        return metaroots.size() > 0;
+    }
+
     private void readClassDef(ClassInfo info) {
         classInfos.put(info.name, info);
         index(info);
@@ -151,13 +156,12 @@ public class AnnotationFinder implements IAnnotationFinder {
     public AnnotationFinder(Archive archive) {
         this.archive = archive;
 
-        for (String className : this.archive) {
+        for (Archive.Entry entry : archive) {
+            final String className = entry.getName();
             try {
-                readClassDef(archive.getBytecode(className));
+                readClassDef(entry.getBytecode());
             } catch (NoClassDefFoundError e) {
                 throw new NoClassDefFoundError("Could not fully load class: " + className + "\n due to:" + e.getMessage());
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -997,15 +1001,17 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     public class SubArchive implements Archive {
-        private List<String> classes = new ArrayList<String>();
+        private List<Entry> classes = new ArrayList<Entry>();
 
         public SubArchive(String... classes) {
-            Collections.addAll(this.classes, classes);
+            for (String name : classes) {
+                this.classes.add(new E(name));
+            }
         }
 
         public SubArchive(Iterable<String> classes) {
             for (String name : classes) {
-                this.classes.add(name);
+                this.classes.add(new E(name));
             }
         }
 
@@ -1017,8 +1023,24 @@ public class AnnotationFinder implements IAnnotationFinder {
             return archive.loadClass(className);
         }
 
-        public Iterator<String> iterator() {
+        public Iterator<Entry> iterator() {
             return classes.iterator();
+        }
+
+        public class E implements Entry {
+            private final String name;
+
+            public E(String name) {
+                this.name = name;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public InputStream getBytecode() throws IOException {
+                return new ByteArrayInputStream(new byte[0]);
+            }
         }
     }
 

@@ -50,8 +50,8 @@ public class ClassesArchive implements Archive {
         }
     }
 
-    public Iterator<String> iterator() {
-        return classes.keySet().iterator();
+    public Iterator<Entry> iterator() {
+        return new ArchiveIterator(this, classes.keySet().iterator());
     }
 
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
@@ -89,4 +89,5 @@ public class ClassesArchive implements Archive {
 
         throw new ClassNotFoundException(className);
     }
+
 }

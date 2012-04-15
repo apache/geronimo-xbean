@@ -45,16 +45,16 @@ public class FilteredArchive implements Archive {
         return archive.loadClass(className);
     }
 
-    public Iterator<String> iterator() {
+    public Iterator<Entry> iterator() {
         return new FilteredIterator(archive.iterator());
     }
 
-    private final class FilteredIterator implements Iterator<String> {
-        private final Iterator<String> it;
+    private final class FilteredIterator implements Iterator<Entry> {
+        private final Iterator<Entry> it;
 
-        private String next;
+        private Entry next;
 
-        private FilteredIterator(Iterator<String> it) {
+        private FilteredIterator(Iterator<Entry> it) {
             this.it = it;
         }
 
@@ -65,10 +65,10 @@ public class FilteredArchive implements Archive {
             return hasNext();
         }
 
-        public String next() {
+        public Entry next() {
             if (!hasNext()) throw new NoSuchElementException();
 
-            String s = next;
+            Entry s = next;
             next = null;
 
             return s;
@@ -83,7 +83,7 @@ public class FilteredArchive implements Archive {
 
                 next = it.next();
 
-                if (filter.accept(next)) return;
+                if (filter.accept(next.getName())) return;
 
                 next = null;
             }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,41 +16,44 @@
  */
 package org.apache.xbean.finder.archive;
 
-import org.apache.xbean.finder.archive.Archive;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
- * @version $Rev$ $Date$
- */
-public class MockArchive implements Archive {
-    private final List<String> list = new ArrayList<String>();
+* @version $Rev$ $Date$
+*/
+public class ArchiveIterator implements Iterator<Archive.Entry> {
+    private final Iterator<String> classes;
+    private final Archive archive;
 
-    public MockArchive(String... classNames) {
-        this(Arrays.asList(classNames));
-    }
-    
-    public MockArchive(Iterable<String> classNames) {
-        for (String className : classNames) {
-            list.add(className);
-        }
+    public ArchiveIterator(Archive archive, Iterator<String> classes) {
+        this.archive = archive;
+        this.classes = classes;
     }
 
-    public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
-        return null;
+    public boolean hasNext() {
+        return classes.hasNext();
     }
 
-    public Class<?> loadClass(String className) throws ClassNotFoundException {
-        return null;
+    public Archive.Entry next() {
+        final String name = classes.next();
+        return new Archive.Entry() {
+            public String getName() {
+                return name;
+            }
+
+            public InputStream getBytecode() throws IOException {
+                try {
+                    return archive.getBytecode(name);
+                } catch (ClassNotFoundException e) {
+                    throw new IOException(e);
+                }
+            }
+        };
     }
 
-    public Iterator<Entry> iterator() {
-        return new ArchiveIterator(this, list.iterator());
+    public void remove() {
+        classes.remove();
     }
-
 }
