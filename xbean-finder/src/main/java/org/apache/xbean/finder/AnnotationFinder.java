@@ -111,6 +111,24 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
+    public AnnotationFinder(Archive archive) {
+        this.archive = archive;
+
+        for (Archive.Entry entry : archive) {
+            final String className = entry.getName();
+            try {
+                readClassDef(entry.getBytecode());
+            } catch (NoClassDefFoundError e) {
+                throw new NoClassDefFoundError("Could not fully load class: " + className + "\n due to:" + e.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // keep track of what was originally from the archives
+        originalInfos.putAll(classInfos);
+    }
+
     public boolean hasMetaAnnotations() {
         return metaroots.size() > 0;
     }
@@ -153,21 +171,6 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
-    public AnnotationFinder(Archive archive) {
-        this.archive = archive;
-
-        for (Archive.Entry entry : archive) {
-            final String className = entry.getName();
-            try {
-                readClassDef(entry.getBytecode());
-            } catch (NoClassDefFoundError e) {
-                throw new NoClassDefFoundError("Could not fully load class: " + className + "\n due to:" + e.getMessage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public List<String> getAnnotatedClassNames() {
         return new ArrayList<String>(originalInfos.keySet());
     }
@@ -183,11 +186,6 @@ public class AnnotationFinder implements IAnnotationFinder {
      * @throws java.io.IOException
      */
     public AnnotationFinder link() {
-        // already linked?
-        if (originalInfos.size() > 0) return this;
-
-        // keep track of what was originally from the archives
-        originalInfos.putAll(classInfos);
 
         for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
 
