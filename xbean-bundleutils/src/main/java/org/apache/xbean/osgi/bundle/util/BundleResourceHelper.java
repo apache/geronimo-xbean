@@ -244,7 +244,7 @@ public class BundleResourceHelper {
             }
 
             public boolean foundInJar(Bundle bundle, String jarName, ZipEntry entry, InputStream inputStream) throws Exception {
-                URL jarURL = bundle.getEntry(jarName);
+                URL jarURL = BundleUtils.getEntry(bundle, jarName);
                 URL url = new URL("jar:" + jarURL.toString() + "!/" + entry.getName());
                 resources.add(url);
                 return continueScanning;
