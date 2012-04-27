@@ -19,6 +19,9 @@
 
 package org.apache.xbean.osgi.bundle.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Dictionary;
@@ -52,6 +55,12 @@ public class BundleUtils {
         }
     }
 
+    public final static String REFERENCE_SCHEME = "reference:";
+
+    public final static String FILE_SCHEMA = "file:";
+
+    public final static String REFERENCE_FILE_SCHEMA = "reference:file:";
+    
     /**
      *  Based on the constant field values, if it is bigger than the RESOLVED status value, the bundle has been resolved by the framework
      * @param bundle
@@ -181,19 +190,35 @@ public class BundleUtils {
     }
 
     /**
-     * Works like {@link Bundle#getEntry(String)} but also checks
-     * attached fragment bundles for the given entry.
+     * 1, If the bundle was installed with reference directory mode
+     * return the file URL directly.  
+     * 2, For traditional package bundle, Works like {@link Bundle#getEntry(String)} 
+     * 
+     * In addition to the searching abaove, it also checks attached fragment bundles for the given entry.
      *
      * @param bundle
      * @param name
      * @return
+     * @throws MalformedURLException 
      */
-    public static URL getEntry(Bundle bundle, String name) {
-        if (name.equals("/")) {
-            return bundle.getEntry(name);
-        } else if (name.endsWith("/")) {
+    public static URL getEntry(Bundle bundle, String name) throws MalformedURLException {
+    	
+    	if (name.endsWith("/")) {
             name = name.substring(0, name.length() - 1);
+        }    	
+    	
+        File bundleFile = toFile(bundle);
+        if (bundleFile != null && bundleFile.isDirectory()) {
+            File entryFile = new File(bundleFile, name);
+            if (entryFile.exists()) {
+				return entryFile.toURI().toURL();
+            } 
         }
+    	
+    	if (name.equals("/")) {
+            return bundle.getEntry(name);
+        } 
+    	
         String path;
         String pattern;
         int pos = name.lastIndexOf("/");
@@ -214,6 +239,54 @@ public class BundleUtils {
             return null;
         }
     }
+    
+    public static URL getNestedEntry(Bundle bundle, String jarEntryName, String subEntryName) throws MalformedURLException {
+        File bundleFile = toFile(bundle);
+        if (bundleFile != null && bundleFile.isDirectory()) {
+            File entryFile = new File(bundleFile, jarEntryName);
+            if (entryFile.exists()) {
+                if (entryFile.isFile()) {
+                    return new URL("jar:" + entryFile.toURI().toURL() + "!/" + subEntryName);
+                } else {
+                    return new File(entryFile, subEntryName).toURI().toURL();
+                }
+            }
+            return null;
+        }
+        return new URL("jar:" + bundle.getEntry(jarEntryName).toString() + "!/" + subEntryName);
+    }    
+    
+
+    public static File toFile(Bundle bundle) {
+        return toFile(bundle.getLocation());
+    }
+
+    public static File toFile(URL url) {
+        return toFile(url.toExternalForm());
+    }
+    
+    /**
+     * Translate the reference:file:// style URL  to the underlying file instance
+     * @param url
+     * @return
+     */
+    public static File toFile(String url) {
+        if (url.startsWith(REFERENCE_FILE_SCHEMA)) {
+            File file = new File(url.substring(REFERENCE_FILE_SCHEMA.length()));
+            if (file.exists()) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    public static String toReferenceFileLocation(File file) throws IOException {
+        if (!file.exists()) {
+            throw new IOException("file not exist " + file.getAbsolutePath());
+        }
+        return REFERENCE_SCHEME + file.toURI();
+    }
+
 
     public static LinkedHashSet<Bundle> getWiredBundles(Bundle bundle) {
         if (isOSGi43) {
