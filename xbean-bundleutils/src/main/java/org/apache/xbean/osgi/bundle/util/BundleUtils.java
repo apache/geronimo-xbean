@@ -134,7 +134,7 @@ public class BundleUtils {
 
     /**
      *  Returns bundle (if any) associated with the classloader.
-     * @param classLoader 
+     * @param classLoader
      * @param unwrap if true and if the bundle associated with the context classloader is a
      *        {@link DelegatingBundle}, this function will return the main application bundle
      *        backing the {@link DelegatingBundle}. Otherwise, the bundle associated with
@@ -153,7 +153,7 @@ public class BundleUtils {
     }
 
     /**
-     * If the given bundle is a {@link DelegatingBundle} this function will return the main 
+     * If the given bundle is a {@link DelegatingBundle} this function will return the main
      * application bundle backing the {@link DelegatingBundle}. Otherwise, the bundle
      * passed in is returned as is.
      */
@@ -163,7 +163,7 @@ public class BundleUtils {
         }
         return bundle;
     }
-    
+
     /**
      * Works like {@link Bundle#getEntryPaths(String)} but also returns paths
      * in attached fragment bundles.
@@ -271,7 +271,7 @@ public class BundleUtils {
      * @return
      */
     public static File toFile(String url) {
-        if (url.startsWith(REFERENCE_FILE_SCHEMA)) {
+        if (url !=null && url.startsWith(REFERENCE_FILE_SCHEMA)) {
             File file = new File(url.substring(REFERENCE_FILE_SCHEMA.length()));
             if (file.exists()) {
                 return file;
