@@ -17,6 +17,7 @@
 package org.apache.xbean.classloader;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A MultiParentClassLoader is a simple extension of the URLClassLoader that simply changes the single parent class
@@ -44,6 +47,7 @@ public class MultiParentClassLoader extends NamedClassLoader {
     private final String[] nonOverridableClasses;
     private final String[] hiddenResources;
     private final String[] nonOverridableResources;
+    private final Map<String, SoftReference<Class>> cache = new ConcurrentHashMap<String, SoftReference<Class>>();
 
     /**
      * Creates a named class loader with no parents.
@@ -154,7 +158,25 @@ public class MultiParentClassLoader extends NamedClassLoader {
     /**
      * {@inheritDoc}
      */
-    protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        Class result = null;
+
+        //
+        // check if the class is already in the local cache
+        //
+        SoftReference<Class> reference = cache.get(name);
+		if (reference != null) {
+            result = reference.get();
+		}
+        if (result == null) {
+            result = doLoadClass(name, resolve);
+            cache.put(name, new SoftReference<Class>(result));
+        }
+
+        return result;
+    }
+
+    private synchronized Class doLoadClass(String name, boolean resolve) throws ClassNotFoundException {
         //
         // Check if class is in the loaded classes cache
         //
