@@ -165,9 +165,9 @@ public class MultiParentClassLoader extends NamedClassLoader {
         // check if the class is already in the local cache
         //
         SoftReference<Class> reference = cache.get(name);
-		if (reference != null) {
+        if (reference != null) {
             result = reference.get();
-		}
+        }
         if (result == null) {
             result = doLoadClass(name, resolve);
             cache.put(name, new SoftReference<Class>(result));
