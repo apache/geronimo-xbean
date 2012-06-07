@@ -272,7 +272,7 @@ public class BundleUtils {
      */
     public static File toFile(String url) {
         if (url !=null && url.startsWith(REFERENCE_FILE_SCHEMA)) {
-            File file = new File(url.substring(REFERENCE_FILE_SCHEMA.length()));
+            File file = new File(url.substring(REFERENCE_FILE_SCHEMA.length()).replaceAll("%20", " "));
             if (file.exists()) {
                 return file;
             }
