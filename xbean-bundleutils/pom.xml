@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean</artifactId>
-        <version>3.12-SNAPSHOT</version>
+        <version>3.12</version>
     </parent>
     <artifactId>xbean-bundleutils</artifactId>
     <packaging>bundle</packaging>
