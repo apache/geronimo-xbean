@@ -272,13 +272,20 @@ public class BundleUtils {
      */
     public static File toFile(String url) {
         if (url !=null && url.startsWith(REFERENCE_FILE_SCHEMA)) {
+            File file = null;
             try {
-                File file = new File(new URL(url.substring(REFERENCE_SCHEME.length())).toURI());
+                file = new File(new URL(url.substring(REFERENCE_SCHEME.length())).toURI());
                 if (file.exists()) {
                     return file;
                 }
             } catch (Exception e) {
-                // TODO: handle exception
+                // If url includes special chars: { } [ ] % < > # ^ ?
+                // URISyntaxException or MalformedURLException will be thrown, 
+                // so try to use File(String) directly
+                file = new File(url.substring(REFERENCE_FILE_SCHEMA.length()));
+                if (file.exists()) {
+                    return file;
+                }
             }
         }
         return null;
