@@ -25,7 +25,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>3.11.1</version>
+        <version>3.11.2-SNAPSHOT</version>
     </parent>
     <artifactId>xbean-asm-shaded</artifactId>
     <packaging>bundle</packaging>
