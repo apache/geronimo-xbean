@@ -272,9 +272,13 @@ public class BundleUtils {
      */
     public static File toFile(String url) {
         if (url !=null && url.startsWith(REFERENCE_FILE_SCHEMA)) {
-            File file = new File(url.substring(REFERENCE_FILE_SCHEMA.length()).replaceAll("%20", " "));
-            if (file.exists()) {
-                return file;
+            try {
+                File file = new File(new URL(url.substring(REFERENCE_SCHEME.length())).toURI());
+                if (file.exists()) {
+                    return file;
+                }
+            } catch (Exception e) {
+                // TODO: handle exception
             }
         }
         return null;
