@@ -25,7 +25,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>3.13-SNAPSHOT</version>
+        <version>3.12-SNAPSHOT</version>
     </parent>
     <artifactId>xbean-finder-shaded</artifactId>
     <packaging>jar</packaging>
