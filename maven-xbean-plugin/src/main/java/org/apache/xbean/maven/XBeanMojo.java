@@ -87,6 +87,11 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
     /**
      * @parameter
      */
+    private List<String> includes;
+
+    /**
+     * @parameter
+     */
     private String excludedClasses;
 
     /**
@@ -170,6 +175,11 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
             Set<Artifact> dependencies = project.getDependencyArtifacts();
             List<File> sourceJars = new ArrayList<File>();
             sourceJars.add(srcDir);
+            if( includes !=null ) {
+                for (String src : includes) {
+                    sourceJars.add(new File(src));
+                }
+            }
             for (Artifact dependency : dependencies) {
                 if ("sources".equals(dependency.getClassifier())) {
                     File file = dependency.getFile();
