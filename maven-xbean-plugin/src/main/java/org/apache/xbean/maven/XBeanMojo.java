@@ -92,6 +92,11 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
     /**
      * @parameter
      */
+    private List<String> classPathIncludes;
+
+    /**
+     * @parameter
+     */
     private String excludedClasses;
 
     /**
@@ -262,6 +267,15 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                                 + " to classpath");
                 urls.add(classPathElement.getFile().toURL());
             }
+
+            if( classPathIncludes!=null ) {
+                for (String include : classPathIncludes) {
+                    final URL url = new File(include).toURL();
+                    getLog().debug("Adding to classpath : " + url);
+                    urls.add(url);
+                }
+            }
+
             URLClassLoader appClassloader = new URLClassLoader(urls.toArray(new URL[urls.size()]), 
                     this.getClass().getClassLoader());
             return appClassloader;
