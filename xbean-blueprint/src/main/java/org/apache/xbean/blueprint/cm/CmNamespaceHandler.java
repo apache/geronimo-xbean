@@ -30,8 +30,7 @@ import java.util.Set;
 import org.apache.aries.blueprint.ComponentDefinitionRegistry;
 import org.apache.aries.blueprint.NamespaceHandler;
 import org.apache.aries.blueprint.ParserContext;
-import org.apache.aries.blueprint.ext.ExtNamespaceHandler;
-import org.apache.aries.blueprint.ext.PlaceholdersUtils;
+import org.apache.aries.blueprint.ext.impl.ExtNamespaceHandler;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
 import org.apache.aries.blueprint.mutable.MutableCollectionMetadata;
 import org.apache.aries.blueprint.mutable.MutableComponentMetadata;
@@ -40,7 +39,6 @@ import org.apache.aries.blueprint.mutable.MutableMapMetadata;
 import org.apache.aries.blueprint.mutable.MutableRefMetadata;
 import org.apache.aries.blueprint.mutable.MutableReferenceMetadata;
 import org.apache.aries.blueprint.mutable.MutableValueMetadata;
-import org.osgi.service.blueprint.container.BlueprintContainer;
 import org.osgi.service.blueprint.container.ComponentDefinitionException;
 import org.osgi.service.blueprint.reflect.BeanMetadata;
 import org.osgi.service.blueprint.reflect.BeanProperty;
@@ -179,13 +177,13 @@ public class CmNamespaceHandler implements NamespaceHandler {
         if (defaultsRef != null) {
             metadata.addProperty("defaultProperties", createRef(context, defaultsRef));
         }
-        String ignoreMissingLocations = element.hasAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE, ExtNamespaceHandler.IGNORE_MISSING_LOCATIONS_ATTRIBUTE)
-                ? element.getAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE, ExtNamespaceHandler.IGNORE_MISSING_LOCATIONS_ATTRIBUTE) : null;
+        String ignoreMissingLocations = element.hasAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE_V1_0, ExtNamespaceHandler.IGNORE_MISSING_LOCATIONS_ATTRIBUTE)
+                ? element.getAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE_V1_0, ExtNamespaceHandler.IGNORE_MISSING_LOCATIONS_ATTRIBUTE) : null;
         if (ignoreMissingLocations != null) {
             metadata.addProperty("ignoreMissingLocations", createValue(context, ignoreMissingLocations));
         }
-        String systemProperties = element.hasAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE, ExtNamespaceHandler.SYSTEM_PROPERTIES_ATTRIBUTE)
-                ? element.getAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE, ExtNamespaceHandler.SYSTEM_PROPERTIES_ATTRIBUTE) : null;
+        String systemProperties = element.hasAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE_V1_0, ExtNamespaceHandler.SYSTEM_PROPERTIES_ATTRIBUTE)
+                ? element.getAttributeNS(ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE_V1_0, ExtNamespaceHandler.SYSTEM_PROPERTIES_ATTRIBUTE) : null;
         if (systemProperties == null) {
             systemProperties = ExtNamespaceHandler.SYSTEM_PROPERTIES_NEVER;
         }
@@ -205,7 +203,7 @@ public class CmNamespaceHandler implements NamespaceHandler {
                         Metadata props = parseDefaultProperties(context, metadata, e);
                         metadata.addProperty("defaultProperties", props);
                     }
-                } else if (ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE.equals(e.getNamespaceURI())) {
+                } else if (ExtNamespaceHandler.BLUEPRINT_EXT_NAMESPACE_V1_0.equals(e.getNamespaceURI())) {
                     if (nodeNameEquals(e, ExtNamespaceHandler.LOCATION_ELEMENT)) {
                         locations.add(getTextValue(e));
                     }
