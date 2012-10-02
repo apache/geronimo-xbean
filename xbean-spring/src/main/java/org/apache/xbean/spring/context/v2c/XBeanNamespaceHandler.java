@@ -817,6 +817,14 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             catch (IOException e) {
                 log.warn("Failed to load resource from uri: " + uri, e);
             }
+            finally {
+                try {
+                    in.close();
+                }
+                catch (IOException e) {
+                    log.warn("Failed to close resource from uri: " + uri, e);
+                }
+            }
         }
         return null;
     }
