@@ -176,6 +176,7 @@
                             org.apache.tools.ant*;resolution:=optional,
                             javax.script*;resolution:=optional,
                             javax.script*;resolution:=optional,
+                            org.apache.commons.jexl2*;resolution:=optional,
                             org.osgi.service.cm;version="[1.0,2.0)",
                             *
                         </Import-Package>
