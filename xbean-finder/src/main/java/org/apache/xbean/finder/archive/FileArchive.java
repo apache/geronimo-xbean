@@ -32,16 +32,31 @@ import java.util.List;
 public class FileArchive implements Archive {
 
     private final ClassLoader loader;
+    private final String basePackage;
     private final File dir;
     private List<String> list;
 
     public FileArchive(ClassLoader loader, URL url) {
         this.loader = loader;
+        this.basePackage = "";
         this.dir = toFile(url);
     }
 
     public FileArchive(ClassLoader loader, File dir) {
         this.loader = loader;
+        this.basePackage = "";
+        this.dir = dir;
+    }
+
+    public FileArchive(ClassLoader loader, URL url, String basePackage) {
+        this.loader = loader;
+        this.basePackage = basePackage;
+        this.dir = toFile(url);
+    }
+
+    public FileArchive(ClassLoader loader, File dir, String basePackage) {
+        this.loader = loader;
+        this.basePackage = basePackage;
         this.dir = dir;
     }
 
@@ -87,7 +102,7 @@ public class FileArchive implements Archive {
     private List<String> file(File dir) {
         List<String> classNames = new ArrayList<String>();
         if (dir.isDirectory()) {
-            scanDir(dir, classNames, "");
+            scanDir(dir, classNames, (basePackage.length() > 0) ? (basePackage + ".") : basePackage);
         }
         return classNames;
     }
