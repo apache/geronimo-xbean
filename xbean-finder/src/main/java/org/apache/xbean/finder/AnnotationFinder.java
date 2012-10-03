@@ -20,18 +20,6 @@
 
 package org.apache.xbean.finder;
 
-import org.apache.xbean.finder.archive.Archive;
-import org.apache.xbean.finder.util.Classes;
-import org.apache.xbean.finder.util.SingleLinkedList;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
-import org.objectweb.asm.signature.SignatureVisitor;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +40,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.xbean.finder.archive.Archive;
+import org.apache.xbean.finder.util.Classes;
+import org.apache.xbean.finder.util.SingleLinkedList;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.EmptyVisitor;
+import org.objectweb.asm.signature.SignatureVisitor;
 
 /**
  * ClassFinder searches the classpath of the specified classloader for
@@ -74,9 +74,11 @@ public class AnnotationFinder implements IAnnotationFinder {
     private final List<String> classesNotLoaded = new ArrayList<String>();
     private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
     private final Archive archive;
+    private final boolean checkRuntimeAnnotation;
 
     private AnnotationFinder(AnnotationFinder parent, Iterable<String> classNames) {
         this.archive = new SubArchive(classNames);
+        this.checkRuntimeAnnotation = parent.checkRuntimeAnnotation;
         this.metaroots.addAll(parent.metaroots);
         for (Class<? extends Annotation> metaroot : metaroots) {
             final ClassInfo info = parent.classInfos.get(metaroot.getName());
@@ -111,8 +113,9 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
-    public AnnotationFinder(Archive archive) {
+    public AnnotationFinder(Archive archive, boolean checkRuntimeAnnotation) {
         this.archive = archive;
+        this.checkRuntimeAnnotation = checkRuntimeAnnotation;
 
         for (Archive.Entry entry : archive) {
             final String className = entry.getName();
@@ -127,6 +130,10 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         // keep track of what was originally from the archives
         originalInfos.putAll(classInfos);
+    }
+
+    public AnnotationFinder(Archive archive) {
+        this(archive, true);
     }
 
     public boolean hasMetaAnnotations() {
@@ -421,7 +428,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Package pkg = packageInfo.get();
                     // double check via proper reflection
-                    if (pkg.isAnnotationPresent(annotation)) {
+                    if (!checkRuntimeAnnotation || pkg.isAnnotationPresent(annotation)) {
                         packages.add(pkg);
                     }
                 } catch (ClassNotFoundException e) {
@@ -442,7 +449,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     // double check via proper reflection
-                    if (clazz.isAnnotationPresent(annotation)) {
+                    if (!checkRuntimeAnnotation || clazz.isAnnotationPresent(annotation)) {
                         classes.add(clazz);
                     }
                 } catch (ClassNotFoundException e) {
@@ -511,7 +518,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     if (classes.contains(clazz)) continue;
 
                     // double check via proper reflection
-                    if (clazz.isAnnotationPresent(annotation)) {
+                    if (!checkRuntimeAnnotation || clazz.isAnnotationPresent(annotation)) {
                         classes.add(clazz);
                     }
 
@@ -602,7 +609,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     for (Method method : clazz.getDeclaredMethods()) {
-                        if (method.isAnnotationPresent(annotation)) {
+                        if (!checkRuntimeAnnotation || method.isAnnotationPresent(annotation)) {
                             methods.add(method);
                         }
                     }
@@ -660,7 +667,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     for (Method method : clazz.getDeclaredMethods()) {
-                        if (method.isAnnotationPresent(annotation)) {
+                        if (!checkRuntimeAnnotation || method.isAnnotationPresent(annotation)) {
                             methods.add(method);
                         }
                     }
@@ -719,7 +726,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     for (Field field : clazz.getDeclaredFields()) {
-                        if (field.isAnnotationPresent(annotation)) {
+                        if (!checkRuntimeAnnotation || field.isAnnotationPresent(annotation)) {
                             fields.add(field);
                         }
                     }
@@ -749,7 +756,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     for (Constructor constructor : clazz.getConstructors()) {
-                        if (constructor.isAnnotationPresent(annotation)) {
+                        if (!checkRuntimeAnnotation || constructor.isAnnotationPresent(annotation)) {
                             constructors.add(constructor);
                         }
                     }
@@ -778,7 +785,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     for (Field field : clazz.getDeclaredFields()) {
-                        if (field.isAnnotationPresent(annotation)) {
+                        if (!checkRuntimeAnnotation || field.isAnnotationPresent(annotation)) {
                             fields.add(field);
                         }
                     }
