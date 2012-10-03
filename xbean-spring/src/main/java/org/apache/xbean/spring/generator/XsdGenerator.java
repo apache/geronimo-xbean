@@ -195,7 +195,7 @@ public class XsdGenerator implements GeneratorPlugin {
         }
         String maxOccurs = type.isCollection() || "java.util.Map".equals(type.getName()) ? "unbounded" : "1";
 
-        out.println("        <xs:element name='" + attributeMapping.getAttributeName() + "' minOccurs='0' maxOccurs='1'>");
+        out.println("        <xs:element name='" + attributeMapping.getAttributeName() + "' minOccurs='0' maxOccurs='" + maxOccurs + "'>");
         if (!isEmptyString(attributeMapping.getDescription())) {
             out.println("          <xs:annotation>");
             out.println("            <xs:documentation><![CDATA[");
