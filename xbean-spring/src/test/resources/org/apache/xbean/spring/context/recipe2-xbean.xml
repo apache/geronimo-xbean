@@ -17,16 +17,25 @@
     limitations under the License.
 
 -->
-<!-- START SNIPPET: xml -->
-<beans xmlns:b="http://xbean.apache.org/schemas/pizza">
-    <b:socketAddress id="socketAddress">localhost</b:socketAddress>
+<beans xmlns:x="http://xbean.apache.org/schemas/pizza"
+       xmlns:util="http://www.springframework.org/schema/util">
 
-    <b:socketService id="socketService">
-        <addresses>
-            <b:socketAddress>localhost</b:socketAddress>
-            <b:socketAddress>localhost</b:socketAddress>
-        </addresses>
-    </b:socketService>
+  <x:recipe-service2 id="recipeService" recipes="#recipes" topRecipe="#topRecipe" />
+
+  <util:list id="recipes">
+      <x:recipe>
+          <x:instructions>Mash together</x:instructions>
+          <x:ingredients>Food</x:ingredients>
+      </x:recipe>
+      <x:recipe>
+          <x:instructions>Mash together</x:instructions>
+          <x:ingredients>Food</x:ingredients>
+      </x:recipe>
+  </util:list>
+
+  <x:recipe id="topRecipe">
+    <x:instructions>Mash together</x:instructions>
+    <x:ingredients>Food</x:ingredients>
+  </x:recipe>
+
 </beans>
-<!-- END SNIPPET: xml -->
-

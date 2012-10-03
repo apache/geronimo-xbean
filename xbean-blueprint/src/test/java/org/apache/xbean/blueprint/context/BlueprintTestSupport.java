@@ -16,27 +16,6 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import junit.framework.TestCase;
-import org.apache.aries.blueprint.NamespaceHandler;
-import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
-import org.apache.aries.blueprint.container.NamespaceHandlerRegistry;
-import org.apache.aries.blueprint.container.Parser;
-import org.apache.aries.blueprint.namespace.ComponentDefinitionRegistryImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.xbean.blueprint.context.impl.QNameNamespaceHandler;
-import org.apache.xbean.blueprint.context.impl.XBeanNamespaceHandler;
-import org.apache.xbean.blueprint.example.MilliLittersPropertyEditor;
-import org.xml.sax.SAXException;
-import org.osgi.service.blueprint.reflect.BeanProperty;
-import org.osgi.service.blueprint.reflect.ValueMetadata;
-import org.osgi.service.blueprint.reflect.BeanArgument;
-import org.osgi.service.blueprint.reflect.Metadata;
-import org.osgi.service.blueprint.reflect.BeanMetadata;
-
-import javax.xml.validation.Schema;
-import javax.xml.namespace.QName;
-
 import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,10 +25,30 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import javax.xml.namespace.QName;
+import javax.xml.validation.Schema;
+
+import junit.framework.TestCase;
+import org.apache.aries.blueprint.NamespaceHandler;
+import org.apache.aries.blueprint.parser.ComponentDefinitionRegistryImpl;
+import org.apache.aries.blueprint.parser.NamespaceHandlerSet;
+import org.apache.aries.blueprint.parser.Parser;
+import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.xbean.blueprint.context.impl.QNameNamespaceHandler;
+import org.apache.xbean.blueprint.context.impl.XBeanNamespaceHandler;
+import org.apache.xbean.blueprint.example.MilliLittersPropertyEditor;
+import org.osgi.service.blueprint.reflect.BeanArgument;
+import org.osgi.service.blueprint.reflect.BeanMetadata;
+import org.osgi.service.blueprint.reflect.BeanProperty;
+import org.osgi.service.blueprint.reflect.Metadata;
+import org.osgi.service.blueprint.reflect.ValueMetadata;
+import org.xml.sax.SAXException;
 
 /**
  * A useful base class for testing spring based utilities.
@@ -100,7 +99,7 @@ public abstract class BlueprintTestSupport extends TestCase {
         propertyEditors.put(MilliLittersPropertyEditor.class.getName(), MilliLittersPropertyEditor.class);
         final NamespaceHandler xbeanHandler = new XBeanNamespaceHandler(NAMESPACE_URI.toString(), BlueprintTestSupport.class.getClassLoader().getResource("restaurant.xsd"), classes, propertyEditors, properties);
         final NamespaceHandler qnameHandler = new QNameNamespaceHandler();
-        NamespaceHandlerRegistry.NamespaceHandlerSet handlers = new NamespaceHandlerRegistry.NamespaceHandlerSet() {
+        NamespaceHandlerSet handlers = new NamespaceHandlerSet() {
             public Set<URI> getNamespaces() {
                 return new HashSet<URI>(Arrays.asList(NAMESPACE_URI, QNAME_URI));
             }
@@ -114,7 +113,7 @@ public abstract class BlueprintTestSupport extends TestCase {
                 return null;
             }
 
-            public void removeListener(NamespaceHandlerRegistry.Listener listener) {
+            public void removeListener(Listener listener) {
             }
 
             public Schema getSchema() throws SAXException, IOException {
@@ -125,7 +124,7 @@ public abstract class BlueprintTestSupport extends TestCase {
                 return false;
             }
 
-            public void addListener(NamespaceHandlerRegistry.Listener listener) {
+            public void addListener(Listener listener) {
             }
 
             public void destroy() {
@@ -135,7 +134,7 @@ public abstract class BlueprintTestSupport extends TestCase {
     }
 
     // from aries blueprint core AbstractBlueprintTest
-    protected static ComponentDefinitionRegistryImpl parse(String plan, NamespaceHandlerRegistry.NamespaceHandlerSet handlers) throws Exception {
+    protected static ComponentDefinitionRegistryImpl parse(String plan, NamespaceHandlerSet handlers) throws Exception {
         ComponentDefinitionRegistryImpl registry = new ComponentDefinitionRegistryImpl();
         Parser parser = new Parser();
         parser.parse(Collections.singletonList(BlueprintTestSupport.class.getClassLoader().getResource(plan)));

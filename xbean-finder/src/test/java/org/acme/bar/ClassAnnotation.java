@@ -14,10 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.acme.foo;
+package org.acme.bar;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * @version $Rev$ $Date$
+ * @version $Revision: 469417 $ $Date: 2006-10-31 09:50:58 +0100 (mar. 31 oct. 2006) $
  */
-public class FamilyHalloween extends Halloween {
+@java.lang.annotation.Target(value = {ElementType.TYPE})
+@java.lang.annotation.Retention(value = RetentionPolicy.CLASS)
+public @interface ClassAnnotation {
 }

@@ -19,6 +19,7 @@ package org.apache.xbean.finder.archive;
 import org.acme.foo.Blue;
 import org.acme.foo.Green;
 import org.acme.foo.Red;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,6 +28,8 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -57,6 +60,19 @@ public class FileArchiveTest {
         archive = new FileArchive(new URLClassLoader(urls), urls[0]);
     }
 
+    @Test
+    public void testBasePackageName() throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Enumeration<URL> resources = classLoader.getResources("org/acme/foo");
+        while (resources.hasMoreElements()) {
+            URL url = resources.nextElement();
+            FileArchive fileArchive = new FileArchive(classLoader, url, "org.acme.foo");
+            Iterator<Archive.Entry> iterator = fileArchive.iterator();
+            while ( iterator.hasNext() ) {
+                assertTrue(iterator.next().getName().startsWith("org.acme.foo"));
+            }
+        }
+    }
 
     @Test
     public void testGetBytecode() throws Exception {
