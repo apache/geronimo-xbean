@@ -16,24 +16,34 @@
  */
 package org.apache.xbean.spring.context;
 
+import java.util.List;
+
+import org.apache.xbean.spring.example.Recipe;
+import org.apache.xbean.spring.example.RecipeService2;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.SaladService;
 
-/**
- * @author Dain Sundstrom
- * @version $Id$
- * @since 1.0
- */
-public class SaladUsingSpringTest extends SpringTestSupport {
-    public void testSalad() throws Exception {
-        SaladService salad = (SaladService) getBean("saladService");
+public class Recipe2UsingXBeanTest extends SpringTestSupport {
 
-        assertEquals("dressing", "Cesar", salad.getDressing());
-        assertEquals("size", "Small", salad.getSize());
-        assertEquals("crouton", true, salad.isCrouton());
+    public void testRecipes() throws Exception {
+        RecipeService2 svc = (RecipeService2) getBean("recipeService");
+
+        List list = svc.getRecipes();
+        assertNotNull(list);
+        assertEquals(2, list.size());
+        Recipe r = (Recipe) list.get(0);
+        assertEquals("Food", r.getIngredients());
+        assertEquals("Mash together", r.getInstructions());
+
+        r = (Recipe) list.get(1);
+        assertEquals("Food", r.getIngredients());
+        assertEquals("Mash together", r.getInstructions());
+
+        assertNotNull(svc.getTopRecipe());
+        assertEquals("Food", svc.getTopRecipe().getIngredients());
     }
 
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/xbean/spring/context/salad-normal.xml");
+        return new ClassPathXmlApplicationContext("org/apache/xbean/spring/context/recipe2-xbean.xml");
     }
+
 }

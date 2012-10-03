@@ -16,8 +16,11 @@
  */
 package org.apache.xbean.naming.context;
 
-import org.apache.xbean.naming.reference.SimpleReference;
-
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 import javax.naming.Binding;
 import javax.naming.CompoundName;
 import javax.naming.Context;
@@ -28,12 +31,8 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+
+import org.apache.xbean.naming.reference.SimpleReference;
 
 /**
  * @version $Rev$ $Date$
@@ -171,11 +170,17 @@ public final class ContextUtil {
     public static final class ReadOnlyBinding extends Binding {
         private final Object value;
         private final Context context;
+        private final boolean isRelative;
 
         public ReadOnlyBinding(String name, Object value, Context context) {
+            this(name, value, false, context);
+        }
+
+        public ReadOnlyBinding(String name, Object value, boolean isRelative, Context context) {
             super(name, value);
             this.value = value;
             this.context = context;
+            this.isRelative = isRelative;
         }
 
         public void setName(String name) {
@@ -207,7 +212,7 @@ public final class ContextUtil {
         }
 
         public boolean isRelative() {
-            return false;
+            return isRelative;
         }
 
         public void setRelative(boolean r) {

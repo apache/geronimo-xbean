@@ -17,15 +17,22 @@
 package org.apache.xbean.spring.example;
 
 import java.util.List;
+
 /**
- * @org.apache.xbean.XBean element="recipe-service"
+ * @org.apache.xbean.XBean element="recipe-service2"
  * @author Dan Diephouse
  */
-public class RecipeService
+public class RecipeService2
 {
-    private List recipes;
-    private Recipe topRecipe;
-    
+    private final List recipes;
+    private final Recipe topRecipe;
+
+
+    public RecipeService2(List recipes, Recipe topRecipe) {
+        this.recipes = recipes;
+        this.topRecipe = topRecipe;
+    }
+
     /**
      * @org.apache.xbean.FlatCollection childElement="recipe"
      * @return
@@ -35,20 +42,11 @@ public class RecipeService
         return recipes;
     }
 
-    public void setRecipes(List recipes)
-    {
-        this.recipes = recipes;
-    }
-
     /**
      * @org.apache.xbean.Flat
      * @return
      */
     public Recipe getTopRecipe() {
         return topRecipe;
-    }
-
-    public void setTopRecipe(Recipe topRecipe) {
-        this.topRecipe = topRecipe;
     }
 }

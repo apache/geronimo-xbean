@@ -22,26 +22,29 @@ package org.apache.xbean.osgi.bundle.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
 
 /**
  * Bundle that delegates ClassLoader operations to a collection of {@link Bundle} objects.
@@ -50,134 +53,238 @@ import org.osgi.service.packageadmin.PackageAdmin;
  */
 public class DelegatingBundle implements Bundle {
 
+    private static final String PACKAGE_CACHE = DelegatingBundle.class.getName() + ".packageCache";    
+    private static final String RESOURCE_CACHE_SIZE = DelegatingBundle.class.getName() + ".resourceCacheSize";
+    
+    private static final URL NOT_FOUND_RESOURCE;
+    
+    static {
+        try {
+            NOT_FOUND_RESOURCE = new URL("file://foo");
+        } catch (MalformedURLException e) {
+            throw new Error(e);
+        }        
+    }
+    
     private CopyOnWriteArrayList<Bundle> bundles;
     private Bundle bundle;
     private BundleContext bundleContext;
 
+    private final boolean hasDynamicImports;
+    private final Map<String, URL> resourceCache;
+    private final boolean packageCacheEnabled;
+    private Map<String, Bundle> packageCache;
+    
     public DelegatingBundle(Collection<Bundle> bundles) {
         if (bundles.isEmpty()) {
             throw new IllegalArgumentException("At least one bundle is required");
         }
         this.bundles = new CopyOnWriteArrayList<Bundle>(bundles);
+        Iterator<Bundle> iterator = bundles.iterator();
         // assume first Bundle is the main bundle
-        this.bundle = bundles.iterator().next();
+        this.bundle = iterator.next();
         this.bundleContext = new DelegatingBundleContext(this, bundle.getBundleContext());
+        this.hasDynamicImports = hasDynamicImports(iterator);
+        this.resourceCache = initResourceCache();
+        this.packageCacheEnabled = initPackageCacheEnabled();
     }
 
     public DelegatingBundle(Bundle bundle) {
         this(Collections.singletonList(bundle));
     }
+    
+    private static Map<String, URL> initResourceCache() {
+        String value = System.getProperty(RESOURCE_CACHE_SIZE, "250");
+        int size = Integer.parseInt(value);
+        if (size > 0) {
+            return Collections.synchronizedMap(new Cache<String, URL>(size));
+        } else {
+            return null;
+        }
+    }
+    
+    private static boolean initPackageCacheEnabled() {
+        String value = System.getProperty(PACKAGE_CACHE, "true");
+        boolean enabled = Boolean.parseBoolean(value);
+        return enabled;
+    }
+    
+    /*
+     * Returns true if a single bundle has Dynamic-ImportPackage: *. False, otherwise.       
+     */
+    private boolean hasDynamicImports(Iterator<Bundle> iterator) {
+        while (iterator.hasNext()) {
+            Bundle delegate = iterator.next();
+            if (hasWildcardDynamicImport(delegate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private synchronized Map<String, Bundle> getPackageBundleMap() {
+        if (packageCache == null) {
+            packageCache = buildPackageBundleMap();
+        }
+        return packageCache;
+    }
+    
+    private synchronized void reset() {
+        resourceCache.clear();
+        packageCache = null;
+    }
 
+    private Map<String, Bundle> buildPackageBundleMap() {
+        Map<String, Bundle> map = new HashMap<String, Bundle>();
+        Iterator<Bundle> iterator = bundles.iterator();
+        // skip first bundle
+        iterator.next();
+        // attempt to load the class from the remaining bundles
+        while (iterator.hasNext()) {
+            Bundle bundle = iterator.next();
+            BundleWiring wiring = bundle.adapt(BundleWiring.class);
+            if (wiring != null) {
+                List<BundleCapability> capabilities = wiring.getCapabilities(BundleRevision.PACKAGE_NAMESPACE);
+                if (capabilities != null && !capabilities.isEmpty()) {
+                    for (BundleCapability capability : capabilities) {
+                        Map<String, Object> attributes = capability.getAttributes();
+                        if (attributes != null) {
+                            String packageName = String.valueOf(attributes.get(BundleRevision.PACKAGE_NAMESPACE));
+                            if (!map.containsKey(packageName)) {
+                                map.put(packageName, bundle);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return map;
+    }
+    
     public Bundle getMainBundle() {
         return bundle;
     }
-
+        
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         try {
-            return bundle.loadClass(name);
-        } catch (ClassNotFoundException ex) {
+            Class<?> clazz = bundle.loadClass(name);
+            return clazz;
+        } catch (ClassNotFoundException cnfe) {
+            if (name.startsWith("java.")) {
+                throw cnfe;
+            }
+            
             int index = name.lastIndexOf('.');
             if (index > 0 && bundles.size() > 1) {
-                // see if there are any bundles exporting the package
                 String packageName = name.substring(0, index);
-                Set<Bundle> packageBundles = getPackageBundles(packageName);
-                if (packageBundles == null) {
-                    // package is NOT exported
-
-                    Iterator<Bundle> iterator = bundles.iterator();
-                    // skip first bundle
-                    iterator.next();
-                    // attempt to load the class from the remaining bundles
-                    while (iterator.hasNext()) {
-                        Bundle delegate = iterator.next();
-                        try {
-                            return delegate.loadClass(name);
-                        } catch (ClassNotFoundException e) {
-                            // ignore
-                        }
-                    }
-
-                    throw ex;
+                if (packageCacheEnabled) {
+                    return findCachedClass(name, packageName, cnfe);
                 } else {
-                    // package is exported
-
-                    // see if any of our bundles is wired to the exporter
-                    Bundle delegate = findFirstBundle(packageBundles);
-                    if (delegate == null || delegate == bundle) {
-                        // nope. no static wires but might need to check for dynamic wires in the future.
-                        throw ex;
-                    } else {
-                        // yes. attempt to load the class from it
-                        return delegate.loadClass(name);
-                    }
-                }
-            }  else {
-                // no package name
-                throw ex;
-            }
-        }
-    }
-
-    private Set<Bundle> getPackageBundles(String packageName) {
-        BundleContext context = bundle.getBundleContext();
-        ServiceReference reference = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin packageAdmin = (PackageAdmin) context.getService(reference);
-        Set<Bundle> bundles = null;
-        try {
-            ExportedPackage[] exportedPackages = packageAdmin.getExportedPackages(packageName);
-            if (exportedPackages != null && exportedPackages.length > 0) {
-                bundles = new HashSet<Bundle>();
-                for (ExportedPackage exportedPackage : exportedPackages) {
-                    bundles.add(exportedPackage.getExportingBundle());
-                    Bundle[] importingBundles = exportedPackage.getImportingBundles();
-                    if (importingBundles != null) {
-                        for (Bundle importingBundle : importingBundles) {
-                            bundles.add(importingBundle);
-                        }
-                    }
+                    return findClass(name, packageName, cnfe);
                 }
             }
-            return bundles;
-        } finally {
-            context.ungetService(reference);
+            
+            throw cnfe;
         }
     }
-
-    private Bundle findFirstBundle(Set<Bundle> packageBundles) {
-        Collection<Bundle> c1 = bundles;
-        Collection<Bundle> c2 = packageBundles;
-
-        if (bundles instanceof Set<?> && bundles.size() > packageBundles.size()) {
-            c1 = packageBundles;
-            c2 = bundles;
+    
+    private Class<?> findCachedClass(String className, String packageName, ClassNotFoundException cnfe) throws ClassNotFoundException {
+        Map<String, Bundle> map = getPackageBundleMap();
+        Bundle bundle = map.get(packageName);
+        if (bundle == null) {
+            // Work-around for Introspector always looking for classes in sun.beans.infos
+            if (packageName.equals("sun.beans.infos") && className.endsWith("BeanInfo")) {
+                throw cnfe;
+            }
+            return findClass(className, packageName, cnfe);
+        } else {
+            return bundle.loadClass(className);
         }
-
-        for (Bundle bundle : c1) {
-            if (c2.contains(bundle)) {
-                return bundle;
+    }
+        
+    private Class<?> findClass(String className, String packageName, ClassNotFoundException cnfe) throws ClassNotFoundException {
+        Iterator<Bundle> iterator = bundles.iterator();
+        // skip first bundle
+        iterator.next();
+        while (iterator.hasNext()) {
+            Bundle delegate = iterator.next();
+            if (hasDynamicImports && hasWildcardDynamicImport(delegate)) {
+                // skip any bundles with Dynamic-ImportPackage: * to avoid unnecessary wires
+                continue;
+            }
+            try {
+                return delegate.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                // ignore
             }
         }
-
-        return null;
+        throw cnfe;
     }
-
+      
+    private static boolean hasWildcardDynamicImport(Bundle bundle) {
+        Dictionary<String, String> headers = bundle.getHeaders();
+        if (headers != null) {
+            String value = headers.get(Constants.DYNAMICIMPORT_PACKAGE);
+            if (value == null) {
+                return false;
+            } else {
+                return "*".equals(value.trim());
+            }
+        } else {
+            return false;
+        }
+    }
+    
     public void addBundle(Bundle b) {
         bundles.add(b);
+        reset();
     }
 
     public void removeBundle(Bundle b) {
         bundles.remove(b);
+        reset();
     }
 
     public URL getResource(String name) {
         URL resource = null;
-        for (Bundle bundle : bundles) {
-            resource = bundle.getResource(name);
-            if (resource != null) {
-                return resource;
+        if (resourceCache == null) {
+            resource = findResource(name);
+        } else {
+            resource = findCachedResource(name);
+        }
+        return resource;
+    }
+    
+    private URL findCachedResource(String name) {
+        URL resource = bundle.getResource(name);
+        if (resource == null) {
+            resource = resourceCache.get(name);
+            if (resource == null) {
+                Iterator<Bundle> iterator = bundles.iterator();
+                // skip first bundle
+                iterator.next();
+                // look for resource in the remaining bundles
+                resource = findResource(name, iterator);                
+                resourceCache.put(name, (resource == null) ? NOT_FOUND_RESOURCE : resource);
+            } else if (resource == NOT_FOUND_RESOURCE) {
+                resource = null;
             }
         }
-        return null;
+        return resource;
+    }
+    
+    private URL findResource(String name) {
+        Iterator<Bundle> iterator = bundles.iterator();
+        return findResource(name, iterator);
+    }
+    
+    private URL findResource(String name, Iterator<Bundle> iterator) {
+        URL resource = null;
+        while (iterator.hasNext() && resource == null) {
+            Bundle delegate = iterator.next();
+            resource = delegate.getResource(name);
+        }
+        return resource;
     }
 
     public Enumeration<URL> getResources(String name) throws IOException {
@@ -303,6 +410,29 @@ public class DelegatingBundle implements Bundle {
     
     public String toString() {
         return "[DelegatingBundle: " + bundles + "]";
+    }
+    
+    private static class Cache<K, V> extends LinkedHashMap<K, V> {
+        
+        private final int maxSize;
+        
+        public Cache(int maxSize) {
+            this(16, maxSize, 0.75f);
+        }
+        
+        public Cache(int initialSize, int maxSize, float loadFactor) {
+            super(initialSize, loadFactor, true);
+            this.maxSize = maxSize;
+        }
+        
+        @Override   
+        protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+            if (size() > maxSize) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
 }
