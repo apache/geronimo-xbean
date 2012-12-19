@@ -113,6 +113,11 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
+    /**
+     *
+     * @param archive
+     * @param checkRuntimeAnnotation Has no effect on findMetaAnnotated* methods
+     */
     public AnnotationFinder(Archive archive, boolean checkRuntimeAnnotation) {
         this.archive = archive;
         this.checkRuntimeAnnotation = checkRuntimeAnnotation;
@@ -518,7 +523,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     if (classes.contains(clazz)) continue;
 
                     // double check via proper reflection
-                    if (!checkRuntimeAnnotation || clazz.isAnnotationPresent(annotation)) {
+                    if (clazz.isAnnotationPresent(annotation)) {
                         classes.add(clazz);
                     }
 
@@ -599,22 +604,32 @@ public class AnnotationFinder implements IAnnotationFinder {
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof MethodInfo && !info.getName().equals("<init>")) {
-                MethodInfo methodInfo = (MethodInfo) info;
-                ClassInfo classInfo = methodInfo.getDeclaringClass();
+                final MethodInfo methodInfo = (MethodInfo) info;
 
-                if (seen.contains(classInfo)) continue;
+                if (checkRuntimeAnnotation) {
+                    final ClassInfo classInfo = methodInfo.getDeclaringClass();
 
-                seen.add(classInfo);
+                    if (seen.contains(classInfo)) continue;
 
-                try {
-                    Class clazz = classInfo.get();
-                    for (Method method : clazz.getDeclaredMethods()) {
-                        if (!checkRuntimeAnnotation || method.isAnnotationPresent(annotation)) {
-                            methods.add(method);
+                    seen.add(classInfo);
+
+                    try {
+                        Class clazz = classInfo.get();
+                        for (Method method : clazz.getDeclaredMethods()) {
+                            if (method.isAnnotationPresent(annotation)) {
+                                methods.add(method);
+                            }
                         }
+                    } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(classInfo.getName());
                     }
-                } catch (ClassNotFoundException e) {
-                    classesNotLoaded.add(classInfo.getName());
+                } else {
+                    try {
+                        final Method method = (Method) methodInfo.get();
+                        methods.add(method);
+                    } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(methodInfo.getDeclaringClass().getName());
+                    }
                 }
             }
         }
@@ -667,7 +682,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     for (Method method : clazz.getDeclaredMethods()) {
-                        if (!checkRuntimeAnnotation || method.isAnnotationPresent(annotation)) {
+                        if (method.isAnnotationPresent(annotation)) {
                             methods.add(method);
                         }
                     }
@@ -726,7 +741,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 try {
                     Class clazz = classInfo.get();
                     for (Field field : clazz.getDeclaredFields()) {
-                        if (!checkRuntimeAnnotation || field.isAnnotationPresent(annotation)) {
+                        if (field.isAnnotationPresent(annotation)) {
                             fields.add(field);
                         }
                     }
@@ -747,21 +762,30 @@ public class AnnotationFinder implements IAnnotationFinder {
         for (Info info : infos) {
             if (info instanceof MethodInfo && info.getName().equals("<init>")) {
                 MethodInfo methodInfo = (MethodInfo) info;
-                ClassInfo classInfo = methodInfo.getDeclaringClass();
 
-                if (seen.contains(classInfo)) continue;
+                if (checkRuntimeAnnotation) {
+                    ClassInfo classInfo = methodInfo.getDeclaringClass();
 
-                seen.add(classInfo);
+                    if (seen.contains(classInfo)) continue;
 
-                try {
-                    Class clazz = classInfo.get();
-                    for (Constructor constructor : clazz.getConstructors()) {
-                        if (!checkRuntimeAnnotation || constructor.isAnnotationPresent(annotation)) {
-                            constructors.add(constructor);
+                    seen.add(classInfo);
+
+                    try {
+                        Class clazz = classInfo.get();
+                        for (Constructor constructor : clazz.getConstructors()) {
+                            if (constructor.isAnnotationPresent(annotation)) {
+                                constructors.add(constructor);
+                            }
                         }
+                    } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(classInfo.getName());
                     }
-                } catch (ClassNotFoundException e) {
-                    classesNotLoaded.add(classInfo.getName());
+                } else {
+                    try {
+                        constructors.add((Constructor) methodInfo.get());
+                    } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(methodInfo.getDeclaringClass().getName());
+                    }
                 }
             }
         }
@@ -776,21 +800,30 @@ public class AnnotationFinder implements IAnnotationFinder {
         for (Info info : infos) {
             if (info instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) info;
-                ClassInfo classInfo = fieldInfo.getDeclaringClass();
 
-                if (seen.contains(classInfo)) continue;
+                if (checkRuntimeAnnotation) {
+                    ClassInfo classInfo = fieldInfo.getDeclaringClass();
 
-                seen.add(classInfo);
+                    if (seen.contains(classInfo)) continue;
 
-                try {
-                    Class clazz = classInfo.get();
-                    for (Field field : clazz.getDeclaredFields()) {
-                        if (!checkRuntimeAnnotation || field.isAnnotationPresent(annotation)) {
-                            fields.add(field);
+                    seen.add(classInfo);
+
+                    try {
+                        Class clazz = classInfo.get();
+                        for (Field field : clazz.getDeclaredFields()) {
+                            if (field.isAnnotationPresent(annotation)) {
+                                fields.add(field);
+                            }
                         }
+                    } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(classInfo.getName());
                     }
-                } catch (ClassNotFoundException e) {
-                    classesNotLoaded.add(classInfo.getName());
+                } else {
+                    try {
+                        fields.add((Field) fieldInfo.get());
+                    } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(fieldInfo.getDeclaringClass().getName());
+                    }
                 }
             }
         }
@@ -1349,7 +1382,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             return method;
         }
 
-        private Method toMethod() throws ClassNotFoundException {
+        private Member toMethod() throws ClassNotFoundException {
             org.objectweb.asm.commons.Method method = new org.objectweb.asm.commons.Method(name, descriptor);
 
             Class<?> clazz = this.declaringClass.get();
@@ -1369,7 +1402,11 @@ public class AnnotationFinder implements IAnnotationFinder {
             IllegalStateException noSuchMethod = null;
             while (clazz != null) {
                 try {
-                    return clazz.getDeclaredMethod(name, parameters);
+                    if (name.equals("<init>")) {
+                        return clazz.getDeclaredConstructor(parameters);
+                    } else {
+                        return clazz.getDeclaredMethod(name, parameters);
+                    }
                 } catch (NoSuchMethodException e) {
                     if (noSuchMethod == null) {
                         noSuchMethod = new IllegalStateException("Callback method does not exist: " + clazz.getName() + "." + name, e);
