@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @version $Revision: 469417 $ $Date: 2006-10-31 09:50:58 +0100 (mar. 31 oct. 2006) $
  */
-@java.lang.annotation.Target(value = {ElementType.TYPE})
+@java.lang.annotation.Target(value = {ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.CONSTRUCTOR})
 @java.lang.annotation.Retention(value = RetentionPolicy.CLASS)
 public @interface ClassAnnotation {
 }
