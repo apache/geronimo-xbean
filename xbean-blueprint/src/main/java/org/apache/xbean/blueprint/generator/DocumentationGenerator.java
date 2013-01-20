@@ -41,6 +41,7 @@ public class DocumentationGenerator implements GeneratorPlugin {
 
         // TODO can only handle 1 schema document so far...
         File file = new File(destFile.getParentFile(), destFile.getName() + ".html");
+        file.getParentFile().mkdirs();
         log.log("Generating HTML documentation file: " + file + " for namespace: " + namespace);
         PrintWriter out = new PrintWriter(new FileWriter(file));
         try {
