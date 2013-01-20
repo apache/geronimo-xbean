@@ -71,7 +71,7 @@ public class ModelTest extends TestCase {
         
         // validate xsd has string for attribute VolumeWithPropertyEditor
         final AtomicBoolean gotExpected = new AtomicBoolean(false);
-        XsdGenerator generator = new XsdGenerator(null);
+        XsdGenerator generator = new XsdGenerator(null, false);
         generator.generateSchema(new PrintWriter("dummy") {
             @Override
             public void println(String x) {
@@ -154,7 +154,7 @@ public class ModelTest extends TestCase {
         targetXSD.getParentFile().mkdirs();
         QdoxMappingLoader mappingLoader = new QdoxMappingLoader(DEFAULT_NAMESPACE, new File[] { new File(basedir, "/src/test/java")}, null);
         NamespaceMapping namespaceMapping = getDefaultNamespace(mappingLoader);
-        XsdGenerator generator = new XsdGenerator(targetXSD);
+        XsdGenerator generator = new XsdGenerator(targetXSD, false);
         generator.setLog(new LogFacade() {
             public void log(String message) {
             }

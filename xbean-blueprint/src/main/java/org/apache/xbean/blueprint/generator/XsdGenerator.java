@@ -31,8 +31,9 @@ import java.util.List;
 public class XsdGenerator implements GeneratorPlugin {
     private final File destFile;
     private LogFacade log;
+    private boolean strictOrder;
 
-    public XsdGenerator(File destFile) {
+    public XsdGenerator(File destFile, boolean strictOrder) {
         this.destFile = destFile;
     }
 
@@ -92,15 +93,23 @@ public class XsdGenerator implements GeneratorPlugin {
             }
         }
         if (complexCount > 0) {
-            out.println("      <xs:sequence>");
+          if(strictOrder){
+                out.println("      <xs:sequence>");
+            } else {
+                out.println("      <xs:choice minOccurs=\"0\" maxOccurs=\"unbounded\"><xs:choice>");
+            }
             for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
                 AttributeMapping attributeMapping = (AttributeMapping) iterator.next();
                 if (!namespaceMapping.isSimpleType(attributeMapping.getType())) {
                     generateElementMappingComplexProperty(out, namespaceMapping, attributeMapping);
                 }
             }
-            out.println("        <xs:any namespace='##other' minOccurs='0' maxOccurs='unbounded'/>");
-            out.println("      </xs:sequence>");
+            out.println("        <xs:any namespace='##other' minOccurs='0' maxOccurs='unbounded' processContents='lax'/>");
+            if(strictOrder){
+                out.println("      </xs:sequence>");
+            } else {
+                out.println("      </xs:choice></xs:choice>");
+            }
         }
 
         for (Iterator iterator = element.getAttributes().iterator(); iterator.hasNext();) {
@@ -193,14 +202,14 @@ public class XsdGenerator implements GeneratorPlugin {
         out.println("          <xs:complexType>");
         if (types.isEmpty()) {
             // We don't know the type because it's generic collection.  Allow folks to insert objets from any namespace
-            out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any minOccurs='0' maxOccurs='unbounded'/></xs:sequence>");
+            out.println("            <xs:sequence minOccurs='0' maxOccurs='" + maxOccurs + "'><xs:any minOccurs='0' maxOccurs='unbounded' processContents='lax'/></xs:sequence>");
         } else {
             out.println("            <xs:choice minOccurs='0' maxOccurs='" + maxOccurs + "'>");
             for (Iterator iterator = types.iterator(); iterator.hasNext();) {
                 ElementMapping element = (ElementMapping) iterator.next();
                 out.println("              <xs:element ref='tns:" + element.getElementName() + "'/>");
             }
-            out.println("              <xs:any namespace='##other'/>");
+            out.println("              <xs:any namespace='##other' processContents='lax'/>");
             out.println("            </xs:choice>");
         }
         out.println("          </xs:complexType>");
