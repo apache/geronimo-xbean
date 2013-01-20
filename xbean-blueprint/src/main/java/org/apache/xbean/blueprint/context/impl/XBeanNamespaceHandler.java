@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     private static final String NULL_REFERENCE = "#null";
 
     private final String namespace;
-    private final URL schemaLocation;
+    private URL schemaLocation;
     private final Set<Class> managedClasses;
     private final MappingMetaData mappingMetaData;
     private final Map<String, Class> managedClassesByName;
@@ -107,7 +108,17 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             in.close();
         }
         this.namespace = namespace;
-        this.schemaLocation = bundle.getEntry(schemaLocation);
+        String path = "/";
+        String xsd = schemaLocation;
+        int index = schemaLocation.lastIndexOf("/");
+        if(index > 0){
+            path = schemaLocation.substring(0, index);
+            xsd = schemaLocation.substring(index + 1);
+        }
+        Enumeration<URL> e = bundle.findEntries(path, xsd, false);
+        if(e.hasMoreElements()) {
+          this.schemaLocation = e.nextElement();
+        }
         this.managedClasses = managedClassesFromProperties(bundle, properties);
         managedClassesByName = mapClasses(managedClasses);
         propertyEditors = propertyEditorsFromProperties(bundle, properties);
