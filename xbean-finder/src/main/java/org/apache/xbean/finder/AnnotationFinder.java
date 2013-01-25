@@ -149,7 +149,13 @@ public class AnnotationFinder implements IAnnotationFinder {
         classInfos.put(info.name, info);
         index(info);
         index(info.constructors);
+        for (MethodInfo ctor : info.constructors) {
+            index(ctor.parameters);
+        }
         index(info.methods);
+        for (MethodInfo method : info.methods) {
+            index(method.parameters);
+        }
         index(info.fields);
     }
 
@@ -636,6 +642,52 @@ public class AnnotationFinder implements IAnnotationFinder {
         return methods;
     }
 
+    public List<Parameter<Method>> findAnnotatedMethodParameters(Class<? extends Annotation> annotation) {
+        classesNotLoaded.clear();
+        
+        final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<ClassInfo>() : null;
+        final List<Parameter<Method>> result = new ArrayList<Parameter<Method>>();
+        for (Info info : getAnnotationInfos(annotation.getName())) {
+            if (!(info instanceof ParameterInfo)) {
+                continue;
+            }
+            final ParameterInfo parameterInfo = (ParameterInfo) info;
+            if ("<init>".equals(parameterInfo.getDeclaringMethod().getName())) {
+                continue;
+            }
+            final ClassInfo classInfo = parameterInfo.getDeclaringMethod().getDeclaringClass();
+
+            if (checkRuntimeAnnotation) {
+                if (!seen.add(classInfo)) {
+                    continue;
+                }
+                try {
+                    Class<?> clazz = classInfo.get();
+                    for (Method method : clazz.getDeclaredMethods()) {
+                        for (Annotation[] annotations : method.getParameterAnnotations()) {
+                            for (int i = 0; i < annotations.length; i++) {
+                                if (annotations[i].annotationType().equals(annotation)) {
+                                    result.add(Parameter.declaredBy(method, i));
+                                }
+                            }
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(classInfo.getName());
+                }
+            } else {
+                try {
+                    @SuppressWarnings("unchecked")
+                    final Parameter<Method> parameter = (Parameter<Method>) parameterInfo.get();
+                    result.add(parameter);
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(parameterInfo.getDeclaringMethod().getDeclaringClass().getName());
+                }
+            }
+        }
+        return result;
+    }
+
     public List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
@@ -790,6 +842,54 @@ public class AnnotationFinder implements IAnnotationFinder {
             }
         }
         return constructors;
+    }
+
+    public List<Parameter<Constructor<?>>> findAnnotatedConstructorParameters(Class<? extends Annotation> annotation) {
+        classesNotLoaded.clear();
+        
+        final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<ClassInfo>() : null;
+        final List<Parameter<Constructor<?>>> result = new ArrayList<Parameter<Constructor<?>>>();
+        for (Info info : getAnnotationInfos(annotation.getName())) {
+            if (!(info instanceof ParameterInfo)) {
+                continue;
+            }
+            final ParameterInfo parameterInfo = (ParameterInfo) info;
+            if (!"<init>".equals(parameterInfo.getDeclaringMethod().getName())) {
+                continue;
+            }
+            final ClassInfo classInfo = parameterInfo.getDeclaringMethod().getDeclaringClass();
+
+            if (checkRuntimeAnnotation) {
+                if (!seen.add(classInfo)) {
+                    continue;
+                }
+                try {
+                    Class<?> clazz = classInfo.get();
+                    for (Constructor<?> ctor : clazz.getDeclaredConstructors()) {
+                        for (Annotation[] annotations : ctor.getParameterAnnotations()) {
+                            for (int i = 0; i < annotations.length; i++) {
+                                if (annotations[i].annotationType().equals(annotation)) {
+                                    @SuppressWarnings({ "rawtypes", "unchecked" })
+                                    final Parameter<Constructor<?>> parameter = Parameter.declaredBy((Constructor) ctor, i);
+                                    result.add(parameter);
+                                }
+                            }
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(classInfo.getName());
+                }
+            } else {
+                try {
+                    @SuppressWarnings("unchecked")
+                    final Parameter<Constructor<?>> parameter = (Parameter<Constructor<?>>) parameterInfo.get();
+                    result.add(parameter);
+                } catch (ClassNotFoundException e) {
+                    classesNotLoaded.add(parameterInfo.getDeclaringMethod().getDeclaringClass().getName());
+                }
+            }
+        }
+        return result;
     }
 
     public List<Field> findAnnotatedFields(Class<? extends Annotation> annotation) {
@@ -1019,11 +1119,23 @@ public class AnnotationFinder implements IAnnotationFinder {
         infos.add(classInfo);
         classInfos.put(clazz.getName(), classInfo);
         for (Method method : clazz.getDeclaredMethods()) {
-            infos.add(new MethodInfo(classInfo, method));
+            MethodInfo methodInfo = new MethodInfo(classInfo, method);
+            infos.add(methodInfo);
+            for (Annotation[] annotations : method.getParameterAnnotations()) {
+                for (int i = 0; i < annotations.length; i++) {
+                    infos.add(new ParameterInfo(methodInfo, i));
+                }
+            }
         }
 
-        for (Constructor constructor : clazz.getConstructors()) {
-            infos.add(new MethodInfo(classInfo, constructor));
+        for (Constructor<?> constructor : clazz.getConstructors()) {
+            MethodInfo methodInfo = new MethodInfo(classInfo, constructor);
+            infos.add(methodInfo);
+            for (Annotation[] annotations : constructor.getParameterAnnotations()) {
+                for (int i = 0; i < annotations.length; i++) {
+                    infos.add(new ParameterInfo(methodInfo, i));
+                }
+            }
         }
 
         for (Field field : clazz.getDeclaredFields()) {
@@ -1306,6 +1418,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         private final String descriptor;
         private final String name;
         private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList<List<AnnotationInfo>>();
+        private final List<ParameterInfo> parameters = new SingleLinkedList<ParameterInfo>();
         private Member method;
 
         public MethodInfo(ClassInfo info, Constructor constructor) {
@@ -1360,6 +1473,10 @@ public class AnnotationFinder implements IAnnotationFinder {
                 }
             }
             return parameterAnnotations.get(index);
+        }
+
+        public List<ParameterInfo> getParameters() {
+            return parameters;
         }
 
         public String getName() {
@@ -1418,6 +1535,61 @@ public class AnnotationFinder implements IAnnotationFinder {
             throw noSuchMethod;
         }
 
+    }
+
+    public class ParameterInfo extends Annotatable implements Info {
+        private final MethodInfo declaringMethod;
+        private final int index;
+        private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
+        private Parameter<?> parameter;
+
+        public ParameterInfo(MethodInfo parent, int index) {
+            super();
+            this.declaringMethod = parent;
+            this.index = index;
+        }
+        
+        public ParameterInfo(MethodInfo parent, Parameter<?> parameter) {
+            super(parameter);
+            this.declaringMethod = parent;
+            this.index = parameter.getIndex();
+            this.parameter = parameter;
+        }
+
+        public String getName() {
+            return Integer.toString(index);
+        }
+
+        public Parameter<?> get() throws ClassNotFoundException {
+            if (parameter == null) {
+                Member member = declaringMethod.get();
+                if (member instanceof Method) {
+                    parameter = Parameter.declaredBy((Method) member, index);
+                } else if (member instanceof Constructor<?>) {
+                    parameter = Parameter.declaredBy((Constructor<?>) member, index);
+                    
+                }
+            }
+            return parameter;
+        }
+        
+        @Override
+        public Annotation[] getDeclaredAnnotations() {
+            try {
+                return get().getDeclaredAnnotations();
+            } catch (ClassNotFoundException e) {
+                return super.getDeclaredAnnotations();
+            }
+        }
+
+        public MethodInfo getDeclaringMethod() {
+            return declaringMethod;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s(arg%s)", declaringMethod, index);
+        }
     }
 
     public class FieldInfo extends Annotatable implements Info {
@@ -1531,6 +1703,10 @@ public class AnnotationFinder implements IAnnotationFinder {
             this.info = info;
         }
 
+        public Info getInfo() {
+            return info;
+        }
+
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             if (name.endsWith("package-info")) {
@@ -1599,6 +1775,11 @@ public class AnnotationFinder implements IAnnotationFinder {
             List<AnnotationInfo> annotationInfos = methodInfo.getParameterAnnotations(param);
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
             annotationInfos.add(annotationInfo);
+
+            ParameterInfo parameterInfo = new ParameterInfo(methodInfo, param);
+            methodInfo.getParameters().add(parameterInfo);
+            index(annotationInfo, parameterInfo);
+
             return new InfoBuildingVisitor(annotationInfo);
         }
     }
