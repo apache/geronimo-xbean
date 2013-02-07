@@ -275,9 +275,8 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                 }
             }
 
-            URLClassLoader appClassloader = new URLClassLoader(urls.toArray(new URL[urls.size()]), 
+            return new URLClassLoader(urls.toArray(new URL[urls.size()]),
                     this.getClass().getClassLoader());
-            return appClassloader;
         } catch (MalformedURLException e) {
             throw new MojoExecutionException(
                     "Error during setting up classpath", e);

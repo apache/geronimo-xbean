@@ -62,7 +62,7 @@ public class URLEditor extends AbstractConverter {
 
         try {
             // The file class has direct support for returning as a URL, but the Javadoc
-            // for File.toURL() recommends converting the File object to a URI first
+            // for File.toURI().toURL() recommends converting the File object to a URI first
             // so that untranslatable characters get handled correctly.
             return new File(text).toURI().toURL();
         } catch (MalformedURLException e) {
