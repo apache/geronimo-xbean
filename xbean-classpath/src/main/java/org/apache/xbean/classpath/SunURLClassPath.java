@@ -51,7 +51,7 @@ public abstract class SunURLClassPath implements ClassPath {
         // Create URLs from them
         final URL[] jars = new URL[jarNames.length];
         for (int j = 0; j < jarNames.length; j++) {
-            jars[j] = new File(dir, jarNames[j]).toURL();
+            jars[j] = new File(dir, jarNames[j]).toURI().toURL();
         }
 
         sun.misc.URLClassPath path = getURLClassPath(loader);

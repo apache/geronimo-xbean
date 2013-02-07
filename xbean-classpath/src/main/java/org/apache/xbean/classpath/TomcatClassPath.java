@@ -79,7 +79,7 @@ public class TomcatClassPath extends SunURLClassPath {
         }
 
         for (int j = 0; j < jarNames.length; j++) {
-            this.addJarToPath(new File(dir, jarNames[j]).toURL());
+            this.addJarToPath(new File(dir, jarNames[j]).toURI().toURL());
         }
         rebuild();
     }
@@ -98,7 +98,7 @@ public class TomcatClassPath extends SunURLClassPath {
         if (addRepositoryMethod != null){
             addRepositoryMethod.invoke(getClassLoader(), new Object[]{path});
         } else {
-            addURLMethod.invoke(getClassLoader(), new Object[]{new File(path).toURL()});
+            addURLMethod.invoke(getClassLoader(), new Object[]{new File(path).toURI().toURL()});
         }
     }
 
