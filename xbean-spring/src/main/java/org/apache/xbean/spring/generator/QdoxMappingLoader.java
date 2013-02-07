@@ -542,7 +542,7 @@ public class QdoxMappingLoader implements MappingLoader {
             JarEntry entry = (JarEntry) entries.nextElement();
             String name = entry.getName();
             if (name.endsWith(".java") && !isExcluded(name, excludedClasses) && !name.endsWith("/package-info.java")) {
-                builder.addSource(new URL("jar:" + base.toURL().toString() + "!/" + name));
+                builder.addSource(new URL("jar:" + base.toURI().toURL().toString() + "!/" + name));
             }
         }
     }

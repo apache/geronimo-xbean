@@ -61,12 +61,12 @@ public class MultiParentClassLoaderTest extends TestCase {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             JarFile jarFile = new JarFile(files[i]);
-            String urlString = "jar:" + file.toURL() + "!/" + ENTRY_NAME;
-            URL url = new URL(files[i].toURL(), urlString);
+            String urlString = "jar:" + file.toURI().toURL() + "!/" + ENTRY_NAME;
+            URL url = new URL(files[i].toURI().toURL(), urlString);
             assertStreamContains(ENTRY_VALUE + i, url.openStream());
             jarFile.close();
 
-            URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { file.toURL() } );
+            URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { file.toURI().toURL() } );
             // clazz shared by all
             Class clazz = urlClassLoader.loadClass(CLASS_NAME);
             assertNotNull(clazz);
@@ -272,11 +272,11 @@ public class MultiParentClassLoaderTest extends TestCase {
 
         parents = new URLClassLoader[3];
         for (int i = 0; i < parents.length; i++) {
-            parents[i] = new URLClassLoader(new URL[]{files[i].toURL()});
+            parents[i] = new URLClassLoader(new URL[]{files[i].toURI().toURL()});
         }
 
         myFile = createJarFile(33);
-        classLoader = createClassLoader(NAME, new URL[]{myFile.toURL()}, parents);
+        classLoader = createClassLoader(NAME, new URL[]{myFile.toURI().toURL()}, parents);
     }
 
     /**

@@ -49,8 +49,8 @@ public class UrlResourceFinderTest extends TestCase {
      * @throws Exception
      */
     public void testResourceEnumeration() throws Exception {
-        URL jar1 = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURL();
-        URL jar2 = new File(basedir, "src/test-data/resourceFinderTest/jar2/").toURL();
+        URL jar1 = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURI().toURL();
+        URL jar2 = new File(basedir, "src/test-data/resourceFinderTest/jar2/").toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar1, jar2});
 
         Enumeration enumeration = resourceFinder.findResources("resource");
@@ -72,7 +72,7 @@ public class UrlResourceFinderTest extends TestCase {
     }
 
     public void testDirectoryResource() throws Exception {
-        URL jar = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURL();
+        URL jar = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar});
 
         ResourceHandle resource = resourceFinder.getResource("resource");
@@ -111,7 +111,7 @@ public class UrlResourceFinderTest extends TestCase {
     }
 
     public void testJarResource() throws Exception {
-        URL jar = jarFile.toURL();
+        URL jar = jarFile.toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar});
 
         ResourceHandle resource = resourceFinder.getResource("resource");
@@ -150,7 +150,7 @@ public class UrlResourceFinderTest extends TestCase {
     }
 
     public void testAddURL() throws Exception {
-        URL jar1 = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURL();
+        URL jar1 = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar1});
 
         Enumeration enumeration = resourceFinder.findResources("resource");
@@ -164,7 +164,7 @@ public class UrlResourceFinderTest extends TestCase {
         assertFalse(enumeration.hasMoreElements());
 
         // addUrl
-        URL jar2 = new File(basedir, "src/test-data/resourceFinderTest/jar2/").toURL();
+        URL jar2 = new File(basedir, "src/test-data/resourceFinderTest/jar2/").toURI().toURL();
         resourceFinder.addUrl(jar2);
 
         // getResource should find the first jar only
@@ -197,8 +197,8 @@ public class UrlResourceFinderTest extends TestCase {
     }
 
     public void testConcurrentAddURL() throws Exception {
-        URL jar1 = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURL();
-        URL jar2 = new File(basedir, "src/test-data/resourceFinderTest/jar2/").toURL();
+        URL jar1 = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURI().toURL();
+        URL jar2 = new File(basedir, "src/test-data/resourceFinderTest/jar2/").toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar1, jar2});
 
         Enumeration enumeration = resourceFinder.findResources("resource");
@@ -214,7 +214,7 @@ public class UrlResourceFinderTest extends TestCase {
         //
         // addURL
         //
-        URL newJar = jarFile.toURL();
+        URL newJar = jarFile.toURI().toURL();
         resourceFinder.addUrl(newJar);
 
         // new resources should be available
@@ -241,19 +241,19 @@ public class UrlResourceFinderTest extends TestCase {
     }
 
     public void testDirectoryDestroy() throws Exception {
-        URL jar = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURL();
+        URL jar = new File(basedir, "src/test-data/resourceFinderTest/jar1/").toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar});
         assertDestroyed(resourceFinder, "resource1", null);
     }
 
     public void testJarDestroy() throws Exception {
-        URL jar = jarFile.toURL();
+        URL jar = jarFile.toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar});
         assertDestroyed(resourceFinder, "resource3", manifest);
     }
 
     public void testUrlCopy() throws Exception {
-        URL jar = jarFile.toURL();
+        URL jar = jarFile.toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar});
 
         // get the resource
@@ -275,7 +275,7 @@ public class UrlResourceFinderTest extends TestCase {
     }
 
     public void testUrlAccess() throws Exception {
-        URL jar = jarFile.toURL();
+        URL jar = jarFile.toURI().toURL();
         UrlResourceFinder resourceFinder = new UrlResourceFinder(new URL[]{jar});
 
         // get geronimo url from the resource finder
@@ -292,7 +292,7 @@ public class UrlResourceFinderTest extends TestCase {
         assertEquals("jar3", toString(new URL(geronimoUrl, "jar3").openStream()));
 
         // verify both can see the jar3 file withing the jar file using a full url spec
-        String mainEntry = "jar:" + jarFile.toURL().toExternalForm() + "!/jar3";
+        String mainEntry = "jar:" + jarFile.toURI().toURL().toExternalForm() + "!/jar3";
         assertEquals("jar3", toString(new URL(systemUrl, mainEntry).openStream()));
         assertEquals("jar3", toString(new URL(geronimoUrl, mainEntry).openStream()));
 
@@ -309,12 +309,12 @@ public class UrlResourceFinderTest extends TestCase {
         }
 
         // verify both can see the alternate jar
-        String alternateEntry = "jar:" + alternateJarFile.toURL().toExternalForm() + "!/jar4";
+        String alternateEntry = "jar:" + alternateJarFile.toURI().toURL().toExternalForm() + "!/jar4";
         assertEquals("jar4", toString(new URL(systemUrl, alternateEntry).openStream()));
         assertEquals("jar4", toString(new URL(geronimoUrl, alternateEntry).openStream()));
 
         // verify both throw a FileNotFoundExcetion for an unknown entry in the alternate file
-        String alternateUnknownEntry = "jar:" + alternateJarFile.toURL().toExternalForm() + "!/unknown";
+        String alternateUnknownEntry = "jar:" + alternateJarFile.toURI().toURL().toExternalForm() + "!/unknown";
         try {
             new URL(systemUrl, alternateUnknownEntry).openStream();
             fail("Expected a FileNotFoundException");
@@ -327,11 +327,11 @@ public class UrlResourceFinderTest extends TestCase {
         }
 
         // verify both work an excepton for a non-jar entry
-        assertEquals("testResource", toString(new URL(systemUrl, testResource.toURL().toExternalForm()).openStream()));
-        assertEquals("testResource", toString(new URL(geronimoUrl, testResource.toURL().toExternalForm()).openStream()));
+        assertEquals("testResource", toString(new URL(systemUrl, testResource.toURI().toURL().toExternalForm()).openStream()));
+        assertEquals("testResource", toString(new URL(geronimoUrl, testResource.toURI().toURL().toExternalForm()).openStream()));
 
         // verify both fail for a spec without a !/
-        String badEntry = "jar:" + alternateJarFile.toURL().toExternalForm();
+        String badEntry = "jar:" + alternateJarFile.toURI().toURL().toExternalForm();
         try {
             new URL(systemUrl, badEntry).openStream();
             fail("Expected a FileNotFoundException");
@@ -344,7 +344,7 @@ public class UrlResourceFinderTest extends TestCase {
         }
 
         // verify both throw FileNotFoundException for a nested jar file
-        badEntry = "jar:" + alternateJarFile.toURL().toExternalForm() + "!/foo.jar!/bar";
+        badEntry = "jar:" + alternateJarFile.toURI().toURL().toExternalForm() + "!/foo.jar!/bar";
         try {
             new URL(systemUrl, badEntry).openStream();
             fail("Expected a FileNotFoundException");
