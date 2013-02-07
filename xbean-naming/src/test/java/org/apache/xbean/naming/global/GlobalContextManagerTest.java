@@ -31,6 +31,7 @@ import java.util.HashMap;
  */
 public class GlobalContextManagerTest extends AbstractContextTest {
     public void testNoGlobalContextSet() throws Exception {
+        GlobalContextManager.setGlobalContext(null); // force reset since in java 7 order is not guaranteed
         Hashtable env = new Hashtable();
         env.put(Context.INITIAL_CONTEXT_FACTORY, GlobalContextManager.class.getName());
 
