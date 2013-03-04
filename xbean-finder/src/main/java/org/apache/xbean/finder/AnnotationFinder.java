@@ -740,6 +740,8 @@ public class AnnotationFinder implements IAnnotationFinder {
                     }
                 } catch (ClassNotFoundException e) {
                     classesNotLoaded.add(classInfo.getName());
+                } catch (NoClassDefFoundError ncdfe) {
+                    classesNotLoaded.add(classInfo.getName());
                 }
             }
         }
@@ -799,6 +801,8 @@ public class AnnotationFinder implements IAnnotationFinder {
                     }
                 } catch (ClassNotFoundException e) {
                     classesNotLoaded.add(classInfo.getName());
+                } catch (NoClassDefFoundError ncdfe) {
+                    classesNotLoaded.add(classInfo.getName());
                 }
             }
         }
@@ -830,6 +834,8 @@ public class AnnotationFinder implements IAnnotationFinder {
                             }
                         }
                     } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(classInfo.getName());
+                    } catch (NoClassDefFoundError ncdfe) {
                         classesNotLoaded.add(classInfo.getName());
                     }
                 } else {
