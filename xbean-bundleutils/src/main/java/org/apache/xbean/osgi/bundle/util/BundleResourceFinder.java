@@ -165,8 +165,9 @@ public class BundleResourceFinder {
         if (zipEntry == null) {
             return true;
         }
+        ZipInputStream in = null;
         try {
-            ZipInputStream in = new ZipInputStream(zipEntry.openStream());
+            in = new ZipInputStream(zipEntry.openStream());
             ZipEntry entry;
             while ((entry = in.getNextEntry()) != null) {
                 String name = entry.getName();
@@ -178,6 +179,10 @@ public class BundleResourceFinder {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try { in.close(); } catch (Exception e) {}
+            }
         }
         return true;
     }
