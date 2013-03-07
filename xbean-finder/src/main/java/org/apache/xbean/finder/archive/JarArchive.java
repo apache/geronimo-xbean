@@ -50,7 +50,7 @@ public class JarArchive implements Archive {
                 jarPath = jarPath.substring(0, jarPath.indexOf("!"));
                 u = new URL(jarPath);
             }
-            jar = new JarFile(u.getFile().replace("%20", " ")); // no more an url
+            jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

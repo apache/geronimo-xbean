@@ -98,10 +98,19 @@ public class Archives {
     }
 
     public static File jarArchive(Map<String, String> entries, Class... classes) throws IOException {
+        return jarArchive(null, entries, classes);
+    }
+
+    public static File jarArchive(File path, Map<String, String> entries, Class... classes) throws IOException {
 
         ClassLoader loader = Archives.class.getClassLoader();
 
-        File classpath = File.createTempFile("path with spaces", ".jar");
+        File classpath;
+        if (path == null) {
+            classpath = File.createTempFile("path with spaces", ".jar");
+        } else {
+            classpath = path;
+        }
 
         // Create the ZIP file
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(classpath)));
