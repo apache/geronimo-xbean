@@ -20,6 +20,18 @@
 
 package org.apache.xbean.finder;
 
+import org.apache.xbean.finder.archive.Archive;
+import org.apache.xbean.finder.util.Classes;
+import org.apache.xbean.finder.util.SingleLinkedList;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.EmptyVisitor;
+import org.objectweb.asm.signature.SignatureVisitor;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,18 +52,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.xbean.finder.archive.Archive;
-import org.apache.xbean.finder.util.Classes;
-import org.apache.xbean.finder.util.SingleLinkedList;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
-import org.objectweb.asm.signature.SignatureVisitor;
 
 /**
  * ClassFinder searches the classpath of the specified classloader for
@@ -628,6 +628,8 @@ public class AnnotationFinder implements IAnnotationFinder {
                         }
                     } catch (ClassNotFoundException e) {
                         classesNotLoaded.add(classInfo.getName());
+                    } catch (ClassCircularityError cce) {
+                        classesNotLoaded.add(classInfo.getName());
                     }
                 } else {
                     try {
@@ -922,6 +924,8 @@ public class AnnotationFinder implements IAnnotationFinder {
                             }
                         }
                     } catch (ClassNotFoundException e) {
+                        classesNotLoaded.add(classInfo.getName());
+                    } catch (NoClassDefFoundError ncdfe) {
                         classesNotLoaded.add(classInfo.getName());
                     }
                 } else {

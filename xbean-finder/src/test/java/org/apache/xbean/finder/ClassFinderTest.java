@@ -44,6 +44,7 @@ import org.acme.foo.Red;
 import org.acme.foo.StringGenericHoliday;
 import org.acme.foo.Thanksgiving;
 import org.acme.foo.ValentinesDay;
+import org.apache.xbean.finder.filter.Filter;
 
 /**
  * @author David Blevins
@@ -63,6 +64,11 @@ public class ClassFinderTest extends TestCase {
         }
 
         urlSet = urlSet.excludeJavaHome();
+        urlSet = urlSet.filter(new Filter() { // keep only test classes to avoid to scan asm etc
+            public boolean accept(final String name) {
+                return name.contains("test-classes");
+            }
+        });
 
         classFinder = new ClassFinder(classLoader, urlSet.getUrls());
     }
