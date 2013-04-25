@@ -20,6 +20,7 @@ import org.apache.xbean.finder.filter.Filter;
 
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +43,7 @@ public class UrlSet implements Iterable<URL> {
     private final Map<String,URL> urls;
 
     public UrlSet(ClassLoader classLoader) throws IOException {
-        this(getUrls(classLoader));
+        this(ClassLoaders.findUrls(classLoader));
     }
 
     public UrlSet(URL... urls){
@@ -198,20 +199,6 @@ public class UrlSet implements Iterable<URL> {
 
     public Iterator<URL> iterator() {
         return getUrls().iterator();
-    }
-
-    private static List<URL> getUrls(ClassLoader classLoader) throws IOException {
-        List<URL> list = new ArrayList<URL>();
-        ArrayList<URL> urls = Collections.list(classLoader.getResources("META-INF"));
-        for (URL url : urls) {
-            String externalForm = url.toExternalForm();
-            int i = externalForm.lastIndexOf("META-INF");
-            externalForm = externalForm.substring(0, i);
-            url = new URL(externalForm);
-            list.add(url);
-        }
-        list.addAll(Collections.list(classLoader.getResources("")));
-        return list;
     }
 
     @Override
