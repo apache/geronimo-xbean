@@ -80,12 +80,13 @@ public class ResourceFinder {
 
         for (int i = 0; urls != null && i < urls.length; i++) {
             URL url = urls[i];
-            if (url == null || isDirectory(url) || url.getProtocol().equals("jar")) {
+            if (url == null || "jar".equals(url.getProtocol()) || isDirectory(url)) { // test directory last since it is the longer in time
                 continue;
             }
             try {
                 urls[i] = new URL("jar", "", -1, url.toString() + "!/");
             } catch (MalformedURLException e) {
+                // no-op
             }
         }
         this.urls = (urls == null || urls.length == 0)? null : urls;
@@ -93,7 +94,7 @@ public class ResourceFinder {
 
     private static boolean isDirectory(URL url) {
         String file = url.getFile();
-        return (file.length() > 0 && file.charAt(file.length() - 1) == '/');
+        return (file.length() > 0 && file.charAt(file.length() - 1) == '/') || new File(file).isDirectory(); // with surefire first test can easily fail
     }
 
     /**
@@ -1020,8 +1021,12 @@ public class ResourceFinder {
                     if (hostLength > 0) {
                         buf.append("//").append(host);
                     }
-                    // baseFile always ends with '/'
+                    // baseFile should always ends with '/'
                     buf.append(baseFile);
+                    if (!baseFile.endsWith("/")) {
+                        buf.append("/");
+                    }
+
                     String fixedResName = resourceName;
                     // Do not create a UNC path, i.e. \\host
                     while (fixedResName.startsWith("/") || fixedResName.startsWith("\\")) {
@@ -1065,11 +1070,14 @@ public class ResourceFinder {
     }
 
     private URL targetURL(URL base, String name) throws MalformedURLException {
-        StringBuffer sb = new StringBuffer(base.getFile().length() + name.length());
-        sb.append(base.getFile());
+        final String baseFile = base.getFile();
+        final StringBuffer sb = new StringBuffer(baseFile.length() + name.length());
+        sb.append(baseFile);
+        if (!baseFile.endsWith("/")) {
+            sb.append("/");
+        }
         sb.append(name);
-        String file = sb.toString();
-        return new URL(base.getProtocol(), base.getHost(), base.getPort(), file, null);
+        return new URL(base.getProtocol(), base.getHost(), base.getPort(), sb.toString(), null);
     }
 
     public static String decode(String fileName) {
