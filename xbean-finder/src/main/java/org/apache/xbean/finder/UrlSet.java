@@ -145,11 +145,19 @@ public class UrlSet implements Iterable<URL> {
 
         File java = new File(path);
 
-        if (path.matches("/System/Library/Frameworks/JavaVM.framework/Versions/[^/]+/Home")){
-            java = java.getParentFile();
+        if (isOsx() && path.endsWith("/Contents/Home")) {
+            java = java.getParentFile().getParentFile();
         }
 
         return exclude(java);
+    }
+
+    public UrlSet excludeJvm() throws MalformedURLException  {
+        UrlSet urls = excludeJavaHome().excludeJavaExtDirs().excludeJavaEndorsedDirs();
+        if (isOsx()) {
+            urls = urls.exclude(new File("/System/Library/Java/Support"));
+        }
+        return urls;
     }
 
     public UrlSet excludePaths(String pathString) throws MalformedURLException {
@@ -204,5 +212,9 @@ public class UrlSet implements Iterable<URL> {
     @Override
     public String toString() {
         return super.toString() + "[" + urls.size() + "]";
+    }
+
+    public boolean isOsx() {
+        return "Mac OS X".equals(System.getProperty("os.name"));
     }
 }
