@@ -31,7 +31,7 @@ public final class ClassLoaders {
     private static final ClassLoader SYSTEM = ClassLoader.getSystemClassLoader();
 
     public static Set<URL> findUrls(final ClassLoader classLoader) throws IOException {
-        if (classLoader == null || classLoader.getClass().getName().equals("sun.misc.Launcher$ExtClassLoader")) {
+        if (classLoader == null || (SYSTEM.getParent() != null && classLoader == SYSTEM.getParent())) {
             return Collections.emptySet();
         }
 
