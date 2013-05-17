@@ -18,7 +18,9 @@ package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
 
+import java.io.File;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -101,38 +103,45 @@ public class UrlSetTest extends TestCase {
 
 
     public void testOsxJdk16Filtering() throws Exception {
+        String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
+
+        String urlPrefix = osName.contains("windows") ? "file:/C:" : "file:";
+
         final URL[] urls = {
-                new URL("file:/Applications/IntelliJ%20IDEA%2011.app/lib/idea_rt.jar"),
-                new URL("file:/Applications/IntelliJ%20IDEA%2011.app/plugins/junit/lib/junit-rt.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/charsets.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsse.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/ui.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/dt.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/apple_provider.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/dnsns.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/localedata.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/sunjce_provider.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/sunpkcs11.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/jce.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/jconsole.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/management-agent.jar"),
-                new URL("file:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/sa-jdi.jar"),
-                new URL("file:/System/Library/Java/Support/CoreDeploy.bundle/Contents/Resources/Java/deploy.jar"),
-                new URL("file:/System/Library/Java/Support/Deploy.bundle/Contents/Resources/Java/javaws.jar"),
-                new URL("file:/Users/dblevins/.m2/repository/asm/asm-commons/3.2/asm-commons-3.2.jar"),
-                new URL("file:/Users/dblevins/.m2/repository/asm/asm-tree/3.2/asm-tree-3.2.jar"),
-                new URL("file:/Users/dblevins/.m2/repository/asm/asm/3.2/asm-3.2.jar"),
-                new URL("file:/Users/dblevins/.m2/repository/junit/junit/4.8.2/junit-4.8.2.jar"),
-                new URL("file:/Users/dblevins/.m2/repository/org/osgi/org.osgi.core/4.3.1/org.osgi.core-4.3.1.jar"),
-                new URL("file:/Users/dblevins/.m2/repository/org/slf4j/slf4j-api/1.5.11/slf4j-api-1.5.11.jar"),
-                new URL("file:/Users/dblevins/work/xbean/trunk/xbean-bundleutils/target/classes/"),
-                new URL("file:/Users/dblevins/work/xbean/trunk/xbean-finder/target/classes/"),
-                new URL("file:/Users/dblevins/work/xbean/trunk/xbean-finder/target/test-classes/"),
+                new URL(urlPrefix + "/Applications/IntelliJ%20IDEA%2011.app/lib/idea_rt.jar"),
+                new URL(urlPrefix + "/Applications/IntelliJ%20IDEA%2011.app/plugins/junit/lib/junit-rt.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/charsets.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsse.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/ui.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/dt.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/apple_provider.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/dnsns.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/localedata.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/sunjce_provider.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/sunpkcs11.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/jce.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/jconsole.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/management-agent.jar"),
+                new URL(urlPrefix + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/sa-jdi.jar"),
+                new URL(urlPrefix + "/System/Library/Java/Support/CoreDeploy.bundle/Contents/Resources/Java/deploy.jar"),
+                new URL(urlPrefix + "/System/Library/Java/Support/Deploy.bundle/Contents/Resources/Java/javaws.jar"),
+                new URL(urlPrefix + "/Users/dblevins/.m2/repository/asm/asm-commons/3.2/asm-commons-3.2.jar"),
+                new URL(urlPrefix + "/Users/dblevins/.m2/repository/asm/asm-tree/3.2/asm-tree-3.2.jar"),
+                new URL(urlPrefix + "/Users/dblevins/.m2/repository/asm/asm/3.2/asm-3.2.jar"),
+                new URL(urlPrefix + "/Users/dblevins/.m2/repository/junit/junit/4.8.2/junit-4.8.2.jar"),
+                new URL(urlPrefix + "/Users/dblevins/.m2/repository/org/osgi/org.osgi.core/4.3.1/org.osgi.core-4.3.1.jar"),
+                new URL(urlPrefix + "/Users/dblevins/.m2/repository/org/slf4j/slf4j-api/1.5.11/slf4j-api-1.5.11.jar"),
+                new URL(urlPrefix + "/Users/dblevins/work/xbean/trunk/xbean-bundleutils/target/classes/"),
+                new URL(urlPrefix + "/Users/dblevins/work/xbean/trunk/xbean-finder/target/classes/"),
+                new URL(urlPrefix + "/Users/dblevins/work/xbean/trunk/xbean-finder/target/test-classes/"),
         };
 
         System.setProperty("java.endorsed.dirs", "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/endorsed");
-        System.setProperty("java.ext.dirs", "/Library/Java/Extensions:/System/Library/Java/Extensions:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext");
+        System.setProperty("java.ext.dirs",
+                           "/Library/Java/Extensions" + File.pathSeparator
+                           + "/System/Library/Java/Extensions" + File.pathSeparator
+                           + "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext");
         System.setProperty("java.home", "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home");
         System.setProperty("os.name", "Mac OS X");
 
