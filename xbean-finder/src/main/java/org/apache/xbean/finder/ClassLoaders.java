@@ -94,11 +94,7 @@ public final class ClassLoaders {
         final Set<URL> urls = new HashSet<URL>();
         for (final String path : cp) {
             try {
-                if (path.endsWith(".jar")) {
-                    urls.add(new URL("jar:file://" + path + "!/"));
-                } else {
-                    urls.add(new URL("file://" + path));
-                }
+                urls.add(new File(path).toURI().toURL()); // don't build the url in plain String since it is not portable
             } catch (final MalformedURLException e) {
                 // ignore
             }

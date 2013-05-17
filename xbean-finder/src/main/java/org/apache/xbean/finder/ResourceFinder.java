@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
@@ -43,6 +44,7 @@ import java.util.jar.JarFile;
  * @version $Rev$ $Date$
  */
 public class ResourceFinder {
+    private static final boolean WIN = System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
 
     private final URL[] urls;
     private final String path;
@@ -1019,6 +1021,9 @@ public class ResourceFinder {
                     StringBuffer buf = new StringBuffer(2 + hostLength + baseFile.length() + resourceName.length());
 
                     if (hostLength > 0) {
+                        if (WIN && "file".equals(protocol)) {
+                            buf.append(":");
+                        }
                         buf.append("//").append(host);
                     }
                     // baseFile should always ends with '/'
