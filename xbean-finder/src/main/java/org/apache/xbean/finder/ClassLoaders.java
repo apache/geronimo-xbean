@@ -16,6 +16,9 @@
  */
 package org.apache.xbean.finder;
 
+import org.apache.xbean.finder.util.Files;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,28 +33,57 @@ public final class ClassLoaders {
     private static final boolean DONT_USE_GET_URLS = Boolean.getBoolean("xbean.finder.use.get-resources");
     private static final ClassLoader SYSTEM = ClassLoader.getSystemClassLoader();
 
+    private static final boolean UNIX = !System.getProperty("os.name").toLowerCase().contains("win");
+
     public static Set<URL> findUrls(final ClassLoader classLoader) throws IOException {
         if (classLoader == null || (SYSTEM.getParent() != null && classLoader == SYSTEM.getParent())) {
             return Collections.emptySet();
         }
 
-        final Set<URL> urls;
+        final Set<URL> urls =  new HashSet<URL>();
 
         if (URLClassLoader.class.isInstance(classLoader) && !DONT_USE_GET_URLS) {
-            urls =  new HashSet<URL>();
-
             if (!isSurefire(classLoader)) {
-                urls.addAll(Arrays.asList(URLClassLoader.class.cast(classLoader).getURLs()));
-                urls.addAll(findUrls(classLoader.getParent()));
+                for (final Collection<URL> item : Arrays.asList(
+                        Arrays.asList(URLClassLoader.class.cast(classLoader).getURLs()), findUrls(classLoader.getParent()))) {
+                    for (final URL url : item) {
+                        addIfNotSo(urls, url);
+                    }
+                }
             } else { // http://jira.codehaus.org/browse/SUREFIRE-928 - we could reuse findUrlFromResources but this seems faster
-                urls.addAll(fromClassPath());
+                for (final URL url : fromClassPath()) {
+                    urls.add(url);
+                }
             }
         } else {
-            urls = findUrlFromResources(classLoader);
+            for (final URL url : findUrlFromResources(classLoader)) {
+                urls.add(url);
+            }
         }
 
         return urls;
     }
+
+    private static void addIfNotSo(final Set<URL> urls, final URL url) {
+        if (UNIX && isNative(url)) {
+            return;
+        }
+
+        urls.add(url);
+    }
+
+    public static boolean isNative(final URL url) {
+        final File file = Files.toFile(url);
+        if (file != null) {
+            final String name = file.getName();
+            if (!name.endsWith(".jar") && !file.isDirectory()
+                    && name.contains(".so") && file.getAbsolutePath().startsWith("/usr/lib")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     private static boolean isSurefire(ClassLoader classLoader) {
         return System.getProperty("surefire.real.class.path") != null && classLoader == SYSTEM;
