@@ -27,6 +27,10 @@ import static org.junit.Assert.assertTrue;
 public class ClassLoadersTest {
     @Test
     public void testNative() throws MalformedURLException {
+        if (System.getProperty("os.name").toLowerCase().contains("win")) { // we don't want to test it
+            return;
+        }
+
         final String base = "file:/usr/lib/x86_64-linux-gnu/jni/libatk-wrapper.so.0.0.18";
 
         assertTrue(ClassLoaders.isNative(new URL(base)));

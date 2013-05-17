@@ -105,7 +105,9 @@ public class UrlSetTest extends TestCase {
     public void testOsxJdk16Filtering() throws Exception {
         String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
 
-        String urlPrefix = osName.contains("windows") ? "file:/C:" : "file:";
+        String urlPrefix = osName.contains("windows") ?
+                "file:/" + new File("/System").getAbsolutePath().substring(0, 2) // C: could be D: or any other letter
+                : "file:";
 
         final URL[] urls = {
                 new URL(urlPrefix + "/Applications/IntelliJ%20IDEA%2011.app/lib/idea_rt.jar"),
@@ -136,6 +138,7 @@ public class UrlSetTest extends TestCase {
                 new URL(urlPrefix + "/Users/dblevins/work/xbean/trunk/xbean-finder/target/classes/"),
                 new URL(urlPrefix + "/Users/dblevins/work/xbean/trunk/xbean-finder/target/test-classes/"),
         };
+
 
         System.setProperty("java.endorsed.dirs", "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/endorsed");
         System.setProperty("java.ext.dirs",
