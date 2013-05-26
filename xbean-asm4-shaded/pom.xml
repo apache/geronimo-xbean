@@ -18,7 +18,7 @@
 
 -->
 
-<!-- $Rev$ $Date$ -->
+<!-- $Rev: 1454287 $ $Date: 2013-03-08 09:41:25 +0100 (Fri, 08 Mar 2013) $ -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -27,11 +27,11 @@
         <groupId>org.apache.xbean</groupId>
         <version>3.14-SNAPSHOT</version>
     </parent>
-    <artifactId>xbean-asm-shaded</artifactId>
+    <artifactId>xbean-asm4-shaded</artifactId>
     <packaging>bundle</packaging>
-    <name>Apache XBean :: ASM shaded (repackaged)</name>
+    <name>Apache XBean :: ASM 4 shaded (repackaged)</name>
 
-    <description>Repackaged and shaded asm jars</description>
+    <description>Repackaged and shaded asm 4.x jars</description>
     <licenses>
         <license>
             <url>http://asm.ow2.org/license.html</url>
@@ -42,7 +42,8 @@
     </licenses>
 
     <properties>
-        <xbean.osgi.export>org.apache.xbean.asm;version=3.2,org.apache.xbean.asm.signature;version=3.2,org.apache.xbean.asm.commons;version=3.2,org.apache.xbean.asm.tree;version=3.2</xbean.osgi.export>
+        <asm.version>4.1</asm.version>
+        <xbean.osgi.export>org.apache.xbean.asm4;version=${asm.version},org.apache.xbean.asm4.signature;version=${asm.version},org.apache.xbean.asm4.commons;version=${asm.version},org.apache.xbean.asm4.tree;version=${asm.version}</xbean.osgi.export>
     </properties>
 
     <build>
@@ -57,12 +58,11 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <!-- ASM3 artifacts have no sources attached-->
-                            <createSourcesJar>false</createSourcesJar>
+                            <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.apache.xbean.asm</shadedPattern>
+                                    <shadedPattern>org.apache.xbean.asm4</shadedPattern>
                                 </relocation>
                             </relocations>
                             <transformers>
@@ -83,14 +83,14 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>3.2</version>
+            <version>${asm.version}</version>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
-            <version>3.2</version>
+            <version>${asm.version}</version>
         </dependency>
     </dependencies>
 </project>
