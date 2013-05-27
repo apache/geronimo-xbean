@@ -18,11 +18,11 @@
 package org.apache.xbean.recipe;
 
 import org.apache.xbean.asm4.ClassReader;
-import org.apache.xbean.asm4.shade.EmptyVisitor;
 import org.apache.xbean.asm4.Label;
 import org.apache.xbean.asm4.MethodVisitor;
 import org.apache.xbean.asm4.Opcodes;
 import org.apache.xbean.asm4.Type;
+import org.apache.xbean.asm4.shade.commons.EmptyVisitor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import org.apache.xbean.asm4.ClassReader;
-import org.apache.xbean.asm4.Label;
-import org.apache.xbean.asm4.MethodVisitor;
-import org.apache.xbean.asm4.Type;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the

@@ -60,6 +60,10 @@
                         <configuration>
                             <createSourcesJar>true</createSourcesJar>
                             <relocations>
+                                <relocation> <!-- we need a different package because we build against both -->
+                                    <pattern>org.apache.xbean.asm4.original.commons</pattern>
+                                    <shadedPattern>org.apache.xbean.asm4.shade.commons</shadedPattern>
+                                </relocation>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
                                     <shadedPattern>org.apache.xbean.asm4</shadedPattern>
@@ -91,6 +95,10 @@
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
             <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-asm-util</artifactId>
         </dependency>
     </dependencies>
 </project>

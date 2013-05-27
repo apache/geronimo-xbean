@@ -220,11 +220,16 @@
                 <artifactId>xbean-asm-shaded</artifactId>
                 <version>${project.version}</version>
             </dependency>
-          <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-asm4-shaded</artifactId>
-            <version>${project.version}</version>
-          </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-asm4-shaded</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-asm-util</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
                 <artifactId>xbean-finder-shaded</artifactId>
@@ -379,6 +384,7 @@
         <module>xbean-classloader</module>
         <module>xbean-classpath</module>
         <module>xbean-bundleutils</module>
+        <module>xbean-asm-util</module>
         <module>xbean-finder</module>
         <module>xbean-naming</module>
         <module>xbean-reflect</module>

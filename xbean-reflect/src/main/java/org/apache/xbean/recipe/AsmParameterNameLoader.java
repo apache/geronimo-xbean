@@ -17,25 +17,25 @@
  */
 package org.apache.xbean.recipe;
 
+import org.apache.xbean.asm4.original.commons.EmptyVisitor;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.Arrays;
-
-import org.apache.xbean.asm4.original.EmptyVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the

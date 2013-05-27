@@ -47,6 +47,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+          <groupId>org.apache.xbean</groupId>
+          <artifactId>xbean-asm-util</artifactId>
+          <scope>provided</scope>
+          <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-asm4-shaded</artifactId>
             <version>3.14-SNAPSHOT</version>

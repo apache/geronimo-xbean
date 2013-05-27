@@ -41,15 +41,15 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>3.2</version>
+            <version>4.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
-            <version>3.2</version>
+            <version>4.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -57,6 +57,11 @@
             <artifactId>org.osgi.core</artifactId>
             <version>4.3.1</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-asm-util</artifactId>
+            <version>3.14-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>

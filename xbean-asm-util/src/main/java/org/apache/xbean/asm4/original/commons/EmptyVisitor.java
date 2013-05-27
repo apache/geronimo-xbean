@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.asm4.original;
+package org.apache.xbean.asm4.original.commons;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -26,7 +26,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class EmptyVisitor extends ClassVisitor {
-    private final AnnotationVisitor av = new AnnotationVisitor(Opcodes.ASM4) {
+    protected final AnnotationVisitor av = new AnnotationVisitor(Opcodes.ASM4) {
         @Override
         public void visit(String name, Object value) {
             EmptyVisitor.this.visit(name, value);
@@ -53,7 +53,7 @@ public class EmptyVisitor extends ClassVisitor {
         }
     };
 
-    private final FieldVisitor fv = new FieldVisitor(Opcodes.ASM4) {
+    protected final FieldVisitor fv = new FieldVisitor(Opcodes.ASM4) {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             return EmptyVisitor.this.visitAnnotation(desc, visible);
@@ -69,7 +69,7 @@ public class EmptyVisitor extends ClassVisitor {
             EmptyVisitor.this.visitEnd();
         }
     };
-    private final MethodVisitor mv = new MethodVisitor(Opcodes.ASM4) {
+    protected final MethodVisitor mv = new MethodVisitor(Opcodes.ASM4) {
         @Override
         public AnnotationVisitor visitAnnotationDefault() {
             return EmptyVisitor.this.visitAnnotationDefault();
@@ -82,7 +82,7 @@ public class EmptyVisitor extends ClassVisitor {
 
         @Override
         public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-            return EmptyVisitor.this.visitParameterAnnotation(parameter, desc, visible);
+            return EmptyVisitor.this.visitMethodParameterAnnotation(parameter, desc, visible);
         }
 
         @Override
@@ -300,6 +300,10 @@ public class EmptyVisitor extends ClassVisitor {
         // no-op
     }
 
+    protected AnnotationVisitor visitMethodParameterAnnotation(int parameter, String desc, boolean visible) {
+        return av;
+    }
+
     protected AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
         return av;
     }
@@ -363,5 +367,17 @@ public class EmptyVisitor extends ClassVisitor {
         if (cv != null) {
             cv.visitEnd();
         }
+    }
+
+    public AnnotationVisitor annotationVisitor() {
+        return av;
+    }
+
+    public FieldVisitor fieldVisitor() {
+        return fv;
+    }
+
+    public MethodVisitor methodVisitor() {
+        return mv;
     }
 }

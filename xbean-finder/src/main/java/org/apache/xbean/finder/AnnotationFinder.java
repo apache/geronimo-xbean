@@ -20,6 +20,7 @@
 
 package org.apache.xbean.finder;
 
+import org.apache.xbean.asm4.original.commons.EmptyVisitor;
 import org.apache.xbean.finder.archive.Archive;
 import org.apache.xbean.finder.util.Classes;
 import org.apache.xbean.finder.util.SingleLinkedList;
@@ -28,8 +29,8 @@ import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.io.ByteArrayInputStream;
@@ -1758,7 +1759,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
             info.getAnnotations().add(annotationInfo);
             index(annotationInfo, info);
-            return new InfoBuildingVisitor(annotationInfo);
+            return new InfoBuildingVisitor(annotationInfo).annotationVisitor();
         }
 
         @Override
@@ -1766,7 +1767,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             ClassInfo classInfo = ((ClassInfo) info);
             FieldInfo fieldInfo = new FieldInfo(classInfo, name, desc);
             classInfo.getFields().add(fieldInfo);
-            return new InfoBuildingVisitor(fieldInfo);
+            return new InfoBuildingVisitor(fieldInfo).fieldVisitor();
         }
 
         @Override
@@ -1775,12 +1776,12 @@ public class AnnotationFinder implements IAnnotationFinder {
             MethodInfo methodInfo = new MethodInfo(classInfo, name, desc);
 
             classInfo.getMethods().add(methodInfo);
-            return new InfoBuildingVisitor(methodInfo);
+            return new InfoBuildingVisitor(methodInfo).methodVisitor();
         }
 
 
         @Override
-        public AnnotationVisitor visitParameterAnnotation(int param, String desc, boolean visible) {
+        public AnnotationVisitor visitMethodParameterAnnotation(int param, String desc, boolean visible) {
             MethodInfo methodInfo = ((MethodInfo) info);
             List<AnnotationInfo> annotationInfos = methodInfo.getParameterAnnotations(param);
             AnnotationInfo annotationInfo = new AnnotationInfo(desc);
@@ -1790,11 +1791,11 @@ public class AnnotationFinder implements IAnnotationFinder {
             methodInfo.getParameters().add(parameterInfo);
             index(annotationInfo, parameterInfo);
 
-            return new InfoBuildingVisitor(annotationInfo);
+            return new InfoBuildingVisitor(annotationInfo).annotationVisitor();
         }
     }
 
-    public static class GenericAwareInfoBuildingVisitor implements SignatureVisitor {
+    public static class GenericAwareInfoBuildingVisitor extends SignatureVisitor {
 
         public enum TYPE {
             CLASS
@@ -1811,9 +1812,11 @@ public class AnnotationFinder implements IAnnotationFinder {
         private static boolean debug = false;
 
         public GenericAwareInfoBuildingVisitor() {
+            super(Opcodes.ASM4);
         }
 
         public GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE type, Info info) {
+            super(Opcodes.ASM4);
             this.type = type;
             this.info = info;
             this.state = GenericAwareInfoBuildingVisitor.STATE.BEGIN;
