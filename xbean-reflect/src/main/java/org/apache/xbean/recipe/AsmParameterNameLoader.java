@@ -30,11 +30,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.Arrays;
 
+import org.apache.xbean.asm4.original.EmptyVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the
@@ -285,7 +286,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
                 }
 
-                return new EmptyVisitor() {
+                return new MethodVisitor(Opcodes.ASM4) {
                     // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
                         if (isStaticMethod) {

@@ -220,6 +220,11 @@
                 <artifactId>xbean-asm-shaded</artifactId>
                 <version>${project.version}</version>
             </dependency>
+          <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-asm4-shaded</artifactId>
+            <version>${project.version}</version>
+          </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
                 <artifactId>xbean-finder-shaded</artifactId>
