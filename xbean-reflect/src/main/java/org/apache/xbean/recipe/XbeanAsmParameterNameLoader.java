@@ -17,24 +17,30 @@
  */
 package org.apache.xbean.recipe;
 
+import org.apache.xbean.asm4.ClassReader;
+import org.apache.xbean.asm4.shade.EmptyVisitor;
+import org.apache.xbean.asm4.Label;
+import org.apache.xbean.asm4.MethodVisitor;
+import org.apache.xbean.asm4.Opcodes;
+import org.apache.xbean.asm4.Type;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.Arrays;
 
-import org.apache.xbean.asm.ClassReader;
-import org.apache.xbean.asm.Label;
-import org.apache.xbean.asm.MethodVisitor;
-import org.apache.xbean.asm.Type;
-import org.apache.xbean.asm.commons.EmptyVisitor;
+import org.apache.xbean.asm4.ClassReader;
+import org.apache.xbean.asm4.Label;
+import org.apache.xbean.asm4.MethodVisitor;
+import org.apache.xbean.asm4.Type;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the
@@ -285,7 +291,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
                 }
 
-                return new EmptyVisitor() {
+                return new MethodVisitor(Opcodes.ASM4) {
                     // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
                         if (isStaticMethod) {

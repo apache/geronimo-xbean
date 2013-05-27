@@ -30,7 +30,7 @@ public class ClassLoadersPerformancesTest {
     @Test
     public void perfs() throws IOException {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        if (!URLClassLoader.class.isInstance(loader)) {
+        if (!URLClassLoader.class.isInstance(loader) || System.getProperty("surefire.real.class.path") != null) {
             return; // skip test
         }
 
