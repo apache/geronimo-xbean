@@ -377,6 +377,30 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.8</version>
+                <configuration>
+                    <excludes>
+                        <exclude>.idea/**/*</exclude>
+                        <exclude>readme/**/*</exclude>
+                        <exclude>**/*.log</exclude>
+                        <exclude>src/test/resources/**/*</exclude>
+                        <exclude>src/test-data/**/*</exclude>
+                        <exclude>dependency-reduced-pom.xml</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
