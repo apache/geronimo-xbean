@@ -388,6 +388,7 @@
                         <exclude>**/*.log</exclude>
                         <exclude>src/test/resources/**/*</exclude>
                         <exclude>src/test-data/**/*</exclude>
+                        <exclude>dependency-reduced-pom.xml</exclude>
                     </excludes>
                 </configuration>
                 <executions>
