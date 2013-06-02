@@ -389,6 +389,7 @@
                         <exclude>src/test/resources/**/*</exclude>
                         <exclude>src/test-data/**/*</exclude>
                         <exclude>dependency-reduced-pom.xml</exclude>
+                        <exclude>DEPENDENCIES</exclude>
                     </excludes>
                 </configuration>
                 <executions>
