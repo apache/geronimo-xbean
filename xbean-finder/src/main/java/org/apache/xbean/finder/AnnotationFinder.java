@@ -157,7 +157,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     private void readClassDef(ClassInfo info) {
-        classInfos.put(info.name, info);
+        classInfos.put(info.getName(), info);
         index(info);
         index(info.constructors);
         for (MethodInfo ctor : info.constructors) {
@@ -400,19 +400,17 @@ public class AnnotationFinder implements IAnnotationFinder {
                 }
             }
         } else {
-            synchronized (classInfo.interfaces) {
-                for (String className : classInfo.interfaces) {
-                    ClassInfo interfaceInfo = classInfos.get(className);
+            for (String className : classInfo.interfaces) {
+                ClassInfo interfaceInfo = classInfos.get(className);
 
-                    if (interfaceInfo == null) {
-                        readClassDef(className);
-                    }
+                if (interfaceInfo == null) {
+                    readClassDef(className);
+                }
 
-                    interfaceInfo = classInfos.get(className);
+                interfaceInfo = classInfos.get(className);
 
-                    if (interfaceInfo != null) {
-                        infos.add(interfaceInfo);
-                    }
+                if (interfaceInfo != null) {
+                    infos.add(interfaceInfo);
                 }
             }
         }
@@ -1070,24 +1068,22 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         for (ClassInfo classInfo : classInfos.values()) {
 
-            synchronized (classInfo.interfaces) {
-                if (classInfo.interfaces.contains(interfaceName)) {
+            if (classInfo.interfaces.contains(interfaceName)) {
 
-                    infos.add(classInfo);
+                infos.add(classInfo);
 
-                    try {
+                try {
 
-                        final Class clazz = classInfo.get();
+                    final Class clazz = classInfo.get();
 
-                        if (clazz.isInterface() && !clazz.isAnnotation()) {
+                    if (clazz.isInterface() && !clazz.isAnnotation()) {
 
-                            infos.addAll(collectImplementations(classInfo.name));
+                        infos.addAll(collectImplementations(classInfo.name));
 
-                        }
-
-                    } catch (ClassNotFoundException ignore) {
-                        // we'll deal with this later
                     }
+
+                } catch (ClassNotFoundException ignore) {
+                    // we'll deal with this later
                 }
             }
         }
@@ -1144,7 +1140,6 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         ClassInfo classInfo = new ClassInfo(clazz);
         infos.add(classInfo);
-        classInfos.put(clazz.getName(), classInfo);
         for (Method method : clazz.getDeclaredMethods()) {
             MethodInfo methodInfo = new MethodInfo(classInfo, method);
             infos.add(methodInfo);
@@ -1751,7 +1746,6 @@ public class AnnotationFinder implements IAnnotationFinder {
 //                    new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
 //                }
                 info = classInfo;
-
                 classInfos.put(classInfo.getName(), classInfo);
             }
         }

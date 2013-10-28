@@ -16,14 +16,11 @@
  */
 package org.apache.xbean.finder;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.TestCase;
 import org.apache.xbean.finder.archive.ClassesArchive;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @version $Rev$ $Date$
@@ -61,34 +58,34 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public void testFindSubclassesIncomplete() throws Exception {
-        for (final AnnotationFinder finder : new AnnotationFinder[] {
-            new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link(),
-            new MultiThreadedAnnotationFinder(new ClassesArchive(Crimson.class, Square.class), maxThreads()).link()
-        }) {
+        for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
+            for (final AnnotationFinder finder : new AnnotationFinder[] {
+                new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link(),
+                new AsynchronousInheritanceAnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link()
+            }) {
 
-            assertSubclasses(finder, Color.class, Red.class, Crimson.class);
-            assertSubclasses(finder, Red.class, Crimson.class);
-            assertSubclasses(finder, Crimson.class);
+                assertSubclasses(finder, Color.class, Red.class, Crimson.class);
+                assertSubclasses(finder, Red.class, Crimson.class);
+                assertSubclasses(finder, Crimson.class);
 
-            assertSubclasses(finder, Shape.class, Square.class);
-            assertSubclasses(finder, Square.class);
+                assertSubclasses(finder, Shape.class, Square.class);
+                assertSubclasses(finder, Square.class);
+            }
         }
     }
 
     public void testFindImplementations() throws Exception {
-        for (final AnnotationFinder finder : new AnnotationFinder[] {
-            new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link(),
-            new MultiThreadedAnnotationFinder(new ClassesArchive(Crimson.class, Square.class), maxThreads()).link()
-        }) {
+        for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
+            for (final AnnotationFinder finder : new AnnotationFinder[] {
+                new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link(),
+                new AsynchronousInheritanceAnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link()
+            }) {
 
-            assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
-            assertImplementations(finder, Hue.class, HSB.class, Color.class, Red.class, Crimson.class);
-            assertImplementations(finder, Saturation.class, HSB.class, Color.class, Red.class, Crimson.class);
+                assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
+                assertImplementations(finder, Hue.class, HSB.class, Color.class, Red.class, Crimson.class);
+                assertImplementations(finder, Saturation.class, HSB.class, Color.class, Red.class, Crimson.class);
+            }
         }
-    }
-
-    private static int maxThreads() {
-        return 2 * Runtime.getRuntime().availableProcessors();
     }
 
     private void assertSubclasses(AnnotationFinder finder, Class<?> clazz, Class... subclasses) {
