@@ -293,7 +293,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     private void linkMetaAnnotations() {
-        for (ClassInfo classInfo : classInfos.values()) {
+        for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
             if (isMetaRoot(classInfo)) {
                 try {
                     metaroots.add((Class<? extends Annotation>) classInfo.get());
