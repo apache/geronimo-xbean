@@ -266,13 +266,16 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                 final List<String> parameterNames;
                 final boolean isStaticMethod;
 
+                final int paramLen;
                 if (methodName.equals("<init>")) {
                     Constructor constructor = constructorMap.get(desc);
                     if (constructor == null) {
                         return null;
                     }
-                    parameterNames = new ArrayList<String>(constructor.getParameterTypes().length);
-                    parameterNames.addAll(Collections.<String>nCopies(constructor.getParameterTypes().length, null));
+
+                    paramLen = constructor.getParameterTypes().length;
+                    parameterNames = new ArrayList<String>(paramLen);
+                    parameterNames.addAll(Collections.<String>nCopies(paramLen, null));
                     constructorParameters.put(constructor, parameterNames);
                     isStaticMethod = false;
                 } else {
@@ -280,8 +283,10 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                     if (method == null) {
                         return null;
                     }
-                    parameterNames = new ArrayList<String>(method.getParameterTypes().length);
-                    parameterNames.addAll(Collections.<String>nCopies(method.getParameterTypes().length, null));
+
+                    paramLen = method.getParameterTypes().length;
+                    parameterNames = new ArrayList<String>(paramLen);
+                    parameterNames.addAll(Collections.<String>nCopies(paramLen, null));
                     methodParameters.put(method, parameterNames);
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
                 }
@@ -290,10 +295,14 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                     // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
                         if (isStaticMethod) {
-                            parameterNames.set(index, name);
+                            if (paramLen > index) {
+                                parameterNames.set(index, name);
+                            }
                         } else if (index > 0) {
                             // for non-static the 0th arg is "this" so we need to offset by -1
-                            parameterNames.set(index - 1, name);
+                            if (paramLen >= index) {
+                                parameterNames.set(index - 1, name);
+                            }
                         }
                     }
                 };
