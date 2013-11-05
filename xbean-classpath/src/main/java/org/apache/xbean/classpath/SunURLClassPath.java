@@ -19,10 +19,9 @@ package org.apache.xbean.classpath;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 public abstract class SunURLClassPath implements ClassPath {
+
     public static ClassLoader getContextClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
@@ -64,20 +63,9 @@ public abstract class SunURLClassPath implements ClassPath {
     private java.lang.reflect.Field getUcpField() throws Exception {
         if (ucpField == null) {
             // Add them to the URLClassLoader's classpath
-            ucpField = (java.lang.reflect.Field) AccessController.doPrivileged(new PrivilegedAction() {
-                public Object run() {
-                    java.lang.reflect.Field ucp = null;
-                    try {
-                        ucp = URLClassLoader.class.getDeclaredField("ucp");
-                        ucp.setAccessible(true);
-                    } catch (Exception e2) {
-                        e2.printStackTrace();
-                    }
-                    return ucp;
-                }
-            });
+            ucpField = URLClassLoader.class.getDeclaredField("ucp");
+            ucpField.setAccessible(true);
         }
-
         return ucpField;
     }
 
