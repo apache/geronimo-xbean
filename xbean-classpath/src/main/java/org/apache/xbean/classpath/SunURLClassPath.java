@@ -24,11 +24,7 @@ import java.security.PrivilegedAction;
 
 public abstract class SunURLClassPath implements ClassPath {
     public static ClassLoader getContextClassLoader() {
-        return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
+        return Thread.currentThread().getContextClassLoader();
     }
 
     private java.lang.reflect.Field ucpField;

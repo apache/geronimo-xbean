@@ -25,8 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1011,12 +1009,7 @@ public final class ReflectionUtil {
     }
 
     private static void setAccessible(final AccessibleObject accessibleObject) {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
-                accessibleObject.setAccessible(true);
-                return null;
-            }
-        });
+        accessibleObject.setAccessible(true);
     }
 
     private static String toParameterList(Class<?>[] parameterTypes) {
