@@ -43,7 +43,13 @@
 
     <properties>
         <asm.version>4.1</asm.version>
-        <xbean.osgi.export>org.apache.xbean.asm4;version=${asm.version},org.apache.xbean.asm4.signature;version=${asm.version},org.apache.xbean.asm4.commons;version=${asm.version},org.apache.xbean.asm4.tree;version=${asm.version}</xbean.osgi.export>
+        <xbean.osgi.export>
+            org.apache.xbean.asm4.shade.commons;version=${asm.version},
+            org.apache.xbean.asm4;version=${asm.version},
+            org.apache.xbean.asm4.signature;version=${asm.version},
+            org.apache.xbean.asm4.commons;version=${asm.version},
+            org.apache.xbean.asm4.tree;version=${asm.version}
+        </xbean.osgi.export>
     </properties>
 
     <build>
