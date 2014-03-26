@@ -33,7 +33,7 @@
 
     <properties>
         <xbean.osgi.export>org.apache.xbean.finder;version=${project.version}</xbean.osgi.export>
-        <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm4;version=4,org.apache.xbean.asm4.shade.commons;version=4</xbean.osgi.import>
+        <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm5;version=5,org.apache.xbean.asm5.shade.commons;version=5</xbean.osgi.import>
     </properties>
 
     <build>
@@ -51,12 +51,12 @@
                             <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.xbean.asm4.original.commons.EmptyVisitor</pattern>
-                                    <shadedPattern>org.apache.xbean.asm4.shade.commons.EmptyVisitor</shadedPattern>
+                                    <pattern>org.apache.xbean.asm5.original.commons.EmptyVisitor</pattern>
+                                    <shadedPattern>org.apache.xbean.asm5.shade.commons.EmptyVisitor</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.apache.xbean.asm4</shadedPattern>
+                                    <shadedPattern>org.apache.xbean.asm5</shadedPattern>
                                 </relocation>
                             </relocations>
                             <artifactSet>
@@ -65,7 +65,7 @@
                                 </includes>
                                 <excludes>
                                     <exclude>*:*:sources</exclude>
-                                    <exclude>org.apache.xbean:xbean-asm4-shaded</exclude>
+                                    <exclude>org.apache.xbean:xbean-asm5-shaded</exclude>
                                     <exclude>org.apache.xbean:xbean-asm-util</exclude>
                                     <exclude>junit:junit</exclude>
                                 </excludes>
@@ -98,7 +98,7 @@
                 <configuration>
                     <excludeDependencies>true</excludeDependencies>
                     <instructions>
-                        <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm4,*;resolution:=optional</Import-Package>
+                        <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm5,*;resolution:=optional</Import-Package>
                         <Private-Package />
                         <_nouses>true</_nouses>
                     </instructions>
@@ -123,7 +123,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-asm4-shaded</artifactId>
+            <artifactId>xbean-asm5-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

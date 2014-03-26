@@ -419,6 +419,7 @@
         <module>maven-xbean-plugin</module>
         <module>xbean-asm-shaded</module>
         <module>xbean-asm4-shaded</module>
+        <module>xbean-asm5-shaded</module>
         <module>xbean-finder-shaded</module>
     </modules>
 
