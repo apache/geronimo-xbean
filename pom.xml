@@ -63,6 +63,8 @@
         - http://docs.codehaus.org/display/MAVENUSER/POM+Element+for+Source+File+Encoding
         -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <asm.version>5.0.1</asm.version>
     </properties>
 
 
@@ -222,7 +224,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
-                <artifactId>xbean-asm4-shaded</artifactId>
+                <artifactId>xbean-asm5-shaded</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -417,8 +419,6 @@
         <module>xbean-spring</module>
         <module>xbean-telnet</module>
         <module>maven-xbean-plugin</module>
-        <module>xbean-asm-shaded</module>
-        <module>xbean-asm4-shaded</module>
         <module>xbean-asm5-shaded</module>
         <module>xbean-finder-shaded</module>
     </modules>

@@ -43,13 +43,13 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>4.1</version>
+            <version>${asm.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
-            <version>4.1</version>
+            <version>${asm.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -75,8 +75,8 @@
                     <instructions>
                         <Export-Package>org.apache.xbean.finder.*;version=${project.version}</Export-Package>
                         <Import-Package>
-                            org.objectweb.asm;version=3.1,
-                            org.objectweb.asm.commons;version=3.1,
+                            org.objectweb.asm;version=5,
+                            org.objectweb.asm.commons;version=5,
                             *
                         </Import-Package>
                     </instructions>
