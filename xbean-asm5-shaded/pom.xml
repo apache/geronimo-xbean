@@ -42,7 +42,6 @@
     </licenses>
 
     <properties>
-        <asm.version>5.0.1</asm.version>
         <xbean.osgi.export>
             org.apache.xbean.asm5.shade.commons;version=${asm.version},
             org.apache.xbean.asm5;version=${asm.version},
@@ -102,5 +101,10 @@
             <artifactId>asm-commons</artifactId>
             <version>${asm.version}</version>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-asm-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+      </dependencies>
 </project>

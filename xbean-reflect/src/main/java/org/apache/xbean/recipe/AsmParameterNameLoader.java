@@ -17,7 +17,7 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.asm4.original.commons.EmptyVisitor;
+import org.apache.xbean.asm5.original.commons.EmptyVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -286,7 +286,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
                 }
 
-                return new MethodVisitor(Opcodes.ASM4) {
+                return new MethodVisitor(Opcodes.ASM5) {
                     // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
                         if (isStaticMethod) {

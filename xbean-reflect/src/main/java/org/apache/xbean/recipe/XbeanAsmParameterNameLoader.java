@@ -17,12 +17,12 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.asm4.ClassReader;
-import org.apache.xbean.asm4.Label;
-import org.apache.xbean.asm4.MethodVisitor;
-import org.apache.xbean.asm4.Opcodes;
-import org.apache.xbean.asm4.Type;
-import org.apache.xbean.asm4.shade.commons.EmptyVisitor;
+import org.apache.xbean.asm5.shade.commons.EmptyVisitor;
+import org.apache.xbean.asm5.ClassReader;
+import org.apache.xbean.asm5.Label;
+import org.apache.xbean.asm5.MethodVisitor;
+import org.apache.xbean.asm5.Opcodes;
+import org.apache.xbean.asm5.Type;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -291,7 +291,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
                 }
 
-                return new MethodVisitor(Opcodes.ASM4) {
+                return new MethodVisitor(Opcodes.ASM5) {
                     // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
                         if (isStaticMethod) {
