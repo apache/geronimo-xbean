@@ -16,10 +16,15 @@
  */
 package org.apache.xbean.recipe;
 
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Collections;
+
 /**
+ * @deprecated The functionality of StaticRecipe is built into ObjectRecipe as of xbean-reflect 3.4
  * @version $Rev$ $Date$
  */
-public class StaticRecipe implements Recipe {
+public final class StaticRecipe implements Recipe {
 
     private final Object object;
 
@@ -27,7 +32,35 @@ public class StaticRecipe implements Recipe {
         this.object = object;
     }
 
-    public Object create(ClassLoader classLoader) throws ConstructionException {
+    public boolean canCreate(Type type) {
+        return RecipeHelper.isInstance(type, object);
+    }
+
+    public Object create() throws ConstructionException {
         return object;
+    }
+
+    public Object create(ClassLoader classLoader) throws ConstructionException {
+        return create();
+    }
+
+    public Object create(Type expectedType, boolean lazyRefAllowed) throws ConstructionException {
+        return create();
+    }
+
+    public List<Recipe> getNestedRecipes() {
+        return Collections.emptyList();
+    }
+
+    public List<Recipe> getConstructorRecipes() {
+        return Collections.emptyList();
+    }
+
+    public String getName() {
+        return object.getClass().getName();
+    }
+
+    public float getPriority() {
+        return 0;
     }
 }

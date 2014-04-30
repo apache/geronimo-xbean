@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 
 /**
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date$
  */
 public class One implements Externalizable {
     public void writeExternal(ObjectOutput out) throws IOException {

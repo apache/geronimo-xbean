@@ -16,8 +16,6 @@
  */
 package org.apache.xbean.propertyeditor;
 
-import org.apache.xbean.ClassLoading;
-
 /**
  * A property editor for converting class names into class object instances
  *
@@ -39,7 +37,7 @@ public class ClassEditor extends AbstractConverter {
     protected Object toObjectImpl(String text) {
         try {
             // load this using the current thread's context loader.
-            return ClassLoading.loadClass(text, Thread.currentThread().getContextClassLoader());
+            return Class.forName(text, true, Thread.currentThread().getContextClassLoader());
         } catch (Exception e) {
             // not found exceptions are just turned into wrapped property exceptions.
             throw new PropertyEditorException("Unable to resolve class " + text, e);
@@ -47,8 +45,8 @@ public class ClassEditor extends AbstractConverter {
     }
 
     protected String toStringImpl(Object value) {
-        Class clazz = (Class) value;
-        String text = ClassLoading.getClassName(clazz);
+        Class type = (Class) value;
+        String text = type.getSimpleName();
         return text;
     }
 }

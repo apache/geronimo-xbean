@@ -15,9 +15,23 @@
  * limitations under the License.
  */
 package org.apache.xbean.finder;
+
 /**
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date$
  */
+
+import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import junit.framework.TestCase;
 import org.acme.BarUrlHandler;
@@ -28,12 +42,7 @@ import org.acme.Two;
 import org.acme.javaURLContextFactory;
 import org.acme.kernelURLContextFactory;
 import org.acme.ldapURLContextFactory;
-
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import org.apache.xbean.finder.archive.Archives;
 
 public class ResourceFinderTest extends TestCase {
     ResourceFinder resourceFinder = new ResourceFinder("META-INF/");
@@ -83,7 +92,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAllStrings() throws Exception {
-        List<String> manifests = null;
+        List<String> manifests;
         try {
             manifests = resourceFinder.findAllStrings("MANIFEST.MF");
         } catch (Exception thisIsLegal) {
@@ -154,7 +163,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAllClasses() throws Exception {
-        List<Class> classes = resourceFinder.findAllClasses("java.io.Serializable");
+        List<Class<?>> classes = resourceFinder.findAllClasses("java.io.Serializable");
         assertEquals("size", 1, classes.size());
         assertEquals(One.class, classes.get(0));
 
@@ -169,7 +178,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAvailableClasses() throws Exception {
-        List<Class> classes = resourceFinder.findAvailableClasses("java.io.Serializable");
+        List<Class<?>> classes = resourceFinder.findAvailableClasses("java.io.Serializable");
         assertEquals("size", 1, classes.size());
         assertEquals(One.class, classes.get(0));
 
@@ -178,7 +187,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAllClasses() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAllClasses("serializables");
+        Map<String, Class<?>> resourcesMap = resourceFinder.mapAllClasses("serializables");
 
         assertEquals("map size", 3, resourcesMap.size());
         assertTrue("map contains key 'one'", resourcesMap.containsKey("one"));
@@ -201,7 +210,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAvailableClasses() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAvailableClasses("externalizables");
+        Map<String, Class<?>> resourcesMap = resourceFinder.mapAvailableClasses("externalizables");
 
         assertEquals("map size", 2, resourcesMap.size());
         assertTrue("map contains key 'one'", resourcesMap.containsKey("one"));
@@ -232,7 +241,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testFindAllImplementations() throws Exception {
-        List<Class> classes = resourceFinder.findAllImplementations(java.io.Serializable.class);
+        List<Class<? extends java.io.Serializable>> classes = resourceFinder.findAllImplementations(java.io.Serializable.class);
         assertEquals("size", 1, classes.size());
         assertEquals(One.class, classes.get(0));
 
@@ -246,7 +255,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAllImplementations() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAllImplementations(javax.naming.spi.ObjectFactory.class);
+        Map<String, Class<? extends javax.naming.spi.ObjectFactory>> resourcesMap = resourceFinder.mapAllImplementations(javax.naming.spi.ObjectFactory.class);
 
         assertEquals("map size", 3, resourcesMap.size());
         assertTrue("map contains key 'java'", resourcesMap.containsKey("java"));
@@ -269,7 +278,7 @@ public class ResourceFinderTest extends TestCase {
     }
 
     public void testMapAvailableImplementations() throws Exception {
-        Map<String, Class> resourcesMap = resourceFinder.mapAvailableImplementations(java.net.URLStreamHandler.class);
+        Map<String, Class<? extends java.net.URLStreamHandler>> resourcesMap = resourceFinder.mapAvailableImplementations(java.net.URLStreamHandler.class);
 
         assertEquals("map size", 2, resourcesMap.size());
         assertTrue("map contains key 'bar'", resourcesMap.containsKey("bar"));
@@ -349,6 +358,50 @@ public class ResourceFinderTest extends TestCase {
         assertEquals("year", "2005", properties.getProperty("year"));
     }
 
+
+    public void testWebinfJar() throws Exception {
+
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("WEB-INF/beans.xml", "<beans/>");
+
+        final File jarFile = Archives.jarArchive(map);
+
+        final URL jarFileUrl = jarFile.toURI().toURL();
+        final ResourceFinder finder = new ResourceFinder(jarFileUrl);
+
+        final URL beansXmlUrl = finder.find("WEB-INF/beans.xml");
+
+        assertNotNull(beansXmlUrl);
+    }
+
+
+    private static void readJarEntries(URL location, String basePath, Map<String, URL> resources) throws IOException {
+        JarURLConnection conn = (JarURLConnection) location.openConnection();
+        JarFile jarfile = null;
+        jarfile = conn.getJarFile();
+
+        Enumeration<JarEntry> entries = jarfile.entries();
+        while (entries != null && entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            String name = entry.getName();
+
+            if (entry.isDirectory() || !name.startsWith(basePath) || name.length() == basePath.length()) {
+                continue;
+            }
+
+            name = name.substring(basePath.length());
+
+            if (name.contains("/")) {
+                continue;
+            }
+
+            URL resource = new URL(location, name);
+            resources.put(name, resource);
+        }
+    }
+
+
+
     private void validateSimpsons(Properties properties) {
         assertEquals("props size", 6, properties.size());
         assertEquals("creator", "Matt Groening", properties.getProperty("creator"));
@@ -368,6 +421,50 @@ public class ResourceFinderTest extends TestCase {
         assertEquals("daughter", "Meg", properties.getProperty("daughter"));
         assertEquals("baby", "Stewie", properties.getProperty("baby"));
     }
+
+
+    /*
+     * Disable test because it's failing its purpose:
+     *   - when running in maven in a clean build, no urls are found
+     *       so the test runs with the ResourceFinder using the classloader
+     *       instead of urls
+     *   - when running on a non clean build in maven, one url is found,
+     *       but the test fails
+
+    public void testUrlConstructor() throws Exception {
+        List<URL> all = resourceFinder.findAll("MANIFEST.MF");
+
+        List<URL> urls = new ArrayList();
+        for (URL url : all) {
+            if (url.getPath().contains("xbean-finder")){
+                urls.add(url);
+            }
+        }
+
+        resourceFinder = new ResourceFinder("META-INF/", urls.toArray(new URL[]{}));
+        testGetResourcesMap1();
+        testGetResourcesMap2();
+        testFindString();
+        testFindAllStrings();
+        testFindAvailableStrings();
+        testMapAllStrings();
+        testMapAvailableStrings();
+        testFindClass();
+        testFindAllClasses();
+        testFindAvailableClasses();
+        testMapAllClasses();
+        testMapAvailableClasses();
+        testFindImplementation();
+        testFindAllImplementations();
+        testMapAllImplementations();
+        testMapAvailableImplementations();
+        testFindProperties();
+        testFindAllProperties();
+        testFindAvailableProperties();
+        testMapAllProperties();
+        testMapAvailableProperties();
+    }
+    */
 
 
 }

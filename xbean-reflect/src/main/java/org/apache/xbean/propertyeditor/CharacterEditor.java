@@ -21,7 +21,7 @@ package org.apache.xbean.propertyeditor;
  */
 public class CharacterEditor extends AbstractConverter {
     public CharacterEditor() {
-        super(Character.class);
+        super(Character.class, false);
     }
 
     protected Object toObjectImpl(String text) {

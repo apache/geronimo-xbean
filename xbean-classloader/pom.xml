@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -20,34 +21,23 @@
 
 <!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>2.7-SNAPSHOT</version>
+        <version>3.18-SNAPSHOT</version>
     </parent>
 
     <artifactId>xbean-classloader</artifactId>
-    <name>XBean :: Classloader</name>
-    <version>2.7-SNAPSHOT</version>
-
+    <packaging>bundle</packaging>
+    <name>Apache XBean :: Classloader</name>
+    <description>xbean-classloader includes a flexibie multi-parent classloader</description>
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.4</source>
-                    <target>1.4</target>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.xbean</groupId>
                 <artifactId>maven-xbean-plugin</artifactId>
-                <version>2.7-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
@@ -58,6 +48,18 @@
                 <configuration>
                     <namespace>http://xbean.apache.org/schemas/classloader</namespace>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            org.springframework.beans.factory*;resolution:=optional,
+                            *
+                        </Import-Package>
+                    </instructions>
+              </configuration>
             </plugin>
         </plugins>
     </build>
@@ -70,7 +72,8 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
+            <artifactId>spring-beans</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

@@ -1,74 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    Licensed to the Apache Software Foundation (ASF) under one or more
-    contributor license agreements.  See the NOTICE file distributed with
-    this work for additional information regarding copyright ownership.
-    The ASF licenses this file to You under the Apache License, Version 2.0
-    (the "License"); you may not use this file except in compliance with
-    the License.  You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
--->
-
-<!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <!--
+
+        Licensed to the Apache Software Foundation (ASF) under one or more
+        contributor license agreements.  See the NOTICE file distributed with
+        this work for additional information regarding copyright ownership.
+        The ASF licenses this file to You under the Apache License, Version 2.0
+        (the "License"); you may not use this file except in compliance with
+        the License.  You may obtain a copy of the License at
+
+           http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    -->
+
+    <!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>2.7-SNAPSHOT</version>
+        <version>3.18-SNAPSHOT</version>
     </parent>
 
     <artifactId>xbean-spring</artifactId>
-    <name>XBean :: Spring</name>
+    <packaging>bundle</packaging>
+    <name>Apache XBean :: Spring</name>
+
+    <description>xbean-spring provides a schema-driven proprietary namespace handler for spring contexts</description>
+
+    <properties>
+    </properties>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-spring-common</artifactId>
-            <version>${pom.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-spring-v1</artifactId>
-            <version>${pom.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-spring-v2</artifactId>
-            <version>${pom.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-spring-v2a</artifactId>
-            <version>${pom.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-spring-v2b</artifactId>
-            <version>${pom.version}</version>
-            <optional>true</optional>
-        </dependency>
 
         <dependency>
             <groupId>commons-logging</groupId>
@@ -77,164 +47,99 @@
 
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
+            <artifactId>spring-beans</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.qdox</groupId>
+            <artifactId>qdox</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant</artifactId>
+            <optional>true</optional>
         </dependency>
 
     </dependencies>
-    
+
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>target/test-generated</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>dependency-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-components</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>target/classes</outputDirectory>
-                            <unpackMarkersDirectory>target/classes-marker</unpackMarkersDirectory>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-common</artifactId>
-                                    <version>${pom.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v1</artifactId>
-                                    <version>${pom.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v2</artifactId>
-                                    <version>${pom.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v2a</artifactId>
-                                    <version>${pom.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v2b</artifactId>
-                                    <version>${pom.version}</version>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>get-sources</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>target/sources</outputDirectory>
-                            <unpackMarkersDirectory>target/sources-marker</unpackMarkersDirectory>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-common</artifactId>
-                                    <version>${pom.version}</version>
-                                    <classifier>sources</classifier>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v1</artifactId>
-                                    <version>${pom.version}</version>
-                                    <classifier>sources</classifier>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v2</artifactId>
-                                    <version>${pom.version}</version>
-                                    <classifier>sources</classifier>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v2a</artifactId>
-                                    <version>${pom.version}</version>
-                                    <classifier>sources</classifier>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.xbean</groupId>
-                                    <artifactId>xbean-spring-v2b</artifactId>
-                                    <version>${pom.version}</version>
-                                    <classifier>sources</classifier>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/BeerUsingXBeanNSTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
-                    <!--
-                    HACK: Need to copy classes for clover, since it deployes a -clover artifact
-                          and uses that for a dependency when other modules run (lame).
-                    -->
                     <execution>
-                        <id>copy-classes-for-clover</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${pom.basedir}/target/clover/classes"/>
-                                <copy todir="${pom.basedir}/target/clover/classes">
-                                    <fileset dir="${pom.basedir}/target/classes">
-                                        <include name="**"/>
-                                    </fileset>
+                                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
+                                    <classpath>
+                                        <pathelement path="${basedir}/target/classes" />
+                                        <pathelement path="${basedir}/target/test-classes" />
+                                        <path refid="maven.runtime.classpath" />
+                                    </classpath>
+                                </taskdef>
+                                <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-generated/" />
+                                <copy todir="${basedir}/target/test-classes">
+                                    <fileset dir="${basedir}/target/test-generated" />
                                 </copy>
-                            </tasks>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>generate-source-jar</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <jar destfile="${pom.basedir}/target/${pom.artifactId}-${pom.version}-sources.jar" 
-                                     basedir="${pom.basedir}/target/sources" />
                             </tasks>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            
             <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>build-helper-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>attach-artifacts</id>
-                  <phase>package</phase>
-                  <goals>
-                    <goal>attach-artifact</goal>
-                  </goals>
-                  <configuration>
-                    <artifacts>
-                      <artifact>
-                        <file>${pom.basedir}/target/${pom.artifactId}-${pom.version}-sources.jar</file>
-                        <type>jar</type>
-                        <classifier>sources</classifier>
-                      </artifact>
-                    </artifacts>
-                  </configuration>
-                </execution>
-              </executions>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            com.thoughtworks.qdox*;resolution:=optional,
+                            org.apache.tools.ant*;resolution:=optional,
+                            org.springframework.*;version="[2.5,4)",
+                            org.springframework.core;resolution:=optional;version="[2.5,4)",
+                            org.springframework.web*;resolution:=optional;version="[2.5,4)",
+                            *
+                        </Import-Package>
+                        <DynamicImport-Package>META-INF.services.org.apache.xbean.spring.*,META-INF.services.org.xbean.spring</DynamicImport-Package>
+                        <_failok>true</_failok>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>

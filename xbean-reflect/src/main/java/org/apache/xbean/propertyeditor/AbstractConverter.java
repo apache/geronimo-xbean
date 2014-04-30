@@ -18,8 +18,6 @@ package org.apache.xbean.propertyeditor;
 
 import java.beans.PropertyEditorSupport;
 
-import org.apache.xbean.ClassLoading;
-
 /**
  * A base class for converters.  This class handles all converter methods, and redirects all conversion requests to
  * toStringImpl and toObjectImpl.  These methods can assume that the supplied value or text is never null, and that
@@ -29,6 +27,7 @@ import org.apache.xbean.ClassLoading;
  */
 public abstract class AbstractConverter extends PropertyEditorSupport implements Converter {
     private final Class type;
+    private final boolean trim;
 
     /**
      * Creates an abstract converter for the specified type.
@@ -36,9 +35,14 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
      * @param type type of the property editor
      */
     protected AbstractConverter(Class type) {
+        this(type, true);
+    }
+    
+    protected AbstractConverter(Class type, boolean trim) {
         super();
         if (type == null) throw new NullPointerException("type is null");
         this.type = type;
+        this.trim = trim;
     }
 
     public final Class getType() {
@@ -52,7 +56,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
     }
 
     public final void setAsText(String text) {
-        Object value = toObject(text.trim());
+        Object value = toObject((trim) ? text.trim() : text);
         super.setValue(value);
     }
 
@@ -62,12 +66,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
     }
 
     public final void setValue(Object value) {
-        if (value == null) {
-            super.setValue(null);
-        }
-        if (!type.isInstance(value)) {
-            throw new PropertyEditorException("Value is not an instance of " + ClassLoading.getClassName(type));
-        }
+        // Don't validate the type. Type validation is not required by spec and some setters (e.g. Spring) expect this.
         super.setValue(value);
     }
 
@@ -75,9 +74,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
         if (value == null) {
             return null;
         }
-        if (!type.isInstance(value)) {
-            throw new PropertyEditorException("Value is not an instance of " + ClassLoading.getClassName(type) + ": " + value.getClass().getName());
-        }
+        // Don't validate the type. Type validation is not required by spec and some setters (e.g. Spring) expect this.
         return toStringImpl(value);
     }
 
@@ -86,7 +83,7 @@ public abstract class AbstractConverter extends PropertyEditorSupport implements
             return null;
         }
 
-        Object value = toObjectImpl(text.trim());
+        Object value = toObjectImpl((trim) ? text.trim() : text);
         return value;
     }
 

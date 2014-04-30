@@ -20,8 +20,6 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 public class TomcatClassPath extends SunURLClassPath {
 
@@ -79,7 +77,7 @@ public class TomcatClassPath extends SunURLClassPath {
         }
 
         for (int j = 0; j < jarNames.length; j++) {
-            this.addJarToPath(new File(dir, jarNames[j]).toURL());
+            this.addJarToPath(new File(dir, jarNames[j]).toURI().toURL());
         }
         rebuild();
     }
@@ -98,7 +96,7 @@ public class TomcatClassPath extends SunURLClassPath {
         if (addRepositoryMethod != null){
             addRepositoryMethod.invoke(getClassLoader(), new Object[]{path});
         } else {
-            addURLMethod.invoke(getClassLoader(), new Object[]{new File(path).toURL()});
+            addURLMethod.invoke(getClassLoader(), new Object[]{new File(path).toURI().toURL()});
         }
     }
 
@@ -140,36 +138,19 @@ public class TomcatClassPath extends SunURLClassPath {
      * @return URLClassLoader.addURL method instance
      */
     private Method getAddURLMethod() throws Exception {
-        return (Method) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
-                Method method = null;
-                try {
-                    Class clazz = URLClassLoader.class;
-                    method = clazz.getDeclaredMethod("addURL", new Class[]{URL.class});
-                    method.setAccessible(true);
-                    return method;
-                } catch (Exception e2) {
-                    e2.printStackTrace();
-                }
-                return method;
-            }
-        });
+        Method method = null;
+        Class clazz = URLClassLoader.class;
+        method = clazz.getDeclaredMethod("addURL", new Class[]{URL.class});
+        method.setAccessible(true);
+        return method;
     }
 
     private Method getAddRepositoryMethod() throws Exception {
-        return (Method) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
-                Method method = null;
-                try {
-                    Class clazz = getClassLoader().getClass();
-                    method = clazz.getDeclaredMethod("addRepository", new Class[]{String.class});
-                    method.setAccessible(true);
-                    return method;
-                } catch (Exception e2) {
-                    throw (IllegalStateException) new IllegalStateException("Unable to find or access the addRepository method in StandardClassLoader").initCause(e2);
-                }
-            }
-        });
+        Method method = null;
+        Class clazz = getClassLoader().getClass();
+        method = clazz.getDeclaredMethod("addRepository", new Class[]{String.class});
+        method.setAccessible(true);
+        return method;
     }
 
 }

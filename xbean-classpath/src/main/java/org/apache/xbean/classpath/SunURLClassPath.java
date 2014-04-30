@@ -19,16 +19,11 @@ package org.apache.xbean.classpath;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 public abstract class SunURLClassPath implements ClassPath {
+
     public static ClassLoader getContextClassLoader() {
-        return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
+        return Thread.currentThread().getContextClassLoader();
     }
 
     private java.lang.reflect.Field ucpField;
@@ -51,7 +46,7 @@ public abstract class SunURLClassPath implements ClassPath {
         // Create URLs from them
         final URL[] jars = new URL[jarNames.length];
         for (int j = 0; j < jarNames.length; j++) {
-            jars[j] = new File(dir, jarNames[j]).toURL();
+            jars[j] = new File(dir, jarNames[j]).toURI().toURL();
         }
 
         sun.misc.URLClassPath path = getURLClassPath(loader);
@@ -68,20 +63,9 @@ public abstract class SunURLClassPath implements ClassPath {
     private java.lang.reflect.Field getUcpField() throws Exception {
         if (ucpField == null) {
             // Add them to the URLClassLoader's classpath
-            ucpField = (java.lang.reflect.Field) AccessController.doPrivileged(new PrivilegedAction() {
-                public Object run() {
-                    java.lang.reflect.Field ucp = null;
-                    try {
-                        ucp = URLClassLoader.class.getDeclaredField("ucp");
-                        ucp.setAccessible(true);
-                    } catch (Exception e2) {
-                        e2.printStackTrace();
-                    }
-                    return ucp;
-                }
-            });
+            ucpField = URLClassLoader.class.getDeclaredField("ucp");
+            ucpField.setAccessible(true);
         }
-
         return ucpField;
     }
 

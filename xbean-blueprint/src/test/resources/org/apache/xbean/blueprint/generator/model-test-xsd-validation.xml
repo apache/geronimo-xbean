@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<b:blueprint xmlns:b="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+    xmlns:test="http://xbean.apache.org/test"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://xbean.apache.org/test http://xbean.apache.org/test.xsd
+    ">
+
+  <!-- All the following bean declarations are equivalent  -->
+  <test:qname-service b:id="qname-1">
+    <test:list>
+      <bean class="org.apache.xbean.spring.example.PizzaService">
+        <property name="cheese" value="mucho"/>
+      </bean>
+    </test:list>
+  </test:qname-service>
+
+  <test:qname-service b:id="qname-2">
+    <test:list>
+      <test:pizza cheese="mucho"/>
+    </test:list>
+  </test:qname-service>
+
+  <test:qname-service b:id="qname-3">
+    <b:property name="list">
+      <b:list>
+        <test:pizza cheese="mucho"/>
+      </b:list>
+    </b:property>
+  </test:qname-service>
+
+
+  <test:recipe-service b:id="recipe-service-1">
+    <test:topRecipe>
+      <test:recipe instructions="lots of sugar"/>
+    </test:topRecipe>
+  </test:recipe-service>
+
+</b:blueprint>
