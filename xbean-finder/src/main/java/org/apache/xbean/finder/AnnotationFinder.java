@@ -1140,6 +1140,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         ClassInfo classInfo = new ClassInfo(clazz);
         infos.add(classInfo);
+        classInfos.put(classInfo.name, classInfo);
         for (Method method : clazz.getDeclaredMethods()) {
             MethodInfo methodInfo = new MethodInfo(classInfo, method);
             infos.add(methodInfo);
