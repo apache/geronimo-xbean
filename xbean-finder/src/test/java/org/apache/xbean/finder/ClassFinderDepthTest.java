@@ -17,9 +17,14 @@
 package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
+
+import org.apache.xbean.finder.archive.Archive;
 import org.apache.xbean.finder.archive.ClassesArchive;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EventObject;
 import java.util.List;
 
 /**
@@ -57,6 +62,15 @@ public class ClassFinderDepthTest extends TestCase {
     public static class Square extends Shape {
     }
 
+    @Deprecated
+    public static class CustomEvent extends EventObject {
+        private static final long serialVersionUID = 1L;
+
+        public CustomEvent() {
+            super(new Object());
+        }
+    }
+
     public void testFindSubclassesIncomplete() throws Exception {
         for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
             for (final AnnotationFinder finder : new AnnotationFinder[] {
@@ -70,6 +84,20 @@ public class ClassFinderDepthTest extends TestCase {
 
                 assertSubclasses(finder, Shape.class, Square.class);
                 assertSubclasses(finder, Square.class);
+            }
+        }
+    }
+
+    public void testFindSubclassesOfExternalAfterGet() {
+        final Archive archive = new ClassesArchive(CustomEvent.class);
+        for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
+            for (final AnnotationFinder finder : new AnnotationFinder[] {
+                new AnnotationFinder(archive),
+                new AsynchronousInheritanceAnnotationFinder(archive)
+            }) {
+                assertEquals(Collections.singletonList(CustomEvent.class), finder.findAnnotatedClasses(Deprecated.class));
+                finder.link();
+                assertSubclasses(finder, EventObject.class, CustomEvent.class);
             }
         }
     }
@@ -88,6 +116,20 @@ public class ClassFinderDepthTest extends TestCase {
         }
     }
 
+    public void testFindImplementationsOfExternalAfterGet() {
+        final Archive archive = new ClassesArchive(CustomEvent.class);
+        for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
+            for (final AnnotationFinder finder : new AnnotationFinder[] {
+                new AnnotationFinder(archive),
+                new AsynchronousInheritanceAnnotationFinder(archive)
+            }) {
+                assertEquals(Collections.singletonList(CustomEvent.class), finder.findAnnotatedClasses(Deprecated.class));
+                finder.link();
+                assertImplementations(finder, Serializable.class, EventObject.class, CustomEvent.class);
+            }
+        }
+    }
+    
     private void assertSubclasses(AnnotationFinder finder, Class<?> clazz, Class... subclasses) {
         final List<Class<?>> classes = new ArrayList(finder.findSubclasses(clazz));
 
