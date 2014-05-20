@@ -46,21 +46,25 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
     @Override
     public AnnotationFinder enableFindImplementations() {
         if (implementationsLatch == null) {
-            enableFindSubclasses();
+            synchronized (this) {
+                if (implementationsLatch == null) {
+                    enableFindSubclasses();
 
-            implementationsLatch = new CountDownLatch(1);
-            executor().submit(new Runnable() {
-                public void run() {
-                    try {
-                        subclassesLatch.await();
-                        AsynchronousInheritanceAnnotationFinder.super.enableFindImplementations();
-                        implementationsLatch.countDown();
-                    } catch (final InterruptedException e) {
-                        // no-op
-                    }
+                    implementationsLatch = new CountDownLatch(1);
+                    executor().submit(new Runnable() {
+                        public void run() {
+                            try {
+                                subclassesLatch.await();
+                                AsynchronousInheritanceAnnotationFinder.super.enableFindImplementations();
+                                implementationsLatch.countDown();
+                            } catch (final InterruptedException e) {
+                                // no-op
+                            }
+                        }
+                    });
+                    latchToWait.add(implementationsLatch);
                 }
-            });
-            latchToWait.add(implementationsLatch);
+            }
         }
         return this;
     }
@@ -68,14 +72,18 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
     @Override
     public AnnotationFinder enableFindSubclasses() {
         if (subclassesLatch == null) {
-            subclassesLatch = new CountDownLatch(1);
-            executor().submit(new Runnable() {
-                public void run() {
-                    AsynchronousInheritanceAnnotationFinder.super.enableFindSubclasses();
-                    subclassesLatch.countDown();
+            synchronized (this) {
+                if (subclassesLatch == null) {
+                    subclassesLatch = new CountDownLatch(1);
+                    executor().submit(new Runnable() {
+                        public void run() {
+                            AsynchronousInheritanceAnnotationFinder.super.enableFindSubclasses();
+                            subclassesLatch.countDown();
+                        }
+                    });
+                    latchToWait.add(subclassesLatch);
                 }
-            });
-            latchToWait.add(subclassesLatch);
+            }
         }
         return this;
     }
@@ -88,7 +96,7 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
         join(subclassesLatch);
         return super.findSubclasses(clazz);
     }
-
+    
     @Override
     public <T> List<Class<? extends T>> findImplementations(final Class<T> clazz) {
         if (implementationsLatch == null) {
