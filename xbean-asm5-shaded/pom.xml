@@ -49,6 +49,13 @@
             org.apache.xbean.asm5.commons;version=${asm.version},
             org.apache.xbean.asm5.tree;version=${asm.version}
         </xbean.osgi.export>
+        <xbean.osgi.import>
+            org.apache.xbean.asm5.shade.commons;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm5;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm5.signature;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm5.commons;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm5.tree;version="[${asm.version},${asm.version}]"
+        </xbean.osgi.import>
     </properties>
 
     <build>
@@ -80,7 +87,7 @@
                                         <Bundle-License>http://asm.ow2.org/license.html</Bundle-License>
                                         <Bundle-SymbolicName>org.apache.xbean.asm5-shaded</Bundle-SymbolicName>
                                         <Export-Package>${xbean.osgi.export}</Export-Package>
-                                        <Import-Package>${xbean.osgi.export}</Import-Package>
+                                        <Import-Package>${xbean.osgi.import}</Import-Package>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
