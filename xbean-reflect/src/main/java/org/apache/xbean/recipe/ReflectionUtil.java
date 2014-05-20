@@ -46,7 +46,7 @@ public final class ReflectionUtil {
         } else if (isClassAvailable("org.objectweb.asm.ClassReader")) {
             parameterNamesLoader = new AsmParameterNameLoader();                    
         } else if (isClassAvailable("org.apache.xbean.asm.ClassReader") || isClassAvailable("org.apache.xbean.asm4.ClassReader")) {
-            throw new RuntimeException("Your xbean-asm-shade is too old, please upgrade to xbean-asm4-shade");
+            throw new RuntimeException("Your xbean-asm-shade is too old, please upgrade to xbean-asm5-shade");
         }
     }
     
