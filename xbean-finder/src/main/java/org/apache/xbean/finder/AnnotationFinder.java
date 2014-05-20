@@ -1447,14 +1447,14 @@ public class AnnotationFinder implements IAnnotationFinder {
             super(constructor);
             this.declaringClass = info;
             this.name = "<init>";
-            this.descriptor = null;
+            this.descriptor = Type.getConstructorDescriptor(constructor);
         }
 
         public MethodInfo(ClassInfo info, Method method) {
             super(method);
             this.declaringClass = info;
             this.name = method.getName();
-            this.descriptor = method.getReturnType().getName();
+            this.descriptor = Type.getMethodDescriptor(method);
             this.method = method;
         }
 
@@ -1462,6 +1462,10 @@ public class AnnotationFinder implements IAnnotationFinder {
             this.declaringClass = declarignClass;
             this.name = name;
             this.descriptor = descriptor;
+        }
+
+        public String getDescriptor() {
+            return descriptor;
         }
 
         @Override
