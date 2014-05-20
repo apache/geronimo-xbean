@@ -1646,8 +1646,12 @@ public class AnnotationFinder implements IAnnotationFinder {
             return declaringClass;
         }
 
-        public String getType() {
-            return type;
+        public String getType() { // if this method starts to be used internally move this to constructors and just return type
+            final Type t = Type.getType(type);
+            if (t.getClassName() == null) {
+                return t.getDescriptor();
+            }
+            return t.getClassName();
         }
 
         public String toString() {
