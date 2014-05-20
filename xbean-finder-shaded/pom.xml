@@ -96,11 +96,18 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
-                    <excludeDependencies>true</excludeDependencies>
                     <instructions>
-                        <Import-Package>!org.objectweb.asm.*,!org.apache.xbean.finder.*,org.apache.xbean.asm5,*;resolution:=optional</Import-Package>
+                        <Export-Package>
+                            org.apache.xbean.finder.*;version=${project.version};-noimport:=true
+                        </Export-Package>
+                        <Import-Package>
+                            org.apache.xbean.asm5.*;version="[5.0,6.0)",
+                            *
+                        </Import-Package>
                         <Private-Package />
-                        <_nouses>true</_nouses>
+                        <_removeheaders>
+                            Ignore-Package,Private-Package,Include-Resource,Embed-Dependency
+                        </_removeheaders>
                     </instructions>
                 </configuration>
                 <executions>
@@ -125,6 +132,12 @@
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-asm5-shaded</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>4.3.1</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
