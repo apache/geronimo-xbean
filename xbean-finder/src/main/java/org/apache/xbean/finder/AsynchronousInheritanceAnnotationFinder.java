@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// designed to trigger asynchronism from a single thread
 public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
     private ExecutorService executor = null;
     private CountDownLatch subclassesLatch = null;
@@ -43,7 +44,7 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
         super(archive);
     }
 
-    @Override
+    @Override // should be called from main thread
     public AnnotationFinder enableFindImplementations() {
         if (implementationsLatch == null) {
             enableFindSubclasses();
@@ -65,7 +66,7 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
         return this;
     }
 
-    @Override
+    @Override  // should be called from main thread
     public AnnotationFinder enableFindSubclasses() {
         if (subclassesLatch == null) {
             subclassesLatch = new CountDownLatch(1);
@@ -80,7 +81,7 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
         return this;
     }
 
-    @Override
+    @Override  // should be called from main thread
     public <T> List<Class<? extends T>> findSubclasses(final Class<T> clazz) {
         if (subclassesLatch == null) {
             enableFindSubclasses();
@@ -89,7 +90,7 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
         return super.findSubclasses(clazz);
     }
 
-    @Override
+    @Override  // should be called from main thread
     public <T> List<Class<? extends T>> findImplementations(final Class<T> clazz) {
         if (implementationsLatch == null) {
             enableFindImplementations();

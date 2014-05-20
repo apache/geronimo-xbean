@@ -20,13 +20,16 @@ import junit.framework.TestCase;
 import org.apache.xbean.finder.archive.ClassesArchive;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @version $Rev$ $Date$
  */
 public class ClassFinderDepthTest extends TestCase {
-
+    @Deprecated
+    public static abstract class TargetImpl implements java.lang.annotation.Target {
+    }
 
     public static interface Hue<T> {
     }
@@ -72,6 +75,20 @@ public class ClassFinderDepthTest extends TestCase {
                 assertSubclasses(finder, Square.class);
             }
         }
+    }
+
+    public void testFindAnnotatedInterfaceImplementationsAfterGet() {
+        for (int i = 0; i < 10; i++) {
+                final ClassesArchive archive = new ClassesArchive(TargetImpl.class);
+                for (final AnnotationFinder finder : new AnnotationFinder[] {
+                            new AnnotationFinder(archive),
+                            new AsynchronousInheritanceAnnotationFinder(archive)
+                                }) {
+                        assertEquals(Collections.singletonList(TargetImpl.class), finder.findAnnotatedClasses(Deprecated.class));
+                        finder.link();
+                        assertImplementations(finder, java.lang.annotation.Target.class, TargetImpl.class);
+                    }
+            }
     }
 
     public void testFindImplementations() throws Exception {

@@ -1698,8 +1698,12 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
 
         public AnnotationInfo(String name) {
-            name = Type.getType(name).getClassName();
-            this.name = name.intern();
+            final Type type = Type.getType(name);
+            name = type.getClassName();
+            if (name == null) {
+                name = type.getDescriptor(); // name was already a class name
+            }
+            this.name = name;
         }
 
         public String getName() {
