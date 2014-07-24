@@ -20,6 +20,7 @@ package org.apache.xbean.finder;
 
 import org.apache.xbean.finder.archive.Archive;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +43,21 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
     }
 
     public void destroy() {
-        executor.shutdownNow();
+        final Collection<Runnable> tasks = executor.shutdownNow();
+
+        for (final Runnable r : tasks) {
+            r.run();
+        }
+
+        if (implementationsLatch != null) {
+            implementationsLatch.countDown();
+        }
+        implementationsLatch = null;
+
+        if (subclassesLatch != null) {
+            subclassesLatch.countDown();
+        }
+        subclassesLatch = null;
     }
 
     @Override // should be called from main thread
