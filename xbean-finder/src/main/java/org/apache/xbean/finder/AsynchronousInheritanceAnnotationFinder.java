@@ -20,8 +20,6 @@ package org.apache.xbean.finder;
 
 import org.apache.xbean.finder.archive.Archive;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -31,10 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 // designed to trigger asynchronism from a single thread
 public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
-    private ExecutorService executor = null;
-    private CountDownLatch subclassesLatch = null;
-    private CountDownLatch implementationsLatch = null;
-    private Collection<CountDownLatch> latchToWait = new ArrayList<CountDownLatch>(2); // ensure we cleanup scanning threads
+    private volatile ExecutorService executor = null;
+    private volatile CountDownLatch subclassesLatch = null;
+    private volatile CountDownLatch implementationsLatch = null;
 
     public AsynchronousInheritanceAnnotationFinder(final Archive archive, final boolean checkRuntimeAnnotation) {
         super(archive, checkRuntimeAnnotation);
@@ -42,6 +39,10 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
 
     public AsynchronousInheritanceAnnotationFinder(final Archive archive) {
         super(archive);
+    }
+
+    public void destroy() {
+        executor.shutdownNow();
     }
 
     @Override // should be called from main thread
@@ -61,7 +62,6 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
                     }
                 }
             });
-            latchToWait.add(implementationsLatch);
         }
         return this;
     }
@@ -76,7 +76,6 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
                     subclassesLatch.countDown();
                 }
             });
-            latchToWait.add(subclassesLatch);
         }
         return this;
     }
@@ -107,14 +106,11 @@ public class AsynchronousInheritanceAnnotationFinder extends AnnotationFinder {
     }
 
     private void join(final CountDownLatch latch) {
-        if (latchToWait.remove(latch)) {
+        if (latch != null) {
             try {
                 latch.await();
             } catch (final InterruptedException e) {
                 // no-op
-            }
-            if (latchToWait.isEmpty()) {
-                executor.shutdown();
             }
         }
     }
