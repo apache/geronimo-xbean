@@ -66,6 +66,7 @@ import java.util.Set;
  * @version $Rev$ $Date$
  */
 public class AnnotationFinder implements IAnnotationFinder {
+    private static final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
 
     private final Set<Class<? extends Annotation>> metaroots = new HashSet<Class<? extends Annotation>>();
 
@@ -74,7 +75,6 @@ public class AnnotationFinder implements IAnnotationFinder {
     protected final Map<String, ClassInfo> classInfos = newClassInfoMap();
     protected final Map<String, ClassInfo> originalInfos = newClassInfoMap();
     private final List<String> classesNotLoaded = new LinkedList<String>();
-    private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
     private final Archive archive;
     private final boolean checkRuntimeAnnotation;
 
@@ -347,7 +347,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     protected void linkParent(ClassInfo classInfo) {
         if (classInfo.superType == null) return;
-        if (classInfo.superType.equals("java.lang.Object")) return;
+        if (isJvm(classInfo.superType)) return;
 
         ClassInfo parentInfo = classInfo.superclassInfo;
 
@@ -380,6 +380,26 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
+    /*
+    protected boolean isJvm(final String superType) {
+        // TODO: can't we simply do startsWith("java")?
+        return superType.startsWith("java.lang.")
+                || superType.startsWith("java.beans.")
+                || superType.startsWith("java.util.")
+                || superType.startsWith("java.io.")
+                || superType.startsWith("java.text.")
+                || superType.startsWith("java.net.")
+                || superType.startsWith("java.sql.")
+                || superType.startsWith("java.security.")
+                || superType.startsWith("java.awt.")
+                || superType.startsWith("javax.swing.");
+    }
+    */
+
+    protected boolean isJvm(final String name) {
+        return name.startsWith("java.");
+    }
+
     protected void linkInterfaces(ClassInfo classInfo) {
         final List<ClassInfo> infos = new LinkedList<ClassInfo>();
 
@@ -400,7 +420,10 @@ public class AnnotationFinder implements IAnnotationFinder {
                 }
             }
         } else {
-            for (String className : classInfo.interfaces) {
+            for (final String className : classInfo.interfaces) {
+                if (isJvm(className)) {
+                    continue;
+                }
                 ClassInfo interfaceInfo = classInfos.get(className);
 
                 if (interfaceInfo == null) {
@@ -1010,7 +1033,8 @@ public class AnnotationFinder implements IAnnotationFinder {
 
             try {
 
-                if (clazz.getName().equals(classInfo.superType)) {
+                final String name = clazz.getName();
+                if (name.equals(classInfo.superType)) {
 
                     if (clazz.isAssignableFrom(classInfo.get())) {
 
@@ -1356,14 +1380,14 @@ public class AnnotationFinder implements IAnnotationFinder {
             super(clazz);
             this.clazz = clazz;
             this.name = clazz.getName();
-            Class superclass = clazz.getSuperclass();
+            final Class superclass = clazz.getSuperclass();
             this.superType = superclass != null ? superclass.getName() : null;
             for (Class intrface : clazz.getInterfaces()) {
                 this.interfaces.add(intrface.getName());
             }
         }
 
-        public ClassInfo(String name, String superType) {
+        public ClassInfo(final String name, final String superType) {
             this.name = name;
             this.superType = superType;
         }
@@ -1750,8 +1774,8 @@ public class AnnotationFinder implements IAnnotationFinder {
                 ClassInfo classInfo = new ClassInfo(javaName(name), javaName(superName));
 
 //                if (signature == null) {
-                    for (String interfce : interfaces) {
-                        classInfo.getInterfaces().add(javaName(interfce));
+                    for (final String interfce : interfaces) {
+                        classInfo.interfaces.add(javaName(interfce));
                     }
 //                } else {
 //                    // the class uses generics
@@ -1871,7 +1895,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         public SignatureVisitor visitInterface() {
             if (debug) System.out.println(" visitInterface()");
-            ((ClassInfo) info).getInterfaces().add("");
+            ((ClassInfo) info).interfaces.add("");
             state = GenericAwareInfoBuildingVisitor.STATE.INTERFACE;
             return this;
         }
@@ -1908,7 +1932,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             if (debug) System.out.println(" visitClassType(" + s + ")");
             switch (state) {
                 case INTERFACE:
-                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    List<String> interfces = ((ClassInfo) info).interfaces;
                     int idx = interfces.size() - 1;
                     String interfce = interfces.get(idx);
                     if (interfce.length() == 0) {
@@ -1933,7 +1957,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             if (debug) System.out.println(" visitTypeArgument()");
             switch (state) {
                 case INTERFACE:
-                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    List<String> interfces = ((ClassInfo) info).interfaces;
                     int idx = interfces.size() - 1;
                     String interfce = interfces.get(idx);
                     interfce += "<";
@@ -1945,7 +1969,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             if (debug) System.out.println(" visitTypeArgument(" + c + ")");
             switch (state) {
                 case INTERFACE:
-                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    List<String> interfces = ((ClassInfo) info).interfaces;
                     int idx = interfces.size() - 1;
                     String interfce = interfces.get(idx);
                     interfce += "<";
@@ -1958,7 +1982,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             if (debug) System.out.println(" visitEnd()");
             switch (state) {
                 case INTERFACE:
-                    List<String> interfces = ((ClassInfo) info).getInterfaces();
+                    List<String> interfces = ((ClassInfo) info).interfaces;
                     int idx = interfces.size() - 1;
                     String interfce = interfces.get(idx);
                     interfce += ">";
