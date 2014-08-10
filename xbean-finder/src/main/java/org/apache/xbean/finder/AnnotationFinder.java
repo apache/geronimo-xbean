@@ -1037,10 +1037,9 @@ public class AnnotationFinder implements IAnnotationFinder {
                 if (name.equals(classInfo.superType)) {
 
                     if (clazz.isAssignableFrom(classInfo.get())) {
-
-                        classes.add(classInfo.get().asSubclass(clazz));
-
-                        classes.addAll(_findSubclasses(classInfo.get().asSubclass(clazz)));
+                        final Class<? extends T> asSubclass = classInfo.get().asSubclass(clazz);
+                        classes.add(asSubclass);
+                        classes.addAll(_findSubclasses(asSubclass));
                     }
                 }
 
