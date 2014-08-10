@@ -1062,24 +1062,29 @@ public class AnnotationFinder implements IAnnotationFinder {
         // Collect all interfaces extending the main interface (recursively)
         // Collect all implementations of interfaces
         // i.e. all *directly* implementing classes
-        List<ClassInfo> infos = collectImplementations(interfaceName);
+        final List<ClassInfo> infos = collectImplementations(interfaceName);
 
         // Collect all subclasses of implementations
-        List<Class<? extends T>> classes = new LinkedList<Class<? extends T>>();
+        final List<Class<? extends T>> classes = new LinkedList<Class<? extends T>>();
         for (ClassInfo info : infos) {
             try {
                 final Class<? extends T> impl = (Class<? extends T>) info.get();
 
-                if (clazz.isAssignableFrom(impl)) {
+                if (!classes.contains(impl) && clazz.isAssignableFrom(impl)) {
                     classes.add(impl);
 
                     // Optimization: Don't need to call this method if parent class was already searched
 
 
-                    classes.addAll(_findSubclasses(impl));
+                    final List<Class<? extends T>> c = _findSubclasses((Class<T>) impl);
+                    for (final Class<? extends T> cl : c) {
+                        if (!classes.contains(cl)) {
+                            classes.add(cl);
+                        }
+                    }
                 }
 
-            } catch (ClassNotFoundException e) {
+            } catch (final ClassNotFoundException e) {
                 classesNotLoaded.add(info.getName());
             }
         }
