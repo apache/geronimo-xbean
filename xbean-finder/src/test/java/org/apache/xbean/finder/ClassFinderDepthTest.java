@@ -61,10 +61,9 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public void testFindSubclassesIncomplete() throws Exception {
-        for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
+        for (int i = 0; i < 10; i++) {
             for (final AnnotationFinder finder : new AnnotationFinder[] {
-                new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link(),
-                new AsynchronousInheritanceAnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link()
+                new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link()
             }) {
 
                 assertSubclasses(finder, Color.class, Red.class, Crimson.class);
@@ -81,8 +80,7 @@ public class ClassFinderDepthTest extends TestCase {
         for (int i = 0; i < 10; i++) {
                 final ClassesArchive archive = new ClassesArchive(TargetImpl.class);
                 for (final AnnotationFinder finder : new AnnotationFinder[] {
-                            new AnnotationFinder(archive),
-                            new AsynchronousInheritanceAnnotationFinder(archive)
+                            new AnnotationFinder(archive)
                                 }) {
                         assertEquals(Collections.singletonList(TargetImpl.class), finder.findAnnotatedClasses(Deprecated.class));
                         finder.link();
@@ -92,10 +90,9 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public void testFindImplementations() throws Exception {
-        for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
+        for (int i = 0; i < 10; i++) { 
             for (final AnnotationFinder finder : new AnnotationFinder[] {
-                new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link(),
-                new AsynchronousInheritanceAnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link()
+                new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link()
             }) {
 
                 assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
