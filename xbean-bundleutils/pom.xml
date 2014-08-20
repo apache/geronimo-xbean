@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean</artifactId>
-        <version>3.19-SNAPSHOT</version>
+        <version>4.0</version>
     </parent>
 
     <artifactId>xbean-bundleutils</artifactId>
