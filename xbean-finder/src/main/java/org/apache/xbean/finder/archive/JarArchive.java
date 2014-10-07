@@ -103,12 +103,16 @@ public class JarArchive implements Archive {
             if (!stream.hasMoreElements()) return false;
 
             final JarEntry entry = stream.nextElement();
+            final String entryName = entry.getName();
 
-            if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
+            if (entry.isDirectory() || !entryName.endsWith(".class")) {
                 return advance();
             }
 
-            final String className = entry.getName().replaceFirst(".class$", "");
+            String className = entryName;
+            if (entryName.endsWith(".class")) {
+                className = className.substring(0, className.length() - 6);
+            }
 
             if (className.contains(".")) {
                 return advance();
