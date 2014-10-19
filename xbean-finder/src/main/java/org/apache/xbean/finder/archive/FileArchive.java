@@ -114,7 +114,7 @@ public class FileArchive implements Archive {
                 scanDir(file, classNames, packageName + file.getName() + ".");
             } else if (file.getName().endsWith(".class")) {
                 String name = file.getName();
-                name = name.replaceFirst(".class$", "");
+                name = name.substring(0, name.length() - 6);
                 if (name.contains(".")) continue;
                 classNames.add(packageName + name);
             }
