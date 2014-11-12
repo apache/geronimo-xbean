@@ -55,6 +55,12 @@ public final class ClassLoaders {
                     urls.add(url);
                 }
             }
+
+            // java -jar xxx.jar and use MANIFEST.MF Class-Path?
+            // here perf is not an issue since we would either miss all the classpath or we have a single jar
+            if (urls.size() == 1) {
+                urls.addAll(findUrlFromResources(classLoader));
+            }
         } else {
             for (final URL url : findUrlFromResources(classLoader)) {
                 urls.add(url);
