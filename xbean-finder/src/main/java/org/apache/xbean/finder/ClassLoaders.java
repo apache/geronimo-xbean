@@ -51,20 +51,14 @@ public final class ClassLoaders {
                     }
                 }
             } else { // http://jira.codehaus.org/browse/SUREFIRE-928 - we could reuse findUrlFromResources but this seems faster
-                for (final URL url : fromClassPath()) {
-                    urls.add(url);
-                }
+                urls.addAll(fromClassPath());
             }
+        }
 
-            // java -jar xxx.jar and use MANIFEST.MF Class-Path?
-            // here perf is not an issue since we would either miss all the classpath or we have a single jar
-            if (urls.size() == 1) {
-                urls.addAll(findUrlFromResources(classLoader));
-            }
-        } else {
-            for (final URL url : findUrlFromResources(classLoader)) {
-                urls.add(url);
-            }
+        // DONT_USE_GET_URLS || java -jar xxx.jar and use MANIFEST.MF Class-Path?
+        // here perf is not an issue since we would either miss all the classpath or we have a single jar
+        if (urls.size() <= 1) {
+            urls.addAll(findUrlFromResources(classLoader));
         }
 
         return urls;
