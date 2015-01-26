@@ -98,29 +98,28 @@ public class JarArchive implements Archive {
         }
 
         private boolean advance() {
-            if (next != null) return true;
-
-            if (!stream.hasMoreElements()) return false;
-
-            final JarEntry entry = stream.nextElement();
-            final String entryName = entry.getName();
-
-            if (entry.isDirectory() || !entryName.endsWith(".class")) {
-                return advance();
+            if (next != null) {
+                return true;
             }
+            while (stream.hasMoreElements()) {
+                final JarEntry entry = stream.nextElement();
+                final String entryName = entry.getName();
+                if (entry.isDirectory() || !entryName.endsWith(".class")) {
+                    continue;
+                }
 
-            String className = entryName;
-            if (entryName.endsWith(".class")) {
-                className = className.substring(0, className.length() - 6);
+                String className = entryName;
+                if (entryName.endsWith(".class")) {
+                    className = className.substring(0, className.length() - 6);
+                }
+                if (className.contains(".")) {
+                    continue;
+                }
+
+                next = new ClassEntry(entry, className.replace('/', '.'));
+                return true;
             }
-
-            if (className.contains(".")) {
-                return advance();
-            }
-
-            next = new ClassEntry(entry, className.replace('/', '.'));
-
-            return true;
+            return false;
         }
 
         public boolean hasNext() {
