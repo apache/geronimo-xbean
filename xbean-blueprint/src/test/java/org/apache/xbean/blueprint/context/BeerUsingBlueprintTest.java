@@ -16,8 +16,7 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.aries.blueprint.ComponentDefinitionRegistry;
-import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.apache.xbean.blueprint.example.BeerService;
 
 /**
  * @author James Strachan
@@ -27,10 +26,10 @@ import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 public class BeerUsingBlueprintTest extends BlueprintTestSupport {
     
     public void testBeer() throws Exception {
-        BeanMetadataImpl meta = (BeanMetadataImpl) reg.getComponentDefinition("beerService");
-        checkPropertyValue("name", "Stella", meta);
-        checkPropertyValue("id", "123", meta);
-        assertEquals("id", "beerService", meta.getId());
+        BeerService o = (BeerService)container.getComponentInstance("beerService");
+        assertNotNull(o);
+        assertEquals("name", "Stella", o.getName());
+        assertEquals("id", "123", o.getId());
     }
 
     protected String getPlan() {

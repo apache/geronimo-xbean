@@ -346,6 +346,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                 PropertyDescriptor pd = getPropertyDescriptor(mappingMetaData.getClassName(beanTypeName), childName);
                 Class propertyType = pd == null ? null : pd.getPropertyType();
                 String propertyName = mappingMetaData.getNestedListProperty(beanTypeName, childName);
+                boolean isList = false;
                 //explicit list
                 if (propertyName != null || isCollectionType(propertyType)) {
                     propertyName = propertyName == null ? childName : propertyName;
@@ -361,6 +362,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     } else {
                         listMeta = (MutableCollectionMetadata) list.getValue();
                     }
+                    isList = true;
                     listMeta.addValue(elementMetadata);
                 } else if ((propertyName = mappingMetaData.getNestedProperty(beanTypeName, childName)) != null) {
                     // lets find the first child bean that parses fine
@@ -374,7 +376,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
                     childMetadata = tryParseNestedPropertyViaIntrospection(beanMetadata, className, child, parserContext);
                     propertyName = childName;
                 }
-                if (childMetadata == null) {
+                if (childMetadata == null && !isList) {
                     String text = getElementText(child);
                     if (text != null) {
                         MutableValueMetadata m = parserContext.createMetadata(MutableValueMetadata.class);
@@ -703,19 +705,20 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
         //
         // Neither null nor a reference
         //
-        MutableValueMetadata metadata = parserContext.createMetadata(MutableValueMetadata.class);
         if (propertyEditorName != null) {
-            PropertyEditor propertyEditor;
-            try {
-                propertyEditor = propertyEditors.get(propertyEditorName).newInstance();
-            } catch (InstantiationException e) {
-                throw new ComponentDefinitionException("Could not create a " + propertyEditorName + " to convert value " + value + " for namespace " + namespace);
-            } catch (IllegalAccessException e) {
-                throw new ComponentDefinitionException("Could not create a " + propertyEditorName + " to convert value " + value + " for namespace " + namespace);
-            }
-            propertyEditor.setAsText(value);
-            value = propertyEditor.getAsText();
+            MutableBeanMetadata factory = parserContext.createMetadata(MutableBeanMetadata.class);
+            factory.setRuntimeClass(propertyEditors.get(propertyEditorName));
+
+            MutableValueMetadata metadata = parserContext.createMetadata(MutableValueMetadata.class);
+            metadata.setStringValue(value);
+            factory.addProperty("asText", metadata);
+            
+            MutableBeanMetadata bean = parserContext.createMetadata(MutableBeanMetadata.class);
+            bean.setFactoryComponent(factory);
+            bean.setFactoryMethod("getValue");
+            return bean;
         }
+        MutableValueMetadata metadata = parserContext.createMetadata(MutableValueMetadata.class);
         metadata.setStringValue(value);
         return metadata;
     }
