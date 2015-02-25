@@ -17,6 +17,7 @@
 package org.apache.xbean.finder;
 
 import junit.framework.TestCase;
+
 import org.apache.xbean.finder.archive.ClassesArchive;
 
 import java.util.ArrayList;
@@ -60,6 +61,10 @@ public class ClassFinderDepthTest extends TestCase {
     public static class Square extends Shape {
     }
 
+    @Deprecated
+    public static abstract class TargetImpl implements java.lang.annotation.Target {
+    }
+
     public void testFindSubclassesIncomplete() throws Exception {
         for (int i = 0; i < 10; i++) {
             for (final AnnotationFinder finder : new AnnotationFinder[] {
@@ -98,6 +103,20 @@ public class ClassFinderDepthTest extends TestCase {
                 assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
                 assertImplementations(finder, Hue.class, HSB.class, Color.class, Red.class, Crimson.class);
                 assertImplementations(finder, Saturation.class, HSB.class, Color.class, Red.class, Crimson.class);
+            }
+        }
+    }
+
+    public void testFindAnnotatedInterfaceImplementationsAfterGet() {
+        for (int i = 0; i < 10; i++) { // try to avoid AsynchronousInheritanceAnnotationFinder "luck" issues
+            final ClassesArchive archive = new ClassesArchive(TargetImpl.class);
+            for (final AnnotationFinder finder : new AnnotationFinder[] {
+                new AnnotationFinder(archive),
+                new AsynchronousInheritanceAnnotationFinder(archive)
+            }) {
+                assertEquals(Collections.singletonList(TargetImpl.class), finder.findAnnotatedClasses(Deprecated.class));
+                finder.link();
+                assertImplementations(finder, java.lang.annotation.Target.class, TargetImpl.class);
             }
         }
     }

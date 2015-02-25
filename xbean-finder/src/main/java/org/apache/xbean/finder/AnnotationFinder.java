@@ -1267,7 +1267,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         public Annotatable(AnnotatedElement element) {
             for (Annotation annotation : getAnnotations(element)) {
-                annotations.add(new AnnotationInfo(annotation.annotationType().getName()));
+                annotations.add(new AnnotationInfo(annotation.annotationType()));
             }
         }
 
