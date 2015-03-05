@@ -39,7 +39,7 @@ public class ComponentTest extends TestCase {
     }
     
     protected void test(String file) throws Exception {
-        ComponentDefinitionRegistry f = BlueprintTestSupport.parse(file);
+        ComponentDefinitionRegistry f = BlueprintTestSupport.parse(file).getComponentDefinitionRegistry();
         BeanMetadataImpl meta = (BeanMetadataImpl) f.getComponentDefinition("container");
         assertNotNull(meta);
         CollectionMetadata list = (CollectionMetadata) BlueprintTestSupport.propertyByName("beans", meta).getValue();
