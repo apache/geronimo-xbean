@@ -22,7 +22,7 @@
        xmlns:s="http://www.osgi.org/xmlns/blueprint/v1.0.0"
        xmlns="http://xbean.apache.org/schemas/pizza">
 
-  <beer b:id="123" id="beerService" name="Stella"/>
+  <beer b:id="123" s:id="beerService" name="Stella"/>
 
 </s:blueprint>
 <!-- END SNIPPET: xml -->

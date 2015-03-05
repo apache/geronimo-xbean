@@ -29,14 +29,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.xml.namespace.QName;
 import javax.xml.validation.Schema;
 
 import junit.framework.TestCase;
+
 import org.apache.aries.blueprint.NamespaceHandler;
+import org.apache.aries.blueprint.container.BlueprintContainerImpl;
+import org.apache.aries.blueprint.container.SimpleNamespaceHandlerSet;
 import org.apache.aries.blueprint.parser.ComponentDefinitionRegistryImpl;
 import org.apache.aries.blueprint.parser.NamespaceHandlerSet;
-import org.apache.aries.blueprint.parser.Parser;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +51,7 @@ import org.osgi.service.blueprint.reflect.BeanMetadata;
 import org.osgi.service.blueprint.reflect.BeanProperty;
 import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.ValueMetadata;
+
 import org.xml.sax.SAXException;
 
 /**
@@ -63,17 +67,23 @@ public abstract class BlueprintTestSupport extends TestCase {
     private static final URI QNAME_URI = URI.create("http://xbean.apache.org/schemas/javax.xml.namespace.QName");
 
     protected ComponentDefinitionRegistryImpl reg;
-
+    protected BlueprintContainerImpl container;
+    
     protected void setUp() throws Exception {
-        reg = parse(getPlan());
+        container = parse(getPlan(), getSchema());
+        reg = container.getComponentDefinitionRegistry();
+    }
+    protected abstract String getPlan();
+    protected String getSchema() {
+        return "META-INF/services/org/apache/xbean/blueprint/http/xbean.apache.org/schemas/pizza";
     }
 
-    protected static ComponentDefinitionRegistryImpl parse(String plan) throws Exception {
+    protected static BlueprintContainerImpl parse(String plan) throws Exception {
         String schema = "META-INF/services/org/apache/xbean/blueprint/http/xbean.apache.org/schemas/pizza";
         return parse(plan, schema);
     }
 
-    protected static ComponentDefinitionRegistryImpl parse(String plan, String schema) throws Exception {
+    protected static BlueprintContainerImpl parse(String plan, String schema) throws Exception {
         Properties properties = new Properties();
         URL propUrl = BlueprintTestSupport.class.getClassLoader().getResource(schema);
         InputStream in = propUrl.openStream();
@@ -99,50 +109,25 @@ public abstract class BlueprintTestSupport extends TestCase {
         propertyEditors.put(MilliLittersPropertyEditor.class.getName(), MilliLittersPropertyEditor.class);
         final NamespaceHandler xbeanHandler = new XBeanNamespaceHandler(NAMESPACE_URI.toString(), BlueprintTestSupport.class.getClassLoader().getResource("restaurant.xsd"), classes, propertyEditors, properties);
         final NamespaceHandler qnameHandler = new QNameNamespaceHandler();
-        NamespaceHandlerSet handlers = new NamespaceHandlerSet() {
-            public Set<URI> getNamespaces() {
-                return new HashSet<URI>(Arrays.asList(NAMESPACE_URI, QNAME_URI));
-            }
-
-            public NamespaceHandler getNamespaceHandler(URI namespace) {
-                if (NAMESPACE_URI.equals(namespace)) {
-                    return xbeanHandler;
-                } else if (QNAME_URI.equals(namespace)){
-                    return qnameHandler;
-                }
-                return null;
-            }
-
-            public void removeListener(Listener listener) {
-            }
-
-            public Schema getSchema() throws SAXException, IOException {
-                return null;
-            }
-
-            public boolean isComplete() {
-                return false;
-            }
-
-            public void addListener(Listener listener) {
-            }
-
-            public void destroy() {
-            }
-        };
+        SimpleNamespaceHandlerSet handlers = new SimpleNamespaceHandlerSet();
+        handlers.addNamespace(NAMESPACE_URI, xbeanHandler.getSchemaLocation(NAMESPACE_URI.toString()), xbeanHandler);
+        handlers.addNamespace(QNAME_URI,  xbeanHandler.getSchemaLocation(NAMESPACE_URI.toString()), qnameHandler);
+        
         return parse(plan, handlers);
     }
 
     // from aries blueprint core AbstractBlueprintTest
-    protected static ComponentDefinitionRegistryImpl parse(String plan, NamespaceHandlerSet handlers) throws Exception {
-        ComponentDefinitionRegistryImpl registry = new ComponentDefinitionRegistryImpl();
-        Parser parser = new Parser();
-        parser.parse(Collections.singletonList(BlueprintTestSupport.class.getClassLoader().getResource(plan)));
-        parser.populate(handlers, registry);
-        return registry;
+    protected static BlueprintContainerImpl parse(String plan, final NamespaceHandlerSet handlers) throws Exception {
+        List<URL> list = Collections.singletonList(BlueprintTestSupport.class.getClassLoader().getResource(plan));
+        
+        BlueprintContainerImpl container = new BlueprintContainerImpl(BlueprintTestSupport.class.getClassLoader(), list, false) {
+            protected NamespaceHandlerSet createNamespaceHandlerSet(Set<URI> namespaces) {
+                return handlers;
+            }
+        };
+        container.init(false);
+        return container;
     }
-
-    protected abstract String getPlan();
 
     protected static void checkPropertyValue(String name, Object expectedValued, BeanMetadataImpl meta) {
         BeanProperty prop = propertyByName(name, meta);
