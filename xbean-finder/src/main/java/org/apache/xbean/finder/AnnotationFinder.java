@@ -248,17 +248,17 @@ public class AnnotationFinder implements IAnnotationFinder {
             linkInterfaces(classInfo);
 
         }
-
         return this;
     }
 
     public AnnotationFinder enableFindSubclasses() {
+        final boolean originalLinking = linking;
         linking = ALLOW_LAZY_LINKING;
         for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
 
             linkParent(classInfo);
         }
-
+        linking = originalLinking;
         return this;
     }
 

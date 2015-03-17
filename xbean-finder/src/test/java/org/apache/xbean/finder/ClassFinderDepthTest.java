@@ -19,6 +19,8 @@ package org.apache.xbean.finder;
 import junit.framework.TestCase;
 import org.apache.xbean.finder.archive.ClassesArchive;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +46,8 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public static class Color<T> implements HSB<T> {
+        @Deprecated
+        private String foo;
     }
 
     public static class Red extends Color {
@@ -58,6 +62,19 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public static class Square extends Shape {
+    }
+
+    public void testFindParentFieldOutsideArchive() {
+        final AnnotationFinder finder  = new AnnotationFinder(new ClassesArchive(Red.class) {
+            @Override
+            public InputStream getBytecode(final String className) throws IOException, ClassNotFoundException {
+                if (!className.contains("Red")) {
+                    throw new ClassNotFoundException();
+                }
+                return super.getBytecode(className);
+            }
+        }).link();
+        assertEquals(1, finder.findAnnotatedFields(Deprecated.class).size());
     }
 
     public void testFindSubclassesIncomplete() throws Exception {
