@@ -68,6 +68,13 @@ import java.util.Set;
 public class AnnotationFinder implements IAnnotationFinder {
     private static final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
 
+    // this flag is just a backdoor to allow workaround in case we impact an application, if we aresafe for 2-3 versions
+    // let remove it
+    //
+    // main issue which can happen is a parent class we dont want to scan appears,
+    // xbean.finder.prevent-lazy-linking= true will prevent it, see readClassDef(Class)
+    private static final boolean ALLOW_LAZY_LINKING = !Boolean.getBoolean("xbean.finder.prevent-lazy-linking");
+
     private final Set<Class<? extends Annotation>> metaroots = new HashSet<Class<? extends Annotation>>();
 
     protected final Map<String, List<Info>> annotated = newAnnotatedMap();
@@ -77,6 +84,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     private final List<String> classesNotLoaded = new LinkedList<String>();
     private final Archive archive;
     private final boolean checkRuntimeAnnotation;
+    private volatile boolean linking;
 
     private AnnotationFinder(AnnotationFinder parent, Iterable<String> classNames) {
         this.archive = new SubArchive(classNames);
@@ -245,6 +253,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     public AnnotationFinder enableFindSubclasses() {
+        linking = ALLOW_LAZY_LINKING;
         for (ClassInfo classInfo : classInfos.values().toArray(new ClassInfo[classInfos.size()])) {
 
             linkParent(classInfo);
@@ -356,14 +365,26 @@ public class AnnotationFinder implements IAnnotationFinder {
             parentInfo = classInfos.get(classInfo.superType);
 
             if (parentInfo == null) {
-
-                if (classInfo.clazz != null) {
-                    readClassDef(((Class<?>) classInfo.clazz).getSuperclass());
-                } else {
-                    readClassDef(classInfo.superType);
-                }
+                // best scanning we can do, try it first
+                readClassDef(classInfo.superType);
 
                 parentInfo = classInfos.get(classInfo.superType);
+
+                if (parentInfo == null) {
+                    // parentInfo == null means readClassDef fails so clean up error and retry
+                    classesNotLoaded.remove(classInfo.superType);
+
+                    try {
+                        if (classInfo.get() != null) { // call get() to ensure clazz got a change to be loaded
+                            readClassDef(((Class<?>) classInfo.clazz).getSuperclass());
+                            parentInfo = classInfos.get(classInfo.superType);
+                        }
+                    } catch (final ClassNotFoundException e) {
+                        // no-op
+                    } catch (final Throwable e) {
+                        // no-op
+                    }
+                }
 
                 if (parentInfo == null) return;
 
@@ -1170,6 +1191,9 @@ public class AnnotationFinder implements IAnnotationFinder {
         infos.add(classInfo);
         for (Method method : clazz.getDeclaredMethods()) {
             MethodInfo methodInfo = new MethodInfo(classInfo, method);
+            if (linking) {
+                classInfo.methods.add(methodInfo);
+            }
             infos.add(methodInfo);
             for (Annotation[] annotations : method.getParameterAnnotations()) {
                 for (int i = 0; i < annotations.length; i++) {
@@ -1180,6 +1204,9 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         for (Constructor<?> constructor : clazz.getConstructors()) {
             MethodInfo methodInfo = new MethodInfo(classInfo, constructor);
+            if (linking) {
+                classInfo.methods.add(methodInfo);
+            }
             infos.add(methodInfo);
             for (Annotation[] annotations : constructor.getParameterAnnotations()) {
                 for (int i = 0; i < annotations.length; i++) {
@@ -1189,7 +1216,11 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
 
         for (Field field : clazz.getDeclaredFields()) {
-            infos.add(new FieldInfo(classInfo, field));
+            final FieldInfo fieldInfo = new FieldInfo(classInfo, field);
+            if (linking) {
+                classInfo.fields.add(fieldInfo);
+            }
+            infos.add(fieldInfo);
         }
 
         for (Info info : infos) {
@@ -1197,6 +1228,10 @@ public class AnnotationFinder implements IAnnotationFinder {
                 List<Info> annotationInfos = initAnnotationInfos(annotation.getName());
                 annotationInfos.add(info);
             }
+        }
+
+        if (linking) {
+            classInfos.put(classInfo.name, classInfo);
         }
     }
 

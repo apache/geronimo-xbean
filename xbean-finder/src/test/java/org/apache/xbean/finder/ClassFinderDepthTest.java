@@ -90,20 +90,18 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     public void testFindImplementations() throws Exception {
-        for (int i = 0; i < 10; i++) { 
-            for (final AnnotationFinder finder : new AnnotationFinder[] {
-                new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link()
-            }) {
+        for (int i = 0; i < 10; i++) {
+            final AnnotationFinder finder =
+                    new AnnotationFinder(new ClassesArchive(Crimson.class, Square.class)).link();
 
-                assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
-                assertImplementations(finder, Hue.class, HSB.class, Color.class, Red.class, Crimson.class);
-                assertImplementations(finder, Saturation.class, HSB.class, Color.class, Red.class, Crimson.class);
-            }
+            assertImplementations(finder, HSB.class, Color.class, Red.class, Crimson.class);
+            assertImplementations(finder, Hue.class, HSB.class, Color.class, Red.class, Crimson.class);
+            assertImplementations(finder, Saturation.class, HSB.class, Color.class, Red.class, Crimson.class);
         }
     }
 
     private void assertSubclasses(AnnotationFinder finder, Class<?> clazz, Class... subclasses) {
-        final List<Class<?>> classes = new ArrayList(finder.findSubclasses(clazz));
+        final List<Class<?>> classes = new ArrayList<Class<?>>(finder.findSubclasses(clazz));
 
         for (Class subclass : subclasses) {
             assertContains(classes, subclass);
