@@ -58,7 +58,14 @@ public final class ClassLoaders {
         // DONT_USE_GET_URLS || java -jar xxx.jar and use MANIFEST.MF Class-Path?
         // here perf is not an issue since we would either miss all the classpath or we have a single jar
         if (urls.size() <= 1) {
-            urls.addAll(findUrlFromResources(classLoader));
+            final Set<URL> urlFromResources = findUrlFromResources(classLoader);
+            if (!urls.isEmpty()) {
+                final URL theUrl = urls.iterator().next();
+                if ("file".equals(theUrl.getProtocol())) {  // theUrl can be file:xxxx but it is the same entry actually
+                    urlFromResources.remove(new URL("jar:" + theUrl.toExternalForm() + "!/"));
+                }
+            }
+            urls.addAll(urlFromResources);
         }
 
         return urls;

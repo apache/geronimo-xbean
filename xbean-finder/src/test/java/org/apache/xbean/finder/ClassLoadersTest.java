@@ -18,11 +18,20 @@ package org.apache.xbean.finder;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Enumeration;
 
+import static java.util.Collections.emptyEnumeration;
+import static java.util.Collections.enumeration;
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ClassLoadersTest {
     @Test
@@ -37,5 +46,43 @@ public class ClassLoadersTest {
         assertFalse(ClassLoaders.isNative(new URL(base + ".jar")));
         assertTrue(ClassLoaders.isNative(new URL("jar:" + base + "!/")));
         assertFalse(ClassLoaders.isNative(new URL("jar:" + base + ".jar!/")));
+    }
+
+    @Test
+    public void singleUrl() throws IOException {
+        final File metaInf = new File("target/ClassLoadersTest/singleUrl/META-INF");
+        metaInf.getParentFile().mkdirs();
+
+        final URL url = metaInf.getParentFile().toURI().toURL();
+        final ClassLoader loader = new URLClassLoader(new URL[] {url}, new ClassLoader() {
+            @Override
+            protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
+                throw new ClassNotFoundException();
+            }
+
+            @Override
+            public Enumeration<URL> getResources(final String name) throws IOException {
+                return emptyEnumeration();
+            }
+        }) {
+            @Override
+            public Enumeration<URL> getResources(final String name) throws IOException {
+                if ("META-INF".equals(name)) {
+                    return emptyEnumeration();
+                }
+                return enumeration(singleton(new URL("jar:file:/tmp/app.jar!/")));
+            }
+
+            @Override
+            public URL[] getURLs() {
+                try {
+                    return new URL[] { new URL("file:/tmp/app.jar") };
+                } catch (final MalformedURLException e) {
+                    fail();
+                    throw new IllegalStateException(e);
+                }
+            }
+        };
+        assertEquals(1, ClassLoaders.findUrls(loader).size());
     }
 }
