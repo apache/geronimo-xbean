@@ -24,8 +24,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
-import static java.util.Collections.emptyEnumeration;
 import static java.util.Collections.enumeration;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
@@ -62,13 +62,13 @@ public class ClassLoadersTest {
 
             @Override
             public Enumeration<URL> getResources(final String name) throws IOException {
-                return emptyEnumeration();
+                return EmptyEnumeration.EMPTY_ENUMERATION;
             }
         }) {
             @Override
             public Enumeration<URL> getResources(final String name) throws IOException {
                 if ("META-INF".equals(name)) {
-                    return emptyEnumeration();
+                    return EmptyEnumeration.EMPTY_ENUMERATION;
                 }
                 return enumeration(singleton(new URL("jar:file:/tmp/app.jar!/")));
             }
@@ -84,5 +84,13 @@ public class ClassLoadersTest {
             }
         };
         assertEquals(1, ClassLoaders.findUrls(loader).size());
+    }
+
+    public static class EmptyEnumeration<E> implements Enumeration<E> {
+        public static final EmptyEnumeration EMPTY_ENUMERATION
+            = new EmptyEnumeration();
+
+        public boolean hasMoreElements() { return false; }
+        public E nextElement() { throw new NoSuchElementException(); }
     }
 }
