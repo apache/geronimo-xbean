@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -34,7 +33,6 @@ public class JarArchive implements Archive {
 
     private final ClassLoader loader;
     private final URL url;
-    private List<String> list;
     private final JarFile jar;
 
     public JarArchive(ClassLoader loader, URL url) {
