@@ -131,9 +131,9 @@
                         <Import-Package>
                             com.thoughtworks.qdox*;resolution:=optional,
                             org.apache.tools.ant*;resolution:=optional,
-                            org.springframework.*;version="[2.5,4)",
-                            org.springframework.core;resolution:=optional;version="[2.5,4)",
-                            org.springframework.web*;resolution:=optional;version="[2.5,4)",
+                            org.springframework.*;version="[2.5,5)",
+                            org.springframework.core;resolution:=optional;version="[2.5,5)",
+                            org.springframework.web*;resolution:=optional;version="[2.5,5)",
                             *
                         </Import-Package>
                         <DynamicImport-Package>META-INF.services.org.apache.xbean.spring.*,META-INF.services.org.xbean.spring</DynamicImport-Package>
