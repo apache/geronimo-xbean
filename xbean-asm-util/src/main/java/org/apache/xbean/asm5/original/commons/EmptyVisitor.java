@@ -70,7 +70,7 @@ public class EmptyVisitor extends ClassVisitor {
             EmptyVisitor.this.visitEnd();
         }
     };
-    protected final MethodVisitor mv = new MethodVisitor(Opcodes.ASM4) {
+    protected final MethodVisitor mv = new MethodVisitor(Opcodes.ASM5) {
         @Override
         public AnnotationVisitor visitAnnotationDefault() {
             return EmptyVisitor.this.visitAnnotationDefault();
