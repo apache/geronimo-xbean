@@ -30,6 +30,17 @@ import junit.framework.TestCase;
  * @version $Rev$ $Date$
  */
 public class ParameterNameLoaderTest extends TestCase {
+
+    protected ParameterNameLoader parameterNameLoader = new ParameterNameLoader() {
+        public List<String> get(Method method) {
+            return ReflectionUtil.getParameterNames(method);
+        }
+
+        public List<String> get(Constructor constructor) {
+            return ReflectionUtil.getParameterNames(constructor);
+        }
+    };
+
     public void testConstructor() throws Exception {
         Constructor constructor = TestClass.class.getConstructor(int.class, Object.class, Long.class);
         assertParameterNames(Arrays.asList("one", "two", "three"), constructor);
@@ -166,12 +177,12 @@ public class ParameterNameLoaderTest extends TestCase {
     }
 
     private void assertParameterNames(List<String> expectedNames, Constructor constructor) {
-        List<String> actualNames = ReflectionUtil.getParameterNames(constructor);
+        List<String> actualNames = parameterNameLoader.get(constructor);
         assertEquals(expectedNames, actualNames);
     }
 
     private void assertParameterNames(List<String> expectedNames, Method method) {
-        List<String> actualNames = ReflectionUtil.getParameterNames(method);
+        List<String> actualNames = parameterNameLoader.get(method);
         assertEquals(expectedNames, actualNames);
     }
 
