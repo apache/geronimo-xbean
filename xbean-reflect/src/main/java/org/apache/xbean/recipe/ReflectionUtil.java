@@ -38,18 +38,19 @@ import java.util.Set;
 import static org.apache.xbean.recipe.RecipeHelper.isAssignableFrom;
 
 public final class ReflectionUtil {
-    private static ParameterNameLoader parameterNamesLoader;
-    
-    static {
-        if (isClassAvailable("org.apache.xbean.asm5.ClassReader")) {
-            parameterNamesLoader = new XbeanAsmParameterNameLoader();
-        } else if (isClassAvailable("org.objectweb.asm.ClassReader")) {
-            parameterNamesLoader = new AsmParameterNameLoader();                    
-        } else if (isClassAvailable("org.apache.xbean.asm.ClassReader") || isClassAvailable("org.apache.xbean.asm4.ClassReader")) {
-            throw new RuntimeException("Your xbean-asm-shade is too old, please upgrade to xbean-asm5-shade");
+    private static final class ParameterLoader {
+        private static ParameterNameLoader PARAMETER_NAME_LOADER;
+        static {
+            if (isClassAvailable("org.apache.xbean.asm5.ClassReader")) {
+                PARAMETER_NAME_LOADER = new XbeanAsmParameterNameLoader();
+            } else if (isClassAvailable("org.objectweb.asm.ClassReader")) {
+                PARAMETER_NAME_LOADER = new AsmParameterNameLoader();
+            } else if (isClassAvailable("org.apache.xbean.asm.ClassReader") || isClassAvailable("org.apache.xbean.asm4.ClassReader")) {
+                throw new RuntimeException("Your xbean-asm-shade is too old, please upgrade to xbean-asm5-shade");
+            }
         }
     }
-    
+
     private ReflectionUtil() {
     }
 
@@ -908,8 +909,8 @@ public final class ReflectionUtil {
         if (parameterNames != null && parameterNames.value() != null) {
             return Arrays.asList(parameterNames.value());
         }
-        if (parameterNamesLoader != null) {
-            return parameterNamesLoader.get(constructor);
+        if (ParameterLoader.PARAMETER_NAME_LOADER != null) {
+            return ParameterLoader.PARAMETER_NAME_LOADER.get(constructor);
         }
         return null;
     }
@@ -919,8 +920,8 @@ public final class ReflectionUtil {
         if (parameterNames != null && parameterNames.value() != null) {
             return Arrays.asList(parameterNames.value());
         }
-        if (parameterNamesLoader != null) {
-            return parameterNamesLoader.get(method);
+        if (ParameterLoader.PARAMETER_NAME_LOADER != null) {
+            return ParameterLoader.PARAMETER_NAME_LOADER.get(method);
         }
         return null;
     }
