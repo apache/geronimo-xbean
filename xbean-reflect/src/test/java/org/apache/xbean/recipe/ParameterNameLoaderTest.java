@@ -21,6 +21,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -101,6 +102,11 @@ public class ParameterNameLoaderTest extends TestCase {
         assertParameterNames(Arrays.asList("shot"), method);
     }
 
+    public void testEmptyMethod() throws Exception {
+        Method method = TestClass.class.getMethod("emptyMethod");
+        assertParameterNames(Collections.<String>emptyList(), method);
+    }
+
     @SuppressWarnings({"UnusedDeclaration"})
     private static class ParentTestClass {
         public void inheritedMethod(Map nothing) {}
@@ -128,6 +134,8 @@ public class ParameterNameLoaderTest extends TestCase {
         public void mixedMethods(Short tonic) {}
 
         public abstract void abstractMethod(Byte ear);
+        
+        public void emptyMethod() {}
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
