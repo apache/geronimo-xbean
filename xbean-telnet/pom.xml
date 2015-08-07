@@ -36,8 +36,8 @@
     <dependencies>
 
         <dependency>
-            <groupId>groovy</groupId>
-            <artifactId>groovy</artifactId>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
         </dependency>
 
     </dependencies>

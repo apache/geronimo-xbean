@@ -17,6 +17,7 @@
 package org.apache.xbean.command;
 
 import groovy.lang.GroovyShell;
+import groovy.lang.GroovySystem;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 import java.io.BufferedReader;
@@ -33,7 +34,7 @@ public class GroovySh implements Command {
     public int main(String[] args, InputStream in, PrintStream out) {
         GroovyShell shell = new GroovyShell();
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String version = InvokerHelper.getVersion();
+        String version = GroovySystem.getVersion();
         out.println("Lets get Groovy!");
         out.println("================");
         out.println("Version: " + version + " JVM: " + System.getProperty("java.vm.version"));
