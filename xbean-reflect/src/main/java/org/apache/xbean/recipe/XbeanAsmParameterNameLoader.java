@@ -17,8 +17,8 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.asm5.shade.commons.EmptyVisitor;
 import org.apache.xbean.asm5.ClassReader;
+import org.apache.xbean.asm5.ClassVisitor;
 import org.apache.xbean.asm5.Label;
 import org.apache.xbean.asm5.MethodVisitor;
 import org.apache.xbean.asm5.Opcodes;
@@ -211,7 +211,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
         }
     }
 
-    private static class AllParameterNamesDiscoveringVisitor extends EmptyVisitor {
+    private static class AllParameterNamesDiscoveringVisitor extends ClassVisitor {
         private final Map<Constructor,List<String>> constructorParameters = new HashMap<Constructor,List<String>>();
         private final Map<Method,List<String>> methodParameters = new HashMap<Method,List<String>>();
         private final Map<String,Exception> exceptions = new HashMap<String,Exception>();
@@ -220,6 +220,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
         private final Map<String,Constructor> constructorMap = new HashMap<String,Constructor>();
 
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
+            super(Opcodes.ASM5);
             this.methodName = methodName;
 
             List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
@@ -232,6 +233,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
         }
 
         public AllParameterNamesDiscoveringVisitor(Class type) {
+            super(Opcodes.ASM5);
             this.methodName = "<init>";
 
             List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
