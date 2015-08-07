@@ -17,8 +17,8 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.asm5.original.commons.EmptyVisitor;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -211,7 +211,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         }
     }
 
-    private static class AllParameterNamesDiscoveringVisitor extends EmptyVisitor {
+    private static class AllParameterNamesDiscoveringVisitor extends ClassVisitor {
         private final Map<Constructor,List<String>> constructorParameters = new HashMap<Constructor,List<String>>();
         private final Map<Method,List<String>> methodParameters = new HashMap<Method,List<String>>();
         private final Map<String,Exception> exceptions = new HashMap<String,Exception>();
@@ -220,6 +220,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         private final Map<String,Constructor> constructorMap = new HashMap<String,Constructor>();
 
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
+            super(Opcodes.ASM5);
             this.methodName = methodName;
 
             List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
@@ -232,6 +233,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         }
 
         public AllParameterNamesDiscoveringVisitor(Class type) {
+            super(Opcodes.ASM5);
             this.methodName = "<init>";
 
             List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
