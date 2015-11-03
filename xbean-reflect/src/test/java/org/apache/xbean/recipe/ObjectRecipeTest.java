@@ -165,6 +165,25 @@ public class ObjectRecipeTest extends TestCase {
         assertEquals(10, component.getComponent().getBox().getHeight());
         assertEquals(20, component.getComponent().getBox().getWidth());
     }
+
+    public void testStringCharArray() {
+        {
+            final ObjectRecipe recipe = new ObjectRecipe(StringCharArray.class);
+            recipe.setProperty("chars", "v1");
+            recipe.setProperty("string", "v2");
+            final StringCharArray v = StringCharArray.class.cast(recipe.create());
+            assertEquals("v1", new String(v.chars));
+            assertEquals("v2", v.string);
+        }
+        {
+            final ObjectRecipe recipe = new ObjectRecipe(StringCharArray.class);
+            recipe.setProperty("chars", "v1".toCharArray());
+            recipe.setProperty("string", "v2".toCharArray());
+            final StringCharArray v = StringCharArray.class.cast(recipe.create());
+            assertEquals("v1", new String(v.chars));
+            assertEquals("v2", v.string);
+        }
+    }
     
     public static class Component {
                 
@@ -198,5 +217,18 @@ public class ObjectRecipeTest extends TestCase {
             return name;
         }                
             
+    }
+
+    public static class StringCharArray {
+        private char[] chars;
+        private String string;
+
+        public void setChars(final char[] chars) {
+            this.chars = chars;
+        }
+
+        public void setString(final String string) {
+            this.string = string;
+        }
     }
 }
