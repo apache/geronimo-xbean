@@ -129,7 +129,8 @@ public final class RecipeHelper {
             Recipe recipe = (Recipe) propertyValue;
             return recipe.canCreate(type);
         }
-        return (propertyValue instanceof String && PropertyEditors.canConvert(toClass(type)));
+        return (propertyValue instanceof String && PropertyEditors.canConvert(toClass(type)))
+            || (type == String.class && char[].class.isInstance(propertyValue));
     }
 
     public static boolean isAssignableFrom(Class expected, Class actual) {
@@ -165,6 +166,14 @@ public final class RecipeHelper {
         if (value instanceof Recipe) {
             Recipe recipe = (Recipe) value;
             value = recipe.create(expectedType, lazyRefAllowed);
+        }
+
+        // some shortcuts for common string operations
+        if (char[].class == expectedType && String.class.isInstance(value)) {
+            return String.class.cast(value).toCharArray();
+        }
+        if (String.class == expectedType && char[].class.isInstance(value)) {
+            return new String(char[].class.cast(value));
         }
 
         if (value instanceof String && (expectedType != Object.class)) {
