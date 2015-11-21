@@ -26,7 +26,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>4.5</version>
+        <version>4.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>xbean-classloader</artifactId>
