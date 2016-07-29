@@ -37,7 +37,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.apache.tools.ant.BuildException;
 import org.apache.xbean.spring.generator.DocumentationGenerator;
 import org.apache.xbean.spring.generator.GeneratorPlugin;
 import org.apache.xbean.spring.generator.LogFacade;
@@ -230,7 +229,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
 
             log("...done.");
         } catch (Exception e) {
-            throw new BuildException(e);
+            throw new MojoExecutionException(e.getMessage(), e);
         } finally {
             Thread.currentThread().setContextClassLoader(oldCL);
         }
