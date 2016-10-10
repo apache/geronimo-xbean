@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import static org.objectweb.asm.Opcodes.ASM5;
-
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the
  * class byte code.
@@ -222,7 +220,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         private final Map<String,Constructor> constructorMap = new HashMap<String,Constructor>();
 
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
-            super(ASM5);
+            super(Opcodes.ASM6);
             this.methodName = methodName;
 
             List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
@@ -235,7 +233,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         }
 
         public AllParameterNamesDiscoveringVisitor(Class type) {
-            super(ASM5);
+            super(Opcodes.ASM6);
             this.methodName = "<init>";
 
             List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
@@ -290,7 +288,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
                 }
 
-                return new MethodVisitor(Opcodes.ASM5) {
+                return new MethodVisitor(Opcodes.ASM6) {
                     // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
                         if (isStaticMethod) {

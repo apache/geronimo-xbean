@@ -33,7 +33,7 @@
 
     <properties>
         <xbean.osgi.export>org.apache.xbean.finder;version=${project.version}</xbean.osgi.export>
-        <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm5;version=5,org.apache.xbean.asm5.shade.commons;version=5</xbean.osgi.import>
+        <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm6;version=6,org.apache.xbean.asm6.shade.commons;version=6</xbean.osgi.import>
     </properties>
 
     <build>
@@ -51,12 +51,12 @@
                             <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.xbean.asm5.original.commons.EmptyVisitor</pattern>
-                                    <shadedPattern>org.apache.xbean.asm5.shade.commons.EmptyVisitor</shadedPattern>
+                                    <pattern>org.apache.xbean.asm6.original.commons.EmptyVisitor</pattern>
+                                    <shadedPattern>org.apache.xbean.asm6.shade.commons.EmptyVisitor</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.apache.xbean.asm5</shadedPattern>
+                                    <shadedPattern>org.apache.xbean.asm6</shadedPattern>
                                 </relocation>
                             </relocations>
                             <artifactSet>
@@ -65,7 +65,7 @@
                                 </includes>
                                 <excludes>
                                     <exclude>*:*:sources</exclude>
-                                    <exclude>org.apache.xbean:xbean-asm5-shaded</exclude>
+                                    <exclude>org.apache.xbean:xbean-asm6-shaded</exclude>
                                     <exclude>org.apache.xbean:xbean-asm-util</exclude>
                                     <exclude>junit:junit</exclude>
                                 </excludes>
@@ -101,7 +101,7 @@
                             org.apache.xbean.finder.*;version=${project.version};-noimport:=true
                         </Export-Package>
                         <Import-Package>
-                            org.apache.xbean.asm5.*;version="[5.0,6.0)",
+                            org.apache.xbean.asm6.*;version="[6.0,7.0)",
                             *
                         </Import-Package>
                         <Private-Package />
@@ -130,7 +130,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-asm5-shaded</artifactId>
+            <artifactId>xbean-asm6-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

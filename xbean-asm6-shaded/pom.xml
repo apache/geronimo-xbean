@@ -27,11 +27,11 @@
         <groupId>org.apache.xbean</groupId>
         <version>4.6-SNAPSHOT</version>
     </parent>
-    <artifactId>xbean-asm5-shaded</artifactId>
+    <artifactId>xbean-asm6-shaded</artifactId>
     <packaging>bundle</packaging>
-    <name>Apache XBean :: ASM 5 shaded (repackaged)</name>
+    <name>Apache XBean :: ASM 6 shaded (repackaged)</name>
 
-    <description>Repackaged and shaded asm 5.x jars</description>
+    <description>Repackaged and shaded asm 6.x jars</description>
     <licenses>
         <license>
             <url>http://asm.ow2.org/license.html</url>
@@ -43,18 +43,18 @@
 
     <properties>
         <xbean.osgi.export>
-            org.apache.xbean.asm5.shade.commons;version=${asm.version},
-            org.apache.xbean.asm5;version=${asm.version},
-            org.apache.xbean.asm5.signature;version=${asm.version},
-            org.apache.xbean.asm5.commons;version=${asm.version},
-            org.apache.xbean.asm5.tree;version=${asm.version}
+            org.apache.xbean.asm6.shade.commons;version=${asm.version},
+            org.apache.xbean.asm6;version=${asm.version},
+            org.apache.xbean.asm6.signature;version=${asm.version},
+            org.apache.xbean.asm6.commons;version=${asm.version},
+            org.apache.xbean.asm6.tree;version=${asm.version}
         </xbean.osgi.export>
         <xbean.osgi.import>
-            org.apache.xbean.asm5.shade.commons;version="[${asm.version},${asm.version}]",
-            org.apache.xbean.asm5;version="[${asm.version},${asm.version}]",
-            org.apache.xbean.asm5.signature;version="[${asm.version},${asm.version}]",
-            org.apache.xbean.asm5.commons;version="[${asm.version},${asm.version}]",
-            org.apache.xbean.asm5.tree;version="[${asm.version},${asm.version}]"
+            org.apache.xbean.asm6.shade.commons;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm6;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm6.signature;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm6.commons;version="[${asm.version},${asm.version}]",
+            org.apache.xbean.asm6.tree;version="[${asm.version},${asm.version}]"
         </xbean.osgi.import>
     </properties>
 
@@ -73,19 +73,19 @@
                             <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation> <!-- we need a different package because we build against both -->
-                                    <pattern>org.apache.xbean.asm5.original.commons</pattern>
-                                    <shadedPattern>org.apache.xbean.asm5.shade.commons</shadedPattern>
+                                    <pattern>org.apache.xbean.asm6.original.commons</pattern>
+                                    <shadedPattern>org.apache.xbean.asm6.shade.commons</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.apache.xbean.asm5</shadedPattern>
+                                    <shadedPattern>org.apache.xbean.asm6</shadedPattern>
                                 </relocation>
                             </relocations>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Bundle-License>http://asm.ow2.org/license.html</Bundle-License>
-                                        <Bundle-SymbolicName>org.apache.xbean.asm5-shaded</Bundle-SymbolicName>
+                                        <Bundle-SymbolicName>org.apache.xbean.asm6-shaded</Bundle-SymbolicName>
                                         <Export-Package>${xbean.osgi.export}</Export-Package>
                                         <Import-Package>${xbean.osgi.import}</Import-Package>
                                     </manifestEntries>

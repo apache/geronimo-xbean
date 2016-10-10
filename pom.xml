@@ -64,7 +64,7 @@
         -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <asm.version>5.0.4</asm.version>
+        <asm.version>6.0_ALPHA</asm.version>
     </properties>
 
 
@@ -224,7 +224,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
-                <artifactId>xbean-asm5-shaded</artifactId>
+                <artifactId>xbean-asm6-shaded</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -420,7 +420,7 @@
         <module>xbean-spring</module>
         <module>xbean-telnet</module>
         <module>maven-xbean-plugin</module>
-        <module>xbean-asm5-shaded</module>
+        <module>xbean-asm6-shaded</module>
         <module>xbean-finder-shaded</module>
     </modules>
 
