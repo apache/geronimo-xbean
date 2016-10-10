@@ -20,7 +20,7 @@
 
 package org.apache.xbean.finder;
 
-import org.apache.xbean.asm5.original.commons.EmptyVisitor;
+import org.apache.xbean.asm6.original.commons.EmptyVisitor;
 import org.apache.xbean.finder.archive.Archive;
 import org.apache.xbean.finder.util.Classes;
 import org.apache.xbean.finder.util.SingleLinkedList;
@@ -1897,11 +1897,11 @@ public class AnnotationFinder implements IAnnotationFinder {
         private static boolean debug = false;
 
         public GenericAwareInfoBuildingVisitor() {
-            super(Opcodes.ASM5);
+            super(Opcodes.ASM6);
         }
 
         public GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE type, Info info) {
-            super(Opcodes.ASM5);
+            super(Opcodes.ASM6);
             this.type = type;
             this.info = info;
             this.state = GenericAwareInfoBuildingVisitor.STATE.BEGIN;

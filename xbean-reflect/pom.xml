@@ -48,7 +48,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-asm5-shaded</artifactId>
+            <artifactId>xbean-asm6-shaded</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
@@ -85,15 +85,15 @@
                         <Import-Package>
                             org.apache.log4j;resolution:=optional,
                             org.apache.commons.logging;resolution:=optional,
-                            org.objectweb.asm;resolution:=optional;version="[5.0,6.0)",
-                            org.objectweb.asm.commons;resolution:=optional;version="[5.0,6.0)",
-                            org.apache.xbean.asm5;resolution:=optional;version="[5.0,6.0)",
-                            org.apache.xbean.asm5.commons;resolution:=optional;version="[5.0,6.0)",
-                            org.apache.xbean.asm5.shade.commons;resolution:=optional;version="[5.0,6.0)",
+                            org.objectweb.asm;resolution:=optional;version="[5.0,7.0)",
+                            org.objectweb.asm.commons;resolution:=optional;version="[5.0,7.0)",
+                            org.apache.xbean.asm6;resolution:=optional;version="[6.0,7.0)",
+                            org.apache.xbean.asm6.commons;resolution:=optional;version="[6.0,7.0)",
+                            org.apache.xbean.asm6.shade.commons;resolution:=optional;version="[6.0,7.0)",
                             javax.*
                         </Import-Package>
                         <Private-Package>
-                            org.apache.xbean.asm5.original.commons
+                            org.apache.xbean.asm6.original.commons
                         </Private-Package>
                         <_removeheaders>
                             Ignore-Package,Private-Package,Include-Resource,Embed-Dependency

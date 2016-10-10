@@ -41,12 +41,14 @@ public final class ReflectionUtil {
     private static final class ParameterLoader {
         private static ParameterNameLoader PARAMETER_NAME_LOADER;
         static {
-            if (isClassAvailable("org.apache.xbean.asm5.ClassReader")) {
+            if (isClassAvailable("org.apache.xbean.asm6.ClassReader")) {
                 PARAMETER_NAME_LOADER = new XbeanAsmParameterNameLoader();
             } else if (isClassAvailable("org.objectweb.asm.ClassReader")) {
                 PARAMETER_NAME_LOADER = new AsmParameterNameLoader();
-            } else if (isClassAvailable("org.apache.xbean.asm.ClassReader") || isClassAvailable("org.apache.xbean.asm4.ClassReader")) {
-                throw new RuntimeException("Your xbean-asm-shade is too old, please upgrade to xbean-asm5-shade");
+            } else if (isClassAvailable("org.apache.xbean.asm.ClassReader")
+                    || isClassAvailable("org.apache.xbean.asm4.ClassReader")
+                    || isClassAvailable("org.apache.xbean.asm5.ClassReader")) {
+                throw new RuntimeException("Your xbean-asm-shade is too old, please upgrade to xbean-asm6-shade");
             }
         }
     }
