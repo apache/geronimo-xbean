@@ -19,7 +19,6 @@ package org.apache.xbean.finder.archive;
 import org.acme.foo.Blue;
 import org.acme.foo.Green;
 import org.acme.foo.Red;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

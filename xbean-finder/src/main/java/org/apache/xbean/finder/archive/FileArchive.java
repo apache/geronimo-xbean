@@ -109,6 +109,10 @@ public class FileArchive implements Archive {
 
     private void scanDir(File dir, List<String> classNames, String packageName) {
         File[] files = dir.listFiles();
+        // using /tmp/. as dir we can get null
+        if (files == null) {
+            return;
+        }
         for (File file : files) {
             if (file.isDirectory()) {
                 scanDir(file, classNames, packageName + file.getName() + ".");

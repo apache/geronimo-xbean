@@ -847,6 +847,9 @@ public class ResourceFinder {
         File dir = new File(decode(location.getPath()));
         if (dir.isDirectory()) {
             File[] files = dir.listFiles();
+            if (files == null) {
+                return;
+            }
             for (File file : files) {
                 if (!file.isDirectory()) {
                     String name = file.getName();

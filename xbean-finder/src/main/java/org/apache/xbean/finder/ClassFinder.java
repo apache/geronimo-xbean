@@ -176,6 +176,9 @@ public class ClassFinder extends AbstractFinder {
 
     private void scanDir(File dir, List<String> classNames, String packageName) {
         File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
         for (File file : files) {
             if (file.isDirectory()) {
                 scanDir(file, classNames, packageName + file.getName() + ".");
