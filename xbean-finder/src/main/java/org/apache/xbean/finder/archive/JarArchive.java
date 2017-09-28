@@ -105,6 +105,10 @@ public class JarArchive implements Archive {
                 if (entry.isDirectory() || !entryName.endsWith(".class")) {
                     continue;
                 }
+                if (entryName.startsWith("META-INF/versions/")) {
+                    // TODO: support it but requires the finder to handle the merge of versions which is not yet the case
+                    continue; // assume we can run with the earlier version as a temporarly workaround
+                }
 
                 String className = entryName;
                 if (entryName.endsWith(".class")) {

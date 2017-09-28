@@ -555,6 +555,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
             className = className.replace('.', '/') + ".class";
         }
         try {
+            // TODO: check out META-INF/versions/<version>/className
             URL resource = getResource(className);
             if (resource != null) {
                 InputStream in = resource.openStream();

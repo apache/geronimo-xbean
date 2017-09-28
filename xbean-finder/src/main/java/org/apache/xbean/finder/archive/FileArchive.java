@@ -120,6 +120,10 @@ public class FileArchive implements Archive {
                 String name = file.getName();
                 name = name.substring(0, name.length() - 6);
                 if (name.contains(".")) continue;
+                if (packageName.startsWith("META-INF.versions")) {
+                    // TODO: support it when finder will do support java 9 META-INF/versions for multijars
+                    continue;
+                }
                 classNames.add(packageName + name);
             }
         }
