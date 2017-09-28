@@ -68,6 +68,7 @@ public class ClassesArchive implements Archive {
         if (!className.endsWith(".class")) {
             className = className.replace('.', '/') + ".class";
         }
+        // TODO: support META-INF/versions/
         for (ClassLoader loader : loaders) {
             URL resource = loader.getResource(className);
             if (resource != null) return new BufferedInputStream(resource.openStream());
