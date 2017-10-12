@@ -19,6 +19,7 @@ package org.apache.xbean.finder.archive;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -35,6 +36,7 @@ public class FileArchive implements Archive {
     private final String basePackage;
     private final File dir;
     private List<String> list;
+    private final MJarSupport mjar = new MJarSupport();
 
     public FileArchive(ClassLoader loader, URL url) {
         this.loader = loader;
@@ -77,6 +79,13 @@ public class FileArchive implements Archive {
             className = className.replace('.', '/') + ".class";
         }
 
+        if (mjar.isMjar()) {
+            final String resource = mjar.getClasses().get(className);
+            if (resource != null) {
+                className = resource + ".class";
+            }
+        }
+
         URL resource = loader.getResource(className);
         if (resource != null) return new BufferedInputStream(resource.openStream());
 
@@ -85,6 +94,8 @@ public class FileArchive implements Archive {
 
 
     public Class<?> loadClass(String className) throws ClassNotFoundException {
+        // we assume the loader supports mjar if needed, do we want to wrap it to enforce it?
+        // probably not otherwise runtime will be weird and unexpected no?
         return loader.loadClass(className);
     }
 
@@ -94,6 +105,25 @@ public class FileArchive implements Archive {
 
     public Iterator<String> _iterator() {
         if (list != null) return list.iterator();
+
+        final File manifest = new File(dir, "META-INF/MANIFEST.MF");
+        if (manifest.exists()) {
+            InputStream is = null;
+            try {
+                is =  new FileInputStream(manifest);
+                mjar.load(is);
+            } catch (final IOException e) {
+                // no-op
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (final IOException e) {
+                        // no-op
+                    }
+                }
+            }
+        }
 
         list = file(dir);
         return list.iterator();
@@ -119,10 +149,12 @@ public class FileArchive implements Archive {
             } else if (file.getName().endsWith(".class")) {
                 String name = file.getName();
                 name = name.substring(0, name.length() - 6);
-                if (name.contains(".")) continue;
+                if (name.contains(".") || name.equals("module-info") /*todo?*/) continue;
                 if (packageName.startsWith("META-INF.versions")) {
-                    // TODO: support it when finder will do support java 9 META-INF/versions for multijars
-                    continue;
+                    if (mjar.isMjar()) {
+                        mjar.visit(packageName + name);
+                        continue;
+                    }
                 }
                 classNames.add(packageName + name);
             }
