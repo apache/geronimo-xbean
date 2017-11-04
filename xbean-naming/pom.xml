@@ -30,5 +30,7 @@
     <packaging>bundle</packaging>
     <name>Apache XBean :: Naming</name>
     <description>xbean-naming implements a flexible non-persistent jndi provider</description>
-
+    <properties>
+        <xbean.automatic.module.name>${project.groupId}.naming</xbean.automatic.module.name>
+    </properties>
 </project>

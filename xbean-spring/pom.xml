@@ -36,6 +36,7 @@
     <description>xbean-spring provides a schema-driven proprietary namespace handler for spring contexts</description>
 
     <properties>
+        <xbean.automatic.module.name>${project.groupId}.spring</xbean.automatic.module.name>
     </properties>
 
     <dependencies>

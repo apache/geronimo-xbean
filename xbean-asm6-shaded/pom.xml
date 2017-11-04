@@ -56,6 +56,7 @@
             org.apache.xbean.asm6.commons;version="[${asm.version},${asm.version}]",
             org.apache.xbean.asm6.tree;version="[${asm.version},${asm.version}]"
         </xbean.osgi.import>
+        <xbean.automatic.module.name>${project.groupId}.asm6.shaded</xbean.automatic.module.name>
     </properties>
 
     <build>
