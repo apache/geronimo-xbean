@@ -33,6 +33,11 @@
     <packaging>bundle</packaging>
     <name>Apache XBean :: Classloader</name>
     <description>xbean-classloader includes a flexibie multi-parent classloader</description>
+
+    <properties>
+        <xbean.automatic.module.name>${project.groupId}.classloader</xbean.automatic.module.name>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

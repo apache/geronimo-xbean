@@ -33,6 +33,10 @@
     <packaging>bundle</packaging>
     <name>Apache XBean :: Telnet</name>
 
+    <properties>
+        <xbean.automatic.module.name>${project.groupId}.telnet</xbean.automatic.module.name>
+    </properties>
+
     <dependencies>
 
         <dependency>

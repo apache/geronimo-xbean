@@ -34,6 +34,7 @@
     <properties>
         <xbean.osgi.export>org.apache.xbean.finder;version=${project.version}</xbean.osgi.export>
         <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm6;version=6,org.apache.xbean.asm6.shade.commons;version=6</xbean.osgi.import>
+        <xbean.automatic.module.name>${project.groupId}.finder.shaded</xbean.automatic.module.name>
     </properties>
 
     <build>

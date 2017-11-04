@@ -65,6 +65,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <asm.version>6.0</asm.version>
+
+        <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
     </properties>
 
 
@@ -344,6 +346,7 @@
                             <Bundle-DocURL>${project.url}</Bundle-DocURL>
                             <Export-Package>org.apache.xbean.*;version=${project.version};-noimport:=true</Export-Package>
                             <Private-Package />
+                            <Automatic-Module-Name>${xbean.automatic.module.name}</Automatic-Module-Name>
                         </instructions>
                     </configuration>
                 </plugin>

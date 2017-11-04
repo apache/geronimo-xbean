@@ -33,4 +33,7 @@
     <packaging>bundle</packaging>
     <name>Apache XBean :: ClassPath</name>
 
+    <properties>
+        <xbean.automatic.module.name>${project.groupId}.classpath</xbean.automatic.module.name>
+    </properties>
 </project>

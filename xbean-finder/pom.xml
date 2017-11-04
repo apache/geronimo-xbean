@@ -31,6 +31,9 @@
     <packaging>bundle</packaging>
     <name>Apache XBean :: Classpath Resource Finder</name>
     <description>XBean Finder helps to find annotations in classes</description>
+    <properties>
+        <xbean.automatic.module.name>${project.groupId}.finder</xbean.automatic.module.name>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.xbean</groupId>

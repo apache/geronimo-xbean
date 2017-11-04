@@ -37,7 +37,7 @@
 
     <properties>
         <pax.logging.version>1.5.0</pax.logging.version>
-
+        <xbean.automatic.module.name>${project.groupId}.blueprint</xbean.automatic.module.name>
     </properties>
     <dependencies>
         <dependency>

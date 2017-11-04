@@ -29,6 +29,10 @@
     <packaging>bundle</packaging>
     <name>Apache XBean OSGI Bundle Utilities</name>
 
+    <properties>
+        <xbean.automatic.module.name>${project.groupId}.osgi.utilities</xbean.automatic.module.name>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
