@@ -26,7 +26,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>4.7</version>
+        <version>4.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>xbean-blueprint</artifactId>
