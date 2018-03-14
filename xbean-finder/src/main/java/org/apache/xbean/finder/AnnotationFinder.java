@@ -1302,7 +1302,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         public Annotatable(AnnotatedElement element) {
             for (Annotation annotation : getAnnotations(element)) {
-                annotations.add(new AnnotationInfo(annotation.annotationType().getName()));
+                annotations.add(new AnnotationInfo(Type.getType(annotation.annotationType()).getDescriptor()));
             }
         }
 
@@ -1691,7 +1691,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             super(field);
             this.declaringClass = info;
             this.name = field.getName();
-            this.type = field.getType().getName();
+            this.type = Type.getType(field.getType()).getDescriptor();
             this.field = field;
         }
 
@@ -1761,7 +1761,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         private final String name;
 
         public AnnotationInfo(Annotation annotation) {
-            this(annotation.getClass().getName());
+            this(Type.getType(annotation.annotationType()).getDescriptor());
         }
 
         public AnnotationInfo(Class<? extends Annotation> annotation) {
