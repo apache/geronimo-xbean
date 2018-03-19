@@ -1,4 +1,3 @@
---------------------------------------
 ##
 ## Licensed to the Apache Software Foundation (ASF) under one
 ## or more contributor license agreements.  See the NOTICE file
@@ -17,9 +16,7 @@
 ## specific language governing permissions and limitations
 ## under the License.
 ##
-## $Rev$ $Date$
-##
 
+This product includes ASM, a software developed at
+OW2 Consortium (http://asm.ow2.org/).
 
-This product includes software developed at
-OW2 Consortium (http://asm.ow2.org/)
