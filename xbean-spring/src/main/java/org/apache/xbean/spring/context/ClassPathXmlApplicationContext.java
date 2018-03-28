@@ -32,7 +32,7 @@ import org.springframework.core.SpringVersion;
 
 /**
  * An XBean version of the regular Spring class to provide improved XML handling.
- * 
+ *
  * @author James Strachan
  * @author Dain Sundstrom
  * @version $Id$
@@ -162,6 +162,11 @@ public class ClassPathXmlApplicationContext extends org.springframework.context.
         }
     }
 
+    @Override
+    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+        reader.setValidating(false);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -179,5 +184,5 @@ public class ClassPathXmlApplicationContext extends org.springframework.context.
         initBeanDefinitionReader(beanDefinitionReader);
         loadBeanDefinitions(beanDefinitionReader);
     }
-    
+
 }

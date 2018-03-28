@@ -66,6 +66,7 @@
 
         <asm.version>6.1</asm.version>
 
+        <spring.version>5.0.4.RELEASE</spring.version>
         <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
     </properties>
 
@@ -281,19 +282,19 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
-                <version>2.5.6</version>
+                <version>${spring.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
-                <version>2.5.6</version>
+                <version>${spring.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
-                <version>2.5.6</version>
+                <version>${spring.version}</version>
             </dependency>
 
             <dependency>
@@ -301,11 +302,11 @@
                 <artifactId>qdox</artifactId>
                 <version>1.6.3</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.5.11</version>                
+                <version>1.5.11</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
