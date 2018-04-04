@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -78,14 +77,6 @@ public class JarArchive implements Archive {
             className = className.replace('.', '/') + ".class";
         }
 
-        if (mjar.isMjar()) {
-            final String mjarResource = className.replace('/', '.').replaceAll(".class$", "");
-            final String resource = mjar.getClasses().get(mjarResource);
-            if (resource != null) {
-                className = resource;
-            }
-        }
-
         ZipEntry entry = jar.getEntry(className);
         if (entry == null) throw new ClassNotFoundException(className);
 
@@ -134,7 +125,11 @@ public class JarArchive implements Archive {
                         if (n2v) {
                             return 1;
                         }
-                        return n1.compareTo(n2);
+                        try {
+                            return Integer.parseInt(n2) - Integer.parseInt(n1);
+                        } catch (final NumberFormatException nfe) {
+                            return n2.compareTo(n1);
+                        }
                     }
                 });
                 stream = list.iterator();
@@ -150,7 +145,7 @@ public class JarArchive implements Archive {
             while (stream.hasNext()) {
                 final JarEntry entry = stream.next();
                 final String entryName = entry.getName();
-                if (entry.isDirectory() || !entryName.endsWith(".class") || entryName.endsWith("module-info.class")/*todo*/) {
+                if (entry.isDirectory() || !entryName.endsWith(".class") || entryName.endsWith("module-info.class")) {
                     continue;
                 }
 
@@ -162,11 +157,8 @@ public class JarArchive implements Archive {
                     continue;
                 }
 
-                if (entryName.startsWith("META-INF/versions/")) {
-                    if (mjar.isMjar()) {
-                        mjar.visit(entryName);
-                        continue;
-                    }
+                if (entryName.startsWith("META-INF/versions/")) { // JarFile will handle it for us
+                    continue;
                 }
 
                 next = new ClassEntry(entry, className.replace('/', '.'));
@@ -205,13 +197,10 @@ public class JarArchive implements Archive {
 
             public InputStream getBytecode() throws IOException {
                 if (mjar.isMjar()) {
-                    final String mjarResource = name.replace('.', '/') + ".class";
-                    final String resource = mjar.getClasses().get(mjarResource);
-                    if (resource != null) {
-                        final ZipEntry entry = jar.getEntry(resource);
-                        if (entry != null) {
-                            return jar.getInputStream(entry);
-                        }
+                    // JarFile handles it for us :)
+                    final ZipEntry entry = jar.getJarEntry(this.entry.getName());
+                    if (entry != null) {
+                        return jar.getInputStream(entry);
                     }
                 }
                 return jar.getInputStream(entry);

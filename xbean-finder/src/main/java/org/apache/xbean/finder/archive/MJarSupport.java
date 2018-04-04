@@ -16,6 +16,8 @@
  */
 package org.apache.xbean.finder.archive;
 
+import static java.util.Arrays.asList;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -25,45 +27,109 @@ import java.util.jar.Manifest;
 
 // helper to share the multijar release logic in a single place and avoid to impl it in all archives
 public class MJarSupport {
+    private static final boolean SUPPORT_MJAR = asList("true", "force")
+            .contains(System.getProperty("jdk.util.jar.enableMultiRelease", "true"));
+    private static final int MJAR_VERSION = findMJarVersion();
+
+    private static int findMJarVersion() {
+        if (!SUPPORT_MJAR) {
+            return -1;
+        }
+        final int version = major(System.getProperty("java.version"));
+        final Integer jarVersion = major(System.getProperty("jdk.util.jar.version"));
+        if (jarVersion > 0) {
+            return Math.min(version, jarVersion);
+        }
+        return Math.min(7/*unexpected but just in case*/, version);
+    }
+
+    private static int major(final String version) {
+        if (version == null) {
+            return -1;
+        }
+        final String[] parts = version.split("\\.");
+        try {
+            final int i = Integer.parseInt(parts[0]);
+            if (i == 1 && parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            }
+            return i;
+        } catch (final NumberFormatException nfe) {
+            // unexpected
+            return -1;
+        }
+    }
+
     private boolean mjar;
-    private String prefix;
-    private final Map<String, String> classes = new HashMap<String, String>();
+    private final Map<String, Clazz> classes = new HashMap<String, Clazz>();
 
     public boolean isMjar() {
         return mjar;
     }
 
-    public Map<String, String> getClasses() {
+    public Map<String, Clazz> getClasses() {
         return classes;
     }
 
     public void load(final InputStream is) throws IOException {
+        if (!SUPPORT_MJAR) {
+            return;
+        }
         load(new Manifest(is));
     }
 
     public void load(final Manifest manifest) {
+        if (!SUPPORT_MJAR) {
+            return;
+        }
         final Attributes mainAttributes = manifest.getMainAttributes();
         if (mainAttributes != null) {
             mjar = Boolean.parseBoolean(mainAttributes.getValue("Multi-Release"));
-            if (mjar) {
-                String javaVersion = System.getProperty("java.version", "1"); // until (1.)8, == not using mjar
-                final int sep = javaVersion.indexOf('.');
-                if (sep > 0) {
-                    javaVersion = javaVersion.substring(0, sep);
-                }
-
-                prefix = "META-INF.versions." + javaVersion + '.';
-            }
         }
     }
 
+    // for exploded dirs since jars are handled by the JVM
     public void visit(final String name) {
         String normalized = name.replace('/', '.');
         if (normalized.startsWith("/")) {
             normalized = normalized.substring(1);
         }
-        if (normalized.startsWith(prefix)) {
-            classes.put(name.substring(prefix.length()), name + (!name.endsWith(".class") ? ".class" : ""));
+        if (normalized.startsWith("META-INF.versions.")) {
+            final String version = normalized.substring("META-INF.versions.".length());
+            final int nextSep = version.indexOf('.');
+            if (nextSep < 0) {
+                return;
+            }
+            final String vStr = version.substring(0, nextSep);
+            final int major;
+            try {
+                if ((major = Integer.parseInt(vStr)) > MJAR_VERSION) {
+                    return;
+                }
+            } catch (final NumberFormatException nfe) {
+                return;
+            }
+            if (nextSep < version.length()) {
+                final String cname = version.substring(nextSep + 1);
+                final Clazz existing = classes.get(cname);
+                if (existing == null || existing.version < major) {
+                    classes.put(cname, new Clazz(name + (!version.endsWith(".class") ? ".class" : ""), major));
+                }
+            }
+        }
+    }
+
+    public static class Clazz {
+        private final String path;
+        private final int version;
+
+        private Clazz(final String path, final int version) {
+            this.path = path;
+            this.version = version;
+        }
+
+        public String getPath() {
+            return path;
         }
     }
 }
