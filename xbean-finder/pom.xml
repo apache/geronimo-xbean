@@ -89,6 +89,17 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.21.0</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <jdk.util.jar.version>9</jdk.util.jar.version>
+                        <jdk.util.jar.enableMultiRelease>force</jdk.util.jar.enableMultiRelease>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

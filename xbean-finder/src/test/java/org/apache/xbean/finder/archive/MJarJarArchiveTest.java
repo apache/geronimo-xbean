@@ -43,6 +43,7 @@ import java.util.jar.Manifest;
 
 import org.apache.xbean.finder.AnnotationFinder;
 import org.apache.xbean.finder.util.IOUtil;
+import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -52,7 +53,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**
- * @version $Rev$ $Date$
+ * TODO: setup toolchain to be able to test with j9?
  */
 public class MJarJarArchiveTest {
 
@@ -138,6 +139,7 @@ public class MJarJarArchiveTest {
 
     @Test
     public void testGetBytecode() throws Exception {
+        Assume.assumeFalse(System.getProperty("java.version", "1").startsWith("1"));
         final URLClassLoader loader = new URLClassLoader(new URL[]{jar.toURI().toURL()}, Thread.currentThread().getContextClassLoader()) {
 
             @Override

@@ -80,9 +80,9 @@ public class FileArchive implements Archive {
         }
 
         if (mjar.isMjar()) {
-            final String resource = mjar.getClasses().get(className);
+            final MJarSupport.Clazz resource = mjar.getClasses().get(className);
             if (resource != null) {
-                className = resource + ".class";
+                className = resource.getPath() + ".class";
             }
         }
 
