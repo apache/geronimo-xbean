@@ -385,7 +385,7 @@
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.8</version>
+                <version>0.12</version>
                 <configuration>
                     <excludes>
                         <exclude>.git/**/*</exclude>
@@ -420,6 +420,7 @@
         <module>xbean-naming</module>
         <module>xbean-reflect</module>
         <module>xbean-blueprint</module>
+        <module>xbean-blueprint-cm</module>
         <module>xbean-spring</module>
         <module>xbean-telnet</module>
         <module>maven-xbean-plugin</module>
