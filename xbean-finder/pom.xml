@@ -21,19 +21,25 @@
 <!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
         <version>5.0.0-SNAPSHOT</version>
     </parent>
+
     <artifactId>xbean-finder</artifactId>
     <packaging>bundle</packaging>
+
     <name>Apache XBean :: Classpath Resource Finder</name>
     <description>XBean Finder helps to find annotations in classes</description>
+
     <properties>
         <xbean.automatic.module.name>${project.groupId}.finder</xbean.automatic.module.name>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.xbean</groupId>
@@ -64,7 +70,11 @@
         <dependency>
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-asm-util</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
     <build>

@@ -18,7 +18,7 @@ package org.apache.xbean.blueprint.context;
 
 import junit.framework.TestCase;
 
-import org.apache.xbean.blueprint.example.InnerBean;
+import org.apache.xbean.test.support.example.InnerBean;
 import org.apache.aries.blueprint.ComponentDefinitionRegistry;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.osgi.service.blueprint.reflect.BeanMetadata;

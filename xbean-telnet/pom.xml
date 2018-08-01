@@ -41,7 +41,8 @@
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
+            <artifactId>groovy</artifactId>
+            <classifier>indy</classifier>
         </dependency>
 
     </dependencies>

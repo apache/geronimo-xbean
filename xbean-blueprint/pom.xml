@@ -39,7 +39,17 @@
         <pax.logging.version>1.5.0</pax.logging.version>
         <xbean.automatic.module.name>${project.groupId}.blueprint</xbean.automatic.module.name>
     </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-blueprint-namespace</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-propertyeditors</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.aries.blueprint</groupId>
             <artifactId>org.apache.aries.blueprint.cm</artifactId>
@@ -98,30 +108,22 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.thoughtworks.qdox</groupId>
-            <artifactId>qdox</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-annotation_1.0_spec</artifactId>
-            <version>1.1</version>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
         	<groupId>org.apache.aries.blueprint</groupId>
         	<artifactId>org.apache.aries.blueprint.noosgi</artifactId>
         	<version>1.1.0</version>
         	<scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-test-support</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 
@@ -145,6 +147,33 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-mapping</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <srcDir>${basedir}/../xbean-test-support/src/main/java</srcDir>
+                    <outputDir>${basedir}/target/generated-test-resources</outputDir>
+                    <namespace>http://xbean.apache.org/schemas/pizza</namespace>
+                    <properties>
+                        <xsd.strictOrder>false</xsd.strictOrder>
+                    </properties>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.xbean</groupId>
+                        <artifactId>xbean-blueprint-generator</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <!--
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
@@ -154,7 +183,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <taskdef classname="org.apache.xbean.blueprint.generator.MappingGeneratorTask" name="mapping">
+                                <taskdef classname="org.apache.xbean.blueprint.generator.ant.MappingGeneratorTask" name="mapping">
                                     <classpath>
                                         <pathelement path="${basedir}/target/classes" />
                                         <pathelement path="${basedir}/target/test-classes" />
@@ -162,14 +191,17 @@
                                     </classpath>
                                 </taskdef>
                                 <mapping namespace="http://xbean.apache.org/schemas/pizza" srcdir="src/test/java" destFile="target/restaurant.xsd" metaInfDir="${basedir}/target/test-classes/" />
+            -->
                                 <!--<copy todir="${basedir}/target/test-classes">-->
                                     <!--<fileset dir="${basedir}/target/test-generated" />-->
                                 <!--</copy>-->
+            <!--
                             </tasks>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>

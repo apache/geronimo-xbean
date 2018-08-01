@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.BeerService;
+import org.apache.xbean.test.support.example.BeerService;
 
 /**
  * @author James Strachan

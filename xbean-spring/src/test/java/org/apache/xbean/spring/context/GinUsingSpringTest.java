@@ -17,7 +17,7 @@
 package org.apache.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.GinService;
+import org.apache.xbean.test.support.example.GinService;
 
 /**
  * @author James Strachan

@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.VodkaService;
+import org.apache.xbean.test.support.example.VodkaService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**

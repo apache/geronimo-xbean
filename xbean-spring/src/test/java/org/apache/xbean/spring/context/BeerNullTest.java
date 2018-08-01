@@ -17,7 +17,7 @@
 package org.apache.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.BeerService;
+import org.apache.xbean.test.support.example.BeerService;
 
 /**
  * @author Dain Sundstrom
@@ -27,13 +27,13 @@ import org.apache.xbean.spring.example.BeerService;
 public class BeerNullTest extends SpringTestSupport {
 
     public void testBeer() throws Exception {
-        BeerService beer = (BeerService) getBean("beerService");
+        BeerService beer = getBean("beerService");
 
         assertEquals("name", "Stella", beer.getName());
         assertEquals("id", "123", beer.getId());
         assertEquals("source", "tap", beer.getSource());
 
-        BeerService beer2 = (BeerService) getBean("beerService2");
+        BeerService beer2 = getBean("beerService2");
 
         assertEquals("name", "Blue Moon", beer2.getName());
         assertEquals("id", "123", beer2.getId());

@@ -17,7 +17,12 @@
     limitations under the License.
 
 -->
-<beans xmlns:b="http://bad-namespace">
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:b="http://bad-namespace"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  ">
 
   <b:beer name="Stella" />
 

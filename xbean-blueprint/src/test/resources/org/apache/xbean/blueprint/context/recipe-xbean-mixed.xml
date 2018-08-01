@@ -22,7 +22,7 @@
 
   <x:recipe-service b:id="recipeService">
     <b:property name="topRecipe">
-      <b:bean class="org.apache.xbean.blueprint.example.Recipe">
+      <b:bean class="org.apache.xbean.test.support.example.Recipe">
         <b:property name="instructions" value="Mash together" />
         <b:property name="ingredients" value="Food" />
       </b:bean>

@@ -18,11 +18,20 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<restaurant id="restaurant" xmlns="http://xbean.apache.org/schemas/restaurant" xmlns:foo="http://acme.com" serviceName="foo:xyz" uri="http://cheese.com">
+<restaurant id="restaurant" xmlns="http://xbean.apache.org/schemas/pizza" xmlns:foo="http://acme.com" serviceName="foo:xyz" uri="http://cheese.com"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
+
     <dinnerMenu>
       <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
       <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
     </dinnerMenu>
+
+    <favourite>
+        <pizza myTopping="Salami" cheese="Edam" size="17"/>
+    </favourite>
 
     <snackMenu>
       <pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
@@ -33,8 +42,5 @@
       <pizza myTopping="Chicken" cheese="Brie" size="17"/>
     </lunchMenu>
 
-    <favourite>
-      <pizza myTopping="Salami" cheese="Edam" size="17"/>
-    </favourite>
 </restaurant>
 <!-- END SNIPPET: xml -->

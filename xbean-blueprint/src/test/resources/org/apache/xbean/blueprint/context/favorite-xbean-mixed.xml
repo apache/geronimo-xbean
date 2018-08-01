@@ -33,7 +33,7 @@
               </list>
           </entry>
           <entry key="WithInnerBean">
-            <bean class="org.apache.xbean.blueprint.example.GinService">
+            <bean class="org.apache.xbean.test.support.example.GinService">
               <property name="name" value="Bombay Sapphire"/>
             </bean>
           </entry>

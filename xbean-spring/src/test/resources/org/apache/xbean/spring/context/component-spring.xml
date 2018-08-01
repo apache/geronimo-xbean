@@ -17,11 +17,15 @@
     limitations under the License.
 
 -->
-<beans>
-  <bean id="container" class="org.apache.xbean.spring.example.ContainerBean">
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  ">
+  <bean id="container" class="org.apache.xbean.test.support.example.ContainerBean">
     <property name="beans">
       <list>
-        <bean id="inner" class="org.apache.xbean.spring.example.InnerBean" />
+        <bean id="inner" class="org.apache.xbean.test.support.example.InnerBean" />
       </list>
     </property>
   </bean>

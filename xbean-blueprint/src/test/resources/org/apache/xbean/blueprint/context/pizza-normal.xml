@@ -19,7 +19,7 @@
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
-  <bean id="pizzaService" class="org.apache.xbean.blueprint.example.PizzaService">
+  <bean id="pizzaService" class="org.apache.xbean.test.support.example.PizzaService">
     <property name="topping" value="Salami"/>
     <property name="cheese" value="Edam"/>
     <property name="size" value="17"/>

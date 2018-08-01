@@ -18,7 +18,13 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns:p="http://xbean.apache.org/schemas/pizza">
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:p="http://xbean.apache.org/schemas/pizza"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
   <p:pizza id="pizzaService" myTopping="Salami" cheese="Edam" size="17"/>
   

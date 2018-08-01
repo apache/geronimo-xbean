@@ -18,21 +18,21 @@
 
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
-  <bean id="recipeService" class="org.apache.xbean.blueprint.example.RecipeService">
+  <bean id="recipeService" class="org.apache.xbean.test.support.example.RecipeService">
     <property name="recipes">
       <list>
-        <bean class="org.apache.xbean.blueprint.example.Recipe">
+        <bean class="org.apache.xbean.test.support.example.Recipe">
           <property name="instructions" value="Mash together" />
           <property name="ingredients" value="Food" />
         </bean>
-        <bean class="org.apache.xbean.blueprint.example.Recipe">
+        <bean class="org.apache.xbean.test.support.example.Recipe">
           <property name="instructions" value="Mash together" />
           <property name="ingredients" value="Food" />
         </bean>
       </list>
     </property>
     <property name="topRecipe"> 
-      <bean class="org.apache.xbean.blueprint.example.Recipe">
+      <bean class="org.apache.xbean.test.support.example.Recipe">
         <property name="instructions" value="Mash together" />
         <property name="ingredients" value="Food" />
       </bean>

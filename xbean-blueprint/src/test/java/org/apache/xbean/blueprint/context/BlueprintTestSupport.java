@@ -17,11 +17,9 @@
 package org.apache.xbean.blueprint.context;
 
 import java.beans.PropertyEditor;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +29,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.validation.Schema;
 
 import junit.framework.TestCase;
 
@@ -45,14 +42,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xbean.blueprint.context.impl.QNameNamespaceHandler;
 import org.apache.xbean.blueprint.context.impl.XBeanNamespaceHandler;
-import org.apache.xbean.blueprint.example.MilliLittersPropertyEditor;
+import org.apache.xbean.test.support.example.MilliLittersPropertyEditor;
 import org.osgi.service.blueprint.reflect.BeanArgument;
 import org.osgi.service.blueprint.reflect.BeanMetadata;
 import org.osgi.service.blueprint.reflect.BeanProperty;
 import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.ValueMetadata;
-
-import org.xml.sax.SAXException;
 
 /**
  * A useful base class for testing spring based utilities.

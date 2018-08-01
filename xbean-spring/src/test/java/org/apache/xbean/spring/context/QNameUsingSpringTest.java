@@ -20,7 +20,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import org.apache.xbean.spring.example.QNameService;
+import org.apache.xbean.test.support.example.QNameService;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class QNameUsingSpringTest extends SpringTestSupport {

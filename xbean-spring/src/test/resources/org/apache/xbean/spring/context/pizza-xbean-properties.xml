@@ -18,16 +18,22 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns:p="java://org.apache.xbean.spring.example">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:p="http://xbean.apache.org/schemas/pizza"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
-  <p:PizzaService id="pizzaService">
+  <p:pizza id="pizzaService">
       cheese    Edam
 
     <!-- properties can have complex elements mixed in -->
     <p:topping>Salami</p:topping>
 
        size      17
-  </p:PizzaService>
+  </p:pizza>
 
 </beans>
 

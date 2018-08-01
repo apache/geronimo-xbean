@@ -19,7 +19,7 @@
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
-	<bean id="qnameService" class="org.apache.xbean.blueprint.example.QNameService">
+	<bean id="qnameService" class="org.apache.xbean.test.support.example.QNameService">
 		<property name="services">
 			<list>
 				<bean class="javax.xml.namespace.QName">

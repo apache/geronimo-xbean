@@ -18,12 +18,17 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns:b="http://xbean.apache.org/schemas/pizza" 
+<s:beans xmlns:b="http://xbean.apache.org/schemas/pizza"
        xmlns:s="http://xbean.apache.org/schemas/spring/1.0"
-       xmlns="http://xbean.apache.org/schemas/pizza">
+       xmlns="http://xbean.apache.org/schemas/pizza"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+         http://xbean.apache.org/schemas/spring/1.0 http://xbean.org/schemas/spring/spring-beans-1.0.xsd
+       ">
 
-  <beer b:id="123" id="beerService" name="Stella"/>
+  <beer id="123" s:id="beerService" name="Stella"/>
 
-</beans>
+</s:beans>
 <!-- END SNIPPET: xml -->
 

@@ -18,39 +18,47 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns:foo="http://acme.com">
+<beans xmlns:foo="http://acme.com"
+  xmlns:b="http://www.springframework.org/schema/beans"
+  xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
-  <restaurant id="restaurant" xmlns="http://xbean.apache.org/schemas/pizza"
+  <p:restaurant id="restaurant" xmlns:p="http://xbean.apache.org/schemas/pizza"
               serviceName="foo:xyz">
-    <dinnerMenu>
-      <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
-      <bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.xbean.spring.example.PizzaService">
-        <property name="topping" value="Eggs"/>
-        <property name="cheese" value="Mozzarella"/>
-        <property name="size" value="16"/>
-      </bean>
-    </dinnerMenu>
+    <p:dinnerMenu>
+      <p:pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
+      <b:bean class="org.apache.xbean.test.support.example.PizzaService">
+        <b:property name="topping" value="Eggs"/>
+        <b:property name="cheese" value="Mozzarella"/>
+        <b:property name="size" value="16"/>
+      </b:bean>
+    </p:dinnerMenu>
 
-    <snackMenu>
-      <pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
-      <pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
-    </snackMenu>
+    <p:favourite>
+      <b:bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.xbean.test.support.example.PizzaService">
+        <b:property name="topping" value="Salami"/>
+        <b:property name="cheese" value="Edam"/>
+        <b:property name="size" value="17"/>
+      </b:bean>
+    </p:favourite>
 
-    <lunchMenu>
-      <bean xmlns="" class="org.apache.xbean.spring.example.PizzaService">
-        <property name="topping" value="Chicken"/>
-        <property name="cheese" value="Brie"/>
-        <property name="size" value="17"/>
-      </bean>
-    </lunchMenu>
+    <p:lunchMenu>
+      <b:bean xmlns="" class="org.apache.xbean.test.support.example.PizzaService">
+        <b:property name="topping" value="Chicken"/>
+        <b:property name="cheese" value="Brie"/>
+        <b:property name="size" value="17"/>
+      </b:bean>
+    </p:lunchMenu>
 
-    <favourite>
-      <bean xmlns="http://xbean.apache.org/schemas/spring/1.0" class="org.apache.xbean.spring.example.PizzaService">
-        <property name="topping" value="Salami"/>
-        <property name="cheese" value="Edam"/>
-        <property name="size" value="17"/>
-      </bean>
-    </favourite>
-  </restaurant>
+    <p:snackMenu>
+      <p:pizza myTopping="Tofu" cheese="Parmesan" size="6"/>
+      <p:pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
+    </p:snackMenu>
+  </p:restaurant>
+
 </beans>
 <!-- END SNIPPET: xml -->

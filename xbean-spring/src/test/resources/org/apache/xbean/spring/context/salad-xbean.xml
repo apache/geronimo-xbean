@@ -18,9 +18,15 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns:s="http://xbean.apache.org/schemas/salad">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:s="http://xbean.apache.org/schemas/pizza"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
-  <s:salad id="saladService" dressing="Cesar" size="Small" addCroutons="true"/>
+  <s:saladService id="saladService" dressing="Cesar" size="Small" addCroutons="true"/>
   
 </beans>
 <!-- END SNIPPET: xml -->

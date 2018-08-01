@@ -18,8 +18,15 @@
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xmlns:b="http://xbean.apache.org/schemas/pizza">
+  xmlns:util="http://www.springframework.org/schema/util"
+  xmlns:b="http://xbean.apache.org/schemas/pizza"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
+
 
   <b:favorite id="favoriteService">
     <property name="favorites">
@@ -34,7 +41,7 @@
               </util:list>
           </entry>
           <entry key="WithInnerBean">
-            <bean class="org.apache.xbean.spring.example.GinService">
+            <bean class="org.apache.xbean.test.support.example.GinService">
               <property name="name" value="name"/>
             </bean>
           </entry>

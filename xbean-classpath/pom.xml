@@ -36,4 +36,11 @@
     <properties>
         <xbean.automatic.module.name>${project.groupId}.classpath</xbean.automatic.module.name>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
 </project>

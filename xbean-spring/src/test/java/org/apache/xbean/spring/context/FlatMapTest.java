@@ -18,8 +18,8 @@ package org.apache.xbean.spring.context;
 
 import java.util.List;
 
-import org.apache.xbean.spring.example.FlatMapService;
-import org.apache.xbean.spring.example.KegService;
+import org.apache.xbean.test.support.example.FlatMapService;
+import org.apache.xbean.test.support.example.KegService;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**

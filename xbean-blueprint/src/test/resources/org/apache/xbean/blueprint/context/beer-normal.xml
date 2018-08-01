@@ -19,7 +19,7 @@
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
-  <bean id="beerService" class="org.apache.xbean.blueprint.example.BeerService">
+  <bean id="beerService" class="org.apache.xbean.test.support.example.BeerService">
     <property name="id" value="123" />
     <property name="name" value="Stella" />
   </bean>
