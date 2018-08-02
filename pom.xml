@@ -69,7 +69,7 @@
         <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
 
         <spring.version>4.3.18.RELEASE</spring.version>
-        <qdox.version>1.6.3</qdox.version>
+        <qdox.version>1.12.1</qdox.version>
         <slf4j.version>1.5.11</slf4j.version>
         <junit.version>4.12</junit.version>
 
