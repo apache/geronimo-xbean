@@ -56,6 +56,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.ws.xmlschema</groupId>
+            <artifactId>xmlschema-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-test-support</artifactId>
             <scope>test</scope>

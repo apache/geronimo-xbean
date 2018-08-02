@@ -87,6 +87,7 @@
         <ant.version>1.10.5</ant.version>
         <cglib.version>3.2.7</cglib.version>
         <plexus.version>1.7.1</plexus.version>
+        <xmlschema.version>2.2.3</xmlschema.version>
 
         <source.version>1.8</source.version>
         <maven.compiler.source>${source.version}</maven.compiler.source>
@@ -378,6 +379,12 @@
                 <groupId>com.thoughtworks.qdox</groupId>
                 <artifactId>qdox</artifactId>
                 <version>${qdox.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.ws.xmlschema</groupId>
+                <artifactId>xmlschema-core</artifactId>
+                <version>${xmlschema.version}</version>
             </dependency>
             
             <dependency>

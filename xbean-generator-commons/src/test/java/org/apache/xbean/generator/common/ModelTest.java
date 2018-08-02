@@ -17,6 +17,7 @@
 package org.apache.xbean.generator.common;
 
 import junit.framework.TestCase;
+import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.xbean.generator.AttributeMapping;
 import org.apache.xbean.generator.ElementMapping;
 import org.apache.xbean.generator.LogFacade;
@@ -98,14 +99,20 @@ public class ModelTest extends TestCase {
         // validate xsd has string for attribute VolumeWithPropertyEditor
         final AtomicBoolean gotExpected = new AtomicBoolean(false);
         XsdGenerator generator = new XsdGenerator(true, new File("target/"), new HashedArtifactSet(), log) {};
-        generator.generateSchema(new PrintWriter("dummy") {
+        generator.generateSchema(new PrintWriter(System.out) {
             @Override
             public void println(String text) {
+                System.out.println(text);
                 if (text.contains("volumeWithPropertyEditor")) {
                     if (text.contains("xs:string")) {
                         gotExpected.set(true);
                     }
                 }
+            }
+
+            @Override
+            public void print(String s) {
+
             }
         }, defaultNamespace);
 

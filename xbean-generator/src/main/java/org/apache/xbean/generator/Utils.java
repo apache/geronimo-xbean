@@ -16,6 +16,7 @@
  */
 package org.apache.xbean.generator;
 
+import javax.xml.namespace.QName;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.util.Collections;
@@ -88,38 +89,39 @@ public final class Utils {
         return Utils.class.getClassLoader().loadClass(name);
     }
 
-    public static String getXsdType(Type type) {
+    public static QName getXsdType(Type type) {
         String name = type.getName();
-        String xsdType = (String) XSD_TYPES.get(name);
+        QName xsdType = XSD_TYPES.get(name);
         if (xsdType == null) {
-            xsdType = "xs:string";
+            xsdType = XSD_TYPES.get(String.class.getName());
         }
         return xsdType;
     }
 
-    public static final Map XSD_TYPES;
+    public static final Map<String, QName> XSD_TYPES;
 
     static {
         // TODO check these XSD types are right...
-        Map map = new HashMap();
-        map.put(String.class.getName(), "xs:string");
-        map.put(Boolean.class.getName(), "xs:boolean");
-        map.put(boolean.class.getName(), "xs:boolean");
-        map.put(Byte.class.getName(), "xs:byte");
-        map.put(byte.class.getName(), "xs:byte");
-        map.put(Short.class.getName(), "xs:short");
-        map.put(short.class.getName(), "xs:short");
-        map.put(Integer.class.getName(), "xs:integer");
-        map.put(int.class.getName(), "xs:integer");
-        map.put(Long.class.getName(), "xs:long");
-        map.put(long.class.getName(), "xs:long");
-        map.put(Float.class.getName(), "xs:float");
-        map.put(float.class.getName(), "xs:float");
-        map.put(Double.class.getName(), "xs:double");
-        map.put(double.class.getName(), "xs:double");
-        map.put(java.util.Date.class.getName(), "xs:date");
-        map.put(java.sql.Date.class.getName(), "xs:date");
-        map.put("javax.xml.namespace.QName", "xs:QName");
+        String namespace = "http://www.w3.org/2001/XMLSchema";
+        Map<String, QName> map = new HashMap<>();
+        map.put(String.class.getName(), new QName(namespace, ":string"));
+        map.put(Boolean.class.getName(), new QName(namespace, "boolean"));
+        map.put(boolean.class.getName(), new QName(namespace, "boolean"));
+        map.put(Byte.class.getName(), new QName(namespace, "byte"));
+        map.put(byte.class.getName(), new QName(namespace, "byte"));
+        map.put(Short.class.getName(), new QName(namespace, "short"));
+        map.put(short.class.getName(), new QName(namespace, "short"));
+        map.put(Integer.class.getName(), new QName(namespace, "integer"));
+        map.put(int.class.getName(), new QName(namespace, "integer"));
+        map.put(Long.class.getName(), new QName(namespace, "long"));
+        map.put(long.class.getName(), new QName(namespace, "long"));
+        map.put(Float.class.getName(), new QName(namespace, "float"));
+        map.put(float.class.getName(), new QName(namespace, "float"));
+        map.put(Double.class.getName(), new QName(namespace, "double"));
+        map.put(double.class.getName(), new QName(namespace, "double"));
+        map.put(java.util.Date.class.getName(), new QName(namespace, "date"));
+        map.put(java.sql.Date.class.getName(), new QName(namespace, "date"));
+        map.put(QName.class.getName(), new QName(namespace, "QName"));
         XSD_TYPES = Collections.unmodifiableMap(map);
     }
 
