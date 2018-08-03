@@ -24,6 +24,7 @@ import org.apache.xbean.generator.artifact.HashedArtifactSet;
 import org.apache.xbean.generator.commons.DocumentationGenerator;
 import org.apache.xbean.generator.commons.WikiDocumentationGenerator;
 import org.apache.xbean.generator.qdox.QdoxMappingLoader;
+import org.apache.xbean.model.mapping.NamespaceMapping;
 import org.apache.xbean.spring.generator.*;
 
 import java.io.File;

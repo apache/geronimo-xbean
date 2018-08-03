@@ -29,6 +29,7 @@ package org.apache.xbean.maven;
  import org.apache.xbean.generator.*;
  import org.apache.xbean.generator.artifact.HashedArtifactSet;
  import org.apache.xbean.generator.qdox.QdoxMappingLoader;
+ import org.apache.xbean.model.mapping.NamespaceMapping;
 
  import java.beans.PropertyEditorManager;
  import java.io.File;

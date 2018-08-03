@@ -232,6 +232,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
                 <artifactId>xbean-naming</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -534,6 +539,7 @@
         <module>xbean-finder</module>
         <module>xbean-generator</module>
         <module>xbean-generator-commons</module>
+        <module>xbean-model</module>
         <module>xbean-namespace</module>
         <module>xbean-naming</module>
         <module>xbean-reflect</module>

@@ -14,13 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.generator;
+package org.apache.xbean.model.mapping;
 
+/**
+ * Describes a configuration mapping between attributes/elements and map keys and values.
+ */
 public class MapMapping {
+
+    /**
+     * Name of entry attribute or element.
+     */
     private String entryName;
+
+    /**
+     * Name of key attribute or element.
+     */
     private String keyName;
+
     private boolean flat;
+
+    /**
+     * Policy for duplicate element handling.
+     */
     private String dupsMode;
+
     private String defaultKey;
 
     public MapMapping(String entryName, 

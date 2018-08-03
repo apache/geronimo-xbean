@@ -14,18 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.generator;
+package org.apache.xbean.model.mapping;
 
-import org.apache.xbean.model.mapping.NamespaceMapping;
-
-import java.io.IOException;
-import java.util.Set;
+import org.apache.xbean.model.Type;
 
 /**
- * @author Dain Sundstrom
- * @version $Id$
- * @since 1.0
+ * Description of configuration parameter.
+ *
+ * @version $Rev$ $Date$
  */
-public interface MappingLoader {
-    Set<NamespaceMapping> loadNamespaces() throws IOException;
+public class ParameterMapping {
+    private final String name;
+    private final Type type;
+
+    public ParameterMapping(String name, Type type) {
+        this.name = name;
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Type getType() {
+        return type;
+    }
 }

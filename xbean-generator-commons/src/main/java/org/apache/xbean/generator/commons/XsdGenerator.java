@@ -20,18 +20,18 @@ import org.apache.ws.commons.schema.*;
 import org.apache.ws.commons.schema.constants.Constants;
 import org.apache.xbean.generator.*;
 import org.apache.xbean.generator.artifact.SimpleArtifact;
-import org.apache.xbean.generator.commons.dom.VirtualNodeList;
 import org.apache.xbean.generator.commons.schema.Builder;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Document;
+import org.apache.xbean.model.*;
+import org.apache.xbean.model.mapping.AttributeMapping;
+import org.apache.xbean.model.mapping.ElementMapping;
+import org.apache.xbean.model.mapping.MapMapping;
+import org.apache.xbean.model.mapping.NamespaceMapping;
+import org.apache.xbean.model.type.CollectionType;
+import org.apache.xbean.model.type.Types;
 
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +71,7 @@ public abstract class XsdGenerator implements GeneratorPlugin {
 
         File file = new File(destFile, fileName);
         log.log("Generating XSD file: " + file + " for namespace: " + namespace);
-        PrintWriter out = new PrintWriter(new FileWriter(file));
+        FileWriter out = new FileWriter(file);
 
         try {
             generateSchema(out, namespaceMapping);
@@ -84,7 +84,7 @@ public abstract class XsdGenerator implements GeneratorPlugin {
         }
     }
 
-    public void generateSchema(PrintWriter out, NamespaceMapping namespaceMapping) throws IOException {
+    public void generateSchema(Writer out, NamespaceMapping namespaceMapping) throws IOException {
         try {
             createSchema(namespaceMapping).write(out);
         } catch (ParserConfigurationException e) {
@@ -112,7 +112,7 @@ public abstract class XsdGenerator implements GeneratorPlugin {
 
         int complexCount = 0;
         for (AttributeMapping attributeMapping : mapping.getAttributes()) {
-            if (!namespaceMapping.isSimpleType(attributeMapping.getType())) {
+            if (attributeMapping.getType().isComplex()) {
                 complexCount++;
             }
         }
@@ -140,17 +140,20 @@ public abstract class XsdGenerator implements GeneratorPlugin {
             }
 
             for (AttributeMapping attributeMapping : mapping.getAttributes()) {
-                if (!namespaceMapping.isSimpleType(attributeMapping.getType())) {
+                if (attributeMapping.getType().isComplex()) {
                     generateElementMappingComplexProperty(schema, itemsSupplier, namespaceMapping, attributeMapping);
                 }
             }
 
-            itemsSupplier.get().add(builder.unboundedAny());
+            for (Map.Entry<String, MapMapping> mapMappingEntry : mapping.getMapMappings().entrySet()) {
+                generateElementMappingMap(schema, itemsSupplier, mapMappingEntry);
+            }
 
+            itemsSupplier.get().add(builder.unboundedAny());
         }
 
         for (AttributeMapping attributeMapping : mapping.getAttributes()) {
-            if (namespaceMapping.isSimpleType(attributeMapping.getType())) {
+            if (attributeMapping.getType().isComplex()) {
                 generateElementMappingSimpleProperty(schema, complexType, attributeMapping);
             } else if (!attributeMapping.getType().isCollection()) {
                 generateElementMappingComplexPropertyAsRef(schema, complexType, attributeMapping);
@@ -159,6 +162,45 @@ public abstract class XsdGenerator implements GeneratorPlugin {
 
         generateIDAttributeMapping(schema, complexType, namespaceMapping, mapping);
         complexType.setAnyAttribute(builder.anyAttributeLax());
+    }
+
+    private void generateElementMappingMap(XmlSchema schema, Supplier<List> items, Map.Entry<String, MapMapping> mapMappingEntry) {
+        XmlSchemaElement xmlSchemaElement = new XmlSchemaElement(schema, false);
+        xmlSchemaElement.setName(mapMappingEntry.getKey());
+        xmlSchemaElement.setMinOccurs(0);
+        xmlSchemaElement.setMaxOccurs(Long.MAX_VALUE);
+        items.get().add(xmlSchemaElement);
+
+        XmlSchemaComplexType complexType = new XmlSchemaComplexType(schema, false);
+        xmlSchemaElement.setType(complexType);
+
+        MapMapping map = mapMappingEntry.getValue();
+        XmlSchemaAttribute attribute = new XmlSchemaAttribute(schema, false);
+
+        XmlSchemaChoice choice = builder.choice(0, Long.MAX_VALUE);
+        if (map.getEntryName() != null) {
+//            attribute = new XmlSchemaAttribute(schema, false);
+//            attribute.setName(map.getEntryName());
+//            attribute.setSchemaTypeName(Constants.XSD_STRING);
+//            complexType.getAttributes().add(attribute);
+
+            XmlSchemaElement entryElement = new XmlSchemaElement(schema, false);
+            entryElement.setName(map.getEntryName());
+            choice.getItems().add(entryElement);
+        }
+
+        if (map.getKeyName() != null) {
+            attribute.setName(map.getKeyName());
+            attribute.setSchemaTypeName(Constants.XSD_STRING);
+            complexType.getAttributes().add(attribute);
+        }
+
+        //choice.setMaxOccurs(1);
+        complexType.setParticle(choice);
+
+        XmlSchemaAny any = new XmlSchemaAny();
+        any.setNamespace("##other");
+        choice.getItems().add(any);
     }
 
     private void generateIDAttributeMapping(XmlSchema schema, XmlSchemaComplexType complexType, NamespaceMapping namespaceMapping, ElementMapping element) {
@@ -178,7 +220,7 @@ public abstract class XsdGenerator implements GeneratorPlugin {
     private void generateElementMappingSimpleProperty(XmlSchema schema, XmlSchemaComplexType complexType, AttributeMapping attributeMapping) {
         // types with property editors need to be xs:string in the schema to validate
         QName type = attributeMapping.getPropertyEditor() != null ?
-                Utils.getXsdType(Type.newSimpleType(String.class.getName())) : Utils.getXsdType(attributeMapping.getType());
+                Utils.getXsdType(Types.newSimpleType(String.class.getName())) : Utils.getXsdType(attributeMapping.getType());
         XmlSchemaAttribute attribute = new XmlSchemaAttribute(schema, false);
         complexType.getAttributes().add(attribute);
 
@@ -202,11 +244,11 @@ public abstract class XsdGenerator implements GeneratorPlugin {
         Type type = attributeMapping.getType();
         List<ElementMapping> types;
         if (type.isCollection()) {
-            types = Utils.findImplementationsOf(namespaceMapping, type.getNestedType());
+            types = namespaceMapping.findImplementationsOf(((CollectionType) type).getNestedType());
         } else {
-            types = Utils.findImplementationsOf(namespaceMapping, type);
+            types = namespaceMapping.findImplementationsOf(type);
         }
-        Long maxOccurs = type.isCollection() || "java.util.Map".equals(type.getName()) ? Long.MAX_VALUE : 1;
+        Long maxOccurs = type.isCollection() || type.isCollection() ? Long.MAX_VALUE : 1;
 
         XmlSchemaElement xmlSchemaElement = new XmlSchemaElement(schema, false);
         xmlSchemaElement.setName(attributeMapping.getAttributeName());

@@ -14,18 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.generator;
+package org.apache.xbean.model.type;
 
-import org.apache.xbean.model.mapping.NamespaceMapping;
+import org.apache.xbean.model.NestingType;
+import org.apache.xbean.model.Type;
 
-import java.io.IOException;
-import java.util.Set;
+class ArrayType implements NestingType {
 
-/**
- * @author Dain Sundstrom
- * @version $Id$
- * @since 1.0
- */
-public interface MappingLoader {
-    Set<NamespaceMapping> loadNamespaces() throws IOException;
+    private final String name;
+    private final Type nestedType;
+
+    ArrayType(String name, Type nestedType) {
+        this.name = name;
+        this.nestedType = nestedType;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean isArray() {
+        return true;
+    }
+
+    public Type getNestedType() {
+        return nestedType;
+    }
+
+    @Override
+    public String toString() {
+        return "Array[" + name + "[" + nestedType + "]]";
+    }
+
 }

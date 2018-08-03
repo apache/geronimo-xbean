@@ -18,6 +18,11 @@ package org.apache.xbean.generator.commons;
 
 import org.apache.xbean.generator.*;
 import org.apache.xbean.generator.artifact.SimpleArtifact;
+import org.apache.xbean.model.*;
+import org.apache.xbean.model.mapping.AttributeMapping;
+import org.apache.xbean.model.mapping.ElementMapping;
+import org.apache.xbean.model.mapping.NamespaceMapping;
+import org.apache.xbean.model.type.Types;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -69,7 +74,7 @@ public class WikiDocumentationGenerator implements GeneratorPlugin {
             for (AttributeMapping attribute : element.getAttributes()) {
                 Type type = getNestedType(attribute.getType());
 
-                if (namespaceMapping.isSimpleType(type))
+                if (!type.isComplex())
                     continue;
 
                 if (!referencedTypes.containsKey(type.getName()))
@@ -129,20 +134,20 @@ public class WikiDocumentationGenerator implements GeneratorPlugin {
     }
 
     private Type getNestedType(Type type) {
-        if( type.isCollection() ) {
-            return getNestedType(type.getNestedType());
+        if (type instanceof NestingType) {
+            return getNestedType(((NestingType) type).getNestedType());
         }
         return type;
     }
     
     private void generateElementsByType(PrintWriter out, NamespaceMapping namespaceMapping, Map<String, List<ElementMapping>> referencedTypes) {
-        out.println("h3. Elements By Type");
+        out.println("h3. Elements By SimpleType");
         for (Entry<String, List<ElementMapping>> entry : referencedTypes.entrySet()) {
             String className = entry.getKey();
             Collection<ElementMapping> elements = entry.getValue();
 
             out.println("{anchor:" + className + "-types}");
-            out.println("h4. The _[" + className + "|#" + className + "-types]_ Type Implementations");
+            out.println("h4. The _[" + className + "|#" + className + "-types]_ SimpleType Implementations");
 
             for (ElementMapping element : elements) {
                 out.println("    | _[<" + element.getElementName() + ">|#" + element.getElementName() + "-element]_ | {html}" + element.getDescription() + "{html} |");
@@ -176,10 +181,10 @@ public class WikiDocumentationGenerator implements GeneratorPlugin {
 
         if (element.getAttributes().size() > 0 ) {
             out.println("h4. Properties");
-            out.println("    || Property Name || Type || Description ||");
+            out.println("    || Property Name || SimpleType || Description ||");
 
             for (AttributeMapping attribute : element.getAttributes()) {
-                Type type = attribute.getPropertyEditor() != null ? Type.newSimpleType(String.class.getName()) : attribute.getType();
+                Type type = attribute.getPropertyEditor() != null ? Types.newSimpleType(String.class.getName()) : attribute.getType();
                 out.println("    | " + attribute.getAttributeName() + " | " + getTypeLink(type, referencedTypes) + " | {html}" + attribute.getDescription() + "{html} |");
             }
         }
@@ -187,8 +192,8 @@ public class WikiDocumentationGenerator implements GeneratorPlugin {
     }
 
     private String getTypeLink(Type type, Map<String, List<ElementMapping>> referencedTypes) {
-        if (type.isCollection()) {
-            return "(" + getTypeLink(type.getNestedType(), referencedTypes) +  ")\\*";
+        if (type instanceof NestingType) {
+            return "(" + getTypeLink(((NestingType) type).getNestedType(), referencedTypes) +  ")\\*";
         } else {
             if (referencedTypes.containsKey(type.getName()) ) {
                 return "_["+type.getName()+"|#"+type.getName()+"-types]_";

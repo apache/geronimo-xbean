@@ -14,27 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.generator;
+package org.apache.xbean.model.type;
 
-import org.apache.xbean.generator.Type;
+import org.apache.xbean.model.Type;
 
-/**
- * @version $Rev$ $Date$
- */
-public class ParameterMapping {
+class MapType implements Type {
+
     private final String name;
-    private final Type type;
+    private final Type keyType;
+    private final Type valueType;
 
-    public ParameterMapping(String name, Type type) {
+    MapType(String name, Type keyType, Type valueType) {
         this.name = name;
-        this.type = type;
+        this.keyType = keyType;
+        this.valueType = valueType;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
-    public Type getType() {
-        return type;
+    @Override
+    public boolean isMap() {
+        return true;
     }
+
+    public Type getKeyType() {
+        return keyType;
+    }
+
+    public Type getValueType() {
+        return valueType;
+    }
+
+    @Override
+    public String toString() {
+        return "MapType[<" + keyType + ", " + valueType + ">]";
+    }
+
 }

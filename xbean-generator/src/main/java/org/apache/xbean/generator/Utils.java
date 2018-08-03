@@ -16,15 +16,14 @@
  */
 package org.apache.xbean.generator;
 
+import org.apache.xbean.model.Type;
+
 import javax.xml.namespace.QName;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * @author Dain Sundstrom
@@ -125,18 +124,4 @@ public final class Utils {
         XSD_TYPES = Collections.unmodifiableMap(map);
     }
 
-    public static List<ElementMapping> findImplementationsOf(NamespaceMapping namespaceMapping, Type type) {
-        List elements = new ArrayList();
-        String nestedTypeName = type.getName();
-        for (Iterator iter = namespaceMapping.getElements().iterator(); iter.hasNext();) {
-            ElementMapping element = (ElementMapping) iter.next();
-            if (element.getClassName().equals(nestedTypeName) ||
-                element.getInterfaces().contains(nestedTypeName) ||
-                element.getSuperClasses().contains(nestedTypeName))
-            {
-                elements.add(element);
-            }
-        }
-        return elements;
-    }
 }

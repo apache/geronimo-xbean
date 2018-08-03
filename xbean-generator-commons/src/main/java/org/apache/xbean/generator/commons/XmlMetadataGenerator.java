@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.apache.xbean.generator.*;
 import org.apache.xbean.generator.artifact.SimpleArtifact;
+import org.apache.xbean.model.mapping.*;
 import org.apache.xbean.namespace.NamespaceDiscoverer;
 
 /**

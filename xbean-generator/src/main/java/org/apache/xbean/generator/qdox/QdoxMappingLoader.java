@@ -19,15 +19,8 @@ package org.apache.xbean.generator.qdox;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -38,15 +31,12 @@ import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
 import com.thoughtworks.qdox.model.JavaSource;
-import com.thoughtworks.qdox.model.Type;
-import org.apache.xbean.generator.AttributeMapping;
-import org.apache.xbean.generator.ElementMapping;
+import org.apache.xbean.model.*;
 import org.apache.xbean.generator.InvalidModelException;
-import org.apache.xbean.generator.MapMapping;
 import org.apache.xbean.generator.MappingLoader;
-import org.apache.xbean.generator.NamespaceMapping;
-import org.apache.xbean.generator.ParameterMapping;
 import org.apache.xbean.generator.Utils;
+import org.apache.xbean.model.mapping.*;
+import org.apache.xbean.model.type.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,10 +57,20 @@ public class QdoxMappingLoader implements MappingLoader {
     public static final String ELEMENT_ANNOTATION = "org.apache.xbean.Element";
 
     private static final Logger log = LoggerFactory.getLogger(QdoxMappingLoader.class);
+
+    public static final String JAVA_LANG_OBJECT = "java.lang.Object";
+    public static final com.thoughtworks.qdox.model.Type OBJECT_TYPE = new com.thoughtworks.qdox.model.Type(JAVA_LANG_OBJECT);
+
+    public static final String JAVA_UTIL_COLLECTION = "java.util.Collection";
+    private com.thoughtworks.qdox.model.Type collectionType = new com.thoughtworks.qdox.model.Type(JAVA_UTIL_COLLECTION);
+
+    public static final String JAVA_UTIL_MAP = "java.util.Map";
+    private com.thoughtworks.qdox.model.Type mapType= new com.thoughtworks.qdox.model.Type(JAVA_UTIL_MAP);
+
     private final String defaultNamespace;
     private final File[] srcDirs;
     private final String[] excludedClasses;
-    private Type collectionType;
+
 
     public QdoxMappingLoader(String defaultNamespace, File[] srcDirs, String[] excludedClasses) {
         this.defaultNamespace = defaultNamespace;
@@ -100,7 +100,6 @@ public class QdoxMappingLoader implements MappingLoader {
             getSourceFiles(sourceDirectory, excludedClasses, builder);
         }
 
-        collectionType = builder.getClassByName("java.util.Collection").asType();
         return loadNamespaces(builder);
     }
 
@@ -113,12 +112,10 @@ public class QdoxMappingLoader implements MappingLoader {
         Map<String, ElementMapping> namespaceRoots = new HashMap<String, ElementMapping>();
         for (ElementMapping element : elements) {
             String namespace = element.getNamespace();
-            Set<ElementMapping> namespaceElements = elementsByNamespace.get(namespace);
-            if (namespaceElements == null) {
-                namespaceElements = new HashSet<ElementMapping>();
-                elementsByNamespace.put(namespace, namespaceElements);
-            }
+
+            Set<ElementMapping> namespaceElements = elementsByNamespace.computeIfAbsent(namespace, key -> new HashSet<>());
             namespaceElements.add(element);
+
             if (element.isRootElement()) {
                 if (namespaceRoots.containsKey(namespace)) {
                     log.info("Multiple root elements found for namespace " + namespace);
@@ -258,7 +255,8 @@ public class QdoxMappingLoader implements MappingLoader {
                         attributes.add(attributeMapping);
                         attributesByPropertyName.put(attributeMapping.getPropertyName(), attributeMapping);
                     }
-                    args.add(new ParameterMapping(attributeMapping.getPropertyName(), toMappingType(parameter.getType(), null)));
+
+                    args.add(new ParameterMapping(attributeMapping.getPropertyName(), toMappingType(parameter.getType())));
                 }
                 constructorArgs.add(Collections.unmodifiableList(args));
             }
@@ -285,7 +283,7 @@ public class QdoxMappingLoader implements MappingLoader {
         }
         while (true) {
             JavaClass s = p.getSuperJavaClass();
-            if (s == null || s.equals(p) || "java.lang.Object".equals(s.getFullyQualifiedName())) {
+            if (s == null || s.equals(p) || JAVA_LANG_OBJECT.equals(s.getFullyQualifiedName())) {
                 break;
             }
             p = s;
@@ -354,7 +352,7 @@ public class QdoxMappingLoader implements MappingLoader {
         return new AttributeMapping(attribute,
                 beanProperty.getName(),
                 attributeDescription,
-                toMappingType(beanProperty.getType(), nestedType),
+                toMappingType(beanProperty.getType()),
                 defaultValue,
                 fixed,
                 required,
@@ -485,19 +483,31 @@ public class QdoxMappingLoader implements MappingLoader {
         return false;
     }
 
-    private org.apache.xbean.generator.Type toMappingType(Type type, String nestedType) {
+    private Type toMappingType(com.thoughtworks.qdox.model.Type type) {
+        return toMappingType(type, this::toMappingType);
+    }
+
+    private Type toMappingType(com.thoughtworks.qdox.model.Type type, Function<com.thoughtworks.qdox.model.Type, Type> mapper) {
+        Function<com.thoughtworks.qdox.model.Type, com.thoughtworks.qdox.model.Type> fallbackToObject = (arg) -> Optional.ofNullable(arg).orElse(OBJECT_TYPE);
         try {
+            com.thoughtworks.qdox.model.Type[] typeArguments = getActualTypeArguments(type);
+
             if (type.isArray()) {
-                return org.apache.xbean.generator.Type.newArrayType(type.getValue(), type.getDimensions());
+                return Types.newArrayType(type.getValue(), type.getDimensions());
             } else if (type.isA(collectionType)) {
-                if (nestedType == null) nestedType = "java.lang.Object";
-                return org.apache.xbean.generator.Type.newCollectionType(type.getValue(),
-                        org.apache.xbean.generator.Type.newSimpleType(nestedType));
+                return Types.newCollectionType(type.getValue(), fallbackToObject.andThen(mapper).apply(typeArguments[0]));
+            } else if (type.isA(mapType)) {
+                return Types.newMapType(type.getValue(), fallbackToObject.andThen(mapper).apply(typeArguments[0]), fallbackToObject.andThen(mapper).apply(typeArguments[1]));
             }
         } catch (Throwable t) {
             log.debug("Could not load type mapping", t);
         }
-        return org.apache.xbean.generator.Type.newSimpleType(type.getValue());
+        return Types.newSimpleType(type.getValue());
+    }
+
+    private com.thoughtworks.qdox.model.Type[] getActualTypeArguments(com.thoughtworks.qdox.model.Type type) {
+        // we return two dimension array in case of unbounded map type.
+        return Optional.ofNullable(type.getActualTypeArguments()).orElse(new com.thoughtworks.qdox.model.Type[] {null, null});
     }
 
     private static String toMethodLocator(JavaMethod method) {

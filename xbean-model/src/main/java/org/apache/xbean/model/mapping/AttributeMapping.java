@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.generator;
+package org.apache.xbean.model.mapping;
+
+import org.apache.xbean.model.Type;
 
 import java.util.Objects;
 
 /**
+ * Description of configuration attribute.
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
@@ -36,7 +40,7 @@ public class AttributeMapping implements Comparable {
     public AttributeMapping(String attributeName, String propertyName, String description, Type type, String value, boolean fixed, boolean required, String propertyEditor) {
         Objects.requireNonNull(attributeName, "Attribute name can't be null");
         Objects.requireNonNull(propertyName, "Property name can't be null");
-        Objects.requireNonNull(type, "Type can't be null");
+        Objects.requireNonNull(type, "SimpleType can't be null");
 
         this.propertyEditor = propertyEditor;
         this.attributeName = attributeName;

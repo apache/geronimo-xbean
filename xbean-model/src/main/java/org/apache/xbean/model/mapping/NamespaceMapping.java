@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.generator;
+package org.apache.xbean.model.mapping;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import org.apache.xbean.model.Type;
+
+import java.util.*;
 
 /**
+ * Mapping of configuration or its subset to elements and attributes.
+ *
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public class NamespaceMapping implements Comparable {
+public class NamespaceMapping implements Comparable<NamespaceMapping> {
     private final String namespace;
     private final Set<ElementMapping> elements;
     private final Map<String, ElementMapping> elementsByName;
@@ -36,10 +35,10 @@ public class NamespaceMapping implements Comparable {
 
     public NamespaceMapping(String namespace, Set<ElementMapping> elements, ElementMapping rootElement) {
         this.namespace = namespace;
-        this.elements = Collections.unmodifiableSet(new TreeSet<ElementMapping>(elements));
+        this.elements = Collections.unmodifiableSet(new TreeSet<>(elements));
         this.rootElement = rootElement;
 
-        Map<String, ElementMapping> elementsByName = new HashMap();
+        Map<String, ElementMapping> elementsByName = new HashMap<>();
         for (ElementMapping elementMapping : elements) {
             elementsByName.put(elementMapping.getElementName(), elementMapping);
         }
@@ -73,18 +72,23 @@ public class NamespaceMapping implements Comparable {
         return false;
     }
 
-    public int compareTo(Object obj) {
-        return namespace.compareTo(((NamespaceMapping) obj).namespace);
+    public int compareTo(NamespaceMapping obj) {
+        return namespace.compareTo((obj).namespace);
     }
 
-    private final HashMap checkedTypes = new HashMap();
+    public List<ElementMapping> findImplementationsOf(Type type) {
+        List<ElementMapping> elements = new ArrayList();
+        String nestedTypeName = type.getName();
 
-    public boolean isSimpleType(Type type) {
-        Boolean b = (Boolean) checkedTypes.get(type);
-        if (b == null){
-            b = Utils.isSimpleType(type)? Boolean.TRUE: Boolean.FALSE;
-            checkedTypes.put(type, b);
+        for (ElementMapping element : getElements()) {
+            if (element.getClassName().equals(nestedTypeName) ||
+                element.getInterfaces().contains(nestedTypeName) ||
+                element.getSuperClasses().contains(nestedTypeName))
+            {
+                elements.add(element);
+            }
         }
-        return b.booleanValue();
+        return elements;
     }
+
 }

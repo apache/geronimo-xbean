@@ -16,6 +16,8 @@
  */
 package org.apache.xbean.generator;
 
+import org.apache.xbean.model.mapping.NamespaceMapping;
+
 import java.io.IOException;
 import java.util.Map;
 

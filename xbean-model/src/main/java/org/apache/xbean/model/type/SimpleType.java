@@ -14,18 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.xbean.generator;
+package org.apache.xbean.model.type;
 
-import org.apache.xbean.model.mapping.NamespaceMapping;
-
-import java.io.IOException;
-import java.util.Set;
+import org.apache.xbean.model.Type;
 
 /**
  * @author Dain Sundstrom
  * @version $Id$
  * @since 1.0
  */
-public interface MappingLoader {
-    Set<NamespaceMapping> loadNamespaces() throws IOException;
+class SimpleType implements Type {
+    private final String name;
+
+    SimpleType(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleType[" + name + "]";
+    }
+
 }

@@ -17,15 +17,14 @@
 package org.apache.xbean.generator.common;
 
 import junit.framework.TestCase;
-import org.apache.ws.commons.schema.XmlSchema;
-import org.apache.xbean.generator.AttributeMapping;
-import org.apache.xbean.generator.ElementMapping;
 import org.apache.xbean.generator.LogFacade;
-import org.apache.xbean.generator.NamespaceMapping;
-import org.apache.xbean.generator.Type;
 import org.apache.xbean.generator.Utils;
 import org.apache.xbean.generator.artifact.HashedArtifactSet;
 import org.apache.xbean.generator.commons.XsdGenerator;
+import org.apache.xbean.model.mapping.AttributeMapping;
+import org.apache.xbean.model.mapping.ElementMapping;
+import org.apache.xbean.model.mapping.NamespaceMapping;
+import org.apache.xbean.model.type.Types;
 import org.apache.xbean.test.support.example.BeerService;
 import org.apache.xbean.generator.qdox.QdoxMappingLoader;
 import org.xml.sax.EntityResolver;
@@ -38,11 +37,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.beans.PropertyEditorManager;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -98,23 +93,20 @@ public class ModelTest extends TestCase {
         
         // validate xsd has string for attribute VolumeWithPropertyEditor
         final AtomicBoolean gotExpected = new AtomicBoolean(false);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
         XsdGenerator generator = new XsdGenerator(true, new File("target/"), new HashedArtifactSet(), log) {};
-        generator.generateSchema(new PrintWriter(System.out) {
-            @Override
-            public void println(String text) {
-                System.out.println(text);
-                if (text.contains("volumeWithPropertyEditor")) {
-                    if (text.contains("xs:string")) {
-                        gotExpected.set(true);
-                    }
+        generator.generateSchema(new OutputStreamWriter(stream), defaultNamespace);
+
+        String[] lines = new String(stream.toByteArray()).split("\n");
+        for (String text : lines) {
+            if (text.contains("volumeWithPropertyEditor")) {
+                if (text.contains("type=\"string\"")) {
+                    gotExpected.set(true);
                 }
             }
-
-            @Override
-            public void print(String s) {
-
-            }
-        }, defaultNamespace);
+        }
 
         assertTrue("xsd with string got genereated", gotExpected.get());
     }
@@ -172,7 +164,7 @@ public class ModelTest extends TestCase {
         List<String> editorSearchPath = new LinkedList<String>(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
         editorSearchPath.add("org.apache.xbean.propertyeditors");
         PropertyEditorManager.setEditorSearchPath(editorSearchPath.toArray(new String[editorSearchPath.size()]));
-        assertTrue(Utils.isSimpleType(Type.newSimpleType("java.net.URI")));
+        assertTrue(Utils.isSimpleType(Types.newSimpleType("java.net.URI")));
     }
 
     public void xtestXSDValidation() throws Exception{

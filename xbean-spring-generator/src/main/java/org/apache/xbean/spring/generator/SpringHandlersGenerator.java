@@ -3,7 +3,7 @@ package org.apache.xbean.spring.generator;
 import org.apache.xbean.generator.ArtifactSet;
 import org.apache.xbean.generator.GeneratorPlugin;
 import org.apache.xbean.generator.LogFacade;
-import org.apache.xbean.generator.NamespaceMapping;
+import org.apache.xbean.model.mapping.NamespaceMapping;
 import org.apache.xbean.generator.artifact.SimpleArtifact;
 
 import java.io.*;

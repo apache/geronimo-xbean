@@ -28,17 +28,17 @@ import java.util.Map;
 
 // START SNIPPET: bean
 public class FavoriteService {
-    private Map favorites;
+    private Map<String, Object> favorites;
 
     /**
      * @org.apache.xbean.Map entryName="favorite-item" keyName="person"
      * @return
      */
-    public Map getFavorites() {
+    public Map<String, Object> getFavorites() {
         return favorites;
     }
 
-    public void setFavorites(Map favorites) {
+    public void setFavorites(Map<String, Object> favorites) {
         this.favorites = favorites;
     }   
 }

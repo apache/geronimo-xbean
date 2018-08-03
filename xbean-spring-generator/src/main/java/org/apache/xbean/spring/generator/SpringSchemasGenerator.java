@@ -2,6 +2,7 @@ package org.apache.xbean.spring.generator;
 
 import org.apache.xbean.generator.*;
 import org.apache.xbean.generator.artifact.SimpleArtifact;
+import org.apache.xbean.model.mapping.NamespaceMapping;
 
 import java.io.*;
 import java.util.Collections;
