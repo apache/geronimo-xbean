@@ -19,7 +19,11 @@ package org.apache.xbean.generator;
 import java.io.File;
 
 /**
- * A factory interface for generator.
+ * A factory interface for generator type.
+ *
+ * Because generator might have a bit more complicated creation and use own logic to determine constructor arguments we
+ * can not rely on simplest solution (no arg constructor).
+ * Main responsibility of factory is mapping of given inputs such desired directory and log facade to plugin requirements.
  */
 public interface GeneratorPluginFactory {
 

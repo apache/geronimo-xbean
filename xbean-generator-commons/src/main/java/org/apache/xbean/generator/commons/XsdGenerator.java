@@ -212,7 +212,8 @@ public abstract class XsdGenerator implements GeneratorPlugin {
 
         XmlSchemaAttribute attribute = new XmlSchemaAttribute(schema, false);
         attribute.setName("id");
-        attribute.setSchemaTypeName(Constants.XSD_ID);
+        // this avoid troubles with duplicate keys in maps
+        attribute.setSchemaTypeName(Constants.XSD_STRING);
 
         complexType.getAttributes().add(attribute);
     }
