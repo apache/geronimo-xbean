@@ -286,6 +286,9 @@ public class PropertyEditors {
 
         Class clazz = toClass(type);
 
+        if (editor == null) editor = ConstructorConverter.editor(toClass(type));
+        if (editor == null) editor = StaticFactoryConverter.editor(toClass(type));
+
         if (editor == null) {
             throw new PropertyEditorException("Unable to find PropertyEditor for " + clazz.getSimpleName());
         }
@@ -304,10 +307,20 @@ public class PropertyEditors {
     private static Converter findBuiltinConverter(Type type) {
         if (type == null) throw new NullPointerException("type is null");
 
-        Class clazz = toClass(type);
+        final Class clazz = toClass(type);
 
         if (Enum.class.isAssignableFrom(clazz)){
             return new EnumConverter(clazz);
+        }
+
+        {
+            final ConstructorConverter editor = ConstructorConverter.editor(clazz);
+            if (editor != null) return editor;
+        }
+
+        {
+            final StaticFactoryConverter editor = StaticFactoryConverter.editor(clazz);
+            if (editor != null) return editor;
         }
 
         return null;       
