@@ -32,6 +32,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
+
 /**
  * @version $Rev: 6687 $ $Date: 2005-12-28T21:08:56.733437Z $
  */
@@ -39,6 +41,7 @@ public class MapRecipe extends AbstractRecipe {
     private final List<Object[]> entries;
     private String typeName;
     private Class typeClass;
+    private PropertyEditorRegistry registry;
     private final EnumSet<Option> options = EnumSet.noneOf(Option.class);
 
     public MapRecipe() {
@@ -79,6 +82,10 @@ public class MapRecipe extends AbstractRecipe {
         this.typeName = mapRecipe.typeName;
         this.typeClass = mapRecipe.typeClass;
         entries = new ArrayList<Object[]>(mapRecipe.entries);
+    }
+
+    public void setRegistry(final PropertyEditorRegistry registry) {
+        this.registry = registry;
     }
 
     public void allow(Option option){
@@ -163,8 +170,8 @@ public class MapRecipe extends AbstractRecipe {
         // add map entries
         boolean refAllowed = options.contains(Option.LAZY_ASSIGNMENT);
         for (Object[] entry : entries) {
-            Object key = RecipeHelper.convert(keyType, entry[0], refAllowed);
-            Object value = RecipeHelper.convert(valueType, entry[1], refAllowed);
+            Object key = RecipeHelper.convert(keyType, entry[0], refAllowed, registry);
+            Object value = RecipeHelper.convert(valueType, entry[1], refAllowed, registry);
 
             if (key instanceof Reference) {
                 // when the key reference and optional value reference are both resolved

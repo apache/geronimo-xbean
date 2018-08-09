@@ -27,6 +27,12 @@ public class EnumConverter extends AbstractConverter {
         super(type);
     }
 
+    @Override
+    protected String toStringImpl(final Object value) {
+        return Enum.class.cast(value).name();
+    }
+
+    @Override
     protected Object toObjectImpl(String text) {
         Class type = getType();
 
@@ -34,12 +40,13 @@ public class EnumConverter extends AbstractConverter {
             return Enum.valueOf(type, text);
         } catch (Exception cause) {
             try {
-                int index = Integer.parseInt(text);
-                Method method = type.getMethod("values");
-                Object[] values = (Object[]) method.invoke(null);
+                final int index = Integer.parseInt(text);
+                final Method method = type.getMethod("values");
+                final Object[] values = (Object[]) method.invoke(null);
                 return values[index];
-            } catch (NumberFormatException e) {
-            } catch (Exception e) {
+            } catch (final NumberFormatException e) {
+                // no-op
+            } catch (final Exception e) {
                 cause = e;
             }
 

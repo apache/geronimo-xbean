@@ -30,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.xbean.propertyeditor.Primitives;
+import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
 import org.apache.xbean.propertyeditor.PropertyEditors;
 
 /**
@@ -124,12 +126,12 @@ public final class RecipeHelper {
         return instance == null || type.isInstance(instance);
     }
 
-    public static boolean isConvertable(Type type, Object propertyValue) {
+    public static boolean isConvertable(Type type, Object propertyValue, PropertyEditorRegistry registry) {
         if (propertyValue instanceof Recipe) {
             Recipe recipe = (Recipe) propertyValue;
             return recipe.canCreate(type);
         }
-        return (propertyValue instanceof String && PropertyEditors.canConvert(toClass(type)))
+        return (propertyValue instanceof String && (registry == null ? PropertyEditors.registry() : registry).findConverter(toClass(type)) != null)
             || (type == String.class && char[].class.isInstance(propertyValue));
     }
 
@@ -138,31 +140,13 @@ public final class RecipeHelper {
 
         if (expected.isPrimitive()) {
             // verify actual is the correct wrapper type
-            if (expected.equals(boolean.class)) {
-                return actual.equals(Boolean.class);
-            } else if (expected.equals(char.class)) {
-                return actual.equals(Character.class);
-            } else if (expected.equals(byte.class)) {
-                return actual.equals(Byte.class);
-            } else if (expected.equals(short.class)) {
-                return actual.equals(Short.class);
-            } else if (expected.equals(int.class)) {
-                return actual.equals(Integer.class);
-            } else if (expected.equals(long.class)) {
-                return actual.equals(Long.class);
-            } else if (expected.equals(float.class)) {
-                return actual.equals(Float.class);
-            } else if (expected.equals(double.class)) {
-                return actual.equals(Double.class);
-            } else {
-                throw new AssertionError("Invalid primitve type: " + expected);
-            }
+            return actual.equals(Primitives.toWrapper(expected));
         }
 
         return expected.isAssignableFrom(actual);
     }
 
-    public static Object convert(Type expectedType, Object value, boolean lazyRefAllowed) {
+    public static Object convert(Type expectedType, Object value, boolean lazyRefAllowed, PropertyEditorRegistry registry) {
         if (value instanceof Recipe) {
             Recipe recipe = (Recipe) value;
             value = recipe.create(expectedType, lazyRefAllowed);
@@ -178,7 +162,7 @@ public final class RecipeHelper {
 
         if (value instanceof String && (expectedType != Object.class)) {
             String stringValue = (String) value;
-            value = PropertyEditors.getValue(expectedType, stringValue);
+            value = (registry == null ? PropertyEditors.registry() : registry).getValue(expectedType, stringValue);
         }
         return value;
     }
@@ -215,9 +199,8 @@ public final class RecipeHelper {
         } else if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
             return toClass(parameterizedType.getRawType());
-        } else {
-            return Object.class;
         }
+        return Object.class;
     }
 
     public static class RecipeComparator implements Comparator<Object> {

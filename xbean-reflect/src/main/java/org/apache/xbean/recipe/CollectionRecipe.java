@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
+
 /**
  * @version $Rev: 6685 $ $Date: 2005-12-28T00:29:37.967210Z $
  */
@@ -36,6 +38,7 @@ public class CollectionRecipe extends AbstractRecipe {
     private final List<Object> list;
     private String typeName;
     private Class typeClass;
+    private PropertyEditorRegistry registry;
     private final EnumSet<Option> options = EnumSet.noneOf(Option.class);
 
     public CollectionRecipe() {
@@ -77,6 +80,10 @@ public class CollectionRecipe extends AbstractRecipe {
         this.typeName = collectionRecipe.typeName;
         this.typeClass = collectionRecipe.typeClass;
         list = new ArrayList<Object>(collectionRecipe.list);
+    }
+
+    public void setRegistry(final PropertyEditorRegistry registry) {
+        this.registry = registry;
     }
 
     public void allow(Option option) {
@@ -145,7 +152,7 @@ public class CollectionRecipe extends AbstractRecipe {
 
         int index = 0;
         for (Object value : list) {
-            value = RecipeHelper.convert(componentType, value, refAllowed);
+            value = RecipeHelper.convert(componentType, value, refAllowed, registry);
 
             if (value instanceof Reference) {
                 Reference reference = (Reference) value;

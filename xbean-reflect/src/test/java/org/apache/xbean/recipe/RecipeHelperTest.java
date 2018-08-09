@@ -16,6 +16,7 @@
  */
 package org.apache.xbean.recipe;
 
+import org.apache.xbean.propertyeditor.PropertyEditors;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -25,13 +26,13 @@ import static org.junit.Assert.assertTrue;
 public class RecipeHelperTest {
     @Test
     public void stringCharArrayIsConvertable() {
-        assertTrue(RecipeHelper.isConvertable(char[].class, "foo"));
-        assertTrue(RecipeHelper.isConvertable(String.class, "foo".toCharArray()));
+        assertTrue(RecipeHelper.isConvertable(char[].class, "foo", PropertyEditors.registry()));
+        assertTrue(RecipeHelper.isConvertable(String.class, "foo".toCharArray(), PropertyEditors.registry()));
     }
 
     @Test
     public void stringCharArrayConvert() {
-        assertArrayEquals("foo".toCharArray(), char[].class.cast(RecipeHelper.convert(char[].class, "foo", false)));
-        assertEquals("foo", RecipeHelper.convert(String.class, "foo".toCharArray(), false));
+        assertArrayEquals("foo".toCharArray(), char[].class.cast(RecipeHelper.convert(char[].class, "foo", false, PropertyEditors.registry())));
+        assertEquals("foo", RecipeHelper.convert(String.class, "foo".toCharArray(), false, PropertyEditors.registry()));
     }
 }

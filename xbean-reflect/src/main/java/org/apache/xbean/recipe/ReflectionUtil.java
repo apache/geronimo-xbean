@@ -37,6 +37,8 @@ import java.util.Set;
 
 import static org.apache.xbean.recipe.RecipeHelper.isAssignableFrom;
 
+import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
+
 public final class ReflectionUtil {
     private static final class ParameterLoader {
         private static ParameterNameLoader PARAMETER_NAME_LOADER;
@@ -65,7 +67,8 @@ public final class ReflectionUtil {
         }
     }
     
-    public static Field findField(Class typeClass, String propertyName, Object propertyValue, Set<Option> options) {
+    public static Field findField(Class typeClass, String propertyName, Object propertyValue, Set<Option> options,
+                                  PropertyEditorRegistry registry) {
         if (typeClass == null) throw new NullPointerException("typeClass is null");
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
@@ -135,7 +138,7 @@ public final class ReflectionUtil {
                 }
 
 
-                if (!RecipeHelper.isInstance(fieldType, propertyValue) && !RecipeHelper.isConvertable(fieldType, propertyValue)) {
+                if (!RecipeHelper.isInstance(fieldType, propertyValue) && !RecipeHelper.isConvertable(fieldType, propertyValue, registry)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
                         missException = new MissingAccessorException((propertyValue == null ? "null" : propertyValue.getClass().getName()) + " can not be assigned or converted to " +
@@ -229,8 +232,9 @@ public final class ReflectionUtil {
         return null;
     }
     
-    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, Set<Option> options) {
-        List<Method> setters = findAllSetters(typeClass, propertyName, propertyValue, options);
+    public static Method findSetter(Class typeClass, String propertyName, Object propertyValue, Set<Option> options,
+                                    PropertyEditorRegistry registry) {
+        List<Method> setters = findAllSetters(typeClass, propertyName, propertyValue, options, registry);
         return setters.get(0);
     }
 
@@ -244,7 +248,8 @@ public final class ReflectionUtil {
      * @param options controls which setters are considered valid
      * @return the valid setters; never null or empty
      */
-    public static List<Method> findAllSetters(Class typeClass, String propertyName, Object propertyValue, Set<Option> options) {
+    public static List<Method> findAllSetters(Class typeClass, String propertyName, Object propertyValue, Set<Option> options,
+                                              PropertyEditorRegistry registry) {
         if (typeClass == null) throw new NullPointerException("typeClass is null");
         if (propertyName == null) throw new NullPointerException("name is null");
         if (propertyName.length() == 0) throw new IllegalArgumentException("name is an empty string");
@@ -349,7 +354,7 @@ public final class ReflectionUtil {
                 }
 
 
-                if (!RecipeHelper.isInstance(methodParameterType, propertyValue) && !RecipeHelper.isConvertable(methodParameterType, propertyValue)) {
+                if (!RecipeHelper.isInstance(methodParameterType, propertyValue) && !RecipeHelper.isConvertable(methodParameterType, propertyValue, registry)) {
                     if (matchLevel < 5) {
                         matchLevel = 5;
                         missException = new MissingAccessorException((propertyValue == null ? "null" : propertyValue.getClass().getName()) + " can not be assigned or converted to " +
@@ -396,7 +401,8 @@ public final class ReflectionUtil {
         }
     }
 
-    public static List<Field> findAllFieldsByType(Class typeClass, Object propertyValue, Set<Option> options) {
+    public static List<Field> findAllFieldsByType(Class typeClass, Object propertyValue, Set<Option> options,
+                                                  PropertyEditorRegistry registry) {
         if (typeClass == null) throw new NullPointerException("typeClass is null");
         if (options == null) options = EnumSet.noneOf(Option.class);
 
@@ -416,7 +422,7 @@ public final class ReflectionUtil {
         LinkedList<Field> validFields = new LinkedList<Field>();
         for (Field field : fields) {
             Class fieldType = field.getType();
-            if (RecipeHelper.isInstance(fieldType, propertyValue) || RecipeHelper.isConvertable(fieldType, propertyValue)) {
+            if (RecipeHelper.isInstance(fieldType, propertyValue) || RecipeHelper.isConvertable(fieldType, propertyValue, registry)) {
                 if (!allowPrivate && !Modifier.isPublic(field.getModifiers())) {
                     if (matchLevel < 4) {
                         matchLevel = 4;
@@ -475,7 +481,8 @@ public final class ReflectionUtil {
             throw new MissingAccessorException(buffer.toString(), -1);
         }
     }
-    public static List<Method> findAllSettersByType(Class typeClass, Object propertyValue, Set<Option> options) {
+    public static List<Method> findAllSettersByType(Class typeClass, Object propertyValue, Set<Option> options,
+                                                    PropertyEditorRegistry registry) {
         if (typeClass == null) throw new NullPointerException("typeClass is null");
         if (options == null) options = EnumSet.noneOf(Option.class);
 
@@ -489,7 +496,7 @@ public final class ReflectionUtil {
         List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
-            if (method.getName().startsWith("set") && method.getParameterTypes().length == 1 && (RecipeHelper.isInstance(method.getParameterTypes()[0], propertyValue) || RecipeHelper.isConvertable(method.getParameterTypes()[0], propertyValue))) {
+            if (method.getName().startsWith("set") && method.getParameterTypes().length == 1 && (RecipeHelper.isInstance(method.getParameterTypes()[0], propertyValue) || RecipeHelper.isConvertable(method.getParameterTypes()[0], propertyValue, registry))) {
                 if (method.getReturnType() != Void.TYPE) {
                     if (matchLevel < 2) {
                         matchLevel = 2;
