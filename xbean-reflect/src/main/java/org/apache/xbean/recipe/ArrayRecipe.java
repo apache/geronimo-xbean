@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
+
 /**
  * @version $Rev$ $Date$
  */
@@ -31,6 +33,7 @@ public class ArrayRecipe extends AbstractRecipe {
     private final List<Object> list;
     private String typeName;
     private Class typeClass;
+    private PropertyEditorRegistry registry;
     private final EnumSet<Option> options = EnumSet.noneOf(Option.class);
 
     public ArrayRecipe() {
@@ -54,6 +57,10 @@ public class ArrayRecipe extends AbstractRecipe {
         this.typeName = collectionRecipe.typeName;
         this.typeClass = collectionRecipe.typeClass;
         list = new ArrayList<Object>(collectionRecipe.list);
+    }
+
+    public void setRegistry(final PropertyEditorRegistry registry) {
+        this.registry = registry;
     }
 
     public void allow(Option option) {
@@ -108,7 +115,7 @@ public class ArrayRecipe extends AbstractRecipe {
 
         int index = 0;
         for (Object value : list) {
-            value = RecipeHelper.convert(type, value, refAllowed);
+            value = RecipeHelper.convert(type, value, refAllowed, registry);
             
             if (value instanceof Reference) {
                 Reference reference = (Reference) value;

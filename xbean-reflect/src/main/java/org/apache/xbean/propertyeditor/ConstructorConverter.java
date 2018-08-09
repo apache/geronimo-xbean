@@ -43,7 +43,6 @@ public class ConstructorConverter extends AbstractConverter {
         } catch (final NoSuchMethodException e) {
             // fine
         }
-
         return null;
     }
 }

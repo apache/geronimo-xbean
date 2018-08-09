@@ -24,7 +24,7 @@ import java.beans.PropertyEditor;
 public interface Converter extends PropertyEditor {
     /**
      * Gets the the type of object supported by this converter.
-     * @return
+     * @return the type used for that converter.
      */
     Class getType();
 

@@ -29,6 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
 import org.apache.xbean.recipe.ReflectionUtil.*;
 
 /**
@@ -40,6 +42,7 @@ public class ObjectRecipe extends AbstractRecipe {
     private String factoryMethod;
     private List<String> constructorArgNames;
     private List<Class<?>> constructorArgTypes;
+    private PropertyEditorRegistry registry;
     private final LinkedHashMap<Property,Object> properties = new LinkedHashMap<Property,Object>();
     private final EnumSet<Option> options = EnumSet.of(Option.FIELD_INJECTION);
     private final Map<String,Object> unsetProperties = new LinkedHashMap<String,Object>();
@@ -362,6 +365,10 @@ public class ObjectRecipe extends AbstractRecipe {
         return null;
     }
 
+    public void setRegistry(final PropertyEditorRegistry registry) {
+        this.registry = registry;
+    }
+
     private void setProperties(Map<Property, Object> propertyValues, Object instance, Class clazz) {
         // set remaining properties
         for (Map.Entry<Property, Object> entry : RecipeHelper.prioritizeProperties(propertyValues)) {
@@ -378,20 +385,20 @@ public class ObjectRecipe extends AbstractRecipe {
         List<Member> members = new ArrayList<Member>();
         try {
             if (propertyName instanceof SetterProperty){
-                List<Method> setters = ReflectionUtil.findAllSetters(clazz, propertyName.name, propertyValue, options);
+                List<Method> setters = ReflectionUtil.findAllSetters(clazz, propertyName.name, propertyValue, options, registry);
                 for (Method setter : setters) {
                     MethodMember member = new MethodMember(setter);
                     members.add(member);
                 }
             } else if (propertyName instanceof FieldProperty){
-                FieldMember member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options));
+                FieldMember member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options, registry));
                 members.add(member);
             } else if (propertyName instanceof AutoMatchProperty){
                 MissingAccessorException noField = null;
                 if (options.contains(Option.FIELD_INJECTION)) {
                     List<Field> fieldsByType = null;
                     try {
-                        fieldsByType = ReflectionUtil.findAllFieldsByType(clazz, propertyValue, options);
+                        fieldsByType = ReflectionUtil.findAllFieldsByType(clazz, propertyValue, options, registry);
                         FieldMember member = new FieldMember(fieldsByType.iterator().next());
                         members.add(member);
                     } catch (MissingAccessorException e) {
@@ -412,7 +419,7 @@ public class ObjectRecipe extends AbstractRecipe {
                 if (members.isEmpty()) {
                     List<Method> settersByType;
                     try {
-                        settersByType = ReflectionUtil.findAllSettersByType(clazz, propertyValue, options);
+                        settersByType = ReflectionUtil.findAllSettersByType(clazz, propertyValue, options, registry);
                         MethodMember member = new MethodMember(settersByType.iterator().next());
                         members.add(member);
                     } catch (MissingAccessorException noSetter) {
@@ -450,7 +457,7 @@ public class ObjectRecipe extends AbstractRecipe {
                         throw new ConstructionException("No getter for " + names[i] + " property");
                     }
                 }
-                List<Method> setters = ReflectionUtil.findAllSetters(clazz, names[names.length - 1], propertyValue, options);
+                List<Method> setters = ReflectionUtil.findAllSetters(clazz, names[names.length - 1], propertyValue, options, registry);
                 for (Method setter : setters) {
                     MethodMember member = new MethodMember(setter);
                     members.add(member);
@@ -459,7 +466,7 @@ public class ObjectRecipe extends AbstractRecipe {
                 // add setter members
                 MissingAccessorException noSetter = null;
                 try {
-                    List<Method> setters = ReflectionUtil.findAllSetters(clazz, propertyName.name, propertyValue, options);
+                    List<Method> setters = ReflectionUtil.findAllSetters(clazz, propertyName.name, propertyValue, options, registry);
                     for (Method setter : setters) {
                         MethodMember member = new MethodMember(setter);
                         members.add(member);
@@ -473,7 +480,7 @@ public class ObjectRecipe extends AbstractRecipe {
 
                 if (options.contains(Option.FIELD_INJECTION)) {
                     try {
-                        FieldMember member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options));
+                        FieldMember member = new FieldMember(ReflectionUtil.findField(clazz, propertyName.name, propertyValue, options, registry));
                         members.add(member);
                     } catch (MissingAccessorException noField) {
                         if (members.isEmpty()) {
@@ -494,7 +501,7 @@ public class ObjectRecipe extends AbstractRecipe {
         for (Member member : members) {
             // convert the value to type of setter/field
             try {
-                propertyValue = RecipeHelper.convert(member.getType(), propertyValue, false);
+                propertyValue = RecipeHelper.convert(member.getType(), propertyValue, false, registry);
             } catch (Exception e) {
                 // save off first conversion exception, in case setting failed
                 if (conversionException == null) {
@@ -582,14 +589,14 @@ public class ObjectRecipe extends AbstractRecipe {
             Object value;
             if (propertyValues.containsKey(name)) {
                 value = propertyValues.remove(name);
-                if (!RecipeHelper.isInstance(type, value) && !RecipeHelper.isConvertable(type, value)) {
+                if (!RecipeHelper.isInstance(type, value) && !RecipeHelper.isConvertable(type, value, registry)) {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +
                             "index=" + i + ", " +
                             "expected=" + RecipeHelper.toClass(type).getName() + ", " +
                             "actual=" + (value == null ? "null" : value.getClass().getName()));
                 }
-                value = RecipeHelper.convert(type, value, false);
+                value = RecipeHelper.convert(type, value, false, registry);
             } else {
                 value = getDefaultValue(RecipeHelper.toClass(type));
             }

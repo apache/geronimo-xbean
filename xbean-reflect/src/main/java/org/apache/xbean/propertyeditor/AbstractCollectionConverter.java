@@ -36,12 +36,14 @@ public abstract class AbstractCollectionConverter extends AbstractConverter {
     public AbstractCollectionConverter(Class type, PropertyEditor editor) {
         super(type);
 
-        if (editor == null) throw new NullPointerException("editor is null");
+        if (editor == null) {
+            throw new NullPointerException("editor is null");
+        }
         this.editor = editor;
     }
 
     protected final Object toObjectImpl(String text) {
-        List list = CollectionUtil.toList(text, editor);
+        List list = CollectionUtil.toList(text, getEditor());
         if (list == null) {
             return null;
         }
@@ -62,7 +64,11 @@ public abstract class AbstractCollectionConverter extends AbstractConverter {
             values = (Collection) value;
         }
 
-        String text = CollectionUtil.toString(values, editor);
+        String text = CollectionUtil.toString(values, getEditor());
         return text;
+    }
+
+    protected PropertyEditor getEditor() {
+        return editor;
     }
 }
