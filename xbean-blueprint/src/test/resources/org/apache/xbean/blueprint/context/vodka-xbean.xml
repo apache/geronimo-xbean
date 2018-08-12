@@ -25,7 +25,7 @@
         <p:name>
             Grey Goose
         </p:name>
-        <p:vodkaClass>org.apache.xbean.blueprint.example.VodkaService</p:vodkaClass>
+        <p:vodkaClass>org.apache.xbean.test.support.example.VodkaService</p:vodkaClass>
     </p:vodka>
 
 </b:blueprint>

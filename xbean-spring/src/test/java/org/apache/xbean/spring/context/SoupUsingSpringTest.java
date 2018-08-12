@@ -17,7 +17,7 @@
 package org.apache.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.SoupService;
+import org.apache.xbean.test.support.example.SoupService;
 
 /**
  * @author Dain Sundstrom

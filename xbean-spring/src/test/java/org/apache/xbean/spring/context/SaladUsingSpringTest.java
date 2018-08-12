@@ -17,7 +17,7 @@
 package org.apache.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.SaladService;
+import org.apache.xbean.test.support.example.SaladService;
 
 /**
  * @author Dain Sundstrom

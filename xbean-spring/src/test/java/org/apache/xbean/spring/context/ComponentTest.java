@@ -21,8 +21,8 @@ import junit.framework.TestCase;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.beans.factory.BeanFactory;
 
-import org.apache.xbean.spring.example.ContainerBean;
-import org.apache.xbean.spring.example.InnerBean;
+import org.apache.xbean.test.support.example.ContainerBean;
+import org.apache.xbean.test.support.example.InnerBean;
 
 public class ComponentTest extends TestCase {
 

@@ -19,7 +19,7 @@
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
-  <bean id="favoriteService" class="org.apache.xbean.blueprint.example.FavoriteService">
+  <bean id="favoriteService" class="org.apache.xbean.test.support.example.FavoriteService">
     <property name="favorites"> 
       <map> 
         <entry key="Dan">
@@ -34,7 +34,7 @@
           </list>
         </entry>
         <entry key="WithInnerBean">
-          <bean class="org.apache.xbean.blueprint.example.GinService">
+          <bean class="org.apache.xbean.test.support.example.GinService">
             <property name="name" value="Bombay Sapphire"/>
           </bean>
         </entry>

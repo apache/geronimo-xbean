@@ -20,17 +20,28 @@
 
     <!-- $Rev: 432962 $ $Date: 2006-08-20 03:47:39 -0700 (Sun, 20 Aug 2006) $ -->
 
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>4.10-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+
     <artifactId>xbean-naming</artifactId>
     <packaging>bundle</packaging>
+
     <name>Apache XBean :: Naming</name>
     <description>xbean-naming implements a flexible non-persistent jndi provider</description>
+
     <properties>
         <xbean.automatic.module.name>${project.groupId}.naming</xbean.automatic.module.name>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
 </project>

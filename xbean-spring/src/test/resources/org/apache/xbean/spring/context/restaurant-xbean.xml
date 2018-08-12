@@ -18,16 +18,26 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns="http://xbean.apache.org/schemas/pizza" 
-       xmlns:foo="http://acme.com">
+<spring:beans xmlns:spring="http://www.springframework.org/schema/beans"
+  xmlns="http://xbean.apache.org/schemas/pizza"
+  xmlns:foo="http://acme.com"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
-  <restaurant id="restaurant" 
-              serviceName="foo:xyz" 
+  <restaurant id="restaurant"
+              serviceName="foo:xyz"
               uri="http://cheese.com">
     <dinnerMenu>
       <pizza myTopping="Ham" cheese="Mozzarella" size="15"/>
       <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
     </dinnerMenu>
+
+    <favourite>
+      <pizza myTopping="Salami" cheese="Edam" size="17"/>
+    </favourite>
 
     <lunchMenu>
       <pizza myTopping="Chicken" cheese="Brie" size="17"/>
@@ -38,9 +48,6 @@
       <pizza myTopping="Prosciutto" cheese="Blue" size="8"/>
     </snackMenu>
 
-    <favourite>
-      <pizza myTopping="Salami" cheese="Edam" size="17"/>
-    </favourite>
   </restaurant>
-</beans>
+</spring:beans>
 <!-- END SNIPPET: xml -->

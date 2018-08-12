@@ -17,17 +17,23 @@
     limitations under the License.
 
 -->
-<beans xmlns:x="http://xbean.apache.org/schemas/pizza"
-	   xmlns:foo="urn:foo">
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:x="http://xbean.apache.org/schemas/pizza"
+  xmlns:foo="urn:foo"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
-	<x:qname-service id="qnameService">
-		<x:services>
-			<qname>foo:test</qname>
-			<qname>foo:bar</qname>
-		</x:services>
-		<x:list>
-			<qname>foo:list</qname>
-		</x:list>
-	</x:qname-service>
-	
+  <x:qname-service id="qnameService">
+    <x:services>
+      <x:qname>foo:test</x:qname>
+      <x:qname>foo:bar</x:qname>
+    </x:services>
+    <x:list>
+      <x:qname>foo:list</x:qname>
+    </x:list>
+  </x:qname-service>
+  
 </beans>

@@ -20,10 +20,10 @@
 # START SNIPPET: config
 
 # the default package that POJOs are in
-package = org.apache.xbean.spring.example
+package = org.apache.xbean.test.support.example
 
 # Mapping of XML Element localNames to classes 
-soup = org.apache.xbean.spring.example.SoupService
+soup = org.apache.xbean.test.support.example.SoupService
 
 # Mapping of life-cycle methods
 soup.initMethod = make
@@ -31,6 +31,6 @@ soup.destroyMethod = eat
 soup.factoryMethod = newSoup
 
 # Mapping of constructor argument names
-org.apache.xbean.spring.example.SoupService.newSoup(java.lang.String).parameterNames=type
+org.apache.xbean.test.support.example.SoupService.newSoup(java.lang.String).parameterNames=type
 
 # END SNIPPET: config

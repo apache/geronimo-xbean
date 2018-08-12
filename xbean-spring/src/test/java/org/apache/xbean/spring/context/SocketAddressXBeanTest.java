@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Arrays;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.SoupService;
-import org.apache.xbean.spring.example.SocketService;
+import org.apache.xbean.test.support.example.SoupService;
+import org.apache.xbean.test.support.example.SocketService;
 
 /**
  * @author Dain Sundstrom

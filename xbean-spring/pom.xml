@@ -26,7 +26,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>4.10-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>xbean-spring</artifactId>
@@ -40,22 +40,18 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring-namespace</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-propertyeditors</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -65,17 +61,13 @@
         </dependency>
 
         <dependency>
-            <groupId>com.thoughtworks.qdox</groupId>
-            <artifactId>qdox</artifactId>
-            <optional>true</optional>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-test-support</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-            <optional>true</optional>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -97,6 +89,33 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-mapping</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <srcDir>${basedir}/../xbean-test-support/src/main/java</srcDir>
+                    <outputDir>${basedir}/target/generated-test-resources</outputDir>
+                    <namespace>http://xbean.apache.org/schemas/pizza</namespace>
+                    <properties>
+                        <xsd.strictOrder>false</xsd.strictOrder>
+                    </properties>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.xbean</groupId>
+                        <artifactId>xbean-spring-generator</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <!--
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -123,6 +142,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>

@@ -16,7 +16,7 @@
  */
 package org.apache.xbean.spring.context;
 
-import org.apache.xbean.spring.example.KegService;
+import org.apache.xbean.test.support.example.KegService;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**

@@ -17,5 +17,5 @@
 # limitations under the License.
 #
 #
-container=org.apache.xbean.spring.example.ContainerBean
-inner=org.apache.xbean.spring.example.InnerBean
+container=org.apache.xbean.test.support.example.ContainerBean
+inner=org.apache.xbean.test.support.example.InnerBean

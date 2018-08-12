@@ -21,7 +21,7 @@ import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.xbean.spring.example.SocketService;
+import org.apache.xbean.test.support.example.SocketService;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**

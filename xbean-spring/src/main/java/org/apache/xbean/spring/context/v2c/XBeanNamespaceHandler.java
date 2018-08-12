@@ -38,9 +38,14 @@ import javax.xml.XMLConstants;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xbean.namespace.NamespaceDiscoverer;
+import org.apache.xbean.propertyeditors.DateEditor;
+import org.apache.xbean.propertyeditors.FileEditor;
+import org.apache.xbean.propertyeditors.ObjectNameEditor;
+import org.apache.xbean.propertyeditors.URIEditor;
 import org.apache.xbean.spring.context.impl.MappingMetaData;
 import org.apache.xbean.spring.context.impl.NamedConstructorArgs;
-import org.apache.xbean.spring.context.impl.NamespaceHelper;
+import org.apache.xbean.spring.namespace.SpringNamespaceDiscoverer;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -131,7 +136,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             BeanDefinitionParserDelegate.INIT_METHOD_ATTRIBUTE, 
             BeanDefinitionParserDelegate.DESTROY_METHOD_ATTRIBUTE,
             BeanDefinitionParserDelegate.ABSTRACT_ATTRIBUTE, 
-            BeanDefinitionParserDelegate.SINGLETON_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.SCOPE_ATTRIBUTE,
             BeanDefinitionParserDelegate.LAZY_INIT_ATTRIBUTE };
 
     private static final String JAVA_PACKAGE_PREFIX = "java://";
@@ -146,6 +151,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     private ParserContext parserContext;
     
     private XBeanQNameHelper qnameHelper;
+    private NamespaceDiscoverer namespaceDiscoverer = new SpringNamespaceDiscoverer();
 
     public void init() {
     }
@@ -190,10 +196,10 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     public static void registerCustomEditors(DefaultListableBeanFactory beanFactory) {
         PropertyEditorRegistrar registrar = new PropertyEditorRegistrar() {
             public void registerCustomEditors(PropertyEditorRegistry registry) {
-                registry.registerCustomEditor(java.io.File.class, new org.apache.xbean.spring.context.impl.FileEditor());
-                registry.registerCustomEditor(java.net.URI.class, new org.apache.xbean.spring.context.impl.URIEditor());
-                registry.registerCustomEditor(java.util.Date.class, new org.apache.xbean.spring.context.impl.DateEditor());
-                registry.registerCustomEditor(javax.management.ObjectName.class, new org.apache.xbean.spring.context.impl.ObjectNameEditor());
+                registry.registerCustomEditor(java.io.File.class, new FileEditor());
+                registry.registerCustomEditor(java.net.URI.class, new URIEditor());
+                registry.registerCustomEditor(java.util.Date.class, new DateEditor());
+                registry.registerCustomEditor(javax.management.ObjectName.class, new ObjectNameEditor());
             }
         };
 
@@ -795,16 +801,18 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             return new MappingMetaData(packageName);
         }
 
-        String uri = NamespaceHelper.createDiscoveryPathName(namespaceURI, localName);
+        String uri = namespaceDiscoverer.createDiscoveryPathName(namespaceURI, localName);
         InputStream in = loadResource(uri);
         if (in == null) {
             if (namespaceURI != null && namespaceURI.length() > 0) {
-                uri = NamespaceHelper.createDiscoveryPathName(namespaceURI);
+                uri = namespaceDiscoverer.createDiscoveryPathName(namespaceURI);
                 in = loadResource(uri);
+                /* Iis it time to deprecate old method and old path..
                 if (in == null) {
-                    uri = NamespaceHelper.createDiscoveryOldPathName(namespaceURI);
+                    uri = namespaceDiscoverer.createDiscoveryOldPathName(namespaceURI);
                     in = loadResource(uri);
                 }
+                */
             }
         }
 

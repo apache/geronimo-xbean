@@ -18,12 +18,18 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns:x="http://xbean.apache.org/schemas/pizza">
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:x="http://xbean.apache.org/schemas/pizza"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	<property name="location" value="org/apache/xbean/spring/context/keg-xbean-properties.properties" />
+    <property name="location" value="org/apache/xbean/spring/context/keg-xbean-properties.properties" />
   </bean>  
-	  
+      
   <x:keg id="ml1000" remaining="${ml1000}"/>
   <x:keg id="pints5" remaining="${pints5}"/>
   <x:keg id="liter20" remaining="${liter20}"/>

@@ -19,8 +19,8 @@ package org.apache.xbean.blueprint.context;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.xbean.blueprint.example.FlatMapService;
-import org.apache.xbean.blueprint.example.KegService;
+import org.apache.xbean.test.support.example.FlatMapService;
+import org.apache.xbean.test.support.example.KegService;
 
 /**
  * @author gnodet

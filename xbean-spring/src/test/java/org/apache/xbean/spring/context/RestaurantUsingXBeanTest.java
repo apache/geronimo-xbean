@@ -19,7 +19,7 @@ package org.apache.xbean.spring.context;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.RestaurantService;
+import org.apache.xbean.test.support.example.RestaurantService;
 
 import javax.xml.namespace.QName;
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+ <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!--
@@ -26,8 +26,8 @@
 
     <parent>
         <groupId>org.apache.geronimo.genesis</groupId>
-        <artifactId>genesis-java5-flava</artifactId>
-        <version>2.1</version>
+        <artifactId>genesis-java8-flava</artifactId>
+        <version>2.3</version>
     </parent>
 
     <groupId>org.apache.xbean</groupId>
@@ -36,7 +36,7 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
 
-    <version>4.10-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
 
     <description>
         XBean is a plugin based server architecture.
@@ -67,6 +67,32 @@
         <asm.version>6.2</asm.version>
 
         <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
+
+        <spring.version>4.3.18.RELEASE</spring.version>
+        <qdox.version>1.12.1</qdox.version>
+        <slf4j.version>1.5.11</slf4j.version>
+        <junit.version>4.12</junit.version>
+
+        <maven-bundle-plugin.version>3.5.1</maven-bundle-plugin.version>
+        <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+        <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+        <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
+        <surefire-report-maven-plugin.version>2.22.0</surefire-report-maven-plugin.version>
+        <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
+        <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
+        <commons-beanutils.version>1.9.3</commons-beanutils.version>
+        <commons-logging.version>1.2</commons-logging.version>
+        <groovy.version>2.5.1</groovy.version>
+        <mx4j.version>3.0.2</mx4j.version>
+        <ant.version>1.10.5</ant.version>
+        <cglib.version>3.2.7</cglib.version>
+        <plexus.version>1.7.1</plexus.version>
+        <xmlschema.version>2.2.3</xmlschema.version>
+
+        <source.version>1.8</source.version>
+        <maven.compiler.source>${source.version}</maven.compiler.source>
+        <maven.compiler.target>${source.version}</maven.compiler.target>
+        <maven-plugin-plugin.version>3.5.2</maven-plugin-plugin.version>
     </properties>
 
 
@@ -196,7 +222,27 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-generator-commons</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
                 <artifactId>xbean-naming</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-namespace</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -211,7 +257,32 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-blueprint-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-blueprint-namespace</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-propertyeditors</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
                 <artifactId>xbean-spring</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-spring-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-spring-namespace</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -239,87 +310,108 @@
                 <artifactId>xbean-finder-shaded</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>xbean-test-support</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
 
             <!-- external dependencies -->
 
             <dependency>
-                <groupId>ant</groupId>
+                <groupId>org.apache.ant</groupId>
                 <artifactId>ant</artifactId>
-                <version>1.6.5</version>
+                <version>${ant.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>cglib</groupId>
                 <artifactId>cglib-nodep</artifactId>
-                <version>2.1_2</version>
+                <version>${cglib.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
-                <version>1.7.0</version>
+                <version>${commons-beanutils.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
-                <version>1.0.3</version>
+                <version>${commons-logging.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-all</artifactId>
-                <version>2.2.0</version>
+                <artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+                <classifier>indy</classifier>
             </dependency>
 
             <dependency>
                 <groupId>mx4j</groupId>
                 <artifactId>mx4j</artifactId>
-                <version>3.0.1</version>
+                <version>${mx4j.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
-                <version>2.5.6</version>
+                <version>${spring.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
-                <version>2.5.6</version>
+                <version>${spring.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
-                <version>2.5.6</version>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-component-annotations</artifactId>
+                <version>${plexus.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.thoughtworks.qdox</groupId>
                 <artifactId>qdox</artifactId>
-                <version>1.6.3</version>
+                <version>${qdox.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.ws.xmlschema</groupId>
+                <artifactId>xmlschema-core</artifactId>
+                <version>${xmlschema.version}</version>
             </dependency>
             
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.5.11</version>                
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -329,7 +421,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.1</version>
+                    <version>${maven-shade-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.xbean</groupId>
@@ -339,8 +431,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>2.4.0</version>
-                    <extensions>true</extensions>
+                    <version>${maven-bundle-plugin.version}</version>
                     <configuration>
                         <instructions>
                             <Bundle-DocURL>${project.url}</Bundle-DocURL>
@@ -354,11 +445,31 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <showDeprecation>false</showDeprecation>
-                        <showWarnings>false</showWarnings>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <showDeprecation>true</showDeprecation>
+                        <showWarnings>true</showWarnings>
                     </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-metadata</artifactId>
+                    <version>${plexus.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>generate-metadata</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>${maven-plugin-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -367,8 +478,12 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -385,7 +500,7 @@
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.8</version>
+                <version>0.12</version>
                 <configuration>
                     <excludes>
                         <exclude>.git/**/*</exclude>
@@ -408,6 +523,11 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -417,14 +537,24 @@
         <module>xbean-bundleutils</module>
         <module>xbean-asm-util</module>
         <module>xbean-finder</module>
+        <module>xbean-generator</module>
+        <module>xbean-generator-commons</module>
+        <module>xbean-model</module>
+        <module>xbean-namespace</module>
         <module>xbean-naming</module>
         <module>xbean-reflect</module>
         <module>xbean-blueprint</module>
+        <module>xbean-blueprint-generator</module>
+        <module>xbean-blueprint-namespace</module>
+        <module>xbean-propertyeditors</module>
         <module>xbean-spring</module>
+        <module>xbean-spring-generator</module>
+        <module>xbean-spring-namespace</module>
         <module>xbean-telnet</module>
-        <module>maven-xbean-plugin</module>
+        <module>xbean-maven-plugin</module>
         <module>xbean-asm6-shaded</module>
         <module>xbean-finder-shaded</module>
+        <module>xbean-test-support</module>
     </modules>
 
     <reporting>
@@ -432,14 +562,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.5</version>
+                <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
                     <minmemory>128m</minmemory>
                     <maxmemory>512</maxmemory>
                     <breakiterator>true</breakiterator>
                     <quiet>true</quiet>
                     <verbose>false</verbose>
-                    <source>1.5</source>
+                    <source>${source.version}</source>
                     <!--
                     FIXME: This worked in m1, but m2 complains about it being an invalid flag
 
@@ -469,22 +599,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>2.4</version>
+                <version>${maven-pmd-plugin.version}</version>
                 <configuration>
-                    <targetJdk>1.5</targetJdk>
+                    <targetJdk>${maven.compiler.target}</targetJdk>
                 </configuration>
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jxr-maven-plugin</artifactId>
-                <version>2.0-beta-1</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>${maven-jxr-plugin.version}</version>
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>surefire-report-maven-plugin</artifactId>
-                <version>2.0-beta-1</version>
+                <version>${surefire-report-maven-plugin.version}</version>
             </plugin>
 
         </plugins>

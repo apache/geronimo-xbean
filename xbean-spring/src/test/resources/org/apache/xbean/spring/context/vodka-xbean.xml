@@ -18,12 +18,15 @@
 
 -->
 <!-- START SNIPPET: xml -->
-<beans xmlns:b="http://xbean.apache.org/schemas/pizza">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:b="http://xbean.apache.org/schemas/pizza"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
-  <b:vodka id="vodkaService">
-    <b:name>Grey Goose</b:name>
-    <b:vodkaClass>org.apache.xbean.spring.example.VodkaService</b:vodkaClass>
-  </b:vodka>
+  <b:vodka id="vodkaService" name="Grey Goose" vodkaClass="org.apache.xbean.test.support.example.VodkaService" />
 
 </beans>
 <!-- END SNIPPET: xml -->

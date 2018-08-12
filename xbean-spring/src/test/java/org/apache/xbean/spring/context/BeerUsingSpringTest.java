@@ -17,7 +17,7 @@
 package org.apache.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.BeerService;
+import org.apache.xbean.test.support.example.BeerService;
 
 /**
  * @author James Strachan

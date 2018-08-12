@@ -17,7 +17,12 @@
     limitations under the License.
 
 -->
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
   <restaurant id="restaurant" xmlns="http://xbean.apache.org/schemas/pizza" xmlns:foo="http://acme.com" serviceName="foo:xyz" uri="http://cheese.com">
     <dinnerMenu>
@@ -25,17 +30,17 @@
       <pizza myTopping="Eggs" cheese="Mozzarella" size="16"/>
     </dinnerMenu>
 
-    <lunchMenu>
-      <pizza myTopping="Chicken" cheese="Brie" size="17"/>
-    </lunchMenu>
-
     <favourite>
       <pizza myTopping="Salami" cheese="Edam" size="17"/>
     </favourite>
+
+    <lunchMenu>
+      <pizza myTopping="Chicken" cheese="Brie" size="17"/>
+    </lunchMenu>
   </restaurant>
 
   <!-- lets initialise JNDI here -->
-  <bean id="jndi" class="org.apache.xbean.spring.jndi.SpringInitialContextFactory" factory-method="makeInitialContext" singleton="true">
+  <bean id="jndi" class="org.apache.xbean.spring.jndi.SpringInitialContextFactory" factory-method="makeInitialContext" scope="singleton">
     <property name="entries">
       <map>
         <entry key="test/restaurant" value-ref="restaurant" />

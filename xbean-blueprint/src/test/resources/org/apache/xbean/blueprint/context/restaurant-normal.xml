@@ -22,7 +22,7 @@
   <!--  tests using nested beans -->
 
   <bean id="restaurant"
-    class="org.apache.xbean.blueprint.example.RestaurantService">
+    class="org.apache.xbean.test.support.example.RestaurantService">
     <property name="serviceName">
       <bean class="javax.xml.namespace.QName">
         <argument value="http://acme.com"/>
@@ -31,7 +31,7 @@
       </bean>
     </property>
     <property name="favourite">
-      <bean class="org.apache.xbean.blueprint.example.PizzaService">
+      <bean class="org.apache.xbean.test.support.example.PizzaService">
         <property name="topping" value="Salami" />
         <property name="cheese" value="Edam" />
         <property name="size" value="17" />
@@ -39,12 +39,12 @@
     </property>
     <property name="dinnerMenu">
       <list>
-        <bean class="org.apache.xbean.blueprint.example.PizzaService">
+        <bean class="org.apache.xbean.test.support.example.PizzaService">
           <property name="topping" value="Ham" />
           <property name="cheese" value="Mozzarella" />
           <property name="size" value="15" />
         </bean>
-        <bean class="org.apache.xbean.blueprint.example.PizzaService">
+        <bean class="org.apache.xbean.test.support.example.PizzaService">
           <property name="topping" value="Eggs" />
           <property name="cheese" value="Mozzarella" />
           <property name="size" value="16" />
@@ -53,12 +53,12 @@
     </property>
     <property name="snackMenu">
       <set>
-        <bean class="org.apache.xbean.blueprint.example.PizzaService">
+        <bean class="org.apache.xbean.test.support.example.PizzaService">
           <property name="topping" value="Tofu" />
           <property name="cheese" value="Parmesan" />
           <property name="size" value="6" />
         </bean>
-        <bean class="org.apache.xbean.blueprint.example.PizzaService">
+        <bean class="org.apache.xbean.test.support.example.PizzaService">
           <property name="topping" value="Prosciutto" />
           <property name="cheese" value="Blue" />
           <property name="size" value="8" />
@@ -67,7 +67,7 @@
     </property>
     <property name="lunchMenu">
       <list>
-        <bean class="org.apache.xbean.blueprint.example.PizzaService">
+        <bean class="org.apache.xbean.test.support.example.PizzaService">
           <property name="topping" value="Chicken" />
           <property name="cheese" value="Brie" />
           <property name="size" value="17" />

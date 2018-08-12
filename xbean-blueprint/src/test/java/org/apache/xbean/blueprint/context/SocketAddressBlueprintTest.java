@@ -16,12 +16,6 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.xbean.blueprint.example.SocketService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.osgi.service.blueprint.reflect.CollectionMetadata;
 

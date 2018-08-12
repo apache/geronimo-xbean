@@ -18,8 +18,6 @@ package org.apache.xbean.blueprint.context;
 
 import java.util.List;
 
-import org.apache.xbean.blueprint.example.Recipe;
-import org.apache.xbean.blueprint.example.RecipeService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
 import org.osgi.service.blueprint.reflect.Metadata;

@@ -18,8 +18,8 @@ package org.apache.xbean.spring.context;
 
 import java.util.List;
 
-import org.apache.xbean.spring.example.Recipe;
-import org.apache.xbean.spring.example.RecipeService;
+import org.apache.xbean.test.support.example.Recipe;
+import org.apache.xbean.test.support.example.RecipeService;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class RecipeUsingSpringTest extends SpringTestSupport {

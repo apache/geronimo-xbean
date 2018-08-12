@@ -21,7 +21,7 @@
 
   <x:recipe-service id="recipeService">
     <property name="topRecipe" xmlns="http://www.springframework.org/schema/beans"> 
-      <bean class="org.apache.xbean.spring.example.Recipe">
+      <bean class="org.apache.xbean.test.support.example.Recipe">
         <property name="instructions" value="Mash together" />
         <property name="ingredients" value="Food" />
       </bean>

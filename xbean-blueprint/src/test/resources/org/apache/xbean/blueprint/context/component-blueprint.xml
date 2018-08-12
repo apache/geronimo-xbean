@@ -18,10 +18,10 @@
 
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
-  <bean id="container" class="org.apache.xbean.blueprint.example.ContainerBean">
+  <bean id="container" class="org.apache.xbean.test.support.example.ContainerBean">
     <property name="beans">
       <list>
-        <bean class="org.apache.xbean.blueprint.example.InnerBean" />
+        <bean class="org.apache.xbean.test.support.example.InnerBean" />
       </list>
     </property>
   </bean>

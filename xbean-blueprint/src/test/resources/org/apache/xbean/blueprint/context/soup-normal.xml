@@ -19,21 +19,21 @@
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
                          <!-- TODO blueprint what is this?  name="nestedBean, nestedValue" -->
-  <bean id="soupService" class="org.apache.xbean.blueprint.example.SoupService"
+  <bean id="soupService" class="org.apache.xbean.test.support.example.SoupService"
     init-method="make"
     destroy-method="eat"
     factory-method="newSoup"
     >
     <argument index="0" value="French Onion"/>
   </bean>
-  <bean id="nestedBean" class="org.apache.xbean.blueprint.example.SoupService"
+  <bean id="nestedBean" class="org.apache.xbean.test.support.example.SoupService"
     init-method="make"
     destroy-method="eat"
     factory-method="newSoup"
     >
     <argument index="0" value="French Onion"/>
   </bean>
-  <bean id="nestedValue" class="org.apache.xbean.blueprint.example.SoupService"
+  <bean id="nestedValue" class="org.apache.xbean.test.support.example.SoupService"
     init-method="make"
     destroy-method="eat"
     factory-method="newSoup"

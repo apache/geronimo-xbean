@@ -21,8 +21,8 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
-import org.apache.xbean.spring.example.PizzaService;
-import org.apache.xbean.spring.example.RestaurantService;
+import org.apache.xbean.test.support.example.PizzaService;
+import org.apache.xbean.test.support.example.RestaurantService;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**

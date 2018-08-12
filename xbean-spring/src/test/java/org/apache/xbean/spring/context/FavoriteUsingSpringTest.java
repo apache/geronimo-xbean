@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.FavoriteService;
-import org.apache.xbean.spring.example.GinService;
+import org.apache.xbean.test.support.example.FavoriteService;
+import org.apache.xbean.test.support.example.GinService;
 
 /**
  * @author James Strachan

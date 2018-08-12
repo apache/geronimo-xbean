@@ -17,7 +17,13 @@
     limitations under the License.
 
 -->
-<beans xmlns:x="http://xbean.apache.org/schemas/pizza" xmlns:foo="urn:foo">
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:x="http://xbean.apache.org/schemas/pizza" xmlns:foo="urn:foo"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://xbean.apache.org/schemas/pizza http://xbean.apache.org/schemas/pizza.xsd
+  ">
 
   <x:recipe-service id="recipeService">
     <x:topRecipe>

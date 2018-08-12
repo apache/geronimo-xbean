@@ -19,7 +19,7 @@
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
-  <bean id="wineService" class="org.apache.xbean.blueprint.example.WineService">
+  <bean id="wineService" class="org.apache.xbean.test.support.example.WineService">
     <argument value="wineService" />
     <argument value="Amarone" />
   </bean>
