@@ -16,8 +16,6 @@
  */
 package org.apache.xbean.finder;
 
-import org.apache.xbean.finder.util.Files;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,12 +26,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.apache.xbean.finder.util.Files;
 
 public final class ClassLoaders {
     private static final boolean DONT_USE_GET_URLS = Boolean.getBoolean("xbean.finder.use.get-resources");
     private static final ClassLoader SYSTEM = ClassLoader.getSystemClassLoader();
 
     private static final boolean UNIX = !System.getProperty("os.name").toLowerCase().contains("win");
+    private static final Pattern MJAR_PATTERN = Pattern.compile(".*/META-INF/versions/[0-9]+/$");
 
     public static Set<URL> findUrls(final ClassLoader classLoader) throws IOException {
         if (classLoader == null || (SYSTEM.getParent() != null && classLoader == SYSTEM.getParent())) {
@@ -115,7 +117,14 @@ public final class ClassLoaders {
             final String externalForm = url.toExternalForm();
             set.add(new URL(externalForm.substring(0, externalForm.lastIndexOf("META-INF"))));
         }
-        set.addAll(Collections.list(classLoader.getResources("")));
+        for (final URL url : Collections.list(classLoader.getResources(""))) {
+            final String externalForm = url.toExternalForm();
+            if (MJAR_PATTERN.matcher(externalForm).matches()) {
+                set.add(new URL(externalForm.substring(0, externalForm.lastIndexOf("META-INF"))));
+            } else {
+                set.add(url);
+            }
+        }
         return set;
     }
 

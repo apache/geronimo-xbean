@@ -18,8 +18,9 @@ package org.apache.xbean.finder.archive;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ALOAD;
@@ -34,16 +35,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import org.apache.xbean.finder.AnnotationFinder;
+import org.apache.xbean.finder.ClassLoaders;
 import org.apache.xbean.finder.util.IOUtil;
-import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -95,29 +100,29 @@ public class MJarJarArchiveTest {
                     jarOS.closeEntry();
                 }
                 {
+                    jarOS.putNextEntry(new JarEntry("META-INF/"));
+                    jarOS.closeEntry();
+                }
+                {
+                    jarOS.putNextEntry(new JarEntry("META-INF/versions/"));
+                    jarOS.closeEntry();
+                }
+                {
+                    jarOS.putNextEntry(new JarEntry("META-INF/versions/" + version + "/"));
+                    jarOS.closeEntry();
+                }
+                {
+                    jarOS.putNextEntry(new JarEntry("META-INF/versions/9/"));
+                    jarOS.closeEntry();
+                }
+                {
                     jarOS.putNextEntry(new JarEntry("META-INF/versions/" + version + "/org/test/Foo.class"));
-
-                    final ClassWriter writer = new ClassWriter(COMPUTE_FRAMES);
-                    writer.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, "org/test/Foo", null, Type.getInternalName(Object.class), new String[0]);
-
-                    final MethodVisitor constructor = writer.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-                    constructor.visitCode();
-                    constructor.visitVarInsn(ALOAD, 0);
-                    constructor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-                    constructor.visitInsn(RETURN);
-                    constructor.visitMaxs(1, 1);
-                    constructor.visitEnd();
-
-                    final MethodVisitor run = writer.visitMethod(ACC_PUBLIC, "run", "()V", null, null);
-                    run.visitAnnotation(Type.getDescriptor(Marker.class), true).visitEnd();
-                    run.visitCode();
-                    run.visitInsn(RETURN);
-                    run.visitMaxs(-1, -1);
-                    run.visitEnd();
-
-                    writer.visitEnd();
-
-                    jarOS.write(writer.toByteArray());
+                    jarOS.write(createFooClazz().toByteArray());
+                    jarOS.closeEntry();
+                }
+                {
+                    jarOS.putNextEntry(new JarEntry("META-INF/versions/9/org/test/Foo.class"));
+                    jarOS.write(createFooClazz().toByteArray());
                     jarOS.closeEntry();
                 }
             } finally {
@@ -139,8 +144,63 @@ public class MJarJarArchiveTest {
 
     @Test
     public void testGetBytecode() throws Exception {
-        Assume.assumeFalse(System.getProperty("java.version", "1").startsWith("1"));
-        final URLClassLoader loader = new URLClassLoader(new URL[]{jar.toURI().toURL()}, Thread.currentThread().getContextClassLoader()) {
+        ensureJava9OrLater();
+        final URLClassLoader loader = newMJarClassLoader();
+        final JarArchive archive = new JarArchive(loader, jar.toURI().toURL());
+        final AnnotationFinder finder = new AnnotationFinder(archive, true);
+        assertEquals(1, finder.findAnnotatedMethods(Marker.class).size());
+        if (Closeable.class.isInstance(loader)) {
+            Closeable.class.cast(loader).close();
+        }
+    }
+
+    @Test
+    public void classLoaderScanningOneUrl() throws Exception {
+        ensureJava9OrLater();
+        final URLClassLoader loader = newMJarClassLoader();
+        final Set<URL> urls = ClassLoaders.findUrlFromResources(loader);
+        final Collection<String> testUrls = new ArrayList<String>();
+        for (final URL u : urls) {
+            final String str = u.toExternalForm();
+            if (str.contains("org.apache.xbean.finder.archive.MJarJarArchiveTest")) {
+                testUrls.add(str);
+            }
+        }
+        assertEquals(1, testUrls.size());
+        if (Closeable.class.isInstance(loader)) {
+            Closeable.class.cast(loader).close();
+        }
+    }
+
+    private void ensureJava9OrLater() {
+        assumeTrue(!System.getProperty("java.version", "1").startsWith("1."));
+    }
+
+    private static ClassWriter createFooClazz() {
+        final ClassWriter writer = new ClassWriter(COMPUTE_FRAMES);
+        writer.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, "org/test/Foo", null, Type.getInternalName(Object.class), new String[0]);
+
+        final MethodVisitor constructor = writer.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.visitCode();
+        constructor.visitVarInsn(ALOAD, 0);
+        constructor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        constructor.visitInsn(RETURN);
+        constructor.visitMaxs(1, 1);
+        constructor.visitEnd();
+
+        final MethodVisitor run = writer.visitMethod(ACC_PUBLIC, "run", "()V", null, null);
+        run.visitAnnotation(Type.getDescriptor(Marker.class), true).visitEnd();
+        run.visitCode();
+        run.visitInsn(RETURN);
+        run.visitMaxs(-1, -1);
+        run.visitEnd();
+
+        writer.visitEnd();
+        return writer;
+    }
+
+    private URLClassLoader newMJarClassLoader() throws MalformedURLException {
+        return new URLClassLoader(new URL[]{jar.toURI().toURL()}, Thread.currentThread().getContextClassLoader()) {
 
             @Override
             protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
@@ -169,12 +229,6 @@ public class MJarJarArchiveTest {
                 return super.loadClass(name, resolve);
             }
         };
-        final JarArchive archive = new JarArchive(loader, jar.toURI().toURL());
-        final AnnotationFinder finder = new AnnotationFinder(archive, true);
-        assertEquals(1, finder.findAnnotatedMethods(Marker.class).size());
-        if (Closeable.class.isInstance(loader)) {
-            Closeable.class.cast(loader).close();
-        }
     }
 
     @Retention(RUNTIME)
