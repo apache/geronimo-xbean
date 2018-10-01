@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.asm6.original.commons;
+package org.apache.xbean.asm7.original.commons;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -27,7 +27,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 
 public class EmptyVisitor extends ClassVisitor {
-    protected final AnnotationVisitor av = new AnnotationVisitor(Opcodes.ASM6) {
+    protected final AnnotationVisitor av = new AnnotationVisitor(Opcodes.ASM7) {
         @Override
         public void visit(String name, Object value) {
             EmptyVisitor.this.visit(name, value);
@@ -54,7 +54,7 @@ public class EmptyVisitor extends ClassVisitor {
         }
     };
 
-    protected final FieldVisitor fv = new FieldVisitor(Opcodes.ASM6) {
+    protected final FieldVisitor fv = new FieldVisitor(Opcodes.ASM7) {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             return EmptyVisitor.this.visitAnnotation(desc, visible);
@@ -70,7 +70,7 @@ public class EmptyVisitor extends ClassVisitor {
             EmptyVisitor.this.visitEnd();
         }
     };
-    protected final MethodVisitor mv = new MethodVisitor(Opcodes.ASM6) {
+    protected final MethodVisitor mv = new MethodVisitor(Opcodes.ASM7) {
         @Override
         public AnnotationVisitor visitAnnotationDefault() {
             return EmptyVisitor.this.visitAnnotationDefault();
@@ -203,7 +203,7 @@ public class EmptyVisitor extends ClassVisitor {
     };
 
     public EmptyVisitor() {
-        super(Opcodes.ASM6);
+        super(Opcodes.ASM7);
     }
 
     protected AnnotationVisitor visitAnnotationDefault() {
