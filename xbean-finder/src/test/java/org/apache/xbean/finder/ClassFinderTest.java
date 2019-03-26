@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
+
+import org.acme.ClassMultipleAnnotatedClass;
 import org.acme.bar.AnnType;
 import org.acme.bar.Construct;
 import org.acme.bar.FullyAnnotated;
@@ -133,7 +135,7 @@ public class ClassFinderTest extends TestCase {
     public void testFindAnnotatedMethods() throws Exception {
         List<Method> methods = classFinder.findAnnotatedMethods(Get.class);
         assertNotNull("methods", methods);
-        assertEquals("methods.size", 5, methods.size());
+        assertEquals("methods.size", 6, methods.size());
 
         // Annotated parameters don't count
         methods = classFinder.findAnnotatedMethods(ParamA.class);
@@ -162,7 +164,7 @@ public class ClassFinderTest extends TestCase {
         Class[] classes = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class,
                 Red.CandyApple.class, Red.Pink.class, Halloween.class, Holiday.class, Deployable.class, Primary.class,
                 Property.class, Thanksgiving.class, ValentinesDay.class, FullyAnnotated.class, Type.class,
-                GenericHoliday.class, StringGenericHoliday.class};
+                GenericHoliday.class, StringGenericHoliday.class, ClassMultipleAnnotatedClass.class};
 
         classFinder = new ClassFinder(classes);
 

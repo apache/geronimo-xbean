@@ -17,8 +17,11 @@
 package org.apache.xbean.finder;
 
 import org.acme.ClassAnnotatedClass;
+import org.acme.ClassMultipleAnnotatedClass;
 import org.acme.NotAnnotated;
 import org.acme.bar.ClassAnnotation;
+import org.acme.bar.Get;
+import org.acme.foo.Property;
 import org.apache.xbean.finder.archive.ClassesArchive;
 import org.junit.Test;
 
@@ -90,5 +93,43 @@ public class ClassAnnotationFinderTest {
         final AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(ClassAnnotatedClass.class, NotAnnotated.class));
         final List<Field> annotations = finder.findAnnotatedFields(ClassAnnotation.class);
         assertEquals(0, annotations.size());
+    }
+
+    @Test
+    public void checkOnlyWhitelistedAnnotationsAreScanned() {
+        {   // default is all annotations
+            final AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(ClassMultipleAnnotatedClass.class));
+            final int properties = finder.findAnnotatedMethods(Property.class).size();
+            final int annotations = finder.findAnnotatedMethods(Get.class).size();
+            assertEquals(2,properties + annotations);
+        }
+        {
+            final AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(ClassMultipleAnnotatedClass.class)) {
+                @Override
+                protected boolean isTracked(final String annotationType) {
+                    return "Lorg/acme/bar/Get;".equals(annotationType);
+                }
+            };
+            assertEquals(1,
+                    finder.findAnnotatedMethods(Property.class).size() +
+                            finder.findAnnotatedMethods(Get.class).size());
+        }
+    }
+
+    @Test
+    public void checkClassInfosAreRemovedWhenNaked() {
+        {   // default is all annotations
+            final AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(ClassMultipleAnnotatedClass.class, NotAnnotated.class));
+            assertEquals(2,finder.getAnnotatedClassNames().size());
+        }
+        {
+            final AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(ClassMultipleAnnotatedClass.class, NotAnnotated.class)) {
+                @Override
+                protected boolean cleanOnNaked() {
+                    return true;
+                }
+            };
+            assertEquals(1, finder.getAnnotatedClassNames().size());
+        }
     }
 }

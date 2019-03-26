@@ -130,6 +130,14 @@ public class AnnotationFinder implements IAnnotationFinder {
         return new HashMap<String, ClassInfo>();
     }
 
+    protected boolean cleanOnNaked() {
+        return false;
+    }
+
+    protected boolean isTracked(final String annotationType) {
+        return true;
+    }
+
     /**
      *
      * @param archive
@@ -1823,6 +1831,39 @@ public class AnnotationFinder implements IAnnotationFinder {
             }
         }
 
+        @Override
+        public void visitEnd() {
+            super.visitEnd();
+            if (cleanOnNaked()) {
+                if (ClassInfo.class.isInstance(info) && isNaked(ClassInfo.class.cast(info))) {
+                    classInfos.remove(info.getName());
+                } else if (PackageInfo.class.isInstance(info) && isNaked(PackageInfo.class.cast(info))) {
+                    classInfos.remove(info.getName());
+                }
+            }
+        }
+
+        private boolean isNaked(final PackageInfo info) {
+            return info.getAnnotations().isEmpty();
+        }
+
+        private boolean isNaked(final ClassInfo info) {
+            if (!info.getAnnotations().isEmpty()) {
+                return false;
+            }
+            for (final FieldInfo fieldInfo : info.getFields()) {
+                if (!fieldInfo.getAnnotations().isEmpty()) {
+                    return false;
+                }
+            }
+            for (final MethodInfo methodInfo : info.getMethods()) {
+                if (!methodInfo.getAnnotations().isEmpty()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private String javaName(String name) {
             return (name == null) ? null : name.replace('/', '.');
         }
@@ -1839,10 +1880,13 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            AnnotationInfo annotationInfo = new AnnotationInfo(desc);
-            info.getAnnotations().add(annotationInfo);
-            index(annotationInfo, info);
-            return new InfoBuildingVisitor(annotationInfo).annotationVisitor();
+            if (isTracked(desc)) {
+                AnnotationInfo annotationInfo = new AnnotationInfo(desc);
+                info.getAnnotations().add(annotationInfo);
+                index(annotationInfo, info);
+                return new InfoBuildingVisitor(annotationInfo).annotationVisitor();
+            }
+            return super.visitAnnotation(desc, visible);
         }
 
         @Override
@@ -1865,16 +1909,18 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         @Override
         public AnnotationVisitor visitMethodParameterAnnotation(int param, String desc, boolean visible) {
-            MethodInfo methodInfo = ((MethodInfo) info);
-            List<AnnotationInfo> annotationInfos = methodInfo.getParameterAnnotations(param);
-            AnnotationInfo annotationInfo = new AnnotationInfo(desc);
-            annotationInfos.add(annotationInfo);
+            if (isTracked(desc)) {
+                MethodInfo methodInfo = ((MethodInfo) info);
+                List<AnnotationInfo> annotationInfos = methodInfo.getParameterAnnotations(param);
+                AnnotationInfo annotationInfo = new AnnotationInfo(desc);
+                annotationInfos.add(annotationInfo);
 
-            ParameterInfo parameterInfo = new ParameterInfo(methodInfo, param);
-            methodInfo.getParameters().add(parameterInfo);
-            index(annotationInfo, parameterInfo);
-
-            return new InfoBuildingVisitor(annotationInfo).annotationVisitor();
+                ParameterInfo parameterInfo = new ParameterInfo(methodInfo, param);
+                methodInfo.getParameters().add(parameterInfo);
+                index(annotationInfo, parameterInfo);
+                return new InfoBuildingVisitor(annotationInfo).annotationVisitor();
+            }
+            return super.visitMethodParameterAnnotation(param, desc, visible);
         }
     }
 }
