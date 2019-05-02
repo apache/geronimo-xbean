@@ -150,7 +150,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         for (Archive.Entry entry : archive) {
             final String className = entry.getName();
             try {
-                readClassDef(entry.getBytecode());
+                readClassDef(entry.getName(), entry.getBytecode());
             } catch (NoClassDefFoundError e) {
                 throw new NoClassDefFoundError("Could not fully load class: " + className + "\n due to:" + e.getMessage());
             } catch (IOException e) {
@@ -709,7 +709,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Parameter<Method>> findAnnotatedMethodParameters(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        
+
         final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<ClassInfo>() : null;
         final List<Parameter<Method>> result = new LinkedList<Parameter<Method>>();
         for (Info info : getAnnotationInfos(annotation.getName())) {
@@ -917,7 +917,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Parameter<Constructor<?>>> findAnnotatedConstructorParameters(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        
+
         final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<ClassInfo>() : null;
         final List<Parameter<Constructor<?>>> result = new LinkedList<Parameter<Constructor<?>>>();
         for (Info info : getAnnotationInfos(annotation.getName())) {
@@ -1160,20 +1160,25 @@ public class AnnotationFinder implements IAnnotationFinder {
         return infos;
     }
 
-    protected void readClassDef(String className) {
+    protected void readClassDef(final String className) {
         if (classInfos.containsKey(className)) return;
         try {
-            readClassDef(archive.getBytecode(className));
+            readClassDef(className, archive.getBytecode(className));
+
         } catch (Exception e) {
             if (className.endsWith("$$")) return;
             classesNotLoaded.add(className);
         }
     }
 
-    protected void readClassDef(InputStream in) throws IOException {
+    protected void readClassDef(final String className, InputStream in) throws IOException {
         try {
             ClassReader classReader = new ClassReader(in);
             classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
+
+        } catch (final Exception e) {
+            throw new RuntimeException("Unable to read class definition for " + className, e);
+
         } finally {
             in.close();
         }
@@ -1643,7 +1648,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             this.declaringMethod = parent;
             this.index = index;
         }
-        
+
         public ParameterInfo(MethodInfo parent, Parameter<?> parameter) {
             super(parameter);
             this.declaringMethod = parent;
@@ -1662,12 +1667,12 @@ public class AnnotationFinder implements IAnnotationFinder {
                     parameter = Parameter.declaredBy((Method) member, index);
                 } else if (member instanceof Constructor<?>) {
                     parameter = Parameter.declaredBy((Constructor<?>) member, index);
-                    
+
                 }
             }
             return parameter;
         }
-        
+
         @Override
         public Annotation[] getDeclaredAnnotations() {
             try {
@@ -1819,9 +1824,9 @@ public class AnnotationFinder implements IAnnotationFinder {
                 ClassInfo classInfo = new ClassInfo(javaName(name), javaName(superName));
 
 //                if (signature == null) {
-                    for (final String interfce : interfaces) {
-                        classInfo.interfaces.add(javaName(interfce));
-                    }
+                for (final String interfce : interfaces) {
+                    classInfo.interfaces.add(javaName(interfce));
+                }
 //                } else {
 //                    // the class uses generics
 //                    new SignatureReader(signature).accept(new GenericAwareInfoBuildingVisitor(GenericAwareInfoBuildingVisitor.TYPE.CLASS, classInfo));
