@@ -474,6 +474,7 @@
 
                     <additionalparam>-J-Djava.awt.headless=true</additionalparam>
                     -->
+                    <additionalparam>-Xdoclint:none</additionalparam>
                     <linksource>true</linksource>
                     <links>
                         <!-- JSE -->
