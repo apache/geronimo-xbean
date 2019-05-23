@@ -348,6 +348,15 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>doclint-java8-disable</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <additionalparam>-Xdoclint:none</additionalparam>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
@@ -461,7 +470,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
+                <version>2.9.1</version>
                 <configuration>
                     <minmemory>128m</minmemory>
                     <maxmemory>512</maxmemory>
@@ -474,11 +483,6 @@
 
                     <additionalparam>-J-Djava.awt.headless=true</additionalparam>
                     -->
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                    <tags>
-                        <tag>goal</tag>
-                        <tag>phase</tag>
-                    </tags>
                     <linksource>true</linksource>
                     <links>
                         <!-- JSE -->
@@ -503,7 +507,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.6</version>
                 <configuration>
                     <targetJdk>1.5</targetJdk>
                 </configuration>
