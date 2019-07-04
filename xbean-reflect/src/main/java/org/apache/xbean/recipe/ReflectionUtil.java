@@ -630,7 +630,7 @@ public final class ReflectionUtil {
                 if (constructor.getParameterTypes().length != parameterTypes.size()) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
-                        missException = new MissingFactoryMethodException("Constructor has " + constructor.getParameterTypes().length + " arugments " +
+                        missException = new MissingFactoryMethodException("Constructor has " + constructor.getParameterTypes().length + " arguments " +
                                 "but expected " + parameterTypes.size() + " arguments: " + constructor);
                     }
                     continue;
