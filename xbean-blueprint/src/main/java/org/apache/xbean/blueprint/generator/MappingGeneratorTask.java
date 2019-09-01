@@ -42,6 +42,7 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
     private File destFile = new File("target/classes/schema.xsd");
     private String metaInfDir = "target/classes/";
     private String propertyEditorPaths = "org.apache.xbean.blueprint.context.impl";
+    private boolean strictOrder = false;
 
     public File getDestFile() {
         return destFile;
@@ -112,8 +113,8 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
 
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
                 new XmlMetadataGenerator(metaInfDir, destFile),
-                new DocumentationGenerator(destFile),
-                new XsdGenerator(destFile)
+                new XsdGenerator(destFile, strictOrder),
+                new DocumentationGenerator(destFile)
             };
 
             // load the mappings
@@ -151,4 +152,18 @@ public class MappingGeneratorTask extends MatchingTask implements LogFacade {
         }
         return files;
     }
+
+  /**
+   * @return the strictOrder
+   */
+  public boolean isStrictOrder() {
+    return strictOrder;
+  }
+
+  /**
+   * @param strictOrder the strictOrder to set
+   */
+  public void setStrictOrder(boolean strictOrder) {
+    this.strictOrder = strictOrder;
+  }
 }
