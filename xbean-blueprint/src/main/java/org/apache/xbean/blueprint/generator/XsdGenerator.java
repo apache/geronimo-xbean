@@ -39,6 +39,7 @@ public class XsdGenerator implements GeneratorPlugin {
     public void generate(NamespaceMapping namespaceMapping) throws IOException {
         // TODO can only handle 1 schema document so far...
         File file = destFile;
+        file.getParentFile().mkdirs();
         log.log("Generating XSD file: " + file + " for namespace: " + namespaceMapping.getNamespace());
         PrintWriter out = new PrintWriter(new FileWriter(file));
         try {
