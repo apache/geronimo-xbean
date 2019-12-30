@@ -19,7 +19,7 @@
 -->
 <!-- START SNIPPET: jndi -->
 <beans>
-  <bean id="jndi" class="org.apache.xbean.spring.jndi.DefaultContext" singleton="true">
+  <bean id="jndi" class="org.apache.xbean.spring.jndi.DefaultContext" scope="singleton">
     <property name="entries">
       <map>
         <entry key="test/restaurant">

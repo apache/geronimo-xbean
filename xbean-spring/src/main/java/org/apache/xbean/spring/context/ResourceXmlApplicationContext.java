@@ -34,7 +34,7 @@ import org.springframework.core.io.Resource;
 /**
  * An XBean version of a regular Spring ApplicationContext which takes a
  * {@link Resource} as a parameter to load the application context
- * 
+ *
  * @author James Strachan
  * @author Dain Sundstrom
  * @version $Id$
@@ -51,7 +51,7 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
     public ResourceXmlApplicationContext(Resource resource) {
         this(resource, Collections.EMPTY_LIST);
     }
-  
+
     /**
      * Creates a ResourceXmlApplicationContext which loads the configuration from the specified Resource.
      * @param resource the resource from which the configuration is loaded
@@ -71,7 +71,7 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
     public ResourceXmlApplicationContext(Resource resource,  List xmlPreprocessors, ApplicationContext parent) {
         this(resource, xmlPreprocessors, parent, Collections.EMPTY_LIST);
     }
-    
+
     public ResourceXmlApplicationContext(Resource resource,  List xmlPreprocessors, ApplicationContext parent, List beanPostProcessors) {
         this(resource, xmlPreprocessors, parent, beanPostProcessors, true);
     }
@@ -89,6 +89,11 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
         }
     }
 
+    @Override
+    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+        reader.setValidating(false);
+    }
+
     protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws IOException {
         // Create a new XmlBeanDefinitionReader for the given BeanFactory.
         XmlBeanDefinitionReader beanDefinitionReader = XBeanHelper.createBeanDefinitionReader(this, beanFactory, xmlPreprocessors);
@@ -103,7 +108,7 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
         initBeanDefinitionReader(beanDefinitionReader);
         loadBeanDefinitions(beanDefinitionReader);
     }
-    
+
     /**
      * {@inheritDoc}
      */
