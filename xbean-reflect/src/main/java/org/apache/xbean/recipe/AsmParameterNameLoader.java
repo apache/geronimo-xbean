@@ -17,6 +17,8 @@
  */
 package org.apache.xbean.recipe;
 
+import static org.apache.xbean.asm7.original.commons.AsmConstants.ASM_VERSION;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
@@ -220,7 +222,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         private final Map<String,Constructor> constructorMap = new HashMap<String,Constructor>();
 
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
-            super(Opcodes.ASM7);
+            super(ASM_VERSION);
             this.methodName = methodName;
 
             List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
@@ -233,7 +235,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         }
 
         public AllParameterNamesDiscoveringVisitor(Class type) {
-            super(Opcodes.ASM7);
+            super(ASM_VERSION);
             this.methodName = "<init>";
 
             List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
@@ -288,7 +290,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
                 }
 
-                return new MethodVisitor(Opcodes.ASM7) {
+                return new MethodVisitor(ASM_VERSION) {
                     // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
                         if (isStaticMethod) {

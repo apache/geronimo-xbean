@@ -16,6 +16,8 @@
  */
 package org.apache.xbean.asm7.original.commons;
 
+import static org.apache.xbean.asm7.original.commons.AsmConstants.ASM_VERSION;
+
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;
@@ -23,11 +25,10 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 
 public class EmptyVisitor extends ClassVisitor {
-    protected final AnnotationVisitor av = new AnnotationVisitor(Opcodes.ASM7) {
+    protected final AnnotationVisitor av = new AnnotationVisitor(ASM_VERSION) {
         @Override
         public void visit(String name, Object value) {
             EmptyVisitor.this.visit(name, value);
@@ -54,7 +55,7 @@ public class EmptyVisitor extends ClassVisitor {
         }
     };
 
-    protected final FieldVisitor fv = new FieldVisitor(Opcodes.ASM7) {
+    protected final FieldVisitor fv = new FieldVisitor(ASM_VERSION) {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             return EmptyVisitor.this.visitAnnotation(desc, visible);
@@ -70,7 +71,7 @@ public class EmptyVisitor extends ClassVisitor {
             EmptyVisitor.this.visitEnd();
         }
     };
-    protected final MethodVisitor mv = new MethodVisitor(Opcodes.ASM7) {
+    protected final MethodVisitor mv = new MethodVisitor(ASM_VERSION) {
         @Override
         public AnnotationVisitor visitAnnotationDefault() {
             return EmptyVisitor.this.visitAnnotationDefault();
@@ -203,7 +204,7 @@ public class EmptyVisitor extends ClassVisitor {
     };
 
     public EmptyVisitor() {
-        super(Opcodes.ASM7);
+        super(ASM_VERSION);
     }
 
     protected AnnotationVisitor visitAnnotationDefault() {
