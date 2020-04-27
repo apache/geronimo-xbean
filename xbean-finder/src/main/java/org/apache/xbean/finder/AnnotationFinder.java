@@ -20,7 +20,7 @@
 
 package org.apache.xbean.finder;
 
-import org.apache.xbean.asm7.original.commons.EmptyVisitor;
+import org.apache.xbean.asm8.original.commons.EmptyVisitor;
 import org.apache.xbean.finder.archive.Archive;
 import org.apache.xbean.finder.util.Classes;
 import org.apache.xbean.finder.util.SingleLinkedList;

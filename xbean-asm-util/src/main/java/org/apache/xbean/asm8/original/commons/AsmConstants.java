@@ -14,10 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.asm7.original.commons;
+package org.apache.xbean.asm8.original.commons;
 
 import org.objectweb.asm.Opcodes;
 
 public interface AsmConstants {
-    int ASM_VERSION = Integer.getInteger(AsmConstants.class.getName() + ".ASM_VERSION", Opcodes.ASM7);
+    int ASM_VERSION = Integer.getInteger(AsmConstants.class.getName() + ".ASM_VERSION", Opcodes.ASM8);
 }

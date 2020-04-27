@@ -14,9 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.xbean.asm7.original.commons;
-
-import static org.apache.xbean.asm7.original.commons.AsmConstants.ASM_VERSION;
+package org.apache.xbean.asm8.original.commons;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -26,6 +24,8 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.TypePath;
+
+import static org.apache.xbean.asm8.original.commons.AsmConstants.ASM_VERSION;
 
 public class EmptyVisitor extends ClassVisitor {
     protected final AnnotationVisitor av = new AnnotationVisitor(ASM_VERSION) {

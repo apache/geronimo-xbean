@@ -36,7 +36,7 @@ public class MJarSupport {
             return -1;
         }
         final int version = major(System.getProperty("java.version"));
-        final Integer jarVersion = major(System.getProperty("jdk.util.jar.version"));
+        final int jarVersion = major(System.getProperty("jdk.util.jar.version"));
         if (jarVersion > 0) {
             return Math.min(version, jarVersion);
         }

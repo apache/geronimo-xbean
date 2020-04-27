@@ -17,13 +17,10 @@
  */
 package org.apache.xbean.recipe;
 
-import static org.apache.xbean.asm7.original.commons.AsmConstants.ASM_VERSION;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.io.IOException;
@@ -38,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+
+import static org.apache.xbean.asm8.original.commons.AsmConstants.ASM_VERSION;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the

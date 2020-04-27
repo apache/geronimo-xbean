@@ -27,7 +27,7 @@
         <groupId>org.apache.xbean</groupId>
         <version>4.17-SNAPSHOT</version>
     </parent>
-    <artifactId>xbean-asm7-shaded</artifactId>
+    <artifactId>xbean-asm8-shaded</artifactId>
     <packaging>bundle</packaging>
     <name>Apache XBean :: ASM shaded (repackaged)</name>
 
@@ -42,9 +42,9 @@
     </licenses>
 
     <properties>
-        <xbean.osgi.export>org.apache.xbean.asm7.shade.commons;version=${asm.version},org.apache.xbean.asm7;version=${asm.version},org.apache.xbean.asm7.signature;version=${asm.version},org.apache.xbean.asm7.commons;version=${asm.version},org.apache.xbean.asm7.tree;version=${asm.version}</xbean.osgi.export>
-        <xbean.osgi.import>org.apache.xbean.asm7.shade.commons;version="[${asm.version},${asm.version}]",org.apache.xbean.asm7;version="[${asm.version},${asm.version}]",org.apache.xbean.asm7.signature;version="[${asm.version},${asm.version}]",org.apache.xbean.asm7.commons;version="[${asm.version},${asm.version}]",org.apache.xbean.asm7.tree;version="[${asm.version},${asm.version}]"</xbean.osgi.import>
-        <xbean.automatic.module.name>${project.groupId}.asm7.shaded</xbean.automatic.module.name>
+        <xbean.osgi.export>org.apache.xbean.asm8.shade.commons;version=${asm.version},org.apache.xbean.asm8;version=${asm.version},org.apache.xbean.asm8.signature;version=${asm.version},org.apache.xbean.asm8.commons;version=${asm.version},org.apache.xbean.asm8.tree;version=${asm.version}</xbean.osgi.export>
+        <xbean.osgi.import>org.apache.xbean.asm8.shade.commons;version="[${asm.version},${asm.version}]",org.apache.xbean.asm8;version="[${asm.version},${asm.version}]",org.apache.xbean.asm8.signature;version="[${asm.version},${asm.version}]",org.apache.xbean.asm8.commons;version="[${asm.version},${asm.version}]",org.apache.xbean.asm8.tree;version="[${asm.version},${asm.version}]"</xbean.osgi.import>
+        <xbean.automatic.module.name>${project.groupId}.asm8.shaded</xbean.automatic.module.name>
     </properties>
 
     <build>
@@ -62,12 +62,12 @@
                             <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation> <!-- we need a different package because we build against both -->
-                                    <pattern>org.apache.xbean.asm7.original.commons</pattern>
-                                    <shadedPattern>org.apache.xbean.asm7.shade.commons</shadedPattern>
+                                    <pattern>org.apache.xbean.asm8.original.commons</pattern>
+                                    <shadedPattern>org.apache.xbean.asm8.shade.commons</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.apache.xbean.asm7</shadedPattern>
+                                    <shadedPattern>org.apache.xbean.asm8</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
@@ -87,7 +87,7 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Bundle-License>http://asm.ow2.org/license.html</Bundle-License>
-                                        <Bundle-SymbolicName>org.apache.xbean.asm7-shaded</Bundle-SymbolicName>
+                                        <Bundle-SymbolicName>org.apache.xbean.asm8-shaded</Bundle-SymbolicName>
                                         <Export-Package>${xbean.osgi.export}</Export-Package>
                                         <Import-Package>${xbean.osgi.import}</Import-Package>
                                         <Automatic-Module-Name>${xbean.automatic.module.name}</Automatic-Module-Name>

@@ -30,7 +30,7 @@
   <name>Apache XBean :: ASM Util</name>
 
   <properties>
-    <xbean.automatic.module.name>${project.groupId}.asm7.util</xbean.automatic.module.name>
+    <xbean.automatic.module.name>${project.groupId}.asm8.util</xbean.automatic.module.name>
   </properties>
 
   <dependencies>
