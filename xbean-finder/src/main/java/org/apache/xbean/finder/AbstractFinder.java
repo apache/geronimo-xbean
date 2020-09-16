@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.xbean.asm8.original.commons.EmptyVisitor;
+import org.apache.xbean.asm9.original.commons.EmptyVisitor;
 import org.apache.xbean.finder.util.SingleLinkedList;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;

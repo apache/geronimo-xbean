@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import static org.apache.xbean.asm8.original.commons.AsmConstants.ASM_VERSION;
+import static org.apache.xbean.asm9.original.commons.AsmConstants.ASM_VERSION;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the

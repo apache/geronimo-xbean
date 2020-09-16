@@ -17,11 +17,11 @@
  */
 package org.apache.xbean.recipe;
 
-import org.apache.xbean.asm8.ClassReader;
-import org.apache.xbean.asm8.ClassVisitor;
-import org.apache.xbean.asm8.Label;
-import org.apache.xbean.asm8.MethodVisitor;
-import org.apache.xbean.asm8.Type;
+import org.apache.xbean.asm9.ClassReader;
+import org.apache.xbean.asm9.ClassVisitor;
+import org.apache.xbean.asm9.Label;
+import org.apache.xbean.asm9.MethodVisitor;
+import org.apache.xbean.asm9.Type;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import static org.apache.xbean.asm8.shade.commons.AsmConstants.ASM_VERSION;
+import static org.apache.xbean.asm9.shade.commons.AsmConstants.ASM_VERSION;
 
 /**
  * Implementation of ParameterNameLoader that uses ASM to read the parameter names from the local variable table in the

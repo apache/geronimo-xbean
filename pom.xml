@@ -64,7 +64,7 @@
         -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <asm.version>8.0.1</asm.version>
+        <asm.version>9.0-beta</asm.version>
 
         <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
     </properties>
@@ -226,7 +226,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.xbean</groupId>
-                <artifactId>xbean-asm8-shaded</artifactId>
+                <artifactId>xbean-asm9-shaded</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -315,7 +315,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13</version>
             <scope>test</scope>
         </dependency>
 
@@ -455,15 +455,15 @@
         <module>xbean-classpath</module>
         <module>xbean-bundleutils</module>
         <module>xbean-asm-util</module>
+        <module>xbean-asm9-shaded</module>
         <module>xbean-finder</module>
+        <module>xbean-finder-shaded</module>
         <module>xbean-naming</module>
         <module>xbean-reflect</module>
         <module>xbean-blueprint</module>
         <module>xbean-spring</module>
         <module>xbean-telnet</module>
         <module>maven-xbean-plugin</module>
-        <module>xbean-asm8-shaded</module>
-        <module>xbean-finder-shaded</module>
     </modules>
 
     <reporting>

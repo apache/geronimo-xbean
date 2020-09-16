@@ -33,7 +33,7 @@
 
     <properties>
         <xbean.osgi.export>org.apache.xbean.finder;version=${project.version}</xbean.osgi.export>
-        <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm8;version=8,org.apache.xbean.asm8.shade.commons;version=8</xbean.osgi.import>
+        <xbean.osgi.import>org.apache.xbean.finder;version=${project.version},org.apache.xbean.asm9;version=8,org.apache.xbean.asm9.shade.commons;version=8</xbean.osgi.import>
         <xbean.automatic.module.name>${project.groupId}.finder.shaded</xbean.automatic.module.name>
     </properties>
 
@@ -52,12 +52,12 @@
                             <createSourcesJar>true</createSourcesJar>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.xbean.asm8.original.commons.EmptyVisitor</pattern>
-                                    <shadedPattern>org.apache.xbean.asm8.shade.commons.EmptyVisitor</shadedPattern>
+                                    <pattern>org.apache.xbean.asm9.original.commons.EmptyVisitor</pattern>
+                                    <shadedPattern>org.apache.xbean.asm9.shade.commons.EmptyVisitor</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.apache.xbean.asm8</shadedPattern>
+                                    <shadedPattern>org.apache.xbean.asm9</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
@@ -78,7 +78,7 @@
                                 </includes>
                                 <excludes>
                                     <exclude>*:*:sources</exclude>
-                                    <exclude>org.apache.xbean:xbean-asm8-shaded</exclude>
+                                    <exclude>org.apache.xbean:xbean-asm9-shaded</exclude>
                                     <exclude>org.apache.xbean:xbean-asm-util</exclude>
                                     <exclude>junit:junit</exclude>
                                 </excludes>
@@ -114,7 +114,7 @@
                             org.apache.xbean.finder.*;version=${project.version};-noimport:=true
                         </Export-Package>
                         <Import-Package>
-                            org.apache.xbean.asm8.*;version="[8.0,9.0)",
+                            org.apache.xbean.asm9.*;version="[9.0,10.0)",
                             *
                         </Import-Package>
                         <Private-Package />
@@ -143,7 +143,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-asm8-shaded</artifactId>
+            <artifactId>xbean-asm9-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
