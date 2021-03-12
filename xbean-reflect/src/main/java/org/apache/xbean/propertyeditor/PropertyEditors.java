@@ -19,8 +19,6 @@ package org.apache.xbean.propertyeditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Type;
 
-import com.sun.org.apache.regexp.internal.RE;
-
 /**
  * The property editor manager.  This orchestrates Geronimo usage of
  * property editors, allowing additional search paths to be added and
