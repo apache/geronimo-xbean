@@ -108,6 +108,9 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
                 }
             }
             String superClassName = classReader.getSuperName();
+            if (superClassName == null) {
+                return false;
+            }
             if (wiredImportedPackageNames.contains(toASMStylePackageName(superClassName))) {
                 return isClassAssignable(bundle.loadClass(toJavaStyleClassName(superClassName)));
             }
