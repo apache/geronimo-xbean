@@ -36,16 +36,16 @@
     <packaging>pom</packaging>
     <inceptionYear>2005</inceptionYear>
 
-    <version>4.20</version>
+    <version>4.21-SNAPSHOT</version>
 
     <description>
         XBean is a plugin based server architecture.
     </description>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-4.20</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/tags/xbean-4.20</developerConnection>
-        <url>http://svn.apache.org/viewvc/geronimo/xbean/tags/xbean-4.20</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
+        <url>http://svn.apache.org/viewvc/geronimo/xbean/trunk</url>
     </scm>
 
     <url>http://geronimo.apache.org/maven/${siteId}/${project.version}</url>
