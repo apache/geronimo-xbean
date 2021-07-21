@@ -43,9 +43,10 @@
     </description>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/geronimo/xbean/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/geronimo/xbean/trunk</developerConnection>
-        <url>http://svn.apache.org/viewvc/geronimo/xbean/trunk</url>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/geronimo-xbean.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/geronimo-xbean.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf/geronimo-xbean.git</url>
+        <tag>HEAD</tag>
     </scm>
 
     <url>http://geronimo.apache.org/maven/${siteId}/${project.version}</url>
