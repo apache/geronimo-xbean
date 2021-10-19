@@ -65,7 +65,7 @@
         -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <asm.version>9.1</asm.version>
+        <asm.version>9.2</asm.version>
 
         <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
     </properties>
