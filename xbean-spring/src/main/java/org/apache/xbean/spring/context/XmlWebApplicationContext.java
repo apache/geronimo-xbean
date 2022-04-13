@@ -53,6 +53,11 @@ public class XmlWebApplicationContext extends org.springframework.web.context.su
         this.xmlPreprocessors = xmlPreprocessors;
     }
 
+    @Override
+    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+        reader.setValidating(false);
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -162,6 +162,11 @@ public class ClassPathXmlApplicationContext extends org.springframework.context.
         }
     }
 
+    @Override
+    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+        reader.setValidating(false);
+    }
+
     /**
      * {@inheritDoc}
      */

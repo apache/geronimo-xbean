@@ -103,6 +103,11 @@ public class ResourceXmlApplicationContext extends AbstractXmlApplicationContext
         initBeanDefinitionReader(beanDefinitionReader);
         loadBeanDefinitions(beanDefinitionReader);
     }
+
+    @Override
+    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+        reader.setValidating(false);
+    }
     
     /**
      * {@inheritDoc}
