@@ -35,7 +35,7 @@
   </restaurant>
 
   <!-- lets initialise JNDI here -->
-  <bean id="jndi" class="org.apache.xbean.spring.jndi.SpringInitialContextFactory" factory-method="makeInitialContext" singleton="true">
+  <bean id="jndi" class="org.apache.xbean.spring.jndi.SpringInitialContextFactory" factory-method="makeInitialContext" scope="singleton">
     <property name="entries">
       <map>
         <entry key="test/restaurant" value-ref="restaurant" />

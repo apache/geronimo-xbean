@@ -126,12 +126,15 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
             BeanDefinitionParserDelegate.DEPENDS_ON_ATTRIBUTE, 
             BeanDefinitionParserDelegate.FACTORY_METHOD_ATTRIBUTE, 
             BeanDefinitionParserDelegate.FACTORY_BEAN_ATTRIBUTE,
-            BeanDefinitionParserDelegate.DEPENDENCY_CHECK_ATTRIBUTE, 
+            // removed in Spring 5
+            "dependency-check",
             BeanDefinitionParserDelegate.AUTOWIRE_ATTRIBUTE, 
             BeanDefinitionParserDelegate.INIT_METHOD_ATTRIBUTE, 
             BeanDefinitionParserDelegate.DESTROY_METHOD_ATTRIBUTE,
-            BeanDefinitionParserDelegate.ABSTRACT_ATTRIBUTE, 
-            BeanDefinitionParserDelegate.SINGLETON_ATTRIBUTE, 
+            BeanDefinitionParserDelegate.ABSTRACT_ATTRIBUTE,
+            BeanDefinitionParserDelegate.SCOPE_ATTRIBUTE,
+            // removed in Spring 4
+            "singleton",
             BeanDefinitionParserDelegate.LAZY_INIT_ATTRIBUTE };
 
     private static final String JAVA_PACKAGE_PREFIX = "java://";

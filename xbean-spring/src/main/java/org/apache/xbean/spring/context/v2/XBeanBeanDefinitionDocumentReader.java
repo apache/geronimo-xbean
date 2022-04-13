@@ -44,6 +44,20 @@ public class XBeanBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocu
         return delegate;
     }
 
+    // introduced in Spring 3.1
+    protected BeanDefinitionParserDelegate createHelper(XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate) {
+        BeanDefinitionParserDelegate delegate = XBeanV2Helper.createParser(readerContext);
+        delegate.initDefaults(root, parentDelegate);
+        return delegate;
+    }
+
+    // introduced in Spring 4
+    protected BeanDefinitionParserDelegate createDelegate(XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate) {
+        BeanDefinitionParserDelegate delegate = XBeanV2Helper.createParser(readerContext);
+        delegate.initDefaults(root, parentDelegate);
+        return delegate;
+    }
+
     protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
         String namespaceUri = root.getNamespaceURI();
         if (!DomUtils.nodeNameEquals(root, "beans") && 
