@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -51,19 +50,20 @@ public class JarArchive implements Archive {
 
             String jarPath = url.getFile();
             if (jarPath.contains("!")) {
-                jarPath = jarPath.substring(0, jarPath.indexOf("!"));
+                jarPath = jarPath.substring(0, jarPath.lastIndexOf("!"));
                 u = new URL(jarPath);
             }
-            jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
+            this.jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public URL getUrl() {
-        return url;
+    public URL getUrl(){
+        return this.url;
     }
 
+    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         int pos = className.indexOf("<");
         if (pos > -1) {
@@ -77,18 +77,20 @@ public class JarArchive implements Archive {
             className = className.replace('.', '/') + ".class";
         }
 
-        ZipEntry entry = jar.getEntry(className);
+        ZipEntry entry = this.jar.getEntry(className);
         if (entry == null) throw new ClassNotFoundException(className);
 
-        return jar.getInputStream(entry);
+        return this.jar.getInputStream(entry);
     }
 
 
+    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         // assume the loader knows how to handle mjar release if activated
-        return loader.loadClass(className);
+        return this.loader.loadClass(className);
     }
 
+    @Override
     public Iterator<Entry> iterator() {
         return new JarIterator();
     }
@@ -99,51 +101,49 @@ public class JarArchive implements Archive {
         private Entry next;
 
         private JarIterator() {
-            final Enumeration<JarEntry> entries = jar.entries();
+            final Enumeration<JarEntry> entries = JarArchive.this.jar.entries();
             try {
-                final Manifest manifest = jar.getManifest();
+                final Manifest manifest = JarArchive.this.jar.getManifest();
                 if (manifest != null) {
-                    mjar.load(manifest);
+                    JarArchive.this.mjar.load(manifest);
                 }
             } catch (IOException e) {
                 // no-op
             }
-            if (mjar.isMjar()) { // sort it to ensure we browse META-INF/versions first
-                final List<JarEntry> list = new ArrayList<JarEntry>(Collections.list(entries));
-                Collections.sort(list, new Comparator<JarEntry>() {
-                    public int compare(JarEntry o1, JarEntry o2) {
-                        final String n2 = o2.getName();
-                        final String n1 = o1.getName();
-                        final boolean n1v = n1.startsWith("META-INF/versions/");
-                        final boolean n2v = n2.startsWith("META-INF/versions/");
-                        if (n1v && n2v) {
-                            return n1.compareTo(n2);
-                        }
-                        if (n1v) {
-                            return -1;
-                        }
-                        if (n2v) {
-                            return 1;
-                        }
-                        try {
-                            return Integer.parseInt(n2) - Integer.parseInt(n1);
-                        } catch (final NumberFormatException nfe) {
-                            return n2.compareTo(n1);
-                        }
+            if (JarArchive.this.mjar.isMjar()) { // sort it to ensure we browse META-INF/versions first
+                final List<JarEntry> list = new ArrayList<>(Collections.list(entries));
+                Collections.sort(list, (o1, o2)-> {
+                    final String n2 = o2.getName();
+                    final String n1 = o1.getName();
+                    final boolean n1v = n1.startsWith("META-INF/versions/");
+                    final boolean n2v = n2.startsWith("META-INF/versions/");
+                    if (n1v && n2v) {
+                        return n1.compareTo(n2);
+                    }
+                    if (n1v) {
+                        return -1;
+                    }
+                    if (n2v) {
+                        return 1;
+                    }
+                    try {
+                        return Integer.parseInt(n2) - Integer.parseInt(n1);
+                    } catch (final NumberFormatException nfe) {
+                        return n2.compareTo(n1);
                     }
                 });
-                stream = list.iterator();
+                this.stream = list.iterator();
             } else {
-                stream = Collections.list(entries).iterator();
+                this.stream = Collections.list(entries).iterator();
             }
         }
 
         private boolean advance() {
-            if (next != null) {
+            if (this.next != null) {
                 return true;
             }
-            while (stream.hasNext()) {
-                final JarEntry entry = stream.next();
+            while (this.stream.hasNext()) {
+                final JarEntry entry = this.stream.next();
                 final String entryName = entry.getName();
                 if (entry.isDirectory() || !entryName.endsWith(".class") || entryName.endsWith("module-info.class")) {
                     continue;
@@ -153,31 +153,30 @@ public class JarArchive implements Archive {
                 if (entryName.endsWith(".class")) {
                     className = className.substring(0, className.length() - 6);
                 }
-                if (className.contains(".")) {
+                if (className.contains(".") || entryName.startsWith("META-INF/versions/")) { // JarFile will handle it for us
                     continue;
                 }
 
-                if (entryName.startsWith("META-INF/versions/")) { // JarFile will handle it for us
-                    continue;
-                }
-
-                next = new ClassEntry(entry, className.replace('/', '.'));
+                this.next = new ClassEntry(entry, className.replace('/', '.'));
                 return true;
             }
             return false;
         }
 
+        @Override
         public boolean hasNext() {
-            return advance();
+            return this.advance();
         }
 
+        @Override
         public Entry next() {
-            if (!hasNext()) throw new NoSuchElementException();
-            Entry entry = next;
-            next = null;
+            if (!this.hasNext()) throw new NoSuchElementException();
+            Entry entry = this.next;
+            this.next = null;
             return entry;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("remove");
         }
@@ -191,19 +190,21 @@ public class JarArchive implements Archive {
                 this.entry = entry;
             }
 
+            @Override
             public String getName() {
-                return name;
+                return this.name;
             }
 
+            @Override
             public InputStream getBytecode() throws IOException {
-                if (mjar.isMjar()) {
+                if (JarArchive.this.mjar.isMjar()) {
                     // JarFile handles it for us :)
-                    final ZipEntry entry = jar.getJarEntry(this.entry.getName());
+                    final ZipEntry entry = JarArchive.this.jar.getJarEntry(this.entry.getName());
                     if (entry != null) {
-                        return jar.getInputStream(entry);
+                        return JarArchive.this.jar.getInputStream(entry);
                     }
                 }
-                return jar.getInputStream(entry);
+                return JarArchive.this.jar.getInputStream(this.entry);
             }
         }
     }
