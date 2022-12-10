@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -50,20 +51,19 @@ public class JarArchive implements Archive {
 
             String jarPath = url.getFile();
             if (jarPath.contains("!")) {
-                jarPath = jarPath.substring(0, jarPath.lastIndexOf("!"));
+                jarPath = jarPath.substring(0, jarPath.indexOf("!"));
                 u = new URL(jarPath);
             }
-            this.jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
+            jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public URL getUrl(){
-        return this.url;
+    public URL getUrl() {
+        return url;
     }
 
-    @Override
     public InputStream getBytecode(String className) throws IOException, ClassNotFoundException {
         int pos = className.indexOf("<");
         if (pos > -1) {
@@ -77,20 +77,18 @@ public class JarArchive implements Archive {
             className = className.replace('.', '/') + ".class";
         }
 
-        ZipEntry entry = this.jar.getEntry(className);
+        ZipEntry entry = jar.getEntry(className);
         if (entry == null) throw new ClassNotFoundException(className);
 
-        return this.jar.getInputStream(entry);
+        return jar.getInputStream(entry);
     }
 
 
-    @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         // assume the loader knows how to handle mjar release if activated
-        return this.loader.loadClass(className);
+        return loader.loadClass(className);
     }
 
-    @Override
     public Iterator<Entry> iterator() {
         return new JarIterator();
     }
@@ -101,49 +99,51 @@ public class JarArchive implements Archive {
         private Entry next;
 
         private JarIterator() {
-            final Enumeration<JarEntry> entries = JarArchive.this.jar.entries();
+            final Enumeration<JarEntry> entries = jar.entries();
             try {
-                final Manifest manifest = JarArchive.this.jar.getManifest();
+                final Manifest manifest = jar.getManifest();
                 if (manifest != null) {
-                    JarArchive.this.mjar.load(manifest);
+                    mjar.load(manifest);
                 }
             } catch (IOException e) {
                 // no-op
             }
-            if (JarArchive.this.mjar.isMjar()) { // sort it to ensure we browse META-INF/versions first
-                final List<JarEntry> list = new ArrayList<>(Collections.list(entries));
-                Collections.sort(list, (o1, o2)-> {
-                    final String n2 = o2.getName();
-                    final String n1 = o1.getName();
-                    final boolean n1v = n1.startsWith("META-INF/versions/");
-                    final boolean n2v = n2.startsWith("META-INF/versions/");
-                    if (n1v && n2v) {
-                        return n1.compareTo(n2);
-                    }
-                    if (n1v) {
-                        return -1;
-                    }
-                    if (n2v) {
-                        return 1;
-                    }
-                    try {
-                        return Integer.parseInt(n2) - Integer.parseInt(n1);
-                    } catch (final NumberFormatException nfe) {
-                        return n2.compareTo(n1);
+            if (mjar.isMjar()) { // sort it to ensure we browse META-INF/versions first
+                final List<JarEntry> list = new ArrayList<JarEntry>(Collections.list(entries));
+                Collections.sort(list, new Comparator<JarEntry>() {
+                    public int compare(JarEntry o1, JarEntry o2) {
+                        final String n2 = o2.getName();
+                        final String n1 = o1.getName();
+                        final boolean n1v = n1.startsWith("META-INF/versions/");
+                        final boolean n2v = n2.startsWith("META-INF/versions/");
+                        if (n1v && n2v) {
+                            return n1.compareTo(n2);
+                        }
+                        if (n1v) {
+                            return -1;
+                        }
+                        if (n2v) {
+                            return 1;
+                        }
+                        try {
+                            return Integer.parseInt(n2) - Integer.parseInt(n1);
+                        } catch (final NumberFormatException nfe) {
+                            return n2.compareTo(n1);
+                        }
                     }
                 });
-                this.stream = list.iterator();
+                stream = list.iterator();
             } else {
-                this.stream = Collections.list(entries).iterator();
+                stream = Collections.list(entries).iterator();
             }
         }
 
         private boolean advance() {
-            if (this.next != null) {
+            if (next != null) {
                 return true;
             }
-            while (this.stream.hasNext()) {
-                final JarEntry entry = this.stream.next();
+            while (stream.hasNext()) {
+                final JarEntry entry = stream.next();
                 final String entryName = entry.getName();
                 if (entry.isDirectory() || !entryName.endsWith(".class") || entryName.endsWith("module-info.class")) {
                     continue;
@@ -153,30 +153,31 @@ public class JarArchive implements Archive {
                 if (entryName.endsWith(".class")) {
                     className = className.substring(0, className.length() - 6);
                 }
-                if (className.contains(".") || entryName.startsWith("META-INF/versions/")) { // JarFile will handle it for us
+                if (className.contains(".")) {
                     continue;
                 }
 
-                this.next = new ClassEntry(entry, className.replace('/', '.'));
+                if (entryName.startsWith("META-INF/versions/")) { // JarFile will handle it for us
+                    continue;
+                }
+
+                next = new ClassEntry(entry, className.replace('/', '.'));
                 return true;
             }
             return false;
         }
 
-        @Override
         public boolean hasNext() {
-            return this.advance();
+            return advance();
         }
 
-        @Override
         public Entry next() {
-            if (!this.hasNext()) throw new NoSuchElementException();
-            Entry entry = this.next;
-            this.next = null;
+            if (!hasNext()) throw new NoSuchElementException();
+            Entry entry = next;
+            next = null;
             return entry;
         }
 
-        @Override
         public void remove() {
             throw new UnsupportedOperationException("remove");
         }
@@ -190,21 +191,19 @@ public class JarArchive implements Archive {
                 this.entry = entry;
             }
 
-            @Override
             public String getName() {
-                return this.name;
+                return name;
             }
 
-            @Override
             public InputStream getBytecode() throws IOException {
-                if (JarArchive.this.mjar.isMjar()) {
+                if (mjar.isMjar()) {
                     // JarFile handles it for us :)
-                    final ZipEntry entry = JarArchive.this.jar.getJarEntry(this.entry.getName());
+                    final ZipEntry entry = jar.getJarEntry(this.entry.getName());
                     if (entry != null) {
-                        return JarArchive.this.jar.getInputStream(entry);
+                        return jar.getInputStream(entry);
                     }
                 }
-                return JarArchive.this.jar.getInputStream(this.entry);
+                return jar.getInputStream(entry);
             }
         }
     }
