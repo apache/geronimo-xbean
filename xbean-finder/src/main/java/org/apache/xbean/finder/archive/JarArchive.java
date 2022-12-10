@@ -51,7 +51,7 @@ public class JarArchive implements Archive {
 
             String jarPath = url.getFile();
             if (jarPath.contains("!")) {
-                jarPath = jarPath.substring(0, jarPath.indexOf("!"));
+                jarPath = jarPath.substring(0, jarPath.lastIndexOf("!"));
                 u = new URL(jarPath);
             }
             jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
