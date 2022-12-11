@@ -30,7 +30,9 @@ import org.acme.foo.Red;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * @version $Rev$ $Date$
@@ -40,6 +42,9 @@ public class JarArchiveTest {
     private static final Class[] classes = {Blue.class, Blue.Navy.class, Blue.Sky.class, Green.class, Green.Emerald.class, Red.class, Red.CandyApple.class, Red.Pink.class};
     private static File classpath;
     private JarArchive archive;
+
+    @Rule
+    public TemporaryFolder testTmpDir = new TemporaryFolder();
 
     @BeforeClass
     public static void classSetUp() throws Exception {
@@ -121,12 +126,12 @@ public class JarArchiveTest {
 
         // Real file
 
-        Path tmpDir = Files.createTempDirectory("!" + JarArchiveTest.class.getSimpleName() + "!-");
-        tmpDir.toFile().deleteOnExit();
+        File tmpDir = testTmpDir.newFolder("!" + JarArchiveTest.class.getSimpleName() + "!-temp");
 
         File exclamated = Files.copy(JarArchiveTest.classpath.toPath(),
-                tmpDir.resolve(JarArchiveTest.classpath.getName())).toFile();
-        exclamated.deleteOnExit();
+                tmpDir.toPath().resolve(
+                        JarArchiveTest.classpath.getName()))
+                .toFile();
 
         urls[0] = new URL("jar:" + exclamated.toURI().toURL() + "!/");
 
