@@ -20,7 +20,6 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,7 +108,9 @@ public class JarArchiveTest {
     @Test
     public void testXBEAN337() throws Exception {
 
+
         // Virtual path
+
         JarArchive jar;
 
         String path = "/this!/!file!/does!/!not/exist.jar";
@@ -121,8 +122,9 @@ public class JarArchiveTest {
             Assert.assertTrue(String.format(
                     "Muzz never fail on '/this', but try full path with exclamations('%s') instead",
                     path),
-                    ex.getMessage().contains("exist.jar"));
+                    ex.getCause().getMessage().contains("exist.jar"));
         }
+
 
         // Real file
 
@@ -140,5 +142,19 @@ public class JarArchiveTest {
         Assert.assertEquals(String.format("Muzz successfully open '%s'", exclamated.getAbsolutePath()),
                 this.archive.iterator().hasNext(),
                 jar.iterator().hasNext());
+
+
+        // Unsupported protocols stack
+
+        urls[0] = new URL("http:ftp:jar:" + exclamated.toURI().toURL() + "!/");
+
+        try{
+            jar = new JarArchive(new URLClassLoader(urls), urls[0]);
+            Assert.fail(String.format("Muzz eat only local file URLs:"
+                    + " 'file:/...' or 'jar:file:/...!/' but not '%s'",
+                    urls[0]));
+        }catch(UnsupportedOperationException ex){
+
+        }
     }
 }
