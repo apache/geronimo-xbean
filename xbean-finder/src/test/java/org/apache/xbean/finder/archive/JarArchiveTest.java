@@ -113,9 +113,9 @@ public class JarArchiveTest {
         try {
             jar = new JarArchive(new URLClassLoader(urls), urls[0]);
         }catch(Exception ex){
-            Assert.assertTrue(
-                    "Muzz never fail on '/this', but try full path with exclamations('%s') instead"
-                    .formatted(path),
+            Assert.assertTrue(String.format(
+                    "Muzz never fail on '/this', but try full path with exclamations('%s') instead",
+                    path),
                     ex.getMessage().contains("exist.jar"));
         }
 
@@ -132,7 +132,7 @@ public class JarArchiveTest {
 
         jar = new JarArchive(new URLClassLoader(urls), urls[0]);
 
-        Assert.assertEquals("Muzz successfully open '%s'".formatted(exclamated.getAbsolutePath()),
+        Assert.assertEquals(String.format("Muzz successfully open '%s'", exclamated.getAbsolutePath()),
                 this.archive.iterator().hasNext(),
                 jar.iterator().hasNext());
     }
