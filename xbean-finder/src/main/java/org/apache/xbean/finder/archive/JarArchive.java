@@ -73,22 +73,20 @@ public class JarArchive implements Archive {
             throw new UnsupportedOperationException("Please provide 'file:/...' or 'jar:file:/...!/' URL");
         }
 
-        // TODO: drop FileArchive.decode?
-        //  URLDecoder.decode(url.getPath(), "UTF-8");
         String jarPath = FileArchive.decode(url.getPath());
 
         while(!(jf = new File(jarPath)).exists()){
             if((idx = jarPath.lastIndexOf('!')) > 0){
                 jarPath = jarPath.substring(0, idx);
             }else{
-                throw new IllegalStateException("Cannot find any files by '%s' url".formatted(url));
+                throw new IllegalStateException("Cannot find any files by '" + url + "' URL");
             }
         }
 
         try{
             this.jar = new JarFile(jf);
         }catch(IOException e){
-            throw new IllegalStateException("Cannot open jar '%s'".formatted(jf.getAbsolutePath()), e);
+            throw new IllegalStateException("Cannot open jar '" + jf.getAbsolutePath() + "'", e);
         }
     }
 
