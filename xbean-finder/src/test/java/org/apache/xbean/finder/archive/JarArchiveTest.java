@@ -60,7 +60,7 @@ public class JarArchiveTest {
     public void testGetBytecode() throws Exception {
 
         for (Class clazz : classes) {
-            Assert.assertNotNull(clazz.getName(), this.archive.getBytecode(clazz.getName()));
+            Assert.assertNotNull(clazz.getName(), archive.getBytecode(clazz.getName()));
         }
 
         try {
@@ -74,7 +74,7 @@ public class JarArchiveTest {
     @Test
     public void testLoadClass() throws Exception {
         for (Class clazz : classes) {
-            Assert.assertEquals(clazz.getName(), clazz, this.archive.loadClass(clazz.getName()));
+            Assert.assertEquals(clazz.getName(), clazz, archive.loadClass(clazz.getName()));
         }
 
         try {
