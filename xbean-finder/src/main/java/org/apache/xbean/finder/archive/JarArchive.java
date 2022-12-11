@@ -34,7 +34,7 @@ import java.util.zip.ZipEntry;
 /**
  * @version $Rev$ $Date$
  */
-public class JarArchive implements Archive {
+public class JarArchive implements Archive, AutoCloseable {
 
     private final ClassLoader loader;
     private final URL url;
@@ -91,6 +91,11 @@ public class JarArchive implements Archive {
 
     public Iterator<Entry> iterator() {
         return new JarIterator();
+    }
+
+    @Override
+    public void close() throws Exception {
+        jar.close();
     }
 
     private class JarIterator implements Iterator<Entry> {
