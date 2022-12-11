@@ -27,15 +27,10 @@ import java.util.List;
 import org.acme.foo.Blue;
 import org.acme.foo.Green;
 import org.acme.foo.Red;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 
 /**
  * @version $Rev$ $Date$
@@ -65,12 +60,12 @@ public class JarArchiveTest {
     public void testGetBytecode() throws Exception {
 
         for (Class clazz : classes) {
-            assertNotNull(clazz.getName(), archive.getBytecode(clazz.getName()));
+            Assert.assertNotNull(clazz.getName(), this.archive.getBytecode(clazz.getName()));
         }
 
         try {
             archive.getBytecode("Fake");
-            fail("ClassNotFoundException should have been thrown");
+            Assert.fail("ClassNotFoundException should have been thrown");
         } catch (ClassNotFoundException e) {
             // pass
         }
@@ -79,12 +74,12 @@ public class JarArchiveTest {
     @Test
     public void testLoadClass() throws Exception {
         for (Class clazz : classes) {
-            assertEquals(clazz.getName(), clazz, archive.loadClass(clazz.getName()));
+            Assert.assertEquals(clazz.getName(), clazz, this.archive.loadClass(clazz.getName()));
         }
 
         try {
             archive.loadClass("Fake");
-            fail("ClassNotFoundException should have been thrown");
+            Assert.fail("ClassNotFoundException should have been thrown");
         } catch (ClassNotFoundException e) {
             // pass
         }
@@ -97,13 +92,13 @@ public class JarArchiveTest {
             actual.add(entry.getName());
         }
 
-        assertFalse(0 == actual.size());
+        Assert.assertFalse(0 == actual.size());
 
         for (Class clazz : classes) {
-            assertTrue(clazz.getName(), actual.contains(clazz.getName()));
+            Assert.assertTrue(clazz.getName(), actual.contains(clazz.getName()));
         }
 
-        assertEquals(classes.length, actual.size());
+        Assert.assertEquals(JarArchiveTest.classes.length, actual.size());
     }
 
     @Test
@@ -118,7 +113,7 @@ public class JarArchiveTest {
         try {
             jar = new JarArchive(new URLClassLoader(urls), urls[0]);
         }catch(Exception ex){
-            org.junit.Assert.assertTrue(
+            Assert.assertTrue(
                     "Muzz never fail on '/this', but try full path with exclamations('%s') instead"
                     .formatted(path),
                     ex.getMessage().contains("exist.jar"));
@@ -137,7 +132,7 @@ public class JarArchiveTest {
 
         jar = new JarArchive(new URLClassLoader(urls), urls[0]);
 
-        org.junit.Assert.assertEquals("Muzz successfully open '%s'".formatted(exclamated.getAbsolutePath()),
+        Assert.assertEquals("Muzz successfully open '%s'".formatted(exclamated.getAbsolutePath()),
                 this.archive.iterator().hasNext(),
                 jar.iterator().hasNext());
     }
