@@ -25,11 +25,10 @@ import java.util.List;
 import org.acme.foo.Blue;
 import org.acme.foo.Green;
 import org.acme.foo.Red;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import junit.framework.Assert;
 
 /**
  * @version $Rev$ $Date$
@@ -110,7 +109,7 @@ public class JarArchiveTest {
         try {
             this.archive = new JarArchive(new URLClassLoader(urls), urls[0]);
         }catch(Exception ex){
-            org.junit.Assert.assertTrue(
+            Assert.assertTrue(
                     "Muzz never fail on '/this', but try full path with exclamations('%s') instead"
                     .formatted(path),
                     ex.getCause().getMessage().contains("exist.jar"));
