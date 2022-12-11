@@ -16,6 +16,12 @@
  */
 package org.apache.xbean.finder.archive;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.acme.foo.Blue;
 import org.acme.foo.Green;
 import org.acme.foo.Red;
@@ -23,17 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import junit.framework.Assert;
 
 /**
  * @version $Rev$ $Date$
@@ -47,28 +43,28 @@ public class JarArchiveTest {
     @BeforeClass
     public static void classSetUp() throws Exception {
 
-        classpath = Archives.jarArchive(classes);
+        JarArchiveTest.classpath = Archives.jarArchive(JarArchiveTest.classes);
     }
 
     @Before
     public void setUp() throws Exception {
 
-        URL[] urls = {new URL("jar:" + classpath.toURI().toURL() + "!/")};
+        URL[] urls = {new URL("jar:" + JarArchiveTest.classpath.toURI().toURL() + "!/")};
 
-        archive = new JarArchive(new URLClassLoader(urls), urls[0]);
+        this.archive = new JarArchive(new URLClassLoader(urls), urls[0]);
     }
 
 
     @Test
     public void testGetBytecode() throws Exception {
 
-        for (Class clazz : classes) {
-            assertNotNull(clazz.getName(), archive.getBytecode(clazz.getName()));
+        for (Class clazz : JarArchiveTest.classes) {
+            Assert.assertNotNull(clazz.getName(), this.archive.getBytecode(clazz.getName()));
         }
 
         try {
-            archive.getBytecode("Fake");
-            fail("ClassNotFoundException should have been thrown");
+            this.archive.getBytecode("Fake");
+            Assert.fail("ClassNotFoundException should have been thrown");
         } catch (ClassNotFoundException e) {
             // pass
         }
@@ -76,13 +72,13 @@ public class JarArchiveTest {
 
     @Test
     public void testLoadClass() throws Exception {
-        for (Class clazz : classes) {
-            assertEquals(clazz.getName(), clazz, archive.loadClass(clazz.getName()));
+        for (Class clazz : JarArchiveTest.classes) {
+            Assert.assertEquals(clazz.getName(), clazz, this.archive.loadClass(clazz.getName()));
         }
 
         try {
-            archive.loadClass("Fake");
-            fail("ClassNotFoundException should have been thrown");
+            this.archive.loadClass("Fake");
+            Assert.fail("ClassNotFoundException should have been thrown");
         } catch (ClassNotFoundException e) {
             // pass
         }
@@ -90,19 +86,34 @@ public class JarArchiveTest {
 
     @Test
     public void testIterator() throws Exception {
-        List<String> actual = new ArrayList<String>();
-        for (Archive.Entry entry : archive) {
+        List<String> actual = new ArrayList<>();
+        for (Archive.Entry entry : this.archive) {
             actual.add(entry.getName());
         }
 
-        assertFalse(0 == actual.size());
+        Assert.assertFalse(0 == actual.size());
 
-        for (Class clazz : classes) {
-            assertTrue(clazz.getName(), actual.contains(clazz.getName()));
+        for (Class clazz : JarArchiveTest.classes) {
+            Assert.assertTrue(clazz.getName(), actual.contains(clazz.getName()));
         }
 
-        assertEquals(classes.length, actual.size());
+        Assert.assertEquals(JarArchiveTest.classes.length, actual.size());
     }
 
 
+    @Test
+    public void testXBEAN337() throws Exception {
+
+        String path = "/this!/!file!/does!/!not/exist.jar";
+        URL[] urls = {new URL("jar:file:" + path + "!/")};
+
+        try {
+            this.archive = new JarArchive(new URLClassLoader(urls), urls[0]);
+        }catch(Exception ex){
+            org.junit.Assert.assertTrue(
+                    "Muzz never fail on '/this', but try full path with exclamations('%s') instead"
+                    .formatted(path),
+                    ex.getCause().getMessage().contains("exist.jar"));
+        }
+    }
 }
