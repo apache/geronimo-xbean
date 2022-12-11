@@ -16,8 +16,10 @@
  */
 package org.apache.xbean.finder.archive;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,22 +43,52 @@ public class JarArchive implements Archive {
     private final JarFile jar;
     private final MJarSupport mjar = new MJarSupport();
 
-    public JarArchive(ClassLoader loader, URL url) {
+    public JarArchive(ClassLoader loader, URL url){
 //        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a jar url: " + url);
 
-        try {
-            this.loader = loader;
-            this.url = url;
-            URL u = url;
+        this.loader = loader;
+        this.url = url;
+        File jf;
+        int idx;
 
-            String jarPath = url.getFile();
-            if (jarPath.contains("!")) {
-                jarPath = jarPath.substring(0, jarPath.indexOf("!"));
-                u = new URL(jarPath);
+        /*
+         * True URL.getPath(...) wiping out protocol prefixes:
+         *
+         *  1. 'jar:file:/c:/temp/...' -> 'jar' + 'file:/c:/temp/...'
+         *  2. 'file:/c:/temp/...' -> 'file' + '/c:/temp/...'
+         *
+         *  assuming we accept 'file:/...${xxx.jar}!/' URLs
+         *      AND 'zip:file:/...!/' would be cool too, if
+         *      allowed by new URL(...)
+         */
+        try {
+            // Underlying JarFile(...) requires RandomAccessFile,
+            //  so only local file URLs here...
+            while(!"file".equalsIgnoreCase(url.getProtocol())) {
+                // no need here in .getQuery() tail, appended by getFile()
+                url = new URL(url.getPath());
             }
-            jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+        }catch(MalformedURLException ex){
+            // No more protocol(s) in path
+            throw new UnsupportedOperationException("Please provide 'file:/...' or 'jar:file:/...!/' URL");
+        }
+
+        // TODO: drop FileArchive.decode?
+        //  URLDecoder.decode(url.getPath(), "UTF-8");
+        String jarPath = FileArchive.decode(url.getPath());
+
+        while(!(jf = new File(jarPath)).exists()){
+            if((idx = jarPath.lastIndexOf('!')) > 0){
+                jarPath = jarPath.substring(0, idx);
+            }else{
+                throw new IllegalStateException("Cannot find any files by '%s' url".formatted(url));
+            }
+        }
+
+        try{
+            this.jar = new JarFile(jf);
+        }catch(IOException e){
+            throw new IllegalStateException("Cannot open jar '%s'".formatted(jf.getAbsolutePath()), e);
         }
     }
 

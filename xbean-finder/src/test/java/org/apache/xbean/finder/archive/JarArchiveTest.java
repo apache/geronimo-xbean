@@ -16,18 +16,20 @@
  */
 package org.apache.xbean.finder.archive;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.acme.foo.Blue;
 import org.acme.foo.Green;
 import org.acme.foo.Red;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -104,5 +106,39 @@ public class JarArchiveTest {
         assertEquals(classes.length, actual.size());
     }
 
+    @Test
+    public void testXBEAN337() throws Exception {
 
+        // Virtual path
+        JarArchive jar;
+
+        String path = "/this!/!file!/does!/!not/exist.jar";
+        URL[] urls = {new URL("jar:file:" + path + "!/some!/!inner!/.jar!/file.jar")};
+
+        try {
+            jar = new JarArchive(new URLClassLoader(urls), urls[0]);
+        }catch(Exception ex){
+            org.junit.Assert.assertTrue(
+                    "Muzz never fail on '/this', but try full path with exclamations('%s') instead"
+                    .formatted(path),
+                    ex.getMessage().contains("exist.jar"));
+        }
+
+        // Real file
+
+        Path tmpDir = Files.createTempDirectory("!" + JarArchiveTest.class.getSimpleName() + "!-");
+        tmpDir.toFile().deleteOnExit();
+
+        File exclamated = Files.copy(JarArchiveTest.classpath.toPath(),
+                tmpDir.resolve(JarArchiveTest.classpath.getName())).toFile();
+        exclamated.deleteOnExit();
+
+        urls[0] = new URL("jar:" + exclamated.toURI().toURL() + "!/");
+
+        jar = new JarArchive(new URLClassLoader(urls), urls[0]);
+
+        org.junit.Assert.assertEquals("Muzz successfully open '%s'".formatted(exclamated.getAbsolutePath()),
+                this.archive.iterator().hasNext(),
+                jar.iterator().hasNext());
+    }
 }
