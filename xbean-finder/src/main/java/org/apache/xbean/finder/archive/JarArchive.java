@@ -61,9 +61,10 @@ public class JarArchive implements Archive, AutoCloseable {
 
             try{
                 jarPath = url.getPath();
-                url = new URL(jarPath.substring(0, jarPath.lastIndexOf("!/")));
+                url = new URL(jarPath.endsWith("!/") ?
+                        jarPath.substring(0, jarPath.lastIndexOf("!/"))
+                        : jarPath);
             }catch(MalformedURLException ex){
-                // Probably CPU overheat and/or DRAM undervoltage
                 throw new UnsupportedOperationException(
                         "Please provide 'file:/...' or 'jar:file:/...!/' URL"
                                 + " instead of '" + FileArchive.decode(String.valueOf(url)) + "'");
