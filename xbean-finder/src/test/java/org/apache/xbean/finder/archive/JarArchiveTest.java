@@ -16,6 +16,8 @@
  */
 package org.apache.xbean.finder.archive;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -64,7 +66,7 @@ public class JarArchiveTest {
     public void testGetBytecode() throws Exception {
 
         for (Class clazz : classes) {
-            Assert.assertNotNull(clazz.getName(), archive.getBytecode(clazz.getName()));
+            assertNotNull(clazz.getName(), archive.getBytecode(clazz.getName()));
         }
 
         try {
