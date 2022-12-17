@@ -128,7 +128,7 @@ public class JarArchiveTest {
 
         // Real file
 
-        File tmpDir = testTmpDir.newFolder("!" + JarArchiveTest.class.getSimpleName() + "!-temp");
+        File tmpDir = testTmpDir.newFolder("!" + JarArchiveTest.class.getSimpleName() + "!-temp!");
 
         File exclamated = Files.copy(JarArchiveTest.classpath.toPath(),
                 tmpDir.toPath().resolve(
