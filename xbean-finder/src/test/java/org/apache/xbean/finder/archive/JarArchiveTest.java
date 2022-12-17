@@ -111,13 +111,11 @@ public class JarArchiveTest {
 
         // Virtual path
 
-        JarArchive jar;
-
         String path = "/this!/!file!/does!/!not/exist.jar";
         URL[] urls = {new URL("jar:file:" + path + "!/some!/!inner!/.jar!/file.jar")};
 
-        try {
-            jar = new JarArchive(new URLClassLoader(urls), urls[0]);
+        try(JarArchive jar = new JarArchive(new URLClassLoader(urls), urls[0])){
+
         }catch(Exception ex){
             Assert.assertTrue(String.format(
                     "Muzz never fail on '/this', but try full path with exclamations('%s') instead",
@@ -137,19 +135,19 @@ public class JarArchiveTest {
 
         urls[0] = new URL("jar:" + exclamated.toURI().toURL() + "!/");
 
-        jar = new JarArchive(new URLClassLoader(urls), urls[0]);
+        try(JarArchive jar = new JarArchive(new URLClassLoader(urls), urls[0])){
 
-        Assert.assertEquals(String.format("Muzz successfully open '%s'", exclamated.getAbsolutePath()),
-                this.archive.iterator().hasNext(),
-                jar.iterator().hasNext());
+            Assert.assertEquals(String.format("Muzz successfully open '%s'", exclamated.getAbsolutePath()),
+                    this.archive.iterator().hasNext(),
+                    jar.iterator().hasNext());
+        }
 
 
         // Unsupported protocols stack
 
         urls[0] = new URL("http:ftp:jar:" + exclamated.toURI().toURL() + "!/");
 
-        try{
-            jar = new JarArchive(new URLClassLoader(urls), urls[0]);
+        try(JarArchive jar = new JarArchive(new URLClassLoader(urls), urls[0])){
             Assert.fail(String.format("Muzz eat only local file URLs:"
                     + " 'file:/...' or 'jar:file:/...!/' but not '%s'",
                     urls[0]));
