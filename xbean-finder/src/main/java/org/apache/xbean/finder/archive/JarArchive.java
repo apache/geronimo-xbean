@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -74,14 +73,15 @@ public class JarArchive implements Archive {
             // handle 'file:/...' URL
             if("file".equalsIgnoreCase(url.getProtocol())){
 
-                // Testing if file DOEN't exists AND cutting !/{...}'
-                //  suffix-by-suffix until file discovered or run out of suffixes
-                for(jarPath = FileArchive.decode(url.getPath());
-                        !(jarFile = new File(jarPath)).exists()
-                            && (idx = jarPath.lastIndexOf("!/")) > 0;
-                        jarPath = jarPath.substring(0, idx)){ }
+                // Testing if file DOEN't exists AND trying
+                //  substrings up to every '!/{...}' as path
+                idx = 0;
+                jarPath = FileArchive.decode(url.getPath());
+                for(String jp = jarPath; !(jarFile = new File(jp)).exists()
+                        && (idx = jarPath.indexOf("!/", idx + 1)) > 0;
+                        jp = jarPath.substring(0, idx)){}
 
-                // No more suffixes to cut, but referenced file wasn't discovered
+                // All substrings attempted, but referenced file wasn't discovered
                 if(!jarFile.exists()){
 
                     // To be caught later and wrapped into IllegalStateEx - default behavior
