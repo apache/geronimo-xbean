@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
 /**
  * @version $Rev$ $Date$
  */
-public class FilteredArchive implements Archive {
+public class FilteredArchive implements Archive, AutoCloseable{
 
     private final Archive archive;
 
@@ -47,6 +47,13 @@ public class FilteredArchive implements Archive {
 
     public Iterator<Entry> iterator() {
         return new FilteredIterator(archive.iterator());
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (archive instanceof AutoCloseable) {
+            ((AutoCloseable) archive).close();
+        }
     }
 
     private final class FilteredIterator implements Iterator<Entry> {

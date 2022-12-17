@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 /**
  * @version $Rev$ $Date$
  */
-public class CompositeArchive implements Archive {
+public class CompositeArchive implements Archive, AutoCloseable {
 
     private final List<Archive> archives = new ArrayList<Archive>();
 
@@ -66,6 +66,20 @@ public class CompositeArchive implements Archive {
     public Iterator<Entry> iterator() {
         if (archives.size() == 1) return archives.get(0).iterator();
         return new CompositeIterator(archives);
+    }
+
+    @Override
+    public void close() throws Exception {
+        archives.stream()
+                .filter(AutoCloseable.class::isInstance)
+                .map(AutoCloseable.class::cast)
+                .forEach(it -> {
+                    try {
+                        it.close();
+                    } catch (final Exception e) {
+                        // no-op
+                    }
+                });
     }
 
     private static class CompositeIterator implements Iterator<Entry> {
