@@ -115,6 +115,22 @@ public class Archives {
         // Create the ZIP file
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(classpath)));
 
+        putClasses(loader, out, classes);
+
+        for (Map.Entry<String, String> entry : entries.entrySet()) {
+
+            out.putNextEntry(new ZipEntry(entry.getKey()));
+
+            out.write(entry.getValue().getBytes());
+        }
+
+        // Complete the ZIP file
+        out.close();
+        return classpath;
+    }
+
+    public static void putClasses(final ClassLoader loader, final ZipOutputStream out,
+                                  final Class<?>[] classes) throws IOException {
         for (Class clazz : classes) {
             String name = clazz.getName().replace('.', '/') + ".class";
 
@@ -134,16 +150,5 @@ public class Archives {
             // Complete the entry
             out.closeEntry();
         }
-
-        for (Map.Entry<String, String> entry : entries.entrySet()) {
-
-            out.putNextEntry(new ZipEntry(entry.getKey()));
-
-            out.write(entry.getValue().getBytes());
-        }
-
-        // Complete the ZIP file
-        out.close();
-        return classpath;
     }
 }
