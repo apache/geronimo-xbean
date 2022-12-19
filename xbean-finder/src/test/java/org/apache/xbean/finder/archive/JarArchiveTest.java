@@ -16,16 +16,10 @@
  */
 package org.apache.xbean.finder.archive;
 
-import static org.junit.Assert.*;
-import org.acme.foo.Blue;
-import org.acme.foo.Green;
-import org.acme.foo.Red;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import static java.util.Collections.singletonList;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static org.apache.xbean.finder.archive.Archives.putClasses;
 
 import java.io.File;
 import java.net.URL;
@@ -46,13 +40,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import static java.util.Collections.singletonList;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.apache.xbean.finder.archive.Archives.putClasses;
 
 /**
  * @version $Rev$ $Date$
@@ -65,7 +52,6 @@ public class JarArchiveTest {
 
     @Rule
     public TemporaryFolder testTmpDir = new TemporaryFolder();
-    public final TemporaryFolder tmp = new TemporaryFolder();
 
 
     @BeforeClass
@@ -173,35 +159,27 @@ public class JarArchiveTest {
                     urls[0]));
         }catch(UnsupportedOperationException ex){
 
-    private List<String> list(final JarArchive archive) {
-        final List<String> actual = new ArrayList<>();
-        for (final Archive.Entry entry : archive) {
-            actual.add(entry.getName());
         }
-        return actual;
     }
 
     @Test
-    @Ignore("PR-34")
     public void exclamationMarkInFilename() throws Exception {
-        createAndAssertBlueArchive(tmp.newFile("foo!bar.jar"));
+        createAndAssertBlueArchive(testTmpDir.newFile("foo!bar.jar"));
     }
 
     @Test
-    @Ignore("PR-34")
     public void exclamationMarkAsResourceSep() throws Exception {
-        createAndAssertBlueArchive(new File(tmp.newFolder("foo!"), "the-file.jar"));
+        createAndAssertBlueArchive(new File(testTmpDir.newFolder("foo!"), "the-file.jar"));
     }
 
     @Test
-    @Ignore("PR-34")
     public void exclamationMarkInFilePath() throws Exception {
-        createAndAssertBlueArchive(new File(tmp.newFolder("foo!bar"), "the-file.jar"));
+        createAndAssertBlueArchive(new File(testTmpDir.newFolder("foo!bar"), "the-file.jar"));
     }
 
     @Test
     public void exclamationMarkInResource() throws Exception {
-        final File file = tmp.newFile("file.jar");
+        final File file = testTmpDir.newFile("file.jar");
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final JarOutputStream out = new JarOutputStream(Files.newOutputStream(file.toPath()))) {
             putClasses(loader, out, new Class<?>[]{Blue.class});
@@ -216,6 +194,14 @@ public class JarArchiveTest {
                         loader, urlClassLoader.getResource("foo!/bar.marker"))) {
             assertEquals(singletonList("org.acme.foo.Blue"), list(jar));
         }
+    }
+
+    private List<String> list(final JarArchive archive) {
+        final List<String> actual = new ArrayList<>();
+        for (final Archive.Entry entry : archive) {
+            actual.add(entry.getName());
+        }
+        return actual;
     }
 
     private void createAndAssertBlueArchive(final File file) throws Exception {
