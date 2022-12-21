@@ -65,7 +65,7 @@ public class JarArchive implements Archive, AutoCloseable {
                         jarPath.substring(0, jarPath.lastIndexOf("!/"))
                         : jarPath);
             }catch(MalformedURLException ex){
-                throw new UnsupportedOperationException(
+                throw new IllegalArgumentException(
                         "Please provide 'file:/...' or 'jar:file:/...!/' URL"
                                 + " instead of '" + FileArchive.decode(String.valueOf(url)) + "'");
             }
