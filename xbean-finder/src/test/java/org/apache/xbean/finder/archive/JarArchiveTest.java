@@ -17,8 +17,11 @@
 package org.apache.xbean.finder.archive;
 
 import static java.util.Collections.singletonList;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.apache.xbean.finder.archive.Archives.putClasses;
 
 import java.io.File;
@@ -78,7 +81,7 @@ public class JarArchiveTest {
 
         try {
             archive.getBytecode("Fake");
-            Assert.fail("ClassNotFoundException should have been thrown");
+            fail("ClassNotFoundException should have been thrown");
         } catch (ClassNotFoundException e) {
             // pass
         }
@@ -87,12 +90,12 @@ public class JarArchiveTest {
     @Test
     public void testLoadClass() throws Exception {
         for (Class clazz : classes) {
-            Assert.assertEquals(clazz.getName(), clazz, archive.loadClass(clazz.getName()));
+            assertEquals(clazz.getName(), clazz, archive.loadClass(clazz.getName()));
         }
 
         try {
             archive.loadClass("Fake");
-            Assert.fail("ClassNotFoundException should have been thrown");
+            fail("ClassNotFoundException should have been thrown");
         } catch (ClassNotFoundException e) {
             // pass
         }
@@ -102,13 +105,13 @@ public class JarArchiveTest {
     public void testIterator() throws Exception {
         List<String> actual = list(archive);
 
-        Assert.assertFalse(0 == actual.size());
+        assertFalse(0 == actual.size());
 
         for (Class clazz : classes) {
-            Assert.assertTrue(clazz.getName(), actual.contains(clazz.getName()));
+            assertTrue(clazz.getName(), actual.contains(clazz.getName()));
         }
 
-        Assert.assertEquals(JarArchiveTest.classes.length, actual.size());
+        assertEquals(JarArchiveTest.classes.length, actual.size());
     }
 
     @Test
