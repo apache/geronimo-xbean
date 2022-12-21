@@ -111,7 +111,7 @@ public class JarArchiveTest {
             assertTrue(clazz.getName(), actual.contains(clazz.getName()));
         }
 
-        assertEquals(JarArchiveTest.classes.length, actual.size());
+        assertEquals(classes.length, actual.size());
     }
 
     @Test
