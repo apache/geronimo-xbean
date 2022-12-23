@@ -44,7 +44,6 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.apache.xbean.finder.archive.Archives.putClasses;
 
-
 /**
  * @version $Rev$ $Date$
  */
