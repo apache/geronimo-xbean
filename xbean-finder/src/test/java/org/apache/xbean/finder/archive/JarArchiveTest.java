@@ -55,7 +55,7 @@ public class JarArchiveTest {
     private JarArchive archive;
 
     @Rule
-    public TemporaryFolder testTmpDir = new TemporaryFolder();
+    public final TemporaryFolder testTmpDir = new TemporaryFolder();
 
 
     @BeforeClass
