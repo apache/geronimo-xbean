@@ -91,7 +91,7 @@ public class JarArchive implements Archive, AutoCloseable {
                 }
 
             }else{
-                throw new UnsupportedOperationException(
+                throw new IllegalArgumentException(
                         "Please provide 'file:/...' or 'jar:file:/...!/' URL"
                                 + " instead of '" + FileArchive.decode(String.valueOf(url)) + "'");
             }
