@@ -19,9 +19,9 @@ package org.apache.xbean.finder.archive;
 import org.acme.foo.Blue;
 import org.acme.foo.Green;
 import org.acme.foo.Red;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -54,7 +54,8 @@ public class JarArchiveTest {
     private JarArchive archive;
 
     @Rule
-    public final TemporaryFolder tmp = new TemporaryFolder();
+    public final TemporaryFolder testTmpDir = new TemporaryFolder();
+
 
     @BeforeClass
     public static void classSetUp() throws Exception {
@@ -113,35 +114,75 @@ public class JarArchiveTest {
         assertEquals(classes.length, actual.size());
     }
 
-    private List<String> list(final JarArchive archive) {
-        final List<String> actual = new ArrayList<>();
-        for (final Archive.Entry entry : archive) {
-            actual.add(entry.getName());
+    @Test
+    public void testXBEAN337() throws Exception {
+
+
+        // Virtual path
+
+        String path = "/this!/!file!/does!/!not/exist.jar";
+        URL[] urls = {new URL("jar:file:" + path + "!/some!/!inner!/.jar!/file.jar")};
+
+        try(JarArchive jar = new JarArchive(new URLClassLoader(urls), urls[0])){
+
+        }catch(Exception ex){
+            Assert.assertTrue(String.format(
+                    "Muzz never fail on '/this', but try full path with exclamations('%s') instead",
+                    path),
+                    ex.getCause().getMessage().contains("exist.jar"));
         }
-        return actual;
+
+
+        // Real file
+
+        File tmpDir = testTmpDir.newFolder("!" + JarArchiveTest.class.getSimpleName() + "!-temp!");
+
+        File exclamated = Files.copy(JarArchiveTest.classpath.toPath(),
+                tmpDir.toPath().resolve(
+                        JarArchiveTest.classpath.getName()))
+                .toFile();
+
+        urls[0] = new URL("jar:" + exclamated.toURI().toURL() + "!/");
+
+        try(JarArchive jar = new JarArchive(new URLClassLoader(urls), urls[0])){
+
+            Assert.assertEquals(String.format("Muzz successfully open '%s'", exclamated.getAbsolutePath()),
+                    this.archive.iterator().hasNext(),
+                    jar.iterator().hasNext());
+        }
+
+
+        // Unsupported protocols stack
+
+        urls[0] = new URL("http:ftp:jar:" + exclamated.toURI().toURL() + "!/");
+
+        try(JarArchive jar = new JarArchive(new URLClassLoader(urls), urls[0])){
+            Assert.fail(String.format("Muzz eat only local file URLs:"
+                    + " 'file:/...' or 'jar:file:/...!/' but not '%s'",
+                    urls[0]));
+        }catch(UnsupportedOperationException ex){
+
+        }
     }
 
     @Test
-    @Ignore("PR-34")
     public void exclamationMarkInFilename() throws Exception {
-        createAndAssertBlueArchive(tmp.newFile("foo!bar.jar"));
+        createAndAssertBlueArchive(testTmpDir.newFile("foo!bar.jar"));
     }
 
     @Test
-    @Ignore("PR-34")
     public void exclamationMarkAsResourceSep() throws Exception {
-        createAndAssertBlueArchive(new File(tmp.newFolder("foo!"), "the-file.jar"));
+        createAndAssertBlueArchive(new File(testTmpDir.newFolder("foo!"), "the-file.jar"));
     }
 
     @Test
-    @Ignore("PR-34")
     public void exclamationMarkInFilePath() throws Exception {
-        createAndAssertBlueArchive(new File(tmp.newFolder("foo!bar"), "the-file.jar"));
+        createAndAssertBlueArchive(new File(testTmpDir.newFolder("foo!bar"), "the-file.jar"));
     }
 
     @Test
     public void exclamationMarkInResource() throws Exception {
-        final File file = tmp.newFile("file.jar");
+        final File file = testTmpDir.newFile("file.jar");
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final JarOutputStream out = new JarOutputStream(Files.newOutputStream(file.toPath()))) {
             putClasses(loader, out, new Class<?>[]{Blue.class});
@@ -156,6 +197,14 @@ public class JarArchiveTest {
                         loader, urlClassLoader.getResource("foo!/bar.marker"))) {
             assertEquals(singletonList("org.acme.foo.Blue"), list(jar));
         }
+    }
+
+    private List<String> list(final JarArchive archive) {
+        final List<String> actual = new ArrayList<>();
+        for (final Archive.Entry entry : archive) {
+            actual.add(entry.getName());
+        }
+        return actual;
     }
 
     private void createAndAssertBlueArchive(final File file) throws Exception {

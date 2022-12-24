@@ -16,8 +16,11 @@
  */
 package org.apache.xbean.finder.archive;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,22 +44,65 @@ public class JarArchive implements Archive, AutoCloseable {
     private final JarFile jar;
     private final MJarSupport mjar = new MJarSupport();
 
-    public JarArchive(ClassLoader loader, URL url) {
+    /*
+     * Supports only 'file:/...' or 'jar:file:/...!/' URLs
+     */
+    public JarArchive(ClassLoader loader, URL url){
 //        if (!"jar".equals(url.getProtocol())) throw new IllegalArgumentException("not a jar url: " + url);
 
-        try {
-            this.loader = loader;
-            this.url = url;
-            URL u = url;
+        this.loader = loader;
+        this.url = url;
+        File jarFile = null;
+        String jarPath;
+        int idx;
 
-            String jarPath = url.getFile();
-            if (jarPath.contains("!")) {
-                jarPath = jarPath.substring(0, jarPath.indexOf("!"));
-                u = new URL(jarPath);
+        // Wipe out 'jar:' prefix AND '!/{...}' suffix(if any)
+        if("jar".equalsIgnoreCase(url.getProtocol())){
+
+            try{
+                jarPath = url.getPath();
+                url = new URL(jarPath.endsWith("!/") ?
+                        jarPath.substring(0, jarPath.lastIndexOf("!/"))
+                        : jarPath);
+            }catch(MalformedURLException ex){
+                throw new IllegalArgumentException(
+                        "Please provide 'file:/...' or 'jar:file:/...!/' URL"
+                                + " instead of '" + FileArchive.decode(String.valueOf(url)) + "'");
             }
-            jar = new JarFile(FileArchive.decode(u.getFile())); // no more an url
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+        }
+
+        try{
+            // handle 'file:/...' URL
+            if("file".equalsIgnoreCase(url.getProtocol())){
+
+                // Testing if file DOEN't exists AND trying
+                //  substrings up to every '!/{...}' as path
+                idx = 0;
+                jarPath = FileArchive.decode(url.getPath());
+                for(String jp = jarPath; !(jarFile = new File(jp)).exists()
+                        && (idx = jarPath.indexOf("!/", idx + 1)) > 0;
+                        jp = jarPath.substring(0, idx)){}
+
+                // All substrings attempted, but referenced file wasn't discovered
+                if(!jarFile.exists()){
+
+                    // To be caught later and wrapped into IllegalStateEx - default behavior
+                    throw new FileNotFoundException(FileArchive.decode(String.valueOf(url)));
+                }
+
+            }else{
+                throw new IllegalArgumentException(
+                        "Please provide 'file:/...' or 'jar:file:/...!/' URL"
+                                + " instead of '" + FileArchive.decode(String.valueOf(url)) + "'");
+            }
+
+            jar = new JarFile(jarFile);
+
+        }catch(IOException e){
+            throw new IllegalStateException("Cannot open jar(zip) '"
+                    + jarFile != null ? // why can it be null? but since compiler thinks so...
+                            jarFile.getAbsolutePath()
+                            : FileArchive.decode(String.valueOf(url)) + "'", e);
         }
     }
 
