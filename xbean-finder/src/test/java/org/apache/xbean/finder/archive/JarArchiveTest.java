@@ -160,7 +160,7 @@ public class JarArchiveTest {
             Assert.fail(String.format("Muzz eat only local file URLs:"
                     + " 'file:/...' or 'jar:file:/...!/' but not '%s'",
                     urls[0]));
-        }catch(UnsupportedOperationException ex){
+        }catch(IllegalArgumentException ex){
 
         }
     }
