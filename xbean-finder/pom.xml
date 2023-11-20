@@ -94,10 +94,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.0</version>
                 <configuration>
-                    <systemPropertyVariables>
-                        <jdk.util.jar.version>9</jdk.util.jar.version>
-                        <jdk.util.jar.enableMultiRelease>force</jdk.util.jar.enableMultiRelease>
-                    </systemPropertyVariables>
+                    <!--
+                    systemPropertyVariables are great but evaluated by surefire booter (even in v3)
+                    plus surefire uses a surefirebooter.jar so JVM will load the main class from a jarFile
+                    and already read these props before surefirebooter did its job (yes this is bad for surefire).
+                    -->
+                    <environmentVariables>
+                        <_JAVA_OPTIONS>-Djdk.util.jar.version=9 -Djdk.util.jar.enableMultiRelease=force</_JAVA_OPTIONS>
+                    </environmentVariables>
                 </configuration>
             </plugin>
         </plugins>
