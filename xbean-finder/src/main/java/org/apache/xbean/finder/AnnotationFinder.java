@@ -505,7 +505,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     if (!checkRuntimeAnnotation || pkg.isAnnotationPresent(annotation)) {
                         packages.add(pkg);
                     }
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(packageInfo.getName());
                 }
             }
@@ -526,7 +526,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     if (!checkRuntimeAnnotation || clazz.isAnnotationPresent(annotation)) {
                         classes.add(clazz);
                     }
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             }
@@ -600,7 +600,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     if (meta != null) {
                         classes.addAll(findMetaAnnotatedClasses((Class<? extends Annotation>) clazz, classes));
                     }
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             }
@@ -623,7 +623,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 if (info instanceof ClassInfo) {
                     classes.add(((ClassInfo) info).get());
                 }
-            } catch (ClassNotFoundException cnfe) {
+            } catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
                 // TODO: ignored, but a log message would be appropriate
             }
         }
@@ -656,9 +656,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                             }
                         }
                     }
-                } catch (ClassNotFoundException e) {
-                    classesNotLoaded.add(classInfo.getName());
-                } catch (NoClassDefFoundError e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             }
@@ -689,7 +687,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                                 methods.add(method);
                             }
                         }
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
                         classesNotLoaded.add(classInfo.getName());
                     } catch (ClassCircularityError cce) {
                         classesNotLoaded.add(classInfo.getName());
@@ -698,7 +696,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     try {
                         final Method method = (Method) methodInfo.get();
                         methods.add(method);
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
                         classesNotLoaded.add(methodInfo.getDeclaringClass().getName());
                     }
                 }
@@ -737,7 +735,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                             }
                         }
                     }
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             } else {
@@ -745,7 +743,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     @SuppressWarnings("unchecked")
                     final Parameter<Method> parameter = (Parameter<Method>) parameterInfo.get();
                     result.add(parameter);
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(parameterInfo.getDeclaringMethod().getDeclaringClass().getName());
                 }
             }
@@ -803,9 +801,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                             methods.add(method);
                         }
                     }
-                } catch (ClassNotFoundException e) {
-                    classesNotLoaded.add(classInfo.getName());
-                } catch (NoClassDefFoundError ncdfe) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             }
@@ -864,9 +860,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                             fields.add(field);
                         }
                     }
-                } catch (ClassNotFoundException e) {
-                    classesNotLoaded.add(classInfo.getName());
-                } catch (NoClassDefFoundError ncdfe) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             }
@@ -898,15 +892,13 @@ public class AnnotationFinder implements IAnnotationFinder {
                                 constructors.add(constructor);
                             }
                         }
-                    } catch (ClassNotFoundException e) {
-                        classesNotLoaded.add(classInfo.getName());
-                    } catch (NoClassDefFoundError ncdfe) {
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
                         classesNotLoaded.add(classInfo.getName());
                     }
                 } else {
                     try {
                         constructors.add((Constructor) methodInfo.get());
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
                         classesNotLoaded.add(methodInfo.getDeclaringClass().getName());
                     }
                 }
@@ -947,7 +939,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                             }
                         }
                     }
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             } else {
@@ -955,7 +947,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     @SuppressWarnings("unchecked")
                     final Parameter<Constructor<?>> parameter = (Parameter<Constructor<?>>) parameterInfo.get();
                     result.add(parameter);
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(parameterInfo.getDeclaringMethod().getDeclaringClass().getName());
                 }
             }
@@ -986,15 +978,13 @@ public class AnnotationFinder implements IAnnotationFinder {
                                 fields.add(field);
                             }
                         }
-                    } catch (ClassNotFoundException e) {
-                        classesNotLoaded.add(classInfo.getName());
-                    } catch (NoClassDefFoundError ncdfe) {
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
                         classesNotLoaded.add(classInfo.getName());
                     }
                 } else {
                     try {
                         fields.add((Field) fieldInfo.get());
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
                         classesNotLoaded.add(fieldInfo.getDeclaringClass().getName());
                     }
                 }
@@ -1013,7 +1003,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 } else if (classInfo.getPackageName().equals(packageName)) {
                     classes.add(classInfo.get());
                 }
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
                 classesNotLoaded.add(classInfo.getName());
             }
         }
@@ -1042,7 +1032,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
             try {
                 found.add(subclassInfo.get().asSubclass(clazz));
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
                 classesNotLoaded.add(subclassInfo.getName());
             }
 
@@ -1070,7 +1060,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     }
                 }
 
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
                 classesNotLoaded.add(classInfo.getName());
             }
 
@@ -1111,7 +1101,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                     }
                 }
 
-            } catch (final ClassNotFoundException e) {
+            } catch (final ClassNotFoundException | NoClassDefFoundError e) {
                 classesNotLoaded.add(info.getName());
             }
         }
@@ -1137,7 +1127,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
                     }
 
-                } catch (ClassNotFoundException ignore) {
+                } catch (ClassNotFoundException | NoClassDefFoundError ignore) {
                     // we'll deal with this later
                 }
             }
@@ -1175,10 +1165,8 @@ public class AnnotationFinder implements IAnnotationFinder {
         try {
             ClassReader classReader = new ClassReader(in);
             classReader.accept(new InfoBuildingVisitor(), ASM_FLAGS);
-
         } catch (final Exception e) {
             throw new RuntimeException("Unable to read class definition for " + className, e);
-
         } finally {
             in.close();
         }
@@ -1609,7 +1597,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 String paramType = type.getClassName();
                 try {
                     parameterTypes.add(Classes.forName(paramType, clazz.getClassLoader()));
-                } catch (ClassNotFoundException cnfe) {
+                } catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
                     throw new IllegalStateException("Parameter class could not be loaded for type " + paramType, cnfe);
                 }
             }
@@ -1667,7 +1655,6 @@ public class AnnotationFinder implements IAnnotationFinder {
                     parameter = Parameter.declaredBy((Method) member, index);
                 } else if (member instanceof Constructor<?>) {
                     parameter = Parameter.declaredBy((Constructor<?>) member, index);
-
                 }
             }
             return parameter;
