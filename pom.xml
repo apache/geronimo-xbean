@@ -454,7 +454,6 @@
 
     <modules>
         <module>xbean-classloader</module>
-        <module>xbean-classpath</module>
         <module>xbean-bundleutils</module>
         <module>xbean-asm-util</module>
         <module>xbean-asm9-shaded</module>
