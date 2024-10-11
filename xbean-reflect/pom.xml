@@ -25,7 +25,7 @@
     <parent>
         <artifactId>xbean</artifactId>
         <groupId>org.apache.xbean</groupId>
-        <version>4.26-SNAPSHOT</version>
+        <version>4.26</version>
     </parent>
     <artifactId>xbean-reflect</artifactId>
     <packaging>bundle</packaging>
