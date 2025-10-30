@@ -597,9 +597,11 @@ public final class ReflectionUtil {
             throw new ConstructionException("Class is abstract: " + typeClass.getName());
         }
 
+        final boolean hasParameterTypes = (parameterTypes != null);
+        boolean useNoArgConstructor = false;
         // verify parameter names and types are the same length
         if (parameterNames != null) {
-            if (parameterTypes == null) parameterTypes = Collections.nCopies(parameterNames.size(), null);
+            if (!hasParameterTypes) parameterTypes = Collections.nCopies(parameterNames.size(), null);
             if (parameterNames.size() != parameterTypes.size()) {
                 throw new ConstructionException("Invalid ObjectRecipe: recipe has " + parameterNames.size() +
                         " parameter names and " + parameterTypes.size() + " parameter types");
@@ -609,6 +611,7 @@ public final class ReflectionUtil {
             // so we will only use the no-arg constructor
             parameterNames = Collections.emptyList();
             parameterTypes = Collections.emptyList();
+            useNoArgConstructor = true;
         }
 
 
@@ -628,7 +631,7 @@ public final class ReflectionUtil {
         boolean allowPrivate = options.contains(Option.PRIVATE_CONSTRUCTOR);
         for (Constructor constructor : constructors) {
             // if an explicit constructor is specified (via parameter types), look a constructor that matches
-            if (parameterTypes != null) {
+            if (hasParameterTypes || useNoArgConstructor) {
                 if (constructor.getParameterTypes().length != parameterTypes.size()) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
