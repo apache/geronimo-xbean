@@ -85,12 +85,6 @@ public class PropertyEditorRegistry implements Closeable {
         register(new WeakHashMapEditor());
 
         try {
-            register(new Log4jConverter());
-        } catch (final Throwable e) {
-            // no-op
-        }
-
-        try {
             register(new CommonsLoggingConverter());
         } catch (final Throwable e) {
             // no-op
