@@ -577,18 +577,33 @@ public class ObjectRecipe extends AbstractRecipe {
         return constructor;
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues, Factory factory) {
+    private Object[] extractConstructorArgs(Map<Property, Object> propertyValues, Factory factory) {
         List<String> parameterNames = factory.getParameterNames();
         List<Type> parameterTypes = factory.getParameterTypes();
 
         Object[] parameters = new Object[parameterNames.size()];
         for (int i = 0; i < parameterNames.size(); i++) {
-            Property name = new Property(parameterNames.get(i));
             Type type = parameterTypes.get(i);
+            String name = parameterNames.get(i);
+
+            Property property = null;
+            if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
+                for (Property candidate : propertyValues.keySet()) {
+                    if (candidate.name.equalsIgnoreCase(name)) {
+                        property = candidate;
+                        break;
+                    }
+                }
+            } else {
+                Property candidate = new Property(name);
+                if (propertyValues.containsKey(candidate)) {
+                    property = candidate;
+                }
+            }
 
             Object value;
-            if (propertyValues.containsKey(name)) {
-                value = propertyValues.remove(name);
+            if (property != null) {
+                value = propertyValues.remove(property);
                 if (!RecipeHelper.isInstance(type, value) && !RecipeHelper.isConvertable(type, value, registry)) {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +

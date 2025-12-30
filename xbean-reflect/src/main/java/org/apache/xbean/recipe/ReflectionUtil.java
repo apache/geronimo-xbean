@@ -656,7 +656,33 @@ public final class ReflectionUtil {
                 //
                 // Only consider methods where we can supply a value for all of the parameters
                 parameterNames = getParameterNames(constructor);
-                if (parameterNames == null || !availableProperties.containsAll(parameterNames)) {
+                if (parameterNames == null) {
+                    continue;
+                }
+
+                boolean parametersMatch;
+                if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
+                    parametersMatch = true;
+
+                    for (String parameterName : parameterNames) {
+                        boolean found = false;
+                        for (String propertyName : availableProperties) {
+                            if (parameterName.equalsIgnoreCase(propertyName)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            parametersMatch = false;
+                            break;
+                        }
+                    }
+                } else {
+                    parametersMatch = availableProperties.containsAll(parameterNames);
+                }
+
+                if (!parametersMatch) {
                     continue;
                 }
             }
@@ -1039,7 +1065,7 @@ public final class ReflectionUtil {
             for (int i = 0; i < parameterTypes.size(); i++) {
                 Class type = parameterTypes.get(i);
                 if (i > 0) buffer.append(", ");
-                buffer.append(type.getName());
+                buffer.append(type != null ? type.getName() : "...");
             }
         } else {
             buffer.append("...");
