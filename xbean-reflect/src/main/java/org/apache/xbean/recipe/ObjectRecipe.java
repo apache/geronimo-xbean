@@ -24,11 +24,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
 import org.apache.xbean.recipe.ReflectionUtil.*;
@@ -270,7 +273,11 @@ public class ObjectRecipe extends AbstractRecipe {
 
         //
         // clone the properties so they can be used again
-        Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
+        Map<Property,Object> propertyValues = options.contains(Option.CASE_INSENSITIVE_PROPERTIES)
+                ? new TreeMap<>(Comparator.comparing(property -> property.name, String.CASE_INSENSITIVE_ORDER))
+                : new LinkedHashMap<>();
+
+        propertyValues.putAll(properties);
 
         //
         // create the instance
@@ -567,43 +574,35 @@ public class ObjectRecipe extends AbstractRecipe {
             consturctorClass = type;
         }
 
+        Set<String> availableProperties = getProperties().keySet();
+        if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
+            Set<String> caseInsensitiveProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            caseInsensitiveProperties.addAll(availableProperties);
+            availableProperties = caseInsensitiveProperties;
+        }
+
         ConstructorFactory constructor = ReflectionUtil.findConstructor(
                 consturctorClass,
                 constructorArgNames,
                 constructorArgTypes,
-                getProperties().keySet(),
+                availableProperties,
                 options);
 
         return constructor;
     }
 
-    private Object[] extractConstructorArgs(Map<Property, Object> propertyValues, Factory factory) {
+    private Object[] extractConstructorArgs(Map propertyValues, Factory factory) {
         List<String> parameterNames = factory.getParameterNames();
         List<Type> parameterTypes = factory.getParameterTypes();
 
         Object[] parameters = new Object[parameterNames.size()];
         for (int i = 0; i < parameterNames.size(); i++) {
+            Property name = new Property(parameterNames.get(i));
             Type type = parameterTypes.get(i);
-            String name = parameterNames.get(i);
-
-            Property property = null;
-            if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
-                for (Property candidate : propertyValues.keySet()) {
-                    if (candidate.name.equalsIgnoreCase(name)) {
-                        property = candidate;
-                        break;
-                    }
-                }
-            } else {
-                Property candidate = new Property(name);
-                if (propertyValues.containsKey(candidate)) {
-                    property = candidate;
-                }
-            }
 
             Object value;
-            if (property != null) {
-                value = propertyValues.remove(property);
+            if (propertyValues.containsKey(name)) {
+                value = propertyValues.remove(name);
                 if (!RecipeHelper.isInstance(type, value) && !RecipeHelper.isConvertable(type, value, registry)) {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +

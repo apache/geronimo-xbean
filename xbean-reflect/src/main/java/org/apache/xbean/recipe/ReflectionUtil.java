@@ -656,33 +656,7 @@ public final class ReflectionUtil {
                 //
                 // Only consider methods where we can supply a value for all of the parameters
                 parameterNames = getParameterNames(constructor);
-                if (parameterNames == null) {
-                    continue;
-                }
-
-                boolean parametersMatch;
-                if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
-                    parametersMatch = true;
-
-                    for (String parameterName : parameterNames) {
-                        boolean found = false;
-                        for (String propertyName : availableProperties) {
-                            if (parameterName.equalsIgnoreCase(propertyName)) {
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found) {
-                            parametersMatch = false;
-                            break;
-                        }
-                    }
-                } else {
-                    parametersMatch = availableProperties.containsAll(parameterNames);
-                }
-
-                if (!parametersMatch) {
+                if (parameterNames == null || !availableProperties.containsAll(parameterNames)) {
                     continue;
                 }
             }

@@ -19,45 +19,14 @@ package org.apache.xbean.recipe;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class XBean353Test {
-
-    @Test
-    public void testFindConstructorWithParameterNames() {
-
-        final Set<String> availableProperties = new HashSet<>();
-        Collections.addAll(availableProperties,
-                "PoolSize"
-        );
-
-        final List<String> parameterNames = new ArrayList<>();
-        Collections.addAll(parameterNames,
-                "poolSize"
-        );
-
-        final ReflectionUtil.ConstructorFactory constructor = ReflectionUtil.findConstructor(
-                Constructor.class,
-                parameterNames,
-                null,
-                availableProperties,
-                EnumSet.of(Option.CASE_INSENSITIVE_PROPERTIES));
-
-        assertNotNull(constructor);
-        assertEquals(parameterNames, constructor.getParameterNames());
-        assertEquals(int.class, constructor.getParameterTypes().get(0));
-    }
 
     @Test
     public void testCreateObjectCaseInsensitive() {
