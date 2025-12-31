@@ -120,7 +120,38 @@ public class ObjectRecipeTest extends TestCase {
         assertEquals(name, c.name);
         assertEquals(ch, c.type);
     }
+
+    public void testMissedConstructor_TOMEECase() {
+        final String id = "Default Singleton Container";
+
+        { // failling case
+            final ObjectRecipe objectRecipe = new ObjectRecipe(SingletonContainer.class);
+            objectRecipe.setConstructorArgNames(new String[]{"id"});
+            objectRecipe.setProperty("id_typo", id);
+            try {
+                objectRecipe.create();
+                fail();
+            } catch (final ConstructionException ce) {
+                assertEquals("Unable to find a valid constructor: public void org.apache.xbean.recipe.ObjectRecipeTest$SingletonContainer(java.lang.Object)", ce.getMessage());
+            }
+        }
+
+        { // passing
+            final ObjectRecipe objectRecipe = new ObjectRecipe(SingletonContainer.class);
+            objectRecipe.setConstructorArgNames(new String[]{"id"});
+            objectRecipe.setProperty("id", id);
+            assertEquals(id, ((SingletonContainer) objectRecipe.create()).id);
+        }
+    }
     
+    public static class SingletonContainer {
+        public final String id;
+
+        public SingletonContainer(final String id) {
+            this.id = id;
+        }
+    }
+
     public static class Value {
         public String name;
         public char type;

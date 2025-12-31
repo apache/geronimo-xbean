@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -601,7 +602,9 @@ public final class ReflectionUtil {
         boolean useNoArgConstructor = false;
         // verify parameter names and types are the same length
         if (parameterNames != null) {
-            if (!hasParameterTypes) parameterTypes = Collections.nCopies(parameterNames.size(), null);
+            if (!hasParameterTypes) {
+                parameterTypes = Collections.nCopies(parameterNames.size(), Object.class);
+            }
             if (parameterNames.size() != parameterTypes.size()) {
                 throw new ConstructionException("Invalid ObjectRecipe: recipe has " + parameterNames.size() +
                         " parameter names and " + parameterTypes.size() + " parameter types");
@@ -616,11 +619,14 @@ public final class ReflectionUtil {
 
 
         // get all methods sorted so that the methods with the most constructor args are first
-        List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(typeClass.getConstructors()));
-        constructors.addAll(Arrays.asList(typeClass.getDeclaredConstructors()));
+        List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(typeClass.getDeclaredConstructors()));
         Collections.sort(constructors, new Comparator<Constructor>() {
             public int compare(Constructor constructor1, Constructor constructor2) {
-                return constructor2.getParameterTypes().length - constructor1.getParameterTypes().length;
+                int diff = constructor2.getParameterTypes().length - constructor1.getParameterTypes().length;
+                if (diff == 0) { // prefer public over private
+                    return visibilityLevel(constructor1.getModifiers()) - visibilityLevel(constructor2.getModifiers());
+                }
+                return diff;
             }
         });
 
@@ -635,7 +641,7 @@ public final class ReflectionUtil {
                 if (constructor.getParameterTypes().length != parameterTypes.size()) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
-                        missException = new MissingFactoryMethodException("Constructor has " + constructor.getParameterTypes().length + " arugments " +
+                        missException = new MissingFactoryMethodException("Constructor has " + constructor.getParameterTypes().length + " arguments " +
                                 "but expected " + parameterTypes.size() + " arguments: " + constructor);
                     }
                     continue;
@@ -686,11 +692,26 @@ public final class ReflectionUtil {
 
         if (missException != null) {
             throw missException;
-        } else {
-            StringBuffer buffer = new StringBuffer("Unable to find a valid constructor: ");
-            buffer.append("public void ").append(typeClass.getName()).append(toParameterList(parameterTypes));
-            throw new ConstructionException(buffer.toString());
         }
+
+        StringBuilder buffer = new StringBuilder("Unable to find a valid constructor: ");
+        buffer.append("public void ").append(typeClass.getName()).append(toParameterList(parameterTypes));
+        throw new ConstructionException(buffer.toString());
+    }
+
+    private static int visibilityLevel(int modifiers) {
+        if (Modifier.isPrivate(modifiers)) {
+            return 3;
+        }
+        if (Modifier.isProtected(modifiers)) {
+            return 2;
+        }
+        // 1 = package
+        if (Modifier.isPublic(modifiers)) {
+            return 0;
+        }
+        // unlikely
+        return 4;
     }
 
     public static StaticFactory findStaticFactory(Class typeClass, String factoryMethod, List<? extends Class<?>>  parameterTypes, Set<Option> options) {
@@ -714,8 +735,11 @@ public final class ReflectionUtil {
         }
 
         // verify parameter names and types are the same length
+        boolean specifiedParameterTypes = parameterTypes != null;
         if (parameterNames != null) {
-            if (parameterTypes == null) parameterTypes = Collections.nCopies(parameterNames.size(), null);
+            if (parameterTypes == null) {
+                parameterTypes = Collections.nCopies(parameterNames.size(), Object.class);
+            }
             if (parameterNames.size() != parameterTypes.size()) {
                 throw new ConstructionException("Invalid ObjectRecipe: recipe has " + parameterNames.size() +
                         " parameter names and " + parameterTypes.size() + " parameter types");
@@ -725,6 +749,7 @@ public final class ReflectionUtil {
             // so we will only use the no-arg constructor
             parameterNames = Collections.emptyList();
             parameterTypes = Collections.emptyList();
+            specifiedParameterTypes = true;
         }
 
         // get all methods sorted so that the methods with the most constructor args are first
@@ -732,29 +757,32 @@ public final class ReflectionUtil {
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         Collections.sort(methods, new Comparator<Method>() {
             public int compare(Method method2, Method method1) {
-                return method1.getParameterTypes().length - method2.getParameterTypes().length;
+                int diff = method1.getParameterTypes().length - method2.getParameterTypes().length;
+                if (diff == 0) { // prefer public over private
+                    return visibilityLevel(method1.getModifiers()) - visibilityLevel(method2.getModifiers());
+                }
+                return diff;
             }
         });
-
 
         // as we check each constructor, we remember the closest invalid match so we can throw a nice exception to the user
         int matchLevel = 0;
         MissingFactoryMethodException missException = null;
 
         boolean allowPrivate = options.contains(Option.PRIVATE_FACTORY);
-        boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
-        for (Method method : methods) {
+        boolean caseInsensitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
+        for (Method method : new LinkedHashSet<Method>(methods)) {
             // Only consider methods where the name matches
-            if (!method.getName().equals(factoryMethod) && (!caseInsesnitive || !method.getName().equalsIgnoreCase(method.getName()))) {
+            if (!method.getName().equals(factoryMethod) && (!caseInsensitive || !method.getName().equalsIgnoreCase(method.getName()))) {
                 continue;
             }
 
             // if an explicit constructor is specified (via parameter types), look a constructor that matches
-            if (parameterTypes != null) {
+            if (specifiedParameterTypes) {
                 if (method.getParameterTypes().length != parameterTypes.size()) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
-                        missException = new MissingFactoryMethodException("Static factory method has " + method.getParameterTypes().length + " arugments " +
+                        missException = new MissingFactoryMethodException("Static factory method has " + method.getParameterTypes().length + " arguments " +
                                 "but expected " + parameterTypes.size() + " arguments: " + method);
                     }
                     continue;
@@ -821,12 +849,12 @@ public final class ReflectionUtil {
 
         if (missException != null) {
             throw missException;
-        } else {
-            StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
-            buffer.append("public void ").append(typeClass.getName()).append(".");
-            buffer.append(factoryMethod).append(toParameterList(parameterTypes));
-            throw new MissingFactoryMethodException(buffer.toString());
         }
+
+        StringBuilder buffer = new StringBuilder("Unable to find a valid factory method: ");
+        buffer.append("public void ").append(typeClass.getName()).append(".");
+        buffer.append(factoryMethod).append(toParameterList(parameterTypes));
+        throw new MissingFactoryMethodException(buffer.toString());
     }
 
     public static Method findInstanceFactory(Class typeClass, String factoryMethod, Set<Option> options) {
@@ -841,10 +869,10 @@ public final class ReflectionUtil {
         boolean allowPrivate = options.contains(Option.PRIVATE_FACTORY);
         boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
 
-        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        Set<Method> methods = new HashSet<Method>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
-            if (method.getName().equals(factoryMethod) || (caseInsesnitive && method.getName().equalsIgnoreCase(method.getName()))) {
+            if (method.getName().equals(factoryMethod) || (caseInsesnitive && method.getName().equalsIgnoreCase(factoryMethod))) {
                 if (Modifier.isStatic(method.getModifiers())) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
@@ -898,12 +926,11 @@ public final class ReflectionUtil {
 
         if (missException != null) {
             throw missException;
-        } else {
-            StringBuffer buffer = new StringBuffer("Unable to find a valid factory method: ");
-            buffer.append("public void ").append(typeClass.getName()).append(".");
-            buffer.append(factoryMethod).append("()");
-            throw new MissingFactoryMethodException(buffer.toString());
         }
+        StringBuilder buffer = new StringBuilder("Unable to find a valid factory method: ");
+        buffer.append("public void ").append(typeClass.getName()).append(".");
+        buffer.append(factoryMethod).append("()");
+        throw new MissingFactoryMethodException(buffer.toString());
     }
 
     public static List<String> getParameterNames(Constructor<?> constructor) {
@@ -1028,8 +1055,9 @@ public final class ReflectionUtil {
         accessibleObject.setAccessible(true);
     }
 
+    // should almost never be called with null as parameter to ensure we have explicit error messages
     private static String toParameterList(Class<?>[] parameterTypes) {
-        return toParameterList(parameterTypes != null ? Arrays.asList(parameterTypes) : null);
+        return parameterTypes != null ? toParameterList(Arrays.asList(parameterTypes)) : "...";
     }
 
     private static String toParameterList(List<? extends Class<?>> parameterTypes) {
