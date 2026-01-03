@@ -45,6 +45,29 @@ public class XBean353Test {
     }
 
     @Test
+    public void testCreateObjectCaseInsensitiveViaStaticFactory() {
+        final Map<String, Object> availableProperties = new HashMap<>();
+        availableProperties.put("PoolSize", 10);
+
+        final String[] paramNames = new String[]{"poolSize"};
+        ObjectRecipe recipe = new ObjectRecipe(ConstructorFactory.class, paramNames);
+        recipe.setFactoryMethod("create");
+        recipe.setAllProperties(availableProperties);
+        recipe.allow(Option.CASE_INSENSITIVE_PROPERTIES);
+
+        final Object o = recipe.create();
+        assertNotNull(o);
+        assertTrue(o instanceof Constructor);
+        assertEquals(10, ((Constructor) o).poolSize);
+    }
+
+    public static class ConstructorFactory{
+        public static Constructor create(int poolSize) {
+            return new Constructor(poolSize);
+        }
+    }
+
+    @Test
     public void testPropertyOrderNotAlteredCaseInsensitive() {
         ObjectRecipe recipe = new ObjectRecipe(CatchAll.class);
         recipe.allow(Option.CASE_INSENSITIVE_PROPERTIES);

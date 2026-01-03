@@ -143,12 +143,62 @@ public class ObjectRecipeTest extends TestCase {
             assertEquals(id, ((SingletonContainer) objectRecipe.create()).id);
         }
     }
-    
+
+    public void testViaStaticFactory_TomEECase() {
+        final String id = "Default Transaction Manager";
+
+        { // failling case
+            final ObjectRecipe objectRecipe = new ObjectRecipe(SingletonContainerFactory.class);
+            objectRecipe.setFactoryMethod("create");
+            objectRecipe.setConstructorArgNames(new String[]{"id"});
+            objectRecipe.setProperty("id_typo", id);
+            try {
+                objectRecipe.create();
+                fail();
+            } catch (final ConstructionException ce) {
+                //falls back to use default ctor + setter with invalid
+                assertEquals("Unable to find a valid setter method: public void org.apache.xbean.recipe.ObjectRecipeTest$SingletonContainerFactory.setId_typo(...)", ce.getMessage());
+            }
+        }
+        { // passing case
+            final ObjectRecipe objectRecipe = new ObjectRecipe(SingletonContainerFactory.class);
+            objectRecipe.setFactoryMethod("create");
+            objectRecipe.setConstructorArgNames(new String[]{"id"});
+            objectRecipe.setProperty("id", id);
+            assertEquals(id, ((SingletonContainer) objectRecipe.create()).id);
+        }
+
+        { // passing explicit type argument
+            final ObjectRecipe objectRecipe = new ObjectRecipe(SingletonContainerFactory.class);
+            objectRecipe.setFactoryMethod("create");
+            objectRecipe.setConstructorArgNames(new String[]{"id"});
+            objectRecipe.setConstructorArgTypes(new Class[]{String.class});
+            objectRecipe.setProperty("id", id);
+            assertEquals(id, ((SingletonContainer) objectRecipe.create()).id);
+        }
+
+        { // passing allow insensitive
+            final ObjectRecipe objectRecipe = new ObjectRecipe(SingletonContainerFactory.class);
+            objectRecipe.setFactoryMethod("create");
+            objectRecipe.setConstructorArgNames(new String[]{"id"});
+            objectRecipe.setProperty("iD", id);
+            objectRecipe.allow(Option.CASE_INSENSITIVE_PROPERTIES);
+            assertEquals(id, ((SingletonContainer) objectRecipe.create()).id);
+        }
+    }
+
     public static class SingletonContainer {
         public final String id;
 
         public SingletonContainer(final String id) {
             this.id = id;
+        }
+    }
+
+    public static class SingletonContainerFactory {
+
+        public static SingletonContainer create(String id) {
+            return new SingletonContainer(id);
         }
     }
 
