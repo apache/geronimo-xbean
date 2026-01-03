@@ -543,6 +543,13 @@ public class ObjectRecipe extends AbstractRecipe {
     }
 
     private Factory findFactory(Type expectedType) {
+        Set<String> availableProperties = getProperties().keySet();
+        if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
+            Set<String> caseInsensitiveProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            caseInsensitiveProperties.addAll(availableProperties);
+            availableProperties = caseInsensitiveProperties;
+        }
+
         Class type = getType();
 
         //
@@ -554,7 +561,7 @@ public class ObjectRecipe extends AbstractRecipe {
                         factoryMethod,
                         constructorArgNames,
                         constructorArgTypes,
-                        getProperties().keySet(),
+                        availableProperties,
                         options);
                 return staticFactory;
             } catch (MissingFactoryMethodException ignored) {
@@ -572,13 +579,6 @@ public class ObjectRecipe extends AbstractRecipe {
             consturctorClass = RecipeHelper.toClass(expectedType);
         } else {
             consturctorClass = type;
-        }
-
-        Set<String> availableProperties = getProperties().keySet();
-        if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
-            Set<String> caseInsensitiveProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-            caseInsensitiveProperties.addAll(availableProperties);
-            availableProperties = caseInsensitiveProperties;
         }
 
         ConstructorFactory constructor = ReflectionUtil.findConstructor(
