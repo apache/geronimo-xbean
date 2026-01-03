@@ -773,7 +773,7 @@ public final class ReflectionUtil {
         boolean caseInsensitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
         for (Method method : new LinkedHashSet<Method>(methods)) {
             // Only consider methods where the name matches
-            if (!method.getName().equals(factoryMethod) && (!caseInsensitive || !method.getName().equalsIgnoreCase(method.getName()))) {
+            if (!method.getName().equals(factoryMethod) && (!caseInsensitive || !method.getName().equalsIgnoreCase(factoryMethod))) {
                 continue;
             }
 
@@ -867,12 +867,12 @@ public final class ReflectionUtil {
         MissingFactoryMethodException missException = null;
 
         boolean allowPrivate = options.contains(Option.PRIVATE_FACTORY);
-        boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
+        boolean caseInsensitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
 
         Set<Method> methods = new HashSet<Method>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
-            if (method.getName().equals(factoryMethod) || (caseInsesnitive && method.getName().equalsIgnoreCase(factoryMethod))) {
+            if (method.getName().equals(factoryMethod) || (caseInsensitive && method.getName().equalsIgnoreCase(factoryMethod))) {
                 if (Modifier.isStatic(method.getModifiers())) {
                     if (matchLevel < 1) {
                         matchLevel = 1;
