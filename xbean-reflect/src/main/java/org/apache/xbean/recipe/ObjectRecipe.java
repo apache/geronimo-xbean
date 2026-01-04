@@ -24,11 +24,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
 import org.apache.xbean.recipe.ReflectionUtil.*;
@@ -270,7 +273,11 @@ public class ObjectRecipe extends AbstractRecipe {
 
         //
         // clone the properties so they can be used again
-        Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
+        Map<Property,Object> propertyValues = options.contains(Option.CASE_INSENSITIVE_PROPERTIES)
+                ? new TreeMap<>(Comparator.comparing(property -> property.name, String.CASE_INSENSITIVE_ORDER))
+                : new LinkedHashMap<>();
+
+        propertyValues.putAll(properties);
 
         //
         // create the instance
@@ -536,6 +543,13 @@ public class ObjectRecipe extends AbstractRecipe {
     }
 
     private Factory findFactory(Type expectedType) {
+        Set<String> availableProperties = getProperties().keySet();
+        if (options.contains(Option.CASE_INSENSITIVE_PROPERTIES)) {
+            Set<String> caseInsensitiveProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            caseInsensitiveProperties.addAll(availableProperties);
+            availableProperties = caseInsensitiveProperties;
+        }
+
         Class type = getType();
 
         //
@@ -547,7 +561,7 @@ public class ObjectRecipe extends AbstractRecipe {
                         factoryMethod,
                         constructorArgNames,
                         constructorArgTypes,
-                        getProperties().keySet(),
+                        availableProperties,
                         options);
                 return staticFactory;
             } catch (MissingFactoryMethodException ignored) {
@@ -571,7 +585,7 @@ public class ObjectRecipe extends AbstractRecipe {
                 consturctorClass,
                 constructorArgNames,
                 constructorArgTypes,
-                getProperties().keySet(),
+                availableProperties,
                 options);
 
         return constructor;
