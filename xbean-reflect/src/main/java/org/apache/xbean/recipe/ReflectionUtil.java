@@ -1039,7 +1039,7 @@ public final class ReflectionUtil {
             for (int i = 0; i < parameterTypes.size(); i++) {
                 Class type = parameterTypes.get(i);
                 if (i > 0) buffer.append(", ");
-                buffer.append(type != null ? type.getName() : "...");
+                buffer.append(type.getName());
             }
         } else {
             buffer.append("...");
