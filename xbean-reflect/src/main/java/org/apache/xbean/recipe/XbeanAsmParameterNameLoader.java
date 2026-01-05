@@ -199,6 +199,11 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
         InputStream in = null;
         try {
             ClassLoader classLoader = declaringClass.getClassLoader();
+
+            if (classLoader == null) { // likely builtin class loaded by boostrap classloader
+                classLoader = ClassLoader.getSystemClassLoader();
+            }
+
             in = classLoader.getResourceAsStream(declaringClass.getName().replace('.', '/') + ".class");
             ClassReader reader = new ClassReader(in);
             return reader;
