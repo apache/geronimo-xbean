@@ -24,13 +24,11 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
@@ -274,10 +272,8 @@ public class ObjectRecipe extends AbstractRecipe {
         //
         // clone the properties so they can be used again
         Map<Property,Object> propertyValues = options.contains(Option.CASE_INSENSITIVE_PROPERTIES)
-                ? new TreeMap<>(Comparator.comparing(property -> property.name, String.CASE_INSENSITIVE_ORDER))
-                : new LinkedHashMap<>();
-
-        propertyValues.putAll(properties);
+                ? new NormalizedLinkedHashMap<>(it -> new Property(it.name.toLowerCase()), properties)
+                : new LinkedHashMap<>(properties);
 
         //
         // create the instance
