@@ -24,11 +24,15 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeFalse;
 
 
 public class XBean354Test {
     @Test
     public void testRecipeBootstrapClass() {
+        // broken on java 1.8 because openjdk seems to have been compiled without parameter names for constructors
+        assumeFalse("JDK not 1.8", System.getProperty("java.version").startsWith("1.8"));
+
         ObjectRecipe recipe = new ObjectRecipe(URL.class);
         recipe.setConstructorArgNames(Collections.singletonList("spec"));
         recipe.setAllProperties(Collections.singletonMap("spec", "https://apache.org"));
