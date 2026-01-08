@@ -680,10 +680,10 @@ public class ObjectRecipe extends AbstractRecipe {
     public static class PropertiesAccessor {
         private final boolean caseInsensitive;
 
-        private final Map<ObjectRecipe.Property, Object> properties;
-        private final Map<ObjectRecipe.Property, Object> propertiesOrdered;
+        private final Map<Property, Object> properties;
+        private final Map<Property, Object> propertiesOrdered;
 
-        public PropertiesAccessor(Map<ObjectRecipe.Property, Object> properties, boolean caseInsensitive) {
+        public PropertiesAccessor(Map<Property, Object> properties, boolean caseInsensitive) {
             this.caseInsensitive = caseInsensitive;
 
             this.propertiesOrdered = new LinkedHashMap<>(properties);
