@@ -24,11 +24,13 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.xbean.propertyeditor.PropertyEditorRegistry;
@@ -269,16 +271,12 @@ public class ObjectRecipe extends AbstractRecipe {
         // load the type class
         Class typeClass = getType();
 
-        //
-        // clone the properties so they can be used again
-        Map<Property,Object> propertyValues = options.contains(Option.CASE_INSENSITIVE_PROPERTIES)
-                ? new NormalizedLinkedHashMap<>(it -> new Property(it.name.toLowerCase()), properties)
-                : new LinkedHashMap<>(properties);
+        PropertiesAccessor propertiesAccessor = new PropertiesAccessor(properties, options.contains(Option.CASE_INSENSITIVE_PROPERTIES));
 
         //
         // create the instance
         Factory factory = findFactory(expectedType);
-        Object[] parameters = extractConstructorArgs(propertyValues, factory);
+        Object[] parameters = extractConstructorArgs(propertiesAccessor, factory);
         Object instance = factory.create(parameters);
 
         //
@@ -289,7 +287,7 @@ public class ObjectRecipe extends AbstractRecipe {
 
         //
         // set the properties
-        setProperties(propertyValues, instance, instance.getClass());
+        setProperties(propertiesAccessor, instance, instance.getClass());
 
         //
         // call instance factory method
@@ -320,10 +318,8 @@ public class ObjectRecipe extends AbstractRecipe {
     public void setProperties(Object instance) throws ConstructionException {
         unsetProperties.clear();
 
-        // clone the properties so they can be used again
-        Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
-
-        setProperties(propertyValues, instance, instance.getClass());
+        PropertiesAccessor propertiesAccessor = new PropertiesAccessor(properties, options.contains(Option.CASE_INSENSITIVE_PROPERTIES));
+        setProperties(propertiesAccessor, instance, instance.getClass());
     }
 
     public Class setStaticProperties() throws ConstructionException {
@@ -343,10 +339,8 @@ public class ObjectRecipe extends AbstractRecipe {
             throw new ConstructionException("Class is abstract: " + typeClass.getName());
         }
 
-        // clone the properties so they can be used again
-        Map<Property,Object> propertyValues = new LinkedHashMap<Property,Object>(properties);
-
-        setProperties(propertyValues, null, typeClass);
+        PropertiesAccessor propertiesAccessor = new PropertiesAccessor(properties, options.contains(Option.CASE_INSENSITIVE_PROPERTIES));
+        setProperties(propertiesAccessor, null, typeClass);
 
         return typeClass;
     }
@@ -372,9 +366,9 @@ public class ObjectRecipe extends AbstractRecipe {
         this.registry = registry;
     }
 
-    private void setProperties(Map<Property, Object> propertyValues, Object instance, Class clazz) {
+    private void setProperties(PropertiesAccessor propertiesAccessor, Object instance, Class clazz) {
         // set remaining properties
-        for (Map.Entry<Property, Object> entry : RecipeHelper.prioritizeProperties(propertyValues)) {
+        for (Map.Entry<Property, Object> entry : propertiesAccessor.getPrioritizedProperties()) {
             Property propertyName = entry.getKey();
             Object propertyValue = entry.getValue();
 
@@ -587,7 +581,7 @@ public class ObjectRecipe extends AbstractRecipe {
         return constructor;
     }
 
-    private Object[] extractConstructorArgs(Map propertyValues, Factory factory) {
+    private Object[] extractConstructorArgs(PropertiesAccessor propertiesAccessor, Factory factory) {
         List<String> parameterNames = factory.getParameterNames();
         List<Type> parameterTypes = factory.getParameterTypes();
 
@@ -597,8 +591,8 @@ public class ObjectRecipe extends AbstractRecipe {
             Type type = parameterTypes.get(i);
 
             Object value;
-            if (propertyValues.containsKey(name)) {
-                value = propertyValues.remove(name);
+            if (propertiesAccessor.contains(name)) {
+                value = propertiesAccessor.remove(name);
                 if (!RecipeHelper.isInstance(type, value) && !RecipeHelper.isConvertable(type, value, registry)) {
                     throw new ConstructionException("Invalid and non-convertable constructor parameter type: " +
                             "name=" + name + ", " +
@@ -680,6 +674,48 @@ public class ObjectRecipe extends AbstractRecipe {
 
         public String toString() {
             return field.toString();
+        }
+    }
+
+    public static class PropertiesAccessor {
+        private final boolean caseInsensitive;
+
+        private final Map<ObjectRecipe.Property, Object> properties;
+        private final Map<ObjectRecipe.Property, Object> propertiesOrdered;
+
+        public PropertiesAccessor(Map<ObjectRecipe.Property, Object> properties, boolean caseInsensitive) {
+            this.caseInsensitive = caseInsensitive;
+
+            this.propertiesOrdered = new LinkedHashMap<>(properties);
+            if (caseInsensitive) {
+                this.properties = new TreeMap<>(Comparator.comparing(it -> it.name, String.CASE_INSENSITIVE_ORDER));
+                this.properties.putAll(properties);
+            } else {
+                this.properties = propertiesOrdered;
+            }
+        }
+
+        public boolean contains(Property property) {
+            return properties.containsKey(property);
+        }
+
+        public Object remove(Property property) {
+            if (caseInsensitive) {
+                Property propertyToRemove = propertiesOrdered.keySet().stream()
+                        .filter(it -> it.name.equalsIgnoreCase(property.name))
+                        .findFirst().orElse(null);
+
+                propertiesOrdered.remove(propertyToRemove);
+            }
+
+            return properties.remove(property);
+        }
+
+        public List<Map.Entry<Property, Object>> getPrioritizedProperties() {
+            ArrayList<Map.Entry<Property, Object>> entries = new ArrayList<>(propertiesOrdered.entrySet());
+            entries.sort(new RecipeHelper.RecipeComparator());
+
+            return entries;
         }
     }
 
