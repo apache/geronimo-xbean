@@ -44,12 +44,35 @@ public class XBean353Test {
         assertEquals(10, ((Constructor) o).poolSize);
     }
 
+    @Test
+    public void testPropertyOrderNotAlteredCaseInsensitive() {
+        ObjectRecipe recipe = new ObjectRecipe(CatchAll.class);
+        recipe.allow(Option.CASE_INSENSITIVE_PROPERTIES);
+
+        recipe.setProperty("123", "a");
+        recipe.setProperty("zzz", 1);
+        recipe.setProperty("aaa", 2);
+        recipe.setProperty("properties", new UnsetPropertiesRecipe());
+
+        CatchAll catchAll = (CatchAll) recipe.create();
+
+        assertEquals(3, catchAll.properties.size());
+    }
+
     public static class Constructor {
 
         int poolSize;
 
         public Constructor(int poolSize) {
             this.poolSize = poolSize;
+        }
+    }
+
+    public static class CatchAll {
+        Map<String, Object> properties;
+
+        public void setProperties(Map<String, Object> properties) {
+            this.properties = properties;
         }
     }
 }
