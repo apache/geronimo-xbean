@@ -224,9 +224,11 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
         private final String methodName;
         private final Map<String,Method> methodMap = new HashMap<String,Method>();
         private final Map<String,Constructor> constructorMap = new HashMap<String,Constructor>();
+        private final Class<?> clazz;
 
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
             super(ASM_VERSION);
+            this.clazz = type;
             this.methodName = methodName;
 
             List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
@@ -240,6 +242,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
 
         public AllParameterNamesDiscoveringVisitor(Class type) {
             super(ASM_VERSION);
+            this.clazz = type;
             this.methodName = "<init>";
 
             List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
@@ -275,8 +278,13 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                 final List<String> parameterNames;
                 final boolean isStaticMethod;
                 final Type[] paramTypes;
-
                 final int paramLen;
+
+                // Determine if this is a non-static inner class constructor
+                boolean isNonStaticInner = methodName.equals("<init>") &&
+                        clazz.getEnclosingClass() != null &&
+                        !Modifier.isStatic(clazz.getModifiers());
+
                 if (methodName.equals("<init>")) {
                     Constructor constructor = constructorMap.get(desc);
                     if (constructor == null) {
@@ -316,10 +324,18 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                     }
                 }
 
+                // Determine the starting parameter index (skip synthetic outer-class param if inner class)
+                final int paramOffset = (methodName.equals("<init>") && isNonStaticInner) ? 1 : 0;
+
                 // Build slot -> parameter index map
                 final Map<Integer, Integer> slotToParamIndex = new HashMap<>();
                 int slot = isStaticMethod ? 0 : 1; // slot 0 reserved for "this" in non-static
                 for (int i = 0; i < paramLen; i++) {
+                    if (i < paramOffset) {
+                        // skip synthetic outer-class parameter
+                        slot += paramTypes[i].getSize();
+                        continue;
+                    }
                     slotToParamIndex.put(slot, i);
                     slot += paramTypes[i].getSize(); // 1 for normal, 2 for long/double
                 }
