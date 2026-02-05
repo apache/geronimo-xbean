@@ -265,6 +265,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
             return exceptions;
         }
 
+        @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             if (!name.equals(this.methodName)) {
                 return null;
@@ -273,6 +274,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
             try {
                 final List<String> parameterNames;
                 final boolean isStaticMethod;
+                final Type[] paramTypes;
 
                 final int paramLen;
                 if (methodName.equals("<init>")) {
@@ -282,10 +284,18 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                     }
 
                     paramLen = constructor.getParameterTypes().length;
-                    parameterNames = new ArrayList<String>(paramLen);
-                    parameterNames.addAll(Collections.<String>nCopies(paramLen, null));
+                    parameterNames = new ArrayList<>(paramLen);
+                    parameterNames.addAll(Collections.nCopies(paramLen, null));
                     constructorParameters.put(constructor, parameterNames);
                     isStaticMethod = false;
+
+                    // Get ASM Type array for slot computation
+                    paramTypes = new Type[paramLen];
+                    Class<?>[] types = constructor.getParameterTypes();
+                    for (int i = 0; i < paramLen; i++) {
+                        paramTypes[i] = Type.getType(types[i]);
+                    }
+
                 } else {
                     Method method = methodMap.get(desc);
                     if (method == null) {
@@ -293,31 +303,44 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
                     }
 
                     paramLen = method.getParameterTypes().length;
-                    parameterNames = new ArrayList<String>(paramLen);
-                    parameterNames.addAll(Collections.<String>nCopies(paramLen, null));
+                    parameterNames = new ArrayList<>(paramLen);
+                    parameterNames.addAll(Collections.nCopies(paramLen, null));
                     methodParameters.put(method, parameterNames);
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
+
+                    // Get ASM Type array for slot computation
+                    Class<?>[] types = method.getParameterTypes();
+                    paramTypes = new Type[types.length];
+                    for (int i = 0; i < types.length; i++) {
+                        paramTypes[i] = Type.getType(types[i]);
+                    }
                 }
 
+                // Build slot -> parameter index map
+                final Map<Integer, Integer> slotToParamIndex = new HashMap<>();
+                int slot = isStaticMethod ? 0 : 1; // slot 0 reserved for "this" in non-static
+                for (int i = 0; i < paramLen; i++) {
+                    slotToParamIndex.put(slot, i);
+                    slot += paramTypes[i].getSize(); // 1 for normal, 2 for long/double
+                }
+
+                // Return visitor that assigns names correctly
                 return new MethodVisitor(ASM_VERSION) {
-                    // assume static method until we get a first parameter name
+                    @Override
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
-                        if (isStaticMethod) {
-                            if (paramLen > index) {
-                                parameterNames.set(index, name);
-                            }
-                        } else if (index > 0) {
-                            // for non-static the 0th arg is "this" so we need to offset by -1
-                            if (paramLen >= index) {
-                                parameterNames.set(index - 1, name);
-                            }
+                        final Integer paramIndex = slotToParamIndex.get(index);
+                        if (paramIndex != null) {
+                            parameterNames.set(paramIndex, name);
                         }
                     }
                 };
+
             } catch (Exception e) {
                 this.exceptions.put(signature, e);
             }
+
             return null;
         }
+
     }
 }
