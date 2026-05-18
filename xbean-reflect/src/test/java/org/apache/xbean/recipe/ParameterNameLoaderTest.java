@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.Test;
 import junit.framework.TestCase;
 
 /**
@@ -107,6 +108,39 @@ public class ParameterNameLoaderTest extends TestCase {
         assertParameterNames(Collections.<String>emptyList(), method);
     }
 
+    public void testXBEAN355() throws Exception{
+      Constructor constructor =  TestClass.class.getConstructor(String.class, String.class, int.class, double.class, double.class, double.class,
+                double.class, double.class, double.class, double.class, boolean.class, boolean.class, boolean.class, int.class,
+                String.class, boolean.class);
+        assertParameterNames(Arrays.asList("svmType", "kernelType", "degree", "gamma", "coef0", "nu",
+                "cost", "eps", "p", "cacheSize", "shrinking", "probability", "crossValidation", "nFold", "modelName", "debug"), constructor);
+    }
+
+    public void testXBEAN355_2() throws Exception{
+        Constructor constructor =  MultiArgCtor.class.getConstructor(String.class, String.class, int.class, double.class, double.class, double.class,
+                double.class, double.class, double.class, double.class, boolean.class, boolean.class, boolean.class, int.class,
+                String.class, boolean.class);
+        assertParameterNames(Arrays.asList("svmType", "kernelType", "degree", "gamma", "coef0", "nu",
+                "cost", "eps", "p", "cacheSize", "shrinking", "probability", "crossValidation", "nFold", "modelName", "debug"), constructor);
+    }
+
+    public void testXBEAN355_3() throws Exception{
+        Constructor constructor =  NonStaticInnerTestClass.class.getConstructor(ParameterNameLoaderTest.class, String.class, String.class, int.class, double.class, double.class, double.class,
+                double.class, double.class, double.class, double.class, boolean.class, boolean.class, boolean.class, int.class,
+                String.class, boolean.class);
+        assertParameterNames(Arrays.asList(null, "svmType", "kernelType", "degree", "gamma", "coef0", "nu",
+                "cost", "eps", "p", "cacheSize", "shrinking", "probability", "crossValidation", "nFold", "modelName", "debug"), constructor);
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    private abstract class NonStaticInnerTestClass extends ParentTestClass {
+
+        public NonStaticInnerTestClass(String svmType, String kernelType, int degree, double gamma, double coef0, double nu,
+                         double cost, double eps, double p, double cacheSize, boolean shrinking,
+                         boolean probability, boolean crossValidation, int nFold, String modelName, boolean debug) {}
+
+    }
+
     @SuppressWarnings({"UnusedDeclaration"})
     private static class ParentTestClass {
         public void inheritedMethod(Map nothing) {}
@@ -119,6 +153,9 @@ public class ParameterNameLoaderTest extends TestCase {
         public TestClass(Object bar) {}
         public TestClass(Object[] objectArray) {}
         private TestClass(Double scotch) {}
+        public TestClass(String svmType, String kernelType, int degree, double gamma, double coef0, double nu,
+                         double cost, double eps, double p, double cacheSize, boolean shrinking,
+                         boolean probability, boolean crossValidation, int nFold, String modelName, boolean debug) {}
 
         public static void factoryMethod(int a, Object b, Long c) {}
         public static void factoryMethod(int beer) {}
