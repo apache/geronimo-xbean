@@ -219,9 +219,11 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
         private final String methodName;
         private final Map<String,Method> methodMap = new HashMap<String,Method>();
         private final Map<String,Constructor> constructorMap = new HashMap<String,Constructor>();
+        private final Class<?> clazz;
 
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
             super(ASM_VERSION);
+            this.clazz = type;
             this.methodName = methodName;
 
             List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
@@ -235,6 +237,7 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
 
         public AllParameterNamesDiscoveringVisitor(Class type) {
             super(ASM_VERSION);
+            this.clazz = type;
             this.methodName = "<init>";
 
             List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
@@ -268,38 +271,72 @@ public class AsmParameterNameLoader implements ParameterNameLoader {
             try {
                 final List<String> parameterNames;
                 final boolean isStaticMethod;
+                final Type[] paramTypes;
+                final int paramLen;
+
+                boolean isNonStaticInner = methodName.equals("<init>") &&
+                        clazz.getEnclosingClass() != null &&
+                        !Modifier.isStatic(clazz.getModifiers());
 
                 if (methodName.equals("<init>")) {
                     Constructor constructor = constructorMap.get(desc);
                     if (constructor == null) {
                         return null;
                     }
-                    parameterNames = new ArrayList<String>(constructor.getParameterTypes().length);
-                    parameterNames.addAll(Collections.<String>nCopies(constructor.getParameterTypes().length, null));
+
+                    paramLen = constructor.getParameterTypes().length;
+                    parameterNames = new ArrayList<String>(paramLen);
+                    parameterNames.addAll(Collections.<String>nCopies(paramLen, null));
                     constructorParameters.put(constructor, parameterNames);
                     isStaticMethod = false;
+
+                    paramTypes = new Type[paramLen];
+                    Class<?>[] types = constructor.getParameterTypes();
+                    for (int i = 0; i < paramLen; i++) {
+                        paramTypes[i] = Type.getType(types[i]);
+                    }
+
                 } else {
                     Method method = methodMap.get(desc);
                     if (method == null) {
                         return null;
                     }
-                    parameterNames = new ArrayList<String>(method.getParameterTypes().length);
-                    parameterNames.addAll(Collections.<String>nCopies(method.getParameterTypes().length, null));
+
+                    paramLen = method.getParameterTypes().length;
+                    parameterNames = new ArrayList<String>(paramLen);
+                    parameterNames.addAll(Collections.<String>nCopies(paramLen, null));
                     methodParameters.put(method, parameterNames);
                     isStaticMethod = Modifier.isStatic(method.getModifiers());
+
+                    Class<?>[] types = method.getParameterTypes();
+                    paramTypes = new Type[types.length];
+                    for (int i = 0; i < types.length; i++) {
+                        paramTypes[i] = Type.getType(types[i]);
+                    }
+                }
+
+                final int paramOffset = (methodName.equals("<init>") && isNonStaticInner) ? 1 : 0;
+
+                final Map<Integer, Integer> slotToParamIndex = new HashMap<Integer, Integer>();
+                int slot = isStaticMethod ? 0 : 1;
+                for (int i = 0; i < paramLen; i++) {
+                    if (i < paramOffset) {
+                        slot += paramTypes[i].getSize();
+                        continue;
+                    }
+                    slotToParamIndex.put(slot, i);
+                    slot += paramTypes[i].getSize();
                 }
 
                 return new MethodVisitor(ASM_VERSION) {
-                    // assume static method until we get a first parameter name
                     public void visitLocalVariable(String name, String description, String signature, Label start, Label end, int index) {
-                        if (isStaticMethod) {
-                            parameterNames.set(index, name);
-                        } else if (index > 0) {
-                            // for non-static the 0th arg is "this" so we need to offset by -1
-                            parameterNames.set(index - 1, name);
+                        Integer paramIndex = slotToParamIndex.get(index);
+                        if (paramIndex != null) {
+                            parameterNames.set(paramIndex, name);
                         }
                     }
                 };
+
             } catch (Exception e) {
                 this.exceptions.put(signature, e);
             }
