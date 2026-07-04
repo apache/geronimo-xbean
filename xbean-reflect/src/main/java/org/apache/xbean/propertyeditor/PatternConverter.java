@@ -17,7 +17,6 @@
 package org.apache.xbean.propertyeditor;
 
 import java.util.regex.Pattern;
-import java.util.logging.Logger;
 
 /**
  * @version $Rev$ $Date$

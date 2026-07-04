@@ -16,10 +16,6 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.xbean.blueprint.example.FavoriteService;
 import org.apache.xbean.blueprint.example.GinService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.osgi.service.blueprint.reflect.BeanMetadata;

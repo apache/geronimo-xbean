@@ -17,7 +17,6 @@
 package org.apache.xbean.blueprint.context;
 
 import org.apache.xbean.blueprint.example.KegService;
-import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**
  * Used to verify that per propety Property Editors work correctly.

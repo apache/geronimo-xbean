@@ -19,7 +19,6 @@ package org.apache.xbean.spring.context.v2c;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.xbean.spring.context.impl.PropertyEditorHelper;
 import org.apache.xbean.spring.context.impl.QNameReflectionHelper;
 import org.apache.xbean.spring.context.v2.XBeanNamespaceHandler;
 import org.springframework.beans.factory.config.BeanDefinition;

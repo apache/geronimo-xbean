@@ -18,8 +18,6 @@ package org.apache.xbean.spring.context;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
-import java.util.List;
-
 /**
  * @author James Strachan
  * @version $Id$

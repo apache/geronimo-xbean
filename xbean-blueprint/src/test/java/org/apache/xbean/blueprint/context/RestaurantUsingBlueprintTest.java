@@ -24,8 +24,6 @@ import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
 import org.osgi.service.blueprint.reflect.BeanProperty;
 import org.osgi.service.blueprint.reflect.CollectionMetadata;
 import org.osgi.service.blueprint.reflect.Metadata;
-import org.osgi.service.blueprint.reflect.BeanMetadata;
-import org.osgi.service.blueprint.reflect.ValueMetadata;
 
 /**
  * @author James Strachan

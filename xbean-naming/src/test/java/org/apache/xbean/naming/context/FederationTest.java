@@ -19,7 +19,7 @@ package org.apache.xbean.naming.context;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.Name;
-import javax.naming.NameAlreadyBoundException;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;

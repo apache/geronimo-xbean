@@ -18,7 +18,6 @@ package org.apache.xbean.propertyeditor;
 
 import java.beans.PropertyEditor;
 import java.util.Map;
-import java.util.Collection;
 
 /**
  * @version $Rev$ $Date$

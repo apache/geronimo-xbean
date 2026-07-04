@@ -17,18 +17,15 @@
 package org.apache.xbean.spring.context;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.xbean.spring.context.impl.XBeanHelper;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.SpringVersion;
 
 /**
  * An XBean version of the regular Spring class to provide improved XML handling.

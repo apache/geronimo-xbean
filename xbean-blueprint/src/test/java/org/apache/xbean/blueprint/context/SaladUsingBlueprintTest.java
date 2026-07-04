@@ -16,7 +16,6 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.SaladService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 
 /**

@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.naming.Context;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 /**

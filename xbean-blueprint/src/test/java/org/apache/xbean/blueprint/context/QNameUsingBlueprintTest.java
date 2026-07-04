@@ -18,9 +18,6 @@ package org.apache.xbean.blueprint.context;
 
 import java.util.List;
 
-import javax.xml.namespace.QName;
-
-import org.apache.xbean.blueprint.example.QNameService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.apache.aries.blueprint.reflect.CollectionMetadataImpl;
 import org.osgi.service.blueprint.reflect.Metadata;

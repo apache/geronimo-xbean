@@ -18,7 +18,6 @@
 package org.apache.xbean.recipe;
 
 import java.util.List;
-import java.util.Map;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 

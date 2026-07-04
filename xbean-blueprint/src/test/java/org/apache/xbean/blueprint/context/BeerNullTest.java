@@ -16,8 +16,6 @@
  */
 package org.apache.xbean.blueprint.context;
 
-import org.apache.xbean.blueprint.example.BeerService;
-import org.apache.aries.blueprint.ComponentDefinitionRegistry;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.osgi.service.blueprint.reflect.NullMetadata;
 

@@ -19,7 +19,6 @@ package org.apache.xbean.propertyeditor;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.regex.Pattern;
 
 /**
  * @version $Rev$ $Date$

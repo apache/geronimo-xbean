@@ -16,7 +16,6 @@
  */
 package org.apache.xbean.spring.context;
 
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**

@@ -19,8 +19,6 @@ package org.apache.xbean.recipe;
 import junit.framework.TestCase;
 import org.apache.xbean.propertyeditor.PropertyEditors;
 
-import java.net.URL;
-
 public class MixedRecipeTest extends TestCase {
 
     protected void setUp() throws Exception {

@@ -18,8 +18,6 @@ package org.apache.xbean.recipe;
 
 import junit.framework.TestCase;
 
-import java.util.Properties;
-
 /**
  * @version $Rev$ $Date$
  */

@@ -18,15 +18,8 @@ package org.apache.xbean.blueprint.context;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xbean.blueprint.example.RestaurantService;
 import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
 import org.osgi.service.blueprint.reflect.ValueMetadata;
-import org.osgi.service.blueprint.reflect.BeanMetadata;
-import org.osgi.service.blueprint.reflect.BeanProperty;
-
-import javax.xml.namespace.QName;
-
-import java.net.URI;
 
 /**
  * @author James Strachan

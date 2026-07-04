@@ -16,14 +16,7 @@
  */
 package org.apache.xbean.spring.context;
 
-import java.net.SocketAddress;
-import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Arrays;
-
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.apache.xbean.spring.example.SoupService;
-import org.apache.xbean.spring.example.SocketService;
 
 /**
  * @author Dain Sundstrom

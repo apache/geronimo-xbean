@@ -19,12 +19,6 @@ package org.apache.xbean.naming.context;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NameParser;
-import javax.naming.Binding;
-import javax.naming.NameClassPair;
-
-import java.util.Hashtable;
 
 /**
  * @version $Rev$ $Date$
