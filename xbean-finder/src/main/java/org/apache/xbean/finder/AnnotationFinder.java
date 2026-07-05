@@ -666,8 +666,8 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Method> findAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<ClassInfo> seen = new LinkedList<ClassInfo>();
-        List<Method> methods = new LinkedList<Method>();
+        Set<ClassInfo> seen = new HashSet<>();
+        List<Method> methods = new LinkedList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof MethodInfo && !info.getName().equals("<init>")) {
@@ -676,9 +676,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 if (checkRuntimeAnnotation) {
                     final ClassInfo classInfo = methodInfo.getDeclaringClass();
 
-                    if (seen.contains(classInfo)) continue;
-
-                    seen.add(classInfo);
+                    if (!seen.add(classInfo)) continue;
 
                     try {
                         Class clazz = classInfo.get();
@@ -871,7 +869,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Constructor> findAnnotatedConstructors(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<ClassInfo> seen = new LinkedList<ClassInfo>();
+        Set<ClassInfo> seen = new HashSet<ClassInfo>();
         List<Constructor> constructors = new LinkedList<Constructor>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
@@ -881,9 +879,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 if (checkRuntimeAnnotation) {
                     ClassInfo classInfo = methodInfo.getDeclaringClass();
 
-                    if (seen.contains(classInfo)) continue;
-
-                    seen.add(classInfo);
+                    if (!seen.add(classInfo)) continue;
 
                     try {
                         Class clazz = classInfo.get();
@@ -957,8 +953,8 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Field> findAnnotatedFields(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<ClassInfo> seen = new LinkedList<ClassInfo>();
-        List<Field> fields = new LinkedList<Field>();
+        Set<ClassInfo> seen = new HashSet<>();
+        List<Field> fields = new LinkedList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof FieldInfo) {
@@ -967,9 +963,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                 if (checkRuntimeAnnotation) {
                     ClassInfo classInfo = fieldInfo.getDeclaringClass();
 
-                    if (seen.contains(classInfo)) continue;
-
-                    seen.add(classInfo);
+                    if (!seen.add(classInfo)) continue;
 
                     try {
                         Class clazz = classInfo.get();

@@ -31,8 +31,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.xbean.asm9.original.commons.EmptyVisitor;
 import org.apache.xbean.finder.util.SingleLinkedList;
@@ -289,17 +291,15 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Method> findAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<ClassInfo> seen = new ArrayList<ClassInfo>();
-        List<Method> methods = new ArrayList<Method>();
+        Set<ClassInfo> seen = new HashSet<>();
+        List<Method> methods = new ArrayList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof MethodInfo && !info.getName().equals("<init>")) {
                 MethodInfo methodInfo = (MethodInfo) info;
                 ClassInfo classInfo = methodInfo.getDeclaringClass();
 
-                if (seen.contains(classInfo)) continue;
-
-                seen.add(classInfo);
+                if (!seen.add(classInfo)) continue;
 
                 try {
                     Class clazz = classInfo.get();
@@ -327,17 +327,15 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Constructor> findAnnotatedConstructors(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<ClassInfo> seen = new ArrayList<ClassInfo>();
-        List<Constructor> constructors = new ArrayList<Constructor>();
+        Set<ClassInfo> seen = new HashSet<>();
+        List<Constructor> constructors = new ArrayList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof MethodInfo && info.getName().equals("<init>")) {
                 MethodInfo methodInfo = (MethodInfo) info;
                 ClassInfo classInfo = methodInfo.getDeclaringClass();
 
-                if (seen.contains(classInfo)) continue;
-
-                seen.add(classInfo);
+                if (!seen.add(classInfo)) continue;
 
                 try {
                     Class clazz = classInfo.get();
@@ -356,17 +354,15 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Field> findAnnotatedFields(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<ClassInfo> seen = new ArrayList<ClassInfo>();
-        List<Field> fields = new ArrayList<Field>();
+        Set<ClassInfo> seen = new HashSet<>();
+        List<Field> fields = new ArrayList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) info;
                 ClassInfo classInfo = fieldInfo.getDeclaringClass();
 
-                if (seen.contains(classInfo)) continue;
-
-                seen.add(classInfo);
+                if (!seen.add(classInfo)) continue;
 
                 try {
                     Class clazz = classInfo.get();
