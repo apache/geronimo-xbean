@@ -17,12 +17,12 @@
 package org.apache.xbean.finder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -97,29 +97,24 @@ public class ClassFinder extends AbstractFinder {
     public ClassFinder(ClassLoader classLoader, Collection<URL> urls) {
         this.classLoader = classLoader;
 
-        List<String> classNames = new ArrayList<String>();
         for (URL location : urls) {
             try {
                 if (location.getProtocol().equals("jar")) {
-                    classNames.addAll(jar(location));
+                    jar(location);
                 } else if (location.getProtocol().equals("file")) {
                     try {
                         // See if it's actually a jar
                         URL jarUrl = new URL("jar", "", location.toExternalForm() + "!/");
                         JarURLConnection juc = (JarURLConnection) jarUrl.openConnection();
                         juc.getJarFile();
-                        classNames.addAll(jar(jarUrl));
+                        jar(jarUrl);
                     } catch (IOException e) {
-                        classNames.addAll(file(location));
+                        file(location);
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-
-        for (String className : classNames) {
-            readClassDef(className);
         }
     }
 
@@ -162,36 +157,36 @@ public class ClassFinder extends AbstractFinder {
 
 
 
-    private List<String> file(URL location) {
-        List<String> classNames = new ArrayList<String>();
+    private void file(URL location) throws IOException {
         File dir = new File(URLDecoder.decode(location.getPath()));
         if (dir.getName().equals("META-INF")) {
             dir = dir.getParentFile(); // Scrape "META-INF" off
         }
         if (dir.isDirectory()) {
-            scanDir(dir, classNames, "");
+            scanDir(dir);
         }
-        return classNames;
     }
 
-    private void scanDir(File dir, List<String> classNames, String packageName) {
+    private void scanDir(File dir) throws IOException {
         File[] files = dir.listFiles();
         if (files == null) {
             return;
         }
         for (File file : files) {
             if (file.isDirectory()) {
-                scanDir(file, classNames, packageName + file.getName() + ".");
+                scanDir(file);
             } else if (file.getName().endsWith(".class")) {
-                String name = file.getName();
-                name = name.replaceFirst(".class$", "");
-                if (name.contains(".")) continue;
-                classNames.add(packageName + name);
+                InputStream in = new FileInputStream(file);
+                try {
+                    readClassDef(in);
+                } finally {
+                    in.close();
+                }
             }
         }
     }
 
-    private List<String> jar(URL location) throws IOException {
+    private void jar(URL location) throws IOException {
         String jarPath = location.getFile();
         if (jarPath.indexOf("!") > -1){
             jarPath = jarPath.substring(0, jarPath.indexOf("!"));
@@ -200,28 +195,20 @@ public class ClassFinder extends AbstractFinder {
         InputStream in = url.openStream();
         try {
             JarInputStream jarStream = new JarInputStream(in);
-            return jar(jarStream);
+            jar(jarStream);
         } finally {
             in.close();
         }
     }
 
-    private List<String> jar(JarInputStream jarStream) throws IOException {
-        List<String> classNames = new ArrayList<String>();
-
+    private void jar(JarInputStream jarStream) throws IOException {
         JarEntry entry;
         while ((entry = jarStream.getNextJarEntry()) != null) {
             if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
                 continue;
             }
-            String className = entry.getName();
-            className = className.replaceFirst(".class$", "");
-            if (className.contains(".")) continue;
-            className = className.replace('/', '.');
-            classNames.add(className);
+            readClassDef(jarStream);
         }
-
-        return classNames;
     }
 
 }
