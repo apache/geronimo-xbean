@@ -176,6 +176,14 @@ public class ClassFinder extends AbstractFinder {
             if (file.isDirectory()) {
                 scanDir(file);
             } else if (file.getName().endsWith(".class")) {
+                final String name = file.getName();
+
+                // There must be not dot in a valid class name
+                // which means the only valid dot is the one from ".class"
+                if (name.indexOf('.') != name.length()-6) {
+                    continue;
+                }
+
                 InputStream in = new FileInputStream(file);
                 try {
                     readClassDef(in);
