@@ -97,10 +97,10 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete dir="${project.build.directory}/classes" />
                                 <unzip src="${project.build.directory}/xbean-finder-shaded-${project.version}.jar" dest="${project.build.directory}/classes" />
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
