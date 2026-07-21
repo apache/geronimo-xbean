@@ -106,7 +106,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                                     <classpath>
                                         <pathelement path="${basedir}/target/classes" />
@@ -118,7 +118,7 @@
                                 <copy todir="${basedir}/target/test-classes">
                                     <fileset dir="${basedir}/target/test-generated" />
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
