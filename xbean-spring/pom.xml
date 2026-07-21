@@ -95,6 +95,7 @@
                     <excludes>
                         <exclude>**/BeerUsingXBeanNSTest.java</exclude>
                     </excludes>
+                    <workingDirectory>${build.directory}</workingDirectory>
                 </configuration>
             </plugin>
             <plugin>

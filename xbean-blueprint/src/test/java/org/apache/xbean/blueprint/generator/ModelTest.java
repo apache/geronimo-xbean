@@ -72,7 +72,7 @@ public class ModelTest extends TestCase {
         // validate xsd has string for attribute VolumeWithPropertyEditor
         final AtomicBoolean gotExpected = new AtomicBoolean(false);
         XsdGenerator generator = new XsdGenerator(null);
-        generator.generateSchema(new PrintWriter("dummy") {
+        generator.generateSchema(new PrintWriter("target/dummy") {
             @Override
             public void println(String x) {
                 if (x.indexOf("volumeWithPropertyEditor") != -1) {

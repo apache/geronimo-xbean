@@ -102,6 +102,7 @@
                     <environmentVariables>
                         <_JAVA_OPTIONS>-Djdk.util.jar.version=9 -Djdk.util.jar.enableMultiRelease=force</_JAVA_OPTIONS>
                     </environmentVariables>
+                    <workingDirectory>${build.directory}</workingDirectory>
                 </configuration>
             </plugin>
         </plugins>
