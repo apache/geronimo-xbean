@@ -73,7 +73,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     // xbean.finder.prevent-lazy-linking= true will prevent it, see readClassDef(Class)
     private static final boolean ALLOW_LAZY_LINKING = !Boolean.getBoolean("xbean.finder.prevent-lazy-linking");
 
-    private final Set<Class<? extends Annotation>> metaroots = new HashSet<Class<? extends Annotation>>();
+    private final Set<Class<? extends Annotation>> metaroots = new HashSet<>();
 
     protected final Map<String, List<Info>> annotated = newAnnotatedMap();
 
@@ -1290,7 +1290,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
-    public class Annotatable {
+    public static class Annotatable {
         private final List<AnnotationInfo> annotations = new LinkedList<AnnotationInfo>();
 
         public Annotatable(AnnotatedElement element) {
@@ -1749,7 +1749,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
     }
 
-    public class AnnotationInfo extends Annotatable implements Info {
+    public static class AnnotationInfo extends Annotatable implements Info {
         private final String name;
 
         public AnnotationInfo(Annotation annotation) {
