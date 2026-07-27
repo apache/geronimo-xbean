@@ -339,44 +339,6 @@
 
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>apache-release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <configuration>
-                            <passphrase>${gpg.passphrase}</passphrase>
-                            <useAgent>${gpg.useagent}</useAgent>
-                            <gpgArguments>
-                                <arg>--digest-algo=SHA512</arg>
-                            </gpgArguments>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>doclint-java8-disable</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <properties>
-                <additionalparam>-Xdoclint:none</additionalparam>
-            </properties>
-        </profile>
-    </profiles>
-
     <build>
         <defaultGoal>install</defaultGoal>
 
@@ -410,7 +372,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.15.0</version>
                     <configuration>
                         <showDeprecation>false</showDeprecation>
                         <showWarnings>false</showWarnings>
@@ -423,7 +385,7 @@
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.16.1</version>
+                <version>0.18</version>
                 <configuration>
                     <includes>
                         <include>src/**/*</include>
@@ -492,46 +454,24 @@
                 </executions>
             </plugin>
 
-        </plugins>
-    </build>
-
-    <modules>
-        <module>xbean-classloader</module>
-        <module>xbean-bundleutils</module>
-        <module>xbean-asm-util</module>
-        <module>xbean-asm9-shaded</module>
-        <module>xbean-finder</module>
-        <module>xbean-finder-shaded</module>
-        <module>xbean-naming</module>
-        <module>xbean-reflect</module>
-        <module>xbean-blueprint</module>
-        <module>xbean-spring</module>
-        <module>xbean-telnet</module>
-        <module>maven-xbean-plugin</module>
-    </modules>
-
-    <reporting>
-        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>3.12.0</version>
                 <configuration>
                     <minmemory>128m</minmemory>
                     <maxmemory>512</maxmemory>
                     <breakiterator>true</breakiterator>
                     <quiet>true</quiet>
                     <verbose>false</verbose>
-                    <source>1.8</source>
-                    <!--
-                    FIXME: This worked in m1, but m2 complains about it being an invalid flag
+                    <source>${maven.compiler.source}</source>
 
-                    <additionalparam>-J-Djava.awt.headless=true</additionalparam>
-                    -->
+                    <doclint>none</doclint>
+
                     <linksource>true</linksource>
                     <links>
                         <!-- JSE -->
-                        <link>https://docs.oracle.com/javase/8/docs/api/</link>
+                        <link>https://docs.oracle.com/javase/11/docs/api/</link>
 
                         <!-- Libraries -->
                         <link>http://jakarta.apache.org/commons/collections/apidocs</link>
@@ -558,13 +498,24 @@
                 <version>2.0-beta-1</version>
             </plugin>
 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>surefire-report-maven-plugin</artifactId>
-                <version>2.0-beta-1</version>
-            </plugin>
-
         </plugins>
-    </reporting>
+
+    </build>
+
+    <modules>
+        <module>xbean-classloader</module>
+        <module>xbean-bundleutils</module>
+        <module>xbean-asm-util</module>
+        <module>xbean-asm9-shaded</module>
+        <module>xbean-finder</module>
+        <module>xbean-finder-shaded</module>
+        <module>xbean-naming</module>
+        <module>xbean-reflect</module>
+        <module>xbean-blueprint</module>
+        <module>xbean-spring</module>
+        <module>xbean-telnet</module>
+        <module>maven-xbean-plugin</module>
+    </modules>
+
 
 </project>
