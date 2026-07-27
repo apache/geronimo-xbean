@@ -49,7 +49,6 @@ import org.apache.xbean.spring.generator.XsdGenerator;
 
 /**
  * @author <a href="gnodet@apache.org">Guillaume Nodet</a>
- * @version $Id: GenerateApplicationXmlMojo.java 314956 2005-10-12 16:27:15Z brett $
  * @goal mapping
  * @description Creates xbean mapping file
  * @phase generate-sources
