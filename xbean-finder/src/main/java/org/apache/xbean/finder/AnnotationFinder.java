@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -79,10 +80,16 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     protected final Map<String, ClassInfo> classInfos = newClassInfoMap();
     protected final Map<String, ClassInfo> originalInfos = newClassInfoMap();
-    private final List<String> classesNotLoaded = new LinkedList<String>();
+    private final List<String> classesNotLoaded = new ArrayList<String>();
     private final Archive archive;
     private final boolean checkRuntimeAnnotation;
     private volatile boolean linking;
+
+    // Reverse map: interface-name → direct implementors/sub-interfaces. Lets collectImplementations()
+    // run in O(implementations) instead of O(all-classes). Built on demand by findImplementations()
+    // and rebuilt whenever classInfos has grown since the last build (linking loads more classes).
+    private final Map<String, List<ClassInfo>> interfaceImplementors = new HashMap<>();
+    private int interfaceIndexClassCount = -1;
 
     private AnnotationFinder(AnnotationFinder parent, Iterable<String> classNames) {
         this.archive = new SubArchive(classNames);
@@ -100,7 +107,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             readClassDef(info);
         }
 
-        resolveAnnotations(parent, new LinkedList<String>());
+        resolveAnnotations(parent, new HashSet<String>());
         for (ClassInfo classInfo : classInfos.values()) {
             if (isMetaRoot(classInfo)) {
                 try {
@@ -184,7 +191,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         index(info.fields);
     }
 
-    private void resolveAnnotations(AnnotationFinder parent, List<String> scanned) {
+    private void resolveAnnotations(AnnotationFinder parent, Set<String> scanned) {
         // Get a list of the annotations that exist before we start
         final List<String> annotations = new ArrayList<String>(annotated.keySet());
 
@@ -197,7 +204,8 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         // If the "annotated" list has grown, then we must scan those
         if (annotated.keySet().size() != annotations.size()) {
-            resolveAnnotations(parent, annotations);
+            scanned.addAll(annotations);
+            resolveAnnotations(parent, scanned);
         }
     }
 
@@ -241,7 +249,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public AnnotationFinder enableMetaAnnotations() {
         // diff new and old lists
-        resolveAnnotations(new LinkedList<String>());
+        resolveAnnotations(new HashSet<String>());
 
         linkMetaAnnotations();
 
@@ -255,6 +263,30 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         }
         return this;
+    }
+
+    /**
+     * (Re)builds the interface → implementors index if it is absent or stale. Linking and
+     * meta-annotation resolution both add entries to classInfos, so the index is keyed on the
+     * classInfos size at build time and discarded when that changes. Rebuilding always starts
+     * from an empty map so repeated calls cannot accumulate duplicate entries.
+     */
+    private void ensureInterfaceIndex() {
+        if (interfaceIndexClassCount == classInfos.size()) {
+            return;
+        }
+        interfaceImplementors.clear();
+        for (ClassInfo classInfo : classInfos.values()) {
+            for (String iface : classInfo.interfaces) {
+                List<ClassInfo> impls = interfaceImplementors.get(iface);
+                if (impls == null) {
+                    impls = new ArrayList<ClassInfo>();
+                    interfaceImplementors.put(iface, impls);
+                }
+                impls.add(classInfo);
+            }
+        }
+        interfaceIndexClassCount = classInfos.size();
     }
 
     public AnnotationFinder enableFindSubclasses() {
@@ -279,7 +311,7 @@ public class AnnotationFinder implements IAnnotationFinder {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    private void resolveAnnotations(List<String> scanned) {
+    private void resolveAnnotations(Set<String> scanned) {
         // Get a list of the annotations that exist before we start
         final List<String> annotations = new ArrayList<String>(annotated.keySet());
 
@@ -290,7 +322,8 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         // If the "annotated" list has grown, then we must scan those
         if (annotated.keySet().size() != annotations.size()) {
-            resolveAnnotations(annotations);
+            scanned.addAll(annotations);
+            resolveAnnotations(scanned);
         }
 
 
@@ -401,9 +434,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
 
         synchronized (parentInfo.subclassInfos) {
-            if (!parentInfo.subclassInfos.contains(classInfo)) {
-                parentInfo.subclassInfos.add(classInfo);
-            }
+            parentInfo.subclassInfos.add(classInfo);
         }
     }
 
@@ -609,58 +640,72 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     /**
-     * Naive implementation - works extremelly slow O(n^3)
+     * Finds classes that are directly annotated with the given annotation, plus all subclasses
+     * and implementors (transitively).  Runs in O(n * inheritance-depth) rather than the
+     * original O(n³) implementation.
      *
-     * @param annotation
+     * @param annotation the annotation to look for
      * @return list of directly or indirectly (inherited) annotated classes
      */
     public List<Class<?>> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class<?>> classes = new LinkedList<Class<?>>();
-        List<Info> infos = getAnnotationInfos(annotation.getName());
-        for (Info info : infos) {
-            try {
-                if (info instanceof ClassInfo) {
-                    classes.add(((ClassInfo) info).get());
+        final List<Class<?>> classes = new ArrayList<Class<?>>();
+        final Set<String> annotatedNames = new HashSet<String>();
+        final Set<ClassInfo> collected = new HashSet<ClassInfo>();
+
+        for (Info info : getAnnotationInfos(annotation.getName())) {
+            if (info instanceof ClassInfo) {
+                final ClassInfo classInfo = (ClassInfo) info;
+                try {
+                    final Class<?> loaded = classInfo.get();
+                    classes.add(loaded);
+                    // Match on the loaded (erased) name: superTypes and interfaces read from
+                    // bytecode are erased binary names, while ClassInfo.getName() may carry generics.
+                    annotatedNames.add(loaded.getName());
+                    collected.add(classInfo);
+                } catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
+                    // ignored per original behaviour
                 }
-            } catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
-                // TODO: ignored, but a log message would be appropriate
             }
         }
-        boolean annClassFound;
-        List<ClassInfo> tempClassInfos = new ArrayList<ClassInfo>(classInfos.values());
-        do {
-            annClassFound = false;
-            for (int pos = 0; pos < tempClassInfos.size(); pos++) {
-                ClassInfo classInfo = tempClassInfos.get(pos);
-                try {
-                    // check whether any superclass is annotated
-                    String superType = classInfo.getSuperType();
-                    for (Class clazz : classes) {
-                        if (superType.equals(clazz.getName())) {
-                            classes.add(classInfo.get());
-                            tempClassInfos.remove(pos);
-                            annClassFound = true;
+
+        // Iteratively propagate through subclasses / implementors until stable
+        final List<ClassInfo> remaining = new ArrayList<ClassInfo>(classInfos.values());
+        remaining.removeAll(collected);
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            final Iterator<ClassInfo> it = remaining.iterator();
+            while (it.hasNext()) {
+                final ClassInfo classInfo = it.next();
+                boolean matches = false;
+                final String superType = classInfo.getSuperType();
+                if (superType != null && annotatedNames.contains(superType)) {
+                    matches = true;
+                }
+                if (!matches) {
+                    for (final String iface : classInfo.getInterfaces()) {
+                        final int genIdx = iface.indexOf('<');
+                        final String rawIface = genIdx >= 0 ? iface.substring(0, genIdx) : iface;
+                        if (annotatedNames.contains(rawIface)) {
+                            matches = true;
                             break;
                         }
                     }
-                    // check whether any interface is annotated
-                    List<String> interfces = classInfo.getInterfaces();
-                    for (String interfce : interfces) {
-                        for (Class clazz : classes) {
-                            if (interfce.replaceFirst("<.*>", "").equals(clazz.getName())) {
-                                classes.add(classInfo.get());
-                                tempClassInfos.remove(pos);
-                                annClassFound = true;
-                                break;
-                            }
-                        }
+                }
+                if (matches) {
+                    it.remove();
+                    try {
+                        final Class<?> loaded = classInfo.get();
+                        classes.add(loaded);
+                        annotatedNames.add(loaded.getName());
+                        changed = true;
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                        classesNotLoaded.add(classInfo.getName());
                     }
-                } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                    classesNotLoaded.add(classInfo.getName());
                 }
             }
-        } while (annClassFound);
+        }
         return classes;
     }
 
@@ -1070,28 +1115,26 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         final String interfaceName = clazz.getName();
 
+        ensureInterfaceIndex();
+
         // Collect all interfaces extending the main interface (recursively)
         // Collect all implementations of interfaces
         // i.e. all *directly* implementing classes
         final List<ClassInfo> infos = collectImplementations(interfaceName);
 
-        // Collect all subclasses of implementations
-        final List<Class<? extends T>> classes = new LinkedList<Class<? extends T>>();
+        // Use LinkedHashSet to preserve insertion order while giving O(1) contains()
+        final Set<Class<? extends T>> classesSet = new LinkedHashSet<Class<? extends T>>();
         for (ClassInfo info : infos) {
             try {
                 final Class<? extends T> impl = (Class<? extends T>) info.get();
 
-                if (!classes.contains(impl) && clazz.isAssignableFrom(impl)) {
-                    classes.add(impl);
+                if (!classesSet.contains(impl) && clazz.isAssignableFrom(impl)) {
+                    classesSet.add(impl);
 
                     // Optimization: Don't need to call this method if parent class was already searched
-
-
                     final List<Class<? extends T>> c = _findSubclasses((Class<T>) impl);
                     for (final Class<? extends T> cl : c) {
-                        if (!classes.contains(cl)) {
-                            classes.add(cl);
-                        }
+                        classesSet.add(cl);
                     }
                 }
 
@@ -1099,31 +1142,36 @@ public class AnnotationFinder implements IAnnotationFinder {
                 classesNotLoaded.add(info.getName());
             }
         }
-        return classes;
+        return new ArrayList<Class<? extends T>>(classesSet);
     }
 
+    /**
+     * Callers must have invoked {@link #ensureInterfaceIndex()} beforehand.
+     */
     private List<ClassInfo> collectImplementations(String interfaceName) {
         final List<ClassInfo> infos = new LinkedList<ClassInfo>();
 
-        for (ClassInfo classInfo : classInfos.values()) {
+        final List<ClassInfo> directImpls = interfaceImplementors.get(interfaceName);
+        if (directImpls == null) {
+            return infos;
+        }
 
-            if (classInfo.interfaces.contains(interfaceName)) {
+        for (ClassInfo classInfo : directImpls) {
 
-                infos.add(classInfo);
+            infos.add(classInfo);
 
-                try {
+            try {
 
-                    final Class clazz = classInfo.get();
+                final Class clazz = classInfo.get();
 
-                    if (clazz.isInterface() && !clazz.isAnnotation()) {
+                if (clazz.isInterface() && !clazz.isAnnotation()) {
 
-                        infos.addAll(collectImplementations(classInfo.name));
+                    infos.addAll(collectImplementations(classInfo.name));
 
-                    }
-
-                } catch (ClassNotFoundException | NoClassDefFoundError ignore) {
-                    // we'll deal with this later
                 }
+
+            } catch (ClassNotFoundException | NoClassDefFoundError ignore) {
+                // we'll deal with this later
             }
         }
         return infos;
@@ -1291,7 +1339,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     public static class Annotatable {
-        private final List<AnnotationInfo> annotations = new LinkedList<AnnotationInfo>();
+        private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
 
         public Annotatable(AnnotatedElement element) {
             for (Annotation annotation : getAnnotations(element)) {
@@ -1402,7 +1450,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         private final List<MethodInfo> constructors = new SingleLinkedList<MethodInfo>();
         private String superType;
         private ClassInfo superclassInfo;
-        private final List<ClassInfo> subclassInfos = new SingleLinkedList<ClassInfo>();
+        private final Set<ClassInfo> subclassInfos = new LinkedHashSet<ClassInfo>();
         private final List<String> interfaces = new SingleLinkedList<String>();
         private final List<FieldInfo> fields = new SingleLinkedList<FieldInfo>();
         private Class<?> clazz;
@@ -1477,8 +1525,8 @@ public class AnnotationFinder implements IAnnotationFinder {
         public Class<?> get() throws ClassNotFoundException {
             if (clazz != null) return clazz;
             try {
-                String fixedName = name.replaceFirst("<.*>", "");
-                this.clazz = archive.loadClass(fixedName);
+                final String loadName = name.indexOf('<') < 0 ? name : name.replaceFirst("<.*>", "");
+                this.clazz = archive.loadClass(loadName);
                 return clazz;
             } catch (ClassNotFoundException notFound) {
                 classesNotLoaded.add(name);
@@ -1877,19 +1925,47 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            ClassInfo classInfo = ((ClassInfo) info);
-            FieldInfo fieldInfo = new FieldInfo(classInfo, name, desc);
-            classInfo.getFields().add(fieldInfo);
-            return new InfoBuildingVisitor(fieldInfo).fieldVisitor();
+            final ClassInfo classInfo = (ClassInfo) info;
+            final FieldInfo fieldInfo = new FieldInfo(classInfo, name, desc);
+            // Register the field in its declaring class lazily: only when the first annotation is found.
+            // EmptyVisitor.fv delegates to EmptyVisitor.this.visitAnnotation(), so the override below
+            // is guaranteed to be called for each annotation on this field.
+            return new InfoBuildingVisitor(fieldInfo) {
+                @Override
+                public AnnotationVisitor visitAnnotation(String desc2, boolean visible) {
+                    if (isTracked(desc2) && fieldInfo.getAnnotations().isEmpty()) {
+                        classInfo.getFields().add(fieldInfo);
+                    }
+                    return super.visitAnnotation(desc2, visible);
+                }
+            }.fieldVisitor();
         }
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            ClassInfo classInfo = ((ClassInfo) info);
-            MethodInfo methodInfo = new MethodInfo(classInfo, name, desc);
-
-            classInfo.getMethods().add(methodInfo);
-            return new InfoBuildingVisitor(methodInfo).methodVisitor();
+            final ClassInfo classInfo = (ClassInfo) info;
+            final MethodInfo methodInfo = new MethodInfo(classInfo, name, desc);
+            // Register the method in its declaring class lazily: only when the first annotation
+            // (on the method itself or on one of its parameters) is found.
+            return new InfoBuildingVisitor(methodInfo) {
+                private void ensureRegistered(String desc2) {
+                    if (isTracked(desc2)
+                            && methodInfo.getAnnotations().isEmpty()
+                            && methodInfo.getParameters().isEmpty()) {
+                        classInfo.getMethods().add(methodInfo);
+                    }
+                }
+                @Override
+                public AnnotationVisitor visitAnnotation(String desc2, boolean visible) {
+                    ensureRegistered(desc2);
+                    return super.visitAnnotation(desc2, visible);
+                }
+                @Override
+                public AnnotationVisitor visitMethodParameterAnnotation(int param, String desc2, boolean visible) {
+                    ensureRegistered(desc2);
+                    return super.visitMethodParameterAnnotation(param, desc2, visible);
+                }
+            }.methodVisitor();
         }
 
 
