@@ -82,7 +82,7 @@
         <arguments />
 
         <asm.version>9.10.1</asm.version>
-        <spring.version>5.3.39</spring.version>
+        <spring.version>6.1.20</spring.version>
 
         <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
     </properties>
