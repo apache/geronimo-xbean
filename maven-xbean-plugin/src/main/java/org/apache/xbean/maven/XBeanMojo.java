@@ -30,12 +30,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.inject.Inject;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.xbean.spring.generator.DocumentationGenerator;
 import org.apache.xbean.spring.generator.GeneratorPlugin;
@@ -48,96 +55,104 @@ import org.apache.xbean.spring.generator.XmlMetadataGenerator;
 import org.apache.xbean.spring.generator.XsdGenerator;
 
 /**
+ * Creates xbean mapping file.
+ *
  * @author <a href="gnodet@apache.org">Guillaume Nodet</a>
- * @goal mapping
- * @description Creates xbean mapping file
- * @phase generate-sources
- * @requiresDependencyResolution compile
  */
+@Mojo(name = "mapping",
+        defaultPhase = LifecyclePhase.GENERATE_RESOURCES,
+        requiresDependencyResolution = ResolutionScope.COMPILE)
 public class XBeanMojo extends AbstractMojo implements LogFacade {
 
     /**
-     * @parameter expression="${project}"
-     * @required
+     * MavenProject instance
      */
+    @Parameter(defaultValue = "${project}", required = true)
     private MavenProject project;
 
     /**
      * Maven ProjectHelper
-     *
-     * @component
      */
+    @Inject
     protected MavenProjectHelper projectHelper;
 
     /**
-     * @parameter
-     * @required
+     * The target namespace for the generated metadata
      */
+    @Parameter(required = true)
     private String namespace;
 
     /**
-     * @parameter expression="${basedir}/src/main/java"
-     * @required
+     * Source directory containing Java files to analyze
      */
+    @Parameter(defaultValue = "${basedir}/src/main/java", required = true)
     private File srcDir;
 
     /**
-     * @parameter
+     * List of file patterns to include in analysis
      */
+    @Parameter
     private List<String> includes;
 
     /**
-     * @parameter
+     * Class path entries for dependency resolution
      */
+    @Parameter
     private List<String> classPathIncludes;
 
     /**
-     * @parameter
+     * Comma-separated list of classes to exclude from analysis
      */
+    @Parameter
     private String excludedClasses;
 
     /**
-     * @parameter expression="${basedir}/target/xbean/"
-     * @required
+     * Output directory for generated files
      */
+    @Parameter(defaultValue = "${basedir}/target/xbean/", required = true)
     private File outputDir;
 
     /**
-     * @parameter
+     * Custom schema file path
      */
+    @Parameter
     private File schema;
 
     /**
-     * @parameter expression="org.apache.xbean.spring.context.impl"
+     * Property editor paths configuration
      */
+    @Parameter(defaultValue = "org.apache.xben.spring.context.impl")
     private String propertyEditorPaths;
 
     /**
-     * @parameter schemaAsArtifact
+     * Generate schema artifact
      */
+    @Parameter(name = "schemaAsArtifact", defaultValue = "true")
     private boolean schemaAsArtifact = true;
-    
+
     /**
-     * @parameter 
+     * Generate spring schemas file
      */
+    @Parameter(defaultValue = "true")
     private boolean generateSpringSchemasFile = true;
 
     /**
-     * @parameter 
+     * Generate spring handlers file
      */
+    @Parameter(defaultValue = "true")
     private boolean generateSpringHandlersFile = true;
 
     /**
-     * @parameter
+     * Enforce strict XSD ordering
      */
+    @Parameter(defaultValue = "true")
     private boolean strictXsdOrder = true;
 
     /**
-     * A list of additional GeneratorPlugins that should get used executed
+     * A list of additional GeneratorPlugins that should get executed
      * when generating output.
-     *
-     * @parameter
      */
+    @Parameter
     private List<GeneratorPlugin> generatorPlugins = Collections.emptyList();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -151,15 +166,15 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         getLog().debug( "schemaAsArtifact[" + schemaAsArtifact + "]");
         getLog().debug( "generateSpringSchemasFile[" + generateSpringSchemasFile + "]");
         getLog().debug( "generateSpringHandlersFile[" + generateSpringHandlersFile + "]");
-        
+
         if (schema == null) {
             schema = new File(outputDir, project.getArtifactId() + ".xsd");
         }
 
         if (propertyEditorPaths != null) {
-            List<String> editorSearchPath = new LinkedList<String>(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
+            List<String> editorSearchPath = new LinkedList<>(Arrays.asList(PropertyEditorManager.getEditorSearchPath()));
             for (StringTokenizer paths = new StringTokenizer(propertyEditorPaths, " ,"); paths.hasMoreElements(); ) {
-                //StringTokenizer implements Enumeration<Object>, not Enumeration<String> !!
+                // StringTokener implements Enumeration<Object>, not Enumeration<String> !!
                 editorSearchPath.add((String) paths.nextElement());
             }
             PropertyEditorManager.setEditorSearchPath( editorSearchPath.toArray(new String[editorSearchPath.size()]));
@@ -170,14 +185,14 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
         try {
             schema.getParentFile().mkdirs();
 
-            String[] excludedClasses = null;
+            String[] excludedClassEff = null;
             if (this.excludedClasses != null) {
-                excludedClasses = this.excludedClasses.split(" *, *");
+                excludedClassEff = this.excludedClasses.split(" *, *");
             }
             Set<Artifact> dependencies = project.getDependencyArtifacts();
-            List<File> sourceJars = new ArrayList<File>();
+            List<File> sourceJars = new ArrayList<>();
             sourceJars.add(srcDir);
-            if( includes !=null ) {
+            if( includes != null ) {
                 for (String src : includes) {
                     sourceJars.add(new File(src));
                 }
@@ -189,37 +204,37 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                 }
             }
             File[] srcJars = sourceJars.toArray(new File[sourceJars.size()]);
-            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, srcJars, excludedClasses);
+            MappingLoader mappingLoader = new QdoxMappingLoader(namespace, srcJars, excludedClassEff);
             GeneratorPlugin[] plugins = new GeneratorPlugin[]{
-                new XmlMetadataGenerator(outputDir.getAbsolutePath(), schema, generateSpringSchemasFile, generateSpringHandlersFile),
-                new DocumentationGenerator(schema),
-                new XsdGenerator(schema, strictXsdOrder),
-                new WikiDocumentationGenerator(schema),
+                    new XmlMetadataGenerator(outputDir.getAbsolutePath(), schema, generateSpringSchemasFile, generateSpringHandlersFile),
+                    new DocumentationGenerator(schema),
+                    new XsdGenerator(schema, strictXsdOrder),
+                    new WikiDocumentationGenerator(schema),
             };
 
             // load the mappings
             Thread.currentThread().setContextClassLoader(getClassLoader());
             Set<NamespaceMapping> namespaces = mappingLoader.loadNamespaces();
             if (namespaces.isEmpty()) {
-                System.out.println("Warning: no namespaces found!");
+                System.out.println("Warning: no namespces found!");
             }
 
             // generate the files
-            for (NamespaceMapping namespaceMapping : namespaces) {
+            for (NamespaceMapping namespaceMaping : namespaces) {
                 for (GeneratorPlugin plugin : plugins) {
                     plugin.setLog(this);
-                    plugin.generate(namespaceMapping);
+                    plugin.generate(namespaceMaping);
                 }
                 for (GeneratorPlugin plugin : generatorPlugins) {
                     plugin.setLog(this);
-                    plugin.generate(namespaceMapping);
+                    plugin.generate(namespaceMaping);
                 }
             }
 
-            // Attach them as artifacts
+            // Atach them as artifacts
             if (schemaAsArtifact) {
                 projectHelper.attachArtifact(project, "xsd", null, schema);
-                projectHelper.attachArtifact(project, "html", "schema", new File(schema.getAbsolutePath() + ".html"));
+                projectHelper.attachArtifact(project, "html", "chema", new File(schema.getAbsolutePath() + ".html"));
             }
 
             Resource res = new Resource();
@@ -244,7 +259,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
 
     protected URLClassLoader getClassLoader() throws MojoExecutionException {
         try {
-            Set<URL> urls = new HashSet<URL>();
+            Set<URL> urls = new HashSet<>();
 
             URL mainClasses = new File(project.getBuild().getOutputDirectory())
                     .toURI().toURL();
@@ -264,7 +279,7 @@ public class XBeanMojo extends AbstractMojo implements LogFacade {
                 urls.add(classPathElement.getFile().toURI().toURL());
             }
 
-            if( classPathIncludes!=null ) {
+            if (classPathIncludes != null) {
                 for (String include : classPathIncludes) {
                     final URL url = new File(include).toURI().toURL();
                     getLog().debug("Adding to classpath : " + url);
