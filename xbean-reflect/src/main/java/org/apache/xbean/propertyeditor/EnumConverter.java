@@ -47,7 +47,7 @@ public class EnumConverter extends AbstractConverter {
             } catch (final NumberFormatException e) {
                 // no-op
             } catch (final Exception e) {
-                cause = e;
+                // no-op
             }
 
             throw new PropertyEditorException("Value \"" + text + "\" cannot be converted to enum type " + type.getName(), cause);

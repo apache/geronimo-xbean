@@ -159,7 +159,7 @@ public class MJarJarArchiveTest {
         ensureJava9OrLater();
         final URLClassLoader loader = newMJarClassLoader();
         final Set<URL> urls = ClassLoaders.findUrlFromResources(loader);
-        final Collection<String> testUrls = new ArrayList<String>();
+        final Collection<String> testUrls = new ArrayList<>();
         for (final URL u : urls) {
             final String str = u.toExternalForm();
             if (str.contains("org.apache.xbean.finder.archive.MJarJarArchiveTest")) {

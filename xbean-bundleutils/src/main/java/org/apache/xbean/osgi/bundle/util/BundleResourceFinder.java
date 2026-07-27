@@ -102,7 +102,7 @@ public class BundleResourceFinder {
     }
 
     public Set<URL> find() {
-        Set<URL> resources = new LinkedHashSet<URL>();
+        Set<URL> resources = new LinkedHashSet<>();
         try {
             find(new DefaultResourceFinderCallback(resources));
         } catch (Exception e) {
@@ -241,7 +241,7 @@ public class BundleResourceFinder {
         private Set<URL> resources;
 
         public DefaultResourceFinderCallback() {
-            this(new LinkedHashSet<URL>());
+            this(new LinkedHashSet<>());
         }
 
         public DefaultResourceFinderCallback(Set<URL> resources) {
