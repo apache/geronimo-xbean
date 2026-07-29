@@ -83,6 +83,8 @@
 
         <asm.version>9.10.1</asm.version>
         <spring.version>5.3.39</spring.version>
+        <!-- maven API version the maven-xbean-plugin is built against, do not use maven.version which is set by the running maven -->
+        <mvn.version>3.9.11</mvn.version>
 
         <xbean.automatic.module.name>${project.groupId}</xbean.automatic.module.name>
     </properties>
@@ -381,17 +383,18 @@
                 <artifactId>apache-rat-plugin</artifactId>
                 <version>0.18</version>
                 <configuration>
-                    <includes>
-                        <include>src/**/*</include>
-                        <include>pom.xml</include>
-                    </includes>
-                    <excludes>
-                        <exclude>**/*/MANIFEST.MF</exclude>
-                        <exclude>.git</exclude>
-                        <exclude>.gitignore</exclude>
-                        <exclude>*.log</exclude>
-                        <exclude>*.patch</exclude>
-                    </excludes>
+                    <inputExcludes>
+                        <inputExclude>**/MANIFEST.MF</inputExclude>
+                        <inputExclude>*.log</inputExclude>
+                        <inputExclude>*.patch</inputExclude>
+                        <inputExclude>src/test/resources/**</inputExclude>
+                        <inputExclude>src/test-data/**</inputExclude>
+                        <inputExclude>**/src/test/resources/**</inputExclude>
+                        <inputExclude>**/src/test-data/**</inputExclude>
+                        <inputExclude>**/dependency-reduced-pom.xml</inputExclude>
+                        <inputExclude>**/*.releaseBackup</inputExclude>
+                        <inputExclude>DEPENDENCIES</inputExclude>
+                    </inputExcludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -416,33 +419,6 @@
                         <id>attach-sources</id>
                         <goals>
                             <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>0.8</version>
-                <configuration>
-                    <excludes>
-                        <exclude>.git/**/*</exclude>
-                        <exclude>.idea/**/*</exclude>
-                        <exclude>readme/**/*</exclude>
-                        <exclude>**/*.log</exclude>
-                        <exclude>src/test/resources/**/*</exclude>
-                        <exclude>src/test-data/**/*</exclude>
-                        <exclude>dependency-reduced-pom.xml</exclude>
-                        <exclude>**/*.releaseBackup</exclude>
-                        <exclude>DEPENDENCIES</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>

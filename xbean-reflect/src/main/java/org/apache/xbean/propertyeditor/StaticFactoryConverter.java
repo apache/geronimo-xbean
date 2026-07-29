@@ -54,31 +54,46 @@ import java.util.List;
  */
 public class StaticFactoryConverter extends AbstractConverter {
 
-    private final Method method;
+    private final List<Method> methods;
 
     public StaticFactoryConverter(final Class type, final Method method) {
+        this(type, Collections.singletonList(method));
+    }
+
+    public StaticFactoryConverter(final Class type, final List<Method> methods) {
         super(type);
-        this.method = method;
+        this.methods = methods;
     }
 
     @Override
     protected Object toObjectImpl(final String text) {
-        try {
-            return method.invoke(null, text);
-        } catch (final Exception e) {
-            final String message = String.format("Cannot convert string '%s' to %s.", text, super.getType());
-            throw new PropertyEditorException(message, e);
+        // some factories only accept a subset of the values the next ones support,
+        // ie InetAddress.ofLiteral (jdk22) refuses the hostnames getByName handles,
+        // so fallback on the next candidate instead of failing on the preferred one
+        Exception failure = null;
+        for (final Method method : methods) {
+            try {
+                return method.invoke(null, text);
+            } catch (final Exception e) {
+                if (failure == null) {
+                    failure = e;
+                }
+            }
         }
+        final String message = String.format("Cannot convert string '%s' to %s.", text, super.getType());
+        throw new PropertyEditorException(message, failure);
     }
 
     public static StaticFactoryConverter editor(final Class type) {
         final List<Method> candidates = getCandidates(type);
 
-        if (candidates.size() == 0) return null;
+        if (candidates.size() == 0) {
+            return null;
+        }
 
-        final Method method = select(candidates);
+        sort(candidates);
 
-        return new StaticFactoryConverter(type, method);
+        return new StaticFactoryConverter(type, candidates);
     }
 
     static List<Method> getCandidates(final Class type) {
@@ -101,12 +116,6 @@ public class StaticFactoryConverter extends AbstractConverter {
      * We want the selection to be stable and not dependent on
      * VM reflection ordering.
      */
-    static Method select(final List<Method> candidates) {
-        sort(candidates);
-
-        return candidates.get(0);
-    }
-
     static void sort(final List<Method> candidates) {
         Collections.sort(candidates, new Comparator<Method>() {
             public int compare(final Method a, final Method b) {
