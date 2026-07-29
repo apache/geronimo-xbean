@@ -381,7 +381,8 @@
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.18</version>
+                <!-- 0.18 requires Java 17+, 0.17 is the last release compatible with the project Java 11 baseline -->
+                <version>0.17</version>
                 <configuration>
                     <inputExcludes>
                         <inputExclude>**/MANIFEST.MF</inputExclude>
