@@ -458,9 +458,11 @@
                     <breakiterator>true</breakiterator>
                     <quiet>true</quiet>
                     <verbose>false</verbose>
+                    <failOnError>false</failOnError>
                     <source>${maven.compiler.source}</source>
 
                     <doclint>none</doclint>
+                    <source>${maven.compiler.source}</source>
 
                     <linksource>true</linksource>
                     <links>
