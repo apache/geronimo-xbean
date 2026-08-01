@@ -1125,9 +1125,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
                     // Optimization: Don't need to call this method if parent class was already searched
                     final List<Class<? extends T>> c = _findSubclasses((Class<T>) impl);
-                    for (final Class<? extends T> cl : c) {
-                        classesSet.add(cl);
-                    }
+                    classesSet.addAll(c);
                 }
 
             } catch (final ClassNotFoundException | NoClassDefFoundError e) {

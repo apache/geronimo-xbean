@@ -40,9 +40,7 @@ public class UnsetPropertiesRecipe extends AbstractRecipe {
 
         // copy to a properties object
         Properties properties = new Properties();
-        for (Map.Entry<String, Object> entry : unsetProperties.entrySet()) {
-            properties.put(entry.getKey(), entry.getValue());
-        }
+        properties.putAll(unsetProperties);
 
         // add to execution context if name is specified
         if (getName() != null) {

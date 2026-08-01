@@ -36,9 +36,7 @@ public class AllPropertiesRecipe extends AbstractRecipe {
 
         // copy to a properties object
         Properties properties = new Properties();
-        for (Map.Entry<String, Object> entry : allProperties.entrySet()) {
-            properties.put(entry.getKey(), entry.getValue());
-        }
+        properties.putAll(allProperties);
 
         // add to execution context if name is specified
         if (getName() != null) {

@@ -166,15 +166,11 @@ public class MetaAnnotatedElement<T extends AnnotatedElement> implements  Annota
                 elements.addAll(asList(def.getDeclaredMethods()));
 
                 for (Method method : def.getDeclaredMethods()) {
-                    for (Annotation[] array : method.getParameterAnnotations()) {
-                        groups.add(array);
-                    }
+                    groups.addAll(asList(method.getParameterAnnotations()));
                 }
 
                 for (Constructor constructor : def.getDeclaredConstructors()) {
-                    for (Annotation[] array : constructor.getParameterAnnotations()) {
-                        groups.add(array);
-                    }
+                    groups.addAll(asList(constructor.getParameterAnnotations()));
                 }
 
                 for (AnnotatedElement element : elements) {

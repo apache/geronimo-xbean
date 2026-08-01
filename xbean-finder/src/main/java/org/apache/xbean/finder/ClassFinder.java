@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -91,7 +92,7 @@ public class ClassFinder extends AbstractFinder {
     }
 
     public ClassFinder(ClassLoader classLoader, URL url) {
-        this(classLoader, Arrays.asList(url));
+        this(classLoader, Collections.singletonList(url));
     }
 
     public ClassFinder(ClassLoader classLoader, Collection<URL> urls) {
