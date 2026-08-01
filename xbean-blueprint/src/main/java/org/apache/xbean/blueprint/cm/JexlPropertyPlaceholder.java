@@ -105,7 +105,7 @@ public class JexlPropertyPlaceholder extends CmPropertyPlaceholder {
             return null;
         }
 
-        public void putAll(Map<? extends String, ? extends Object> map) {
+        public void putAll(Map<? extends String, ?> map) {
         }
 
         public void clear() {
