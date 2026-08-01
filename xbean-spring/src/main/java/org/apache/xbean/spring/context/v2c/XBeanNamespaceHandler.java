@@ -191,13 +191,11 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
      * Registers whatever custom editors we need
      */
     public static void registerCustomEditors(DefaultListableBeanFactory beanFactory) {
-        PropertyEditorRegistrar registrar = new PropertyEditorRegistrar() {
-            public void registerCustomEditors(PropertyEditorRegistry registry) {
-                registry.registerCustomEditor(java.io.File.class, new org.apache.xbean.spring.context.impl.FileEditor());
-                registry.registerCustomEditor(java.net.URI.class, new org.apache.xbean.spring.context.impl.URIEditor());
-                registry.registerCustomEditor(java.util.Date.class, new org.apache.xbean.spring.context.impl.DateEditor());
-                registry.registerCustomEditor(javax.management.ObjectName.class, new org.apache.xbean.spring.context.impl.ObjectNameEditor());
-            }
+        PropertyEditorRegistrar registrar = registry -> {
+            registry.registerCustomEditor(File.class, new org.apache.xbean.spring.context.impl.FileEditor());
+            registry.registerCustomEditor(java.net.URI.class, new org.apache.xbean.spring.context.impl.URIEditor());
+            registry.registerCustomEditor(java.util.Date.class, new org.apache.xbean.spring.context.impl.DateEditor());
+            registry.registerCustomEditor(javax.management.ObjectName.class, new org.apache.xbean.spring.context.impl.ObjectNameEditor());
         };
 
         beanFactory.addPropertyEditorRegistrar(registrar);

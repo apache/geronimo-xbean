@@ -22,17 +22,9 @@ import javax.naming.Name;
  * @version $Rev$ $Date$
  */
 public interface ContextAccess {
-    ContextAccess MODIFIABLE = new ContextAccess() {
-        public boolean isModifiable(Name name) {
-            return true;
-        }
-    };
+    ContextAccess MODIFIABLE = name -> true;
 
-    ContextAccess UNMODIFIABLE = new ContextAccess() {
-        public boolean isModifiable(Name name) {
-            return false;
-        }
-    };
+    ContextAccess UNMODIFIABLE = name -> false;
 
     boolean isModifiable(Name name);
 }

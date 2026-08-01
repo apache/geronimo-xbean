@@ -73,18 +73,16 @@ public class TelnetDaemon implements Runnable {
     }
 
     public synchronized void service(final Socket socket) throws IOException {
-        Thread d = new Thread(new Runnable() {
-            public void run() {
+        Thread d = new Thread(() -> {
+            try {
+                shell.service(socket);
+            } catch (SecurityException e) {
+            } catch (Throwable e) {
+            } finally {
                 try {
-                    shell.service(socket);
-                } catch (SecurityException e) {
-                } catch (Throwable e) {
-                } finally {
-                    try {
-                        if (socket != null)
-                            socket.close();
-                    } catch (Throwable t) {
-                    }
+                    if (socket != null)
+                        socket.close();
+                } catch (Throwable t) {
                 }
             }
         });

@@ -117,12 +117,10 @@ public class StaticFactoryConverter extends AbstractConverter {
      * VM reflection ordering.
      */
     static void sort(final List<Method> candidates) {
-        Collections.sort(candidates, new Comparator<>() {
-            public int compare(final Method a, final Method b) {
-                int av = grade(a);
-                int bv = grade(b);
-                return (a.getName().compareTo(b.getName()) + (av - bv));
-            }
+        Collections.sort(candidates, (a, b) -> {
+            int av = grade(a);
+            int bv = grade(b);
+            return (a.getName().compareTo(b.getName()) + (av - bv));
         });
     }
 

@@ -66,11 +66,8 @@ public class ClassFinderTest extends TestCase {
         }
 
         urlSet = urlSet.excludeJavaHome();
-        urlSet = urlSet.filter(new Filter() { // keep only test classes to avoid to scan asm etc
-            public boolean accept(final String name) {
-                return name.contains("test-classes");
-            }
-        });
+        // keep only test classes to avoid to scan asm etc
+        urlSet = urlSet.filter(name -> name.contains("test-classes"));
 
         classFinder = new ClassFinder(classLoader, urlSet.getUrls());
     }

@@ -190,18 +190,16 @@ public class ModelTest extends TestCase {
             }
         });
         //TODO blueprint what ??
-        builder.setEntityResolver(new EntityResolver() {
-            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        builder.setEntityResolver((publicId, systemId) -> {
 //                PluggableSchemaResolver springResolver = new PluggableSchemaResolver(getClass().getClassLoader());
-                InputSource source = null;//springResolver.resolveEntity(publicId, systemId);
-                if (source == null && "http://xbean.apache.org/test.xsd".equals(systemId)) {
-                    source = new InputSource(new FileInputStream(xsd));
-                    source.setPublicId(publicId);
-                    source.setSystemId(systemId);
-                }
-
-                return source;
+            InputSource source = null;//springResolver.resolveEntity(publicId, systemId);
+            if (source == null && "http://xbean.apache.org/test.xsd".equals(systemId)) {
+                source = new InputSource(new FileInputStream(xsd));
+                source.setPublicId(publicId);
+                source.setSystemId(systemId);
             }
+
+            return source;
         });
         builder.parse(xml);
         if (error.get() != null) {

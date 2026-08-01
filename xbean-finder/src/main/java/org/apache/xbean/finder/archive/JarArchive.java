@@ -161,27 +161,25 @@ public class JarArchive implements Archive, AutoCloseable {
             }
             if (mjar.isMjar()) { // sort it to ensure we browse META-INF/versions first
                 final List<JarEntry> list = new ArrayList<>(Collections.list(entries));
-                Collections.sort(list, new Comparator<>() {
-                    public int compare(JarEntry o1, JarEntry o2) {
-                        final String n2 = o2.getName();
-                        final String n1 = o1.getName();
-                        final boolean n1v = n1.startsWith("META-INF/versions/");
-                        final boolean n2v = n2.startsWith("META-INF/versions/");
-                        if (n1v && n2v) {
-                            return n1.compareTo(n2);
-                        }
-                        if (n1v) {
-                            return -1;
-                        }
-                        if (n2v) {
-                            return 1;
-                        }
-                        try {
-                            return Integer.parseInt(n2) - Integer.parseInt(n1);
-                        }
-                        catch (final NumberFormatException nfe) {
-                            return n2.compareTo(n1);
-                        }
+                Collections.sort(list, (o1, o2) -> {
+                    final String n2 = o2.getName();
+                    final String n1 = o1.getName();
+                    final boolean n1v = n1.startsWith("META-INF/versions/");
+                    final boolean n2v = n2.startsWith("META-INF/versions/");
+                    if (n1v && n2v) {
+                        return n1.compareTo(n2);
+                    }
+                    if (n1v) {
+                        return -1;
+                    }
+                    if (n2v) {
+                        return 1;
+                    }
+                    try {
+                        return Integer.parseInt(n2) - Integer.parseInt(n1);
+                    }
+                    catch (final NumberFormatException nfe) {
+                        return n2.compareTo(n1);
                     }
                 });
                 stream = list.iterator();

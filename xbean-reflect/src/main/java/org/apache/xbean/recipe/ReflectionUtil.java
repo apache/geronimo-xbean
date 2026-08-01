@@ -620,14 +620,12 @@ public final class ReflectionUtil {
 
         // get all methods sorted so that the methods with the most constructor args are first
         List<Constructor> constructors = new ArrayList<>(Arrays.asList(typeClass.getDeclaredConstructors()));
-        Collections.sort(constructors, new Comparator<>() {
-            public int compare(Constructor constructor1, Constructor constructor2) {
-                int diff = constructor2.getParameterTypes().length - constructor1.getParameterTypes().length;
-                if (diff == 0) { // prefer public over private
-                    return visibilityLevel(constructor1.getModifiers()) - visibilityLevel(constructor2.getModifiers());
-                }
-                return diff;
+        Collections.sort(constructors, (constructor1, constructor2) -> {
+            int diff = constructor2.getParameterTypes().length - constructor1.getParameterTypes().length;
+            if (diff == 0) { // prefer public over private
+                return visibilityLevel(constructor1.getModifiers()) - visibilityLevel(constructor2.getModifiers());
             }
+            return diff;
         });
 
         // as we check each constructor, we remember the closest invalid match so we can throw a nice exception to the user
@@ -755,14 +753,12 @@ public final class ReflectionUtil {
         // get all methods sorted so that the methods with the most constructor args are first
         List<Method> methods = new ArrayList<>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
-        Collections.sort(methods, new Comparator<>() {
-            public int compare(Method method2, Method method1) {
-                int diff = method1.getParameterTypes().length - method2.getParameterTypes().length;
-                if (diff == 0) { // prefer public over private
-                    return visibilityLevel(method1.getModifiers()) - visibilityLevel(method2.getModifiers());
-                }
-                return diff;
+        Collections.sort(methods, (method2, method1) -> {
+            int diff = method1.getParameterTypes().length - method2.getParameterTypes().length;
+            if (diff == 0) { // prefer public over private
+                return visibilityLevel(method1.getModifiers()) - visibilityLevel(method2.getModifiers());
             }
+            return diff;
         });
 
         // as we check each constructor, we remember the closest invalid match so we can throw a nice exception to the user
