@@ -75,7 +75,7 @@ public abstract class Parameter<E extends java.lang.reflect.Member> implements A
         if (o == this) {
             return true;
         }
-        if (o instanceof Parameter == false) {
+        if (!(o instanceof Parameter)) {
             return false;
         }
         Parameter<?> p = (Parameter<?>) o;

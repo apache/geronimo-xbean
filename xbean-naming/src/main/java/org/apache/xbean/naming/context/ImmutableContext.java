@@ -138,19 +138,19 @@ public class ImmutableContext extends AbstractContext {
             return localBindings;
         }
 
-        protected final void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
+        private void addDeepBinding(String name, Object value, boolean createIntermediateContexts) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected final boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
+        protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected final void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
+        protected void removeDeepBinding(Name name, boolean pruneEmptyContexts) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
-        protected final boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
+        protected boolean removeBinding(String name, boolean removeNotEmptyContext) throws NamingException {
             throw new OperationNotSupportedException("Context is immutable");
         }
 
@@ -166,7 +166,7 @@ public class ImmutableContext extends AbstractContext {
             return new NestedImmutableContext(path, bindings);
         }
 
-        protected ImmutableContext getImmutableContext() {
+        private ImmutableContext getImmutableContext() {
             return ImmutableContext.this;
         }
     }
