@@ -212,9 +212,7 @@ public final class RecipeHelper {
             float leftPriority = ((Recipe) left).getPriority();
             float rightPriority = ((Recipe) right).getPriority();
 
-            if (leftPriority > rightPriority) return 1;
-            if (leftPriority < rightPriority) return -1;
-            return 0;
+            return Float.compare(leftPriority, rightPriority);
         }
     }
 

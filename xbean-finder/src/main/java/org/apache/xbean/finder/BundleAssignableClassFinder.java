@@ -127,7 +127,7 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
             in = url.openStream();
             return isClassAcceptable("", in);
         } catch (IOException e) {
-            logger.warn("Unable to check the class of url " + url, e);
+            logger.warn("Unable to check the class of url {}", url, e);
             return false;
         } finally {
             if (in != null)
@@ -189,7 +189,7 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
             }
             return false;
         } catch (IOException e) {
-            logger.warn("Unable to check the interface " + interfaceName, e);
+            logger.warn("Unable to check the interface {}", interfaceName, e);
             return false;
         } finally {
             if (in != null) {
@@ -235,7 +235,7 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
             //Check className
             return isSuperClassAssignable(classReader.getSuperName());            
         } catch (IOException e) {
-            logger.warn("Unable to check the super class  " + superClassName, e);
+            logger.warn("Unable to check the super class  {}", superClassName, e);
             return false;
         } finally {
             if (in != null) {
