@@ -47,7 +47,7 @@ public abstract class SpringTestSupport extends TestCase {
     }
 
     protected Object getBean(String name) {
-        Object answer = answer = context.getBean(name);
+        Object answer = context.getBean(name);
         assertNotNull("Could not find object in Spring for key: " + name, answer);
         return answer;
     }

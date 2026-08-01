@@ -283,14 +283,15 @@ public class ResourceFinder {
         resourcesNotLoaded.clear();
         Map<String, String> strings = new HashMap<>();
         Map<String, URL> resourcesMap = getResourcesMap(uri);
-        for (Iterator iterator = resourcesMap.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
+        for (Map.Entry<String, URL> stringURLEntry : resourcesMap.entrySet()) {
+            Map.Entry entry = (Map.Entry) stringURLEntry;
             String name = (String) entry.getKey();
             URL url = (URL) entry.getValue();
             try {
                 String value = readContents(url);
                 strings.put(name, value);
-            } catch (IOException notAvailable) {
+            }
+            catch (IOException notAvailable) {
                 resourcesNotLoaded.add(url.toExternalForm());
             }
         }
@@ -758,8 +759,8 @@ public class ResourceFinder {
     public Map<String, Properties> mapAllProperties(String uri) throws IOException {
         Map<String, Properties> propertiesMap = new HashMap<>();
         Map<String, URL> map = getResourcesMap(uri);
-        for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
+        for (Map.Entry<String, URL> stringURLEntry : map.entrySet()) {
+            Map.Entry entry = stringURLEntry;
             String string = (String) entry.getKey();
             URL url = (URL) entry.getValue();
             Properties properties = loadProperties(url);
@@ -794,14 +795,15 @@ public class ResourceFinder {
         resourcesNotLoaded.clear();
         Map<String, Properties> propertiesMap = new HashMap<>();
         Map<String, URL> map = getResourcesMap(uri);
-        for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
+        for (Map.Entry<String, URL> stringURLEntry : map.entrySet()) {
+            Map.Entry entry = (Map.Entry) stringURLEntry;
             String string = (String) entry.getKey();
             URL url = (URL) entry.getValue();
             try {
                 Properties properties = loadProperties(url);
                 propertiesMap.put(string, properties);
-            } catch (Exception notAvailable) {
+            }
+            catch (Exception notAvailable) {
                 resourcesNotLoaded.add(url.toExternalForm());
             }
         }
