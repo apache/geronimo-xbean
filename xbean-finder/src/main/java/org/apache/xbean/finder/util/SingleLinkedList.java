@@ -28,7 +28,7 @@ public class SingleLinkedList<E> implements List<E> {
     private Entry<E> entry;
     private int size = 0;
 
-    private class Entry<E> {
+    private static class Entry<E> {
 
         private E value;
         private Entry next;

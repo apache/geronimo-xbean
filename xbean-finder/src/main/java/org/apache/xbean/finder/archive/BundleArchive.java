@@ -73,7 +73,7 @@ public class BundleArchive implements Archive {
         return bundle.loadClass(s);
     }
 
-    private class AnnotationFindingCallback implements BundleResourceFinder.ResourceFinderCallback {
+    private static class AnnotationFindingCallback implements BundleResourceFinder.ResourceFinderCallback {
 
         public boolean foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {
             InputStream in = url.openStream();
