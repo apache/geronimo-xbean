@@ -44,11 +44,11 @@ public class BundleAssignableClassFinder extends BundleClassFinder {
 
     private Class<?>[] clses;
 
-    private Set<String> targetClassNames = new HashSet<String>();
+    private Set<String> targetClassNames = new HashSet<>();
 
-    private Set<String> targetInterfaceNames = new HashSet<String>();
+    private Set<String> targetInterfaceNames = new HashSet<>();
 
-    private Set<String> wiredImportedPackageNames = new HashSet<String>();
+    private Set<String> wiredImportedPackageNames = new HashSet<>();
 
     /**
      * Create a new BundleClassFinder, it will search all the classes based the rule defined by the parameters via ASM tool

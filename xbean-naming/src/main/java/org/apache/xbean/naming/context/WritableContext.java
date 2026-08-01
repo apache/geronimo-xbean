@@ -88,8 +88,8 @@ public class WritableContext extends AbstractFederatedContext {
 
         Map<String, Object> localBindings = ContextUtil.createBindings(bindings, this);
 
-        this.bindingsRef = new AtomicReference<Map<String, Object>>(Collections.unmodifiableMap(localBindings));
-        this.indexRef = new AtomicReference<Map<String, Object>>(Collections.unmodifiableMap(buildIndex("", localBindings)));
+        this.bindingsRef = new AtomicReference<>(Collections.unmodifiableMap(localBindings));
+        this.indexRef = new AtomicReference<>(Collections.unmodifiableMap(buildIndex("", localBindings)));
     }
 
     protected boolean addBinding(String name, Object value, boolean rebind) throws NamingException {
@@ -133,7 +133,7 @@ public class WritableContext extends AbstractFederatedContext {
             if (!rebind && bindings.containsKey(name)) {
                 throw new NameAlreadyBoundException(name);
             }
-            Map<String, Object> newBindings = new HashMap<String, Object>(bindings);
+            Map<String, Object> newBindings = new HashMap<>(bindings);
             newBindings.put(name,value);
             bindingsRef.set(newBindings);
 
@@ -145,7 +145,7 @@ public class WritableContext extends AbstractFederatedContext {
 
     private void addToIndex(String name, Object value) {
         Map<String, Object> index = indexRef.get();
-        Map<String, Object> newIndex = new HashMap<String, Object>(index);
+        Map<String, Object> newIndex = new HashMap<>(index);
         newIndex.put(name, value);
         if (value instanceof NestedWritableContext) {
             NestedWritableContext nestedcontext = (NestedWritableContext) value;
@@ -172,7 +172,7 @@ public class WritableContext extends AbstractFederatedContext {
                 return false;
             }
 
-            Map<String, Object> newBindings = new HashMap<String, Object>(bindings);
+            Map<String, Object> newBindings = new HashMap<>(bindings);
             Object oldValue = newBindings.remove(name);
             if (!removeNotEmptyContext && oldValue instanceof Context && !isEmpty((Context)oldValue)) {
                 throw new ContextNotEmptyException(name);
@@ -189,7 +189,7 @@ public class WritableContext extends AbstractFederatedContext {
 
     private Map<String, Object> removeFromIndex(String name) {
         Map<String, Object> index = indexRef.get();
-        Map<String, Object> newIndex = new HashMap<String, Object>(index);
+        Map<String, Object> newIndex = new HashMap<>(index);
         Object oldValue = newIndex.remove(name);
         if (oldValue instanceof NestedWritableContext) {
             NestedWritableContext nestedcontext = (NestedWritableContext) oldValue;
@@ -214,7 +214,7 @@ public class WritableContext extends AbstractFederatedContext {
             path += "/";
         }
 
-        Map<String, Object> absoluteIndex = new HashMap<String, Object>();
+        Map<String, Object> absoluteIndex = new HashMap<>();
         for (Map.Entry<String, Object> entry : bindings.entrySet()) {
             String name = entry.getKey();
             Object value = entry.getValue();
@@ -250,7 +250,7 @@ public class WritableContext extends AbstractFederatedContext {
             if (!path.endsWith("/")) path += "/";
             this.pathWithSlash = path;
 
-            this.bindingsRef = new AtomicReference<Map<String, Object>>(Collections.unmodifiableMap(bindings));
+            this.bindingsRef = new AtomicReference<>(Collections.unmodifiableMap(bindings));
         }
 
         public Context createNestedSubcontext(String path, Map<String, Object> bindings) throws NamingException {

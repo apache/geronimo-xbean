@@ -179,7 +179,7 @@ public class SingleLinkedList<E> implements List<E> {
 
 
     private Iterator<E> values() {
-        return new Values<E>(this.entry);
+        return new Values<>(this.entry);
     }
 
     private Entries entries() {

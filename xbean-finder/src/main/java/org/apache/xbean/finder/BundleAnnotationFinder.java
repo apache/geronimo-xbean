@@ -69,7 +69,7 @@ public class BundleAnnotationFinder extends AbstractFinder {
 
     @Override
     public List<String> getAnnotatedClassNames() {
-        List<String> classNames = new ArrayList<String>(originalInfos.size());
+        List<String> classNames = new ArrayList<>(originalInfos.size());
         for (Map.Entry<String, ClassInfo> entry: originalInfos.entrySet()) {
             if (paths.contains(entry.getValue().getPath())) {
                 classNames.add(entry.getKey());

@@ -54,7 +54,7 @@ public class BundleDescription  {
      */
     public List<ImportPackage> getImportPackage() {
         String headerValue = (String) headers.get(Constants.IMPORT_PACKAGE);
-        List<ImportPackage> imports = new ArrayList<ImportPackage>();
+        List<ImportPackage> imports = new ArrayList<>();
         List<HeaderElement> elements = HeaderParser.parseHeader(headerValue);
         for (HeaderElement element : elements) {
             ImportPackage p = new ImportPackage(element.getName(), element.getAttributes(), element.getDirectives());
@@ -68,7 +68,7 @@ public class BundleDescription  {
      */
     public List<ExportPackage> getExportPackage() {
         String headerValue = (String) headers.get(Constants.EXPORT_PACKAGE);
-        List<ExportPackage> exports = new ArrayList<ExportPackage>();
+        List<ExportPackage> exports = new ArrayList<>();
         List<HeaderElement> elements = HeaderParser.parseHeader(headerValue);
         for (HeaderElement element : elements) {
             ExportPackage p = new ExportPackage(element.getName(), element.getAttributes(), element.getDirectives());
@@ -84,7 +84,7 @@ public class BundleDescription  {
     public List<ImportPackage> getExternalImports() {
         List<ImportPackage> imports = getImportPackage();
         List<ExportPackage> exports = getExportPackage();
-        List<ImportPackage> realImports = new ArrayList<ImportPackage>();
+        List<ImportPackage> realImports = new ArrayList<>();
         for (ImportPackage p : imports) {
             if (!isExported(exports, p)) {
                 realImports.add(p);
@@ -107,7 +107,7 @@ public class BundleDescription  {
      */
     public List<RequireBundle> getRequireBundle() {
         String headerValue = (String) headers.get(Constants.REQUIRE_BUNDLE);
-        List<RequireBundle> requireBundles = new ArrayList<RequireBundle>();
+        List<RequireBundle> requireBundles = new ArrayList<>();
         List<HeaderElement> elements = HeaderParser.parseHeader(headerValue);
         for (HeaderElement element : elements) {
             RequireBundle p = new RequireBundle(element.getName(), element.getAttributes(), element.getDirectives());
@@ -165,7 +165,7 @@ public class BundleDescription  {
     }
     
     private List<HeaderEntry> parseStandardHeader(String headerValue) {
-        List<HeaderEntry> imports = new ArrayList<HeaderEntry>();
+        List<HeaderEntry> imports = new ArrayList<>();
         List<HeaderElement> elements = HeaderParser.parseHeader(headerValue);
         for (HeaderElement element : elements) {
             HeaderEntry p = new HeaderEntry(element.getName(), element.getAttributes(), element.getDirectives());
@@ -176,7 +176,7 @@ public class BundleDescription  {
     
     private static Map<String, String> manifestToMap(Manifest manifest) {
         Attributes attributes = manifest.getMainAttributes();
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         for (Map.Entry<Object, Object> entry : attributes.entrySet()) {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();

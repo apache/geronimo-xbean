@@ -113,11 +113,11 @@ public final class IoUtil {
             return -1;
         }
 
-        public int read(byte b[])  {
+        public int read(byte[] b)  {
             return -1;
         }
 
-        public int read(byte b[], int off, int len) {
+        public int read(byte[] b, int off, int len) {
             return -1;
         }
 

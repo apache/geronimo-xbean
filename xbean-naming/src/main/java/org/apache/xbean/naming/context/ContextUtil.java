@@ -79,7 +79,7 @@ public final class ContextUtil {
     }
 
     public static Map<String, String> listToMap(NamingEnumeration enumeration) {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         while (enumeration.hasMoreElements()) {
             NameClassPair nameClassPair = (NameClassPair) enumeration.nextElement();
             String name = nameClassPair.getName();
@@ -89,7 +89,7 @@ public final class ContextUtil {
     }
 
     public static Map<String, Object> listBindingsToMap(NamingEnumeration enumeration) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         while (enumeration.hasMoreElements()) {
             Binding binding = (Binding) enumeration.nextElement();
             String name = binding.getName();
@@ -248,7 +248,7 @@ public final class ContextUtil {
     }
 
     private static Map<String, Object> createBindings(String nameInNameSpace, Node node, NestedContextFactory factory) throws NamingException {
-        Map<String, Object> bindings = new HashMap<String, Object>(node.size());
+        Map<String, Object> bindings = new HashMap<>(node.size());
         for (Map.Entry<String, Object> entry : node.entrySet()) {
             String name = entry.getKey();
             Object value = entry.getValue();

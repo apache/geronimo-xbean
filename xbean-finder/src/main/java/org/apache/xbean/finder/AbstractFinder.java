@@ -47,10 +47,10 @@ import org.objectweb.asm.MethodVisitor;
  * @version $Rev$ $Date$
  */
 public abstract class AbstractFinder implements IAnnotationFinder {
-    private final Map<String, List<Info>> annotated = new HashMap<String, List<Info>>();
-    protected final Map<String, ClassInfo> classInfos = new HashMap<String, ClassInfo>();
-    protected final Map<String, ClassInfo> originalInfos = new HashMap<String, ClassInfo>();
-    private final List<String> classesNotLoaded = new ArrayList<String>();
+    private final Map<String, List<Info>> annotated = new HashMap<>();
+    protected final Map<String, ClassInfo> classInfos = new HashMap<>();
+    protected final Map<String, ClassInfo> originalInfos = new HashMap<>();
+    private final List<String> classesNotLoaded = new ArrayList<>();
     private final int ASM_FLAGS = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
 
     protected abstract URL getResource(String className);
@@ -58,7 +58,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     protected abstract Class<?> loadClass(String fixedName) throws ClassNotFoundException;
 
     public List<String> getAnnotatedClassNames() {
-        return new ArrayList<String>(originalInfos.keySet());
+        return new ArrayList<>(originalInfos.keySet());
     }
 
     /**
@@ -120,7 +120,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     private void linkInterfaces(ClassInfo classInfo) throws IOException {
-        final List<ClassInfo> infos = new ArrayList<ClassInfo>();
+        final List<ClassInfo> infos = new ArrayList<>();
 
         if (classInfo.clazz != null){
             final Class<?>[] interfaces = classInfo.clazz.getInterfaces();
@@ -182,7 +182,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Package> findAnnotatedPackages(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Package> packages = new ArrayList<Package>();
+        List<Package> packages = new ArrayList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof PackageInfo) {
@@ -203,7 +203,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Class<?>> findAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class<?>> classes = new ArrayList<Class<?>>();
+        List<Class<?>> classes = new ArrayList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof ClassInfo) {
@@ -224,7 +224,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
         List<Class<?>> classes = findAnnotatedClasses(annotation);
-        List<Annotated<Class<?>>> list = new ArrayList<Annotated<Class<?>>>();
+        List<Annotated<Class<?>>> list = new ArrayList<>();
         for (final Class<?> clazz : classes) {
             list.add(new MetaAnnotatedClass(clazz));
         }
@@ -239,7 +239,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
      */
     public List<Class<?>> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class<?>> classes = new ArrayList<Class<?>>();
+        List<Class<?>> classes = new ArrayList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             try {
@@ -251,7 +251,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
             }
         }
         boolean annClassFound;
-        List<ClassInfo> tempClassInfos = new ArrayList<ClassInfo>(classInfos.values());
+        List<ClassInfo> tempClassInfos = new ArrayList<>(classInfos.values());
         do {
             annClassFound = false;
             for (int pos = 0; pos < tempClassInfos.size(); pos++) {
@@ -318,7 +318,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
         List<Method> methods = findAnnotatedMethods(annotation);
-        List<Annotated<Method>> list = new ArrayList<Annotated<Method>>();
+        List<Annotated<Method>> list = new ArrayList<>();
         for (final Method method : methods) {
             list.add(new MetaAnnotatedMethod(method));
         }
@@ -381,7 +381,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
         List<Field> fields = findAnnotatedFields(annotation);
-        List<Annotated<Field>> list = new ArrayList<Annotated<Field>>();
+        List<Annotated<Field>> list = new ArrayList<>();
         for (final Field field : fields) {
             list.add(new MetaAnnotatedField(field));
         }
@@ -391,7 +391,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public List<Class<?>> findClassesInPackage(String packageName, boolean recursive) {
         classesNotLoaded.clear();
-        List<Class<?>> classes = new ArrayList<Class<?>>();
+        List<Class<?>> classes = new ArrayList<>();
         for (ClassInfo classInfo : classInfos.values()) {
             try {
                 if (recursive && classInfo.getPackageName().startsWith(packageName)){
@@ -413,7 +413,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
         final ClassInfo classInfo = classInfos.get(clazz.getName());
 
-        List<Class<? extends T>> found = new ArrayList<Class<? extends T>>();
+        List<Class<? extends T>> found = new ArrayList<>();
 
         if (classInfo == null) return found;
 
@@ -439,7 +439,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     private <T> List<Class<? extends T>> _findSubclasses(Class<T> clazz) {
         if (clazz == null) throw new NullPointerException("class cannot be null");
 
-        List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
+        List<Class<? extends T>> classes = new ArrayList<>();
 
 
         for (ClassInfo classInfo : classInfos.values()) {
@@ -478,7 +478,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
         List<ClassInfo> infos = collectImplementations(interfaceName);
 
         // Collect all subclasses of implementations
-        List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
+        List<Class<? extends T>> classes = new ArrayList<>();
         for (ClassInfo info : infos) {
             try {
                 final Class<? extends T> impl = (Class<? extends T>) info.get();
@@ -501,7 +501,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     private List<ClassInfo> collectImplementations(String interfaceName) {
-        final List<ClassInfo> infos = new ArrayList<ClassInfo>();
+        final List<ClassInfo> infos = new ArrayList<>();
 
         for (ClassInfo classInfo : classInfos.values()) {
 
@@ -530,7 +530,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     protected List<Info> getAnnotationInfos(String name) {
         List<Info> infos = annotated.get(name);
         if (infos == null) {
-            infos = new SingleLinkedList<Info>();
+            infos = new SingleLinkedList<>();
             annotated.put(name, infos);
         }
         return infos;
@@ -577,7 +577,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     protected void readClassDef(Class clazz) {
-        List<Info> infos = new ArrayList<Info>();
+        List<Info> infos = new ArrayList<>();
 
         Package aPackage = clazz.getPackage();
         if (aPackage != null){
@@ -614,7 +614,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     public class Annotatable {
-        private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
+        private final List<AnnotationInfo> annotations = new ArrayList<>();
 
         public Annotatable(AnnotatedElement element) {
             for (Annotation annotation : getAnnotations(element)) {
@@ -657,7 +657,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     }
 
-    public static interface Info {
+    public interface Info {
         String getName();
 
         List<AnnotationInfo> getAnnotations();
@@ -709,13 +709,13 @@ public abstract class AbstractFinder implements IAnnotationFinder {
 
     public class ClassInfo extends Annotatable implements Info {
         private String name;
-        private final List<MethodInfo> methods = new SingleLinkedList<MethodInfo>();
-        private final List<MethodInfo> constructors = new SingleLinkedList<MethodInfo>();
+        private final List<MethodInfo> methods = new SingleLinkedList<>();
+        private final List<MethodInfo> constructors = new SingleLinkedList<>();
         private String superType;
         private ClassInfo superclassInfo;
-        private final List<ClassInfo> subclassInfos = new SingleLinkedList<ClassInfo>();
-        private final List<String> interfaces = new SingleLinkedList<String>();
-        private final List<FieldInfo> fields = new SingleLinkedList<FieldInfo>();
+        private final List<ClassInfo> subclassInfos = new SingleLinkedList<>();
+        private final List<String> interfaces = new SingleLinkedList<>();
+        private final List<FieldInfo> fields = new SingleLinkedList<>();
         //e.g. bundle class path prefix.
         private String path;
         private Class<?> clazz;
@@ -789,7 +789,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
         private final ClassInfo declaringClass;
         private final String returnType;
         private final String name;
-        private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList<List<AnnotationInfo>>();
+        private final List<List<AnnotationInfo>> parameterAnnotations = new ArrayList<>();
 
         public MethodInfo(ClassInfo info, Constructor constructor){
             super(constructor);
@@ -818,7 +818,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
         public List<AnnotationInfo> getParameterAnnotations(int index) {
             if (index >= parameterAnnotations.size()) {
                 for (int i = parameterAnnotations.size(); i <= index; i++) {
-                    List<AnnotationInfo> annotationInfos = new ArrayList<AnnotationInfo>();
+                    List<AnnotationInfo> annotationInfos = new ArrayList<>();
                     parameterAnnotations.add(i, annotationInfos);
                 }
             }

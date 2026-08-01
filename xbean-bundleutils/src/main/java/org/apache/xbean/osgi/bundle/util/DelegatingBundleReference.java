@@ -41,6 +41,6 @@ public interface DelegatingBundleReference extends BundleReference {
      *        Otherwise, the bundle associated with this classloader is returned as is.
      * @return The bundle associated with this classloader.
      */
-    public Bundle getBundle(boolean unwrap);
+    Bundle getBundle(boolean unwrap);
 
 }

@@ -43,7 +43,7 @@ import java.util.Map;
  * @version $Revision: 657 $
  */
 public class SpringInitialContextFactory implements InitialContextFactory {
-    private static final transient Log log = LogFactory.getLog(SpringInitialContextFactory.class);
+    private static final Log log = LogFactory.getLog(SpringInitialContextFactory.class);
 
     private static Map cache = new HashMap();
 

@@ -136,11 +136,11 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private static Set<Class> managedClassesFromProperties(ClassLoader cl, Properties properties) {
-        Set<Class> managedClasses = new HashSet<Class>();
+        Set<Class> managedClasses = new HashSet<>();
         Properties methods = new Properties();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
-            if (key.indexOf(".") < 0) {
+            if (!key.contains(".")) {
                 String className = (String) entry.getValue();
                 try {
                     Class<?> beanClass = cl.loadClass(className);
@@ -158,11 +158,11 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private static Set<Class> managedClassesFromProperties(Bundle bundle, Properties properties) {
-        Set<Class> managedClasses = new HashSet<Class>();
+        Set<Class> managedClasses = new HashSet<>();
         Properties methods = new Properties();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
-            if (key.indexOf(".") < 0) {
+            if (!key.contains(".")) {
                 String className = (String) entry.getValue();
                 try {
                     Class<?> beanClass = bundle.loadClass(className);
@@ -191,7 +191,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private Map<String, Class<? extends PropertyEditor>> propertyEditorsFromProperties(Bundle bundle, Properties properties) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
+        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<>();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             if (key.endsWith(".propertyEditor")) {
@@ -204,7 +204,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private Map<String, Class<? extends PropertyEditor>> propertyEditorsFromProperties(ClassLoader classLoader, Properties properties) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
+        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<>();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             if (key.endsWith(".propertyEditor")) {
@@ -217,7 +217,7 @@ public class XBeanNamespaceHandler implements NamespaceHandler {
     }
 
     private Map<String, Class> mapClasses(Set<Class> managedClasses) {
-        Map<String, Class> map = new HashMap<String, Class>();
+        Map<String, Class> map = new HashMap<>();
         for (Class clazz : managedClasses) {
             map.put(clazz.getName(), clazz);
         }

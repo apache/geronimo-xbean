@@ -92,29 +92,29 @@ public abstract class AbstractObjectGraphTest extends TestCase {
     public void testCreateAllGroupings() {
         ObjectGraph graph = new ObjectGraph(createNewRepository());
         Map<String,Object> created = graph.createAll("Radiohead");
-        assertEquals(Arrays.asList("Radiohead"), new ArrayList<String>(created.keySet()));
+        assertEquals(Arrays.asList("Radiohead"), new ArrayList<>(created.keySet()));
 
         graph = new ObjectGraph(createNewRepository());
         created = graph.createAll("Fake Plastic Trees");
-        assertEquals(Arrays.asList("Radiohead", "Fake Plastic Trees"), new ArrayList<String>(created.keySet()));
+        assertEquals(Arrays.asList("Radiohead", "Fake Plastic Trees"), new ArrayList<>(created.keySet()));
 
         graph = new ObjectGraph(createNewRepository());
         created = graph.createAll("Fake Plastic Trees", "Fake Plastic Trees", "Fake Plastic Trees");
-        assertEquals(Arrays.asList("Radiohead", "Fake Plastic Trees"), new ArrayList<String>(created.keySet()));
+        assertEquals(Arrays.asList("Radiohead", "Fake Plastic Trees"), new ArrayList<>(created.keySet()));
 
         graph = new ObjectGraph(createNewRepository());
         created = graph.createAll("Fake Plastic Trees", "Radiohead");
-        assertEquals(Arrays.asList("Radiohead", "Fake Plastic Trees"), new ArrayList<String>(created.keySet()));
+        assertEquals(Arrays.asList("Radiohead", "Fake Plastic Trees"), new ArrayList<>(created.keySet()));
 
         graph = new ObjectGraph(createNewRepository());
         created = graph.createAll("Bends");
-        assertEquals(Arrays.asList("Radiohead", "High and Dry", "Fake Plastic Trees", "Bends"), new ArrayList<String>(created.keySet()));
+        assertEquals(Arrays.asList("Radiohead", "High and Dry", "Fake Plastic Trees", "Bends"), new ArrayList<>(created.keySet()));
 
         graph = new ObjectGraph(createNewRepository());
         created = graph.createAll("Radiohead");
-        assertEquals(Arrays.asList("Radiohead"), new ArrayList<String>(created.keySet()));
+        assertEquals(Arrays.asList("Radiohead"), new ArrayList<>(created.keySet()));
         created = graph.createAll("Bends");
-        assertEquals(Arrays.asList("High and Dry", "Fake Plastic Trees", "Bends"), new ArrayList<String>(created.keySet()));
+        assertEquals(Arrays.asList("High and Dry", "Fake Plastic Trees", "Bends"), new ArrayList<>(created.keySet()));
     }
 
     public void testCreateUnknown() {
@@ -239,7 +239,7 @@ public abstract class AbstractObjectGraphTest extends TestCase {
 //            assertEquals(expected, actual);
 //        }
 
-        List<Object> newActual = new ArrayList<Object>(actual.subList(0, actual.size() -1));
+        List<Object> newActual = new ArrayList<>(actual.subList(0, actual.size() - 1));
 
         Object start = expected.get(0);
         int index = actual.indexOf(start);
@@ -358,7 +358,7 @@ public abstract class AbstractObjectGraphTest extends TestCase {
 
     public static class Artist {
         private final String name;
-        private final Set<Album> albums = new HashSet<Album>();
+        private final Set<Album> albums = new HashSet<>();
 
         public Artist(String name) {
             if (name == null) throw new NullPointerException("name is null");

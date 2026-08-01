@@ -39,7 +39,7 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
 
         final Class<?>[] classes = new Class[]{Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class};
 
-        final Map<String, Annotated<Method>> map = new HashMap<String, Annotated<Method>>();
+        final Map<String, Annotated<Method>> map = new HashMap<>();
 
         for (Class<?> clazz : classes) {
             final MetaAnnotatedClass<?> annotatedClass = new MetaAnnotatedClass(clazz);
@@ -141,18 +141,18 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
 
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface Color {
+    public @interface Color {
         String value() default "";
     }
 
     @Metatype
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface Red {
-        public interface $ {
+    public @interface Red {
+        interface $ {
 
             // one level deep
-            public void method(
+            void method(
                     @Red
                     @Color("red")
                     Object object);
@@ -162,11 +162,11 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
     @Metatype
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface Crimson {
-        public interface $ {
+    public @interface Crimson {
+        interface $ {
 
             // two levels deep
-            public void method(
+            void method(
                     @Crimson
                     @Red
                     Object object);
@@ -182,11 +182,11 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
     @Metatype
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface Green {
-        public interface $ {
+    public @interface Green {
+        interface $ {
 
             // two levels deep
-            public void method(
+            void method(
                     @Green
                     @Color("green")
                     Object object);
@@ -196,10 +196,10 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
     @Metatype
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface DarkGreen {
-        public interface $ {
+    public @interface DarkGreen {
+        interface $ {
 
-            public void method(
+            void method(
                     @DarkGreen
                     @Green
                     Object object);
@@ -210,10 +210,10 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
     @Metatype
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface Forrest {
-        public interface $ {
+    public @interface Forrest {
+        interface $ {
 
-            public void method(
+            void method(
                     @Forrest
                     @DarkGreen
                     Object object);
@@ -223,10 +223,10 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
     @Metatype
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface Chicken {
-        public interface $ {
+    public @interface Chicken {
+        interface $ {
 
-            public void method(
+            void method(
                     @Chicken
                     @Color("chicken")
                     @Egg
@@ -237,10 +237,10 @@ public class MetaAnnotatedMethodParametersTest extends TestCase {
     @Metatype
     @Target({PARAMETER})
     @Retention(RUNTIME)
-    public static @interface Egg {
-        public interface $ {
+    public @interface Egg {
+        interface $ {
 
-            public void method(
+            void method(
                     @Egg
                     @Color("egg")
                     @Chicken

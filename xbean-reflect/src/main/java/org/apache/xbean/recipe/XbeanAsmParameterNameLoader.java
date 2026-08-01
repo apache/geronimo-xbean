@@ -48,12 +48,12 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
     /**
      * Weak map from Constructor to List&lt;String&gt;.
      */
-    private final WeakHashMap<Constructor,List<String>> constructorCache = new WeakHashMap<Constructor,List<String>>();
+    private final WeakHashMap<Constructor,List<String>> constructorCache = new WeakHashMap<>();
 
     /**
      * Weak map from Method to List&lt;String&gt;.
      */
-    private final WeakHashMap<Method,List<String>> methodCache = new WeakHashMap<Method,List<String>>();
+    private final WeakHashMap<Method,List<String>> methodCache = new WeakHashMap<>();
 
     /**
      * Gets the parameter names of the specified method or null if the class was compiled without debug symbols on.
@@ -92,7 +92,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
      */
     public Map<Constructor,List<String>> getAllConstructorParameters(Class clazz) {
         // Determine the constructors?
-        List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(clazz.getConstructors()));
+        List<Constructor> constructors = new ArrayList<>(Arrays.asList(clazz.getConstructors()));
         constructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
         if (constructors.isEmpty()) {
             return Collections.emptyMap();
@@ -100,7 +100,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
 
         // Check the cache
         if (constructorCache.containsKey(constructors.get(0))) {
-            Map<Constructor,List<String>> constructorParameters = new HashMap<Constructor,List<String>>();
+            Map<Constructor,List<String>> constructorParameters = new HashMap<>();
             for (Constructor constructor : constructors) {
                 constructorParameters.put(constructor, constructorCache.get(constructor));
             }
@@ -108,7 +108,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
         }
 
         // Load the parameter names using ASM
-        Map<Constructor,List<String>> constructorParameters = new HashMap<Constructor,List<String>> ();
+        Map<Constructor,List<String>> constructorParameters = new HashMap<>();
         try {
             ClassReader reader = XbeanAsmParameterNameLoader.createClassReader(clazz);
 
@@ -149,7 +149,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
 
         // Check the cache
         if (methodCache.containsKey(methods[0])) {
-            Map<Method,List<String>> methodParameters = new HashMap<Method,List<String>>();
+            Map<Method,List<String>> methodParameters = new HashMap<>();
             for (Method method : methods) {
                 methodParameters.put(method, methodCache.get(method));
             }
@@ -157,7 +157,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
         }
 
         // Load the parameter names using ASM
-        Map<Method,List<String>>  methodParameters = new HashMap<Method,List<String>>();
+        Map<Method,List<String>>  methodParameters = new HashMap<>();
         try {
             ClassReader reader = XbeanAsmParameterNameLoader.createClassReader(clazz);
 
@@ -184,9 +184,9 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
     }
 
     private Method[] getMethods(Class clazz, String methodName) {
-        List<Method> methods = new ArrayList<Method>(Arrays.asList(clazz.getMethods()));
+        List<Method> methods = new ArrayList<>(Arrays.asList(clazz.getMethods()));
         methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
-        List<Method> matchingMethod = new ArrayList<Method>(methods.size());
+        List<Method> matchingMethod = new ArrayList<>(methods.size());
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
                 matchingMethod.add(method);
@@ -218,12 +218,12 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
     }
 
     private static class AllParameterNamesDiscoveringVisitor extends ClassVisitor {
-        private final Map<Constructor,List<String>> constructorParameters = new HashMap<Constructor,List<String>>();
-        private final Map<Method,List<String>> methodParameters = new HashMap<Method,List<String>>();
-        private final Map<String,Exception> exceptions = new HashMap<String,Exception>();
+        private final Map<Constructor,List<String>> constructorParameters = new HashMap<>();
+        private final Map<Method,List<String>> methodParameters = new HashMap<>();
+        private final Map<String,Exception> exceptions = new HashMap<>();
         private final String methodName;
-        private final Map<String,Method> methodMap = new HashMap<String,Method>();
-        private final Map<String,Constructor> constructorMap = new HashMap<String,Constructor>();
+        private final Map<String,Method> methodMap = new HashMap<>();
+        private final Map<String,Constructor> constructorMap = new HashMap<>();
         private final Class<?> clazz;
 
         public AllParameterNamesDiscoveringVisitor(Class type, String methodName) {
@@ -231,7 +231,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
             this.clazz = type;
             this.methodName = methodName;
 
-            List<Method> methods = new ArrayList<Method>(Arrays.asList(type.getMethods()));
+            List<Method> methods = new ArrayList<>(Arrays.asList(type.getMethods()));
             methods.addAll(Arrays.asList(type.getDeclaredMethods()));
             for (Method method : methods) {
                 if (method.getName().equals(methodName)) {
@@ -245,7 +245,7 @@ public class XbeanAsmParameterNameLoader implements ParameterNameLoader {
             this.clazz = type;
             this.methodName = "<init>";
 
-            List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(type.getConstructors()));
+            List<Constructor> constructors = new ArrayList<>(Arrays.asList(type.getConstructors()));
             constructors.addAll(Arrays.asList(type.getDeclaredConstructors()));
             for (Constructor constructor : constructors) {
                 Type[] types = new Type[constructor.getParameterTypes().length];

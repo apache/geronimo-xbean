@@ -31,12 +31,12 @@ public class DefaultExecutionContext extends ExecutionContext {
      * access the caller recipe (e.g. UnsetPropertiesRecipe returns a
      * map of the caller's unset properties)
      */
-    private final LinkedList<Recipe> stack = new LinkedList<Recipe>();
+    private final LinkedList<Recipe> stack = new LinkedList<>();
 
     /**
      * The unresolved references by name.
      */
-    private final SortedMap<String, List<Reference>> unresolvedRefs = new TreeMap<String, List<Reference>>();
+    private final SortedMap<String, List<Reference>> unresolvedRefs = new TreeMap<>();
 
     public DefaultExecutionContext() {
         this(new DefaultRepository());
@@ -49,7 +49,7 @@ public class DefaultExecutionContext extends ExecutionContext {
 
     public void push(Recipe recipe) {
         if (stack.contains(recipe)) {
-            ArrayList<Recipe> circularity = new ArrayList<Recipe>(stack.subList(stack.indexOf(recipe), stack.size()));
+            ArrayList<Recipe> circularity = new ArrayList<>(stack.subList(stack.indexOf(recipe), stack.size()));
 
             // remove anonymous nodes from circularity list
             for (Iterator<Recipe> iterator = circularity.iterator(); iterator.hasNext();) {
@@ -72,7 +72,7 @@ public class DefaultExecutionContext extends ExecutionContext {
     }
 
     public LinkedList<Recipe> getStack() {
-        return new LinkedList<Recipe>(stack);
+        return new LinkedList<>(stack);
     }
 
     public Repository getRepository() {
@@ -113,7 +113,7 @@ public class DefaultExecutionContext extends ExecutionContext {
         } else {
             List<Reference> list = unresolvedRefs.get(reference.getName());
             if (list == null) {
-                list = new ArrayList<Reference>();
+                list = new ArrayList<>();
                 unresolvedRefs.put(reference.getName(), list);
             }
             list.add(reference);

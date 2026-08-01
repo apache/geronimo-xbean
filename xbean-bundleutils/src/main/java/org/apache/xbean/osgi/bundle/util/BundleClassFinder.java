@@ -82,7 +82,7 @@ public class BundleClassFinder {
     }
 
     public List<Class<?>> loadClasses(Set<String> classes) {
-        List<Class<?>> loadedClasses = new ArrayList<Class<?>>(classes.size());
+        List<Class<?>> loadedClasses = new ArrayList<>(classes.size());
         for (String clazz : classes) {
             try {
                 loadedClasses.add(bundle.loadClass(clazz));
@@ -100,8 +100,8 @@ public class BundleClassFinder {
      * @return classes visible to the bundle. Not all classes returned might be loadable.
      */
     public Set<String> find() {
-        Set<String> classes = new LinkedHashSet<String>();
-        classMap = new HashMap<Bundle, Set<String>>();
+        Set<String> classes = new LinkedHashSet<>();
+        classMap = new HashMap<>();
         if (discoveryFilter.rangeDiscoveryRequired(DiscoveryRange.IMPORT_PACKAGES)) {
             scanImportPackages(classes, bundle, bundle);
         }
@@ -211,7 +211,7 @@ public class BundleClassFinder {
             if (wiredBundle != null) {
                 BundleDescription wiredBundleDescription = new BundleDescription(wiredBundle.getHeaders());
                 List<ExportPackage> exportPackages = wiredBundleDescription.getExportPackage();
-                Set<String> exportedPackageNames = new HashSet<String>();
+                Set<String> exportedPackageNames = new HashSet<>();
                 for (ExportPackage exportPackage : exportPackages) {
                     exportedPackageNames.add(exportPackage.getName());
                 }

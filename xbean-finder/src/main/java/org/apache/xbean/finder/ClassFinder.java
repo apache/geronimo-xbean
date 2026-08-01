@@ -196,7 +196,7 @@ public class ClassFinder extends AbstractFinder {
 
     private void jar(URL location) throws IOException {
         String jarPath = location.getFile();
-        if (jarPath.indexOf("!") > -1){
+        if (jarPath.contains("!")){
             jarPath = jarPath.substring(0, jarPath.indexOf("!"));
         }
         URL url = new URL(jarPath);

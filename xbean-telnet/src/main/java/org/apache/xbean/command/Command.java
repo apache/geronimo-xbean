@@ -31,6 +31,6 @@ public interface Command {
      * @param out
      * @return
      */
-    public int main(String[] args, InputStream in, PrintStream out);
+    int main(String[] args, InputStream in, PrintStream out);
 
 }

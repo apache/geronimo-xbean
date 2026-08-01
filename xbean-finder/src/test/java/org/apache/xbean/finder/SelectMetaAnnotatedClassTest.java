@@ -198,7 +198,7 @@ public class SelectMetaAnnotatedClassTest extends TestCase {
 
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Color {
+    public @interface Color {
         String value() default "";
     }
 
@@ -207,7 +207,7 @@ public class SelectMetaAnnotatedClassTest extends TestCase {
     // one level deep
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Red {
+    public @interface Red {
     }
 
     @Metatype
@@ -215,13 +215,13 @@ public class SelectMetaAnnotatedClassTest extends TestCase {
     // two levels deep
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Crimson {
+    public @interface Crimson {
     }
 
     @Red
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface NotMeta {
+    public @interface NotMeta {
     }
 
     @Metatype
@@ -230,7 +230,7 @@ public class SelectMetaAnnotatedClassTest extends TestCase {
     // Circular
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Egg {
+    public @interface Egg {
     }
 
 
@@ -240,7 +240,7 @@ public class SelectMetaAnnotatedClassTest extends TestCase {
     // Circular
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Chicken {
+    public @interface Chicken {
     }
 
 

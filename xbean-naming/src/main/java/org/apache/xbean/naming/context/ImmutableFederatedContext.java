@@ -69,7 +69,7 @@ public class ImmutableFederatedContext extends AbstractFederatedContext {
              if (!path.endsWith("/")) path += "/";
              this.pathWithSlash = path;
 
-             this.bindingsRef = new AtomicReference<Map<String, Object>>(Collections.unmodifiableMap(bindings));
+             this.bindingsRef = new AtomicReference<>(Collections.unmodifiableMap(bindings));
          }
 
          public Context createNestedSubcontext(String path, Map<String, Object> bindings) throws NamingException {

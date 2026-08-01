@@ -309,8 +309,8 @@ public class ReferenceIdentityMap implements Map {
             return;
         }
 
-        ReferenceEntry oldEntries[] = data;
-        ReferenceEntry newEntries[] = new ReferenceEntry[newCapacity];
+        ReferenceEntry[] oldEntries = data;
+        ReferenceEntry[] newEntries = new ReferenceEntry[newCapacity];
 
         for (int i = oldCapacity - 1; i >= 0; i--) {
             ReferenceEntry entry = oldEntries[i];

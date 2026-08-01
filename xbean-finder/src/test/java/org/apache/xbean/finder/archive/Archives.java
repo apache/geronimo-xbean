@@ -37,7 +37,7 @@ import static junit.framework.Assert.assertTrue;
 public class Archives {
 
     public static File fileArchive(Class[] classes) throws IOException {
-        return fileArchive(new HashMap<String, String>(), classes);
+        return fileArchive(new HashMap<>(), classes);
     }
 
     public static File fileArchive(Map<String, String> entries, Class... classes) throws IOException {
@@ -94,7 +94,7 @@ public class Archives {
     }
 
     public static File jarArchive(Class... classes) throws IOException {
-        return jarArchive(new HashMap<String, String>(), classes);
+        return jarArchive(new HashMap<>(), classes);
     }
 
     public static File jarArchive(Map<String, String> entries, Class... classes) throws IOException {

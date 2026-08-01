@@ -75,8 +75,8 @@ public class ModelTest extends TestCase {
         generator.generateSchema(new PrintWriter("target/dummy") {
             @Override
             public void println(String x) {
-                if (x.indexOf("volumeWithPropertyEditor") != -1) {
-                    if (x.indexOf("xs:string") != -1) {
+                if (x.contains("volumeWithPropertyEditor")) {
+                    if (x.contains("xs:string")) {
                         gotExpected.set(true);
                     }
                 }
@@ -172,7 +172,7 @@ public class ModelTest extends TestCase {
         factory.setValidating(true);
         factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
 
-        final AtomicReference<SAXParseException> error = new AtomicReference<SAXParseException>();
+        final AtomicReference<SAXParseException> error = new AtomicReference<>();
 
         DocumentBuilder builder = factory.newDocumentBuilder();
 

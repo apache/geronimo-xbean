@@ -361,7 +361,7 @@ public class ResourceFinderTest extends TestCase {
 
     public void testWebinfJar() throws Exception {
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("WEB-INF/beans.xml", "<beans/>");
 
         final File jarFile = Archives.jarArchive(map);

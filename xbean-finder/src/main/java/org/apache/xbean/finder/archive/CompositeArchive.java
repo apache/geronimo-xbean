@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
  */
 public class CompositeArchive implements Archive, AutoCloseable {
 
-    private final List<Archive> archives = new ArrayList<Archive>();
+    private final List<Archive> archives = new ArrayList<>();
 
     public CompositeArchive(Archive... archives) {
         this(Arrays.asList(archives));

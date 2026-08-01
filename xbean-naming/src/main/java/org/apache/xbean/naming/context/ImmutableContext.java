@@ -63,7 +63,7 @@ public class ImmutableContext extends AbstractContext {
             path += "/";
         }
 
-        Map<String, Object> globalBindings = new HashMap<String, Object>();
+        Map<String, Object> globalBindings = new HashMap<>();
         for (Map.Entry<String, Object> entry : bindings.entrySet()) {
             String name = entry.getKey();
             Object value = entry.getValue();

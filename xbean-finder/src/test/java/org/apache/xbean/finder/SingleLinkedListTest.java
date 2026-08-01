@@ -33,7 +33,7 @@ public class SingleLinkedListTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        list = new SingleLinkedList<String>();
+        list = new SingleLinkedList<>();
         list.add("one");
         list.add("two");
         list.add("three");
@@ -44,7 +44,7 @@ public class SingleLinkedListTest extends TestCase {
     }
 
     public void testIterator() throws Exception {
-        ArrayList<String> arrayList = new ArrayList<String>();
+        ArrayList<String> arrayList = new ArrayList<>();
         for (String s : list) {
             arrayList.add(s);
         }
@@ -53,13 +53,13 @@ public class SingleLinkedListTest extends TestCase {
     }
 
     public void testArrayListConstructor() throws Exception {
-        ArrayList<String> arrayList = new ArrayList<String>(list);
+        ArrayList<String> arrayList = new ArrayList<>(list);
 
         assertEquals(expected, arrayList);
     }
 
     public void testLinkedListConstructor() throws Exception {
-        LinkedList<String> linkedList = new LinkedList<String>(list);
+        LinkedList<String> linkedList = new LinkedList<>(list);
 
         assertEquals(expected, linkedList);
     }
@@ -154,7 +154,7 @@ public class SingleLinkedListTest extends TestCase {
     }
     
     public void testIsEmpty() {
-        SingleLinkedList<String> temp = new SingleLinkedList<String>();
+        SingleLinkedList<String> temp = new SingleLinkedList<>();
         assertTrue(temp.isEmpty());
         assertEquals(0, temp.size());
         temp.add("one"); 

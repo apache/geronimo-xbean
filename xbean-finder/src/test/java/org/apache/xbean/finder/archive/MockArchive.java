@@ -29,7 +29,7 @@ import java.util.List;
  * @version $Rev$ $Date$
  */
 public class MockArchive implements Archive {
-    private final List<String> list = new ArrayList<String>();
+    private final List<String> list = new ArrayList<>();
 
     public MockArchive(String... classNames) {
         this(Arrays.asList(classNames));

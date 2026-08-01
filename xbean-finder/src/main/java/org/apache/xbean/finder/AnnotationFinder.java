@@ -80,7 +80,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     protected final Map<String, ClassInfo> classInfos = newClassInfoMap();
     protected final Map<String, ClassInfo> originalInfos = newClassInfoMap();
-    private final List<String> classesNotLoaded = new ArrayList<String>();
+    private final List<String> classesNotLoaded = new ArrayList<>();
     private final Archive archive;
     private final boolean checkRuntimeAnnotation;
     private volatile boolean linking;
@@ -107,7 +107,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             readClassDef(info);
         }
 
-        resolveAnnotations(parent, new HashSet<String>());
+        resolveAnnotations(parent, new HashSet<>());
         for (ClassInfo classInfo : classInfos.values()) {
             if (isMetaRoot(classInfo)) {
                 try {
@@ -130,11 +130,11 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     protected Map<String, List<Info>> newAnnotatedMap() {
-        return new HashMap<String, List<Info>>();
+        return new HashMap<>();
     }
 
     protected Map<String, ClassInfo> newClassInfoMap() {
-        return new HashMap<String, ClassInfo>();
+        return new HashMap<>();
     }
 
     protected boolean cleanOnNaked() {
@@ -193,7 +193,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     private void resolveAnnotations(AnnotationFinder parent, Set<String> scanned) {
         // Get a list of the annotations that exist before we start
-        final List<String> annotations = new ArrayList<String>(annotated.keySet());
+        final List<String> annotations = new ArrayList<>(annotated.keySet());
 
         for (String annotation : annotations) {
             if (scanned.contains(annotation)) continue;
@@ -223,7 +223,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     public List<String> getAnnotatedClassNames() {
-        return new ArrayList<String>(originalInfos.keySet());
+        return new ArrayList<>(originalInfos.keySet());
     }
 
     public Archive getArchive() {
@@ -249,7 +249,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public AnnotationFinder enableMetaAnnotations() {
         // diff new and old lists
-        resolveAnnotations(new HashSet<String>());
+        resolveAnnotations(new HashSet<>());
 
         linkMetaAnnotations();
 
@@ -280,7 +280,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             for (String iface : classInfo.interfaces) {
                 List<ClassInfo> impls = interfaceImplementors.get(iface);
                 if (impls == null) {
-                    impls = new ArrayList<ClassInfo>();
+                    impls = new ArrayList<>();
                     interfaceImplementors.put(iface, impls);
                 }
                 impls.add(classInfo);
@@ -313,7 +313,7 @@ public class AnnotationFinder implements IAnnotationFinder {
      */
     private void resolveAnnotations(Set<String> scanned) {
         // Get a list of the annotations that exist before we start
-        final List<String> annotations = new ArrayList<String>(annotated.keySet());
+        final List<String> annotations = new ArrayList<>(annotated.keySet());
 
         for (String annotation : annotations) {
             if (scanned.contains(annotation)) continue;
@@ -459,7 +459,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     protected void linkInterfaces(ClassInfo classInfo) {
-        final List<ClassInfo> infos = new LinkedList<ClassInfo>();
+        final List<ClassInfo> infos = new LinkedList<>();
 
         if (classInfo.clazz != null) {
             final Class<?>[] interfaces = classInfo.clazz.getInterfaces();
@@ -525,7 +525,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Package> findAnnotatedPackages(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Package> packages = new LinkedList<Package>();
+        List<Package> packages = new LinkedList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof PackageInfo) {
@@ -546,7 +546,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Class<?>> findAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        List<Class<?>> classes = new LinkedList<Class<?>>();
+        List<Class<?>> classes = new LinkedList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof ClassInfo) {
@@ -567,9 +567,9 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Annotated<Class<?>>> findMetaAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        Set<Class<?>> classes = findMetaAnnotatedClasses(annotation, new HashSet<Class<?>>());
+        Set<Class<?>> classes = findMetaAnnotatedClasses(annotation, new HashSet<>());
 
-        List<Annotated<Class<?>>> list = new LinkedList<Annotated<Class<?>>>();
+        List<Annotated<Class<?>>> list = new LinkedList<>();
 
         for (Class<?> clazz : classes) {
             if (Annotation.class.isAssignableFrom(clazz) && isMetaAnnotation((Class<? extends Annotation>) clazz)) continue;
@@ -649,9 +649,9 @@ public class AnnotationFinder implements IAnnotationFinder {
      */
     public List<Class<?>> findInheritedAnnotatedClasses(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        final List<Class<?>> classes = new ArrayList<Class<?>>();
-        final Set<String> annotatedNames = new HashSet<String>();
-        final Set<ClassInfo> collected = new HashSet<ClassInfo>();
+        final List<Class<?>> classes = new ArrayList<>();
+        final Set<String> annotatedNames = new HashSet<>();
+        final Set<ClassInfo> collected = new HashSet<>();
 
         for (Info info : getAnnotationInfos(annotation.getName())) {
             if (info instanceof ClassInfo) {
@@ -670,7 +670,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         }
 
         // Iteratively propagate through subclasses / implementors until stable
-        final List<ClassInfo> remaining = new ArrayList<ClassInfo>(classInfos.values());
+        final List<ClassInfo> remaining = new ArrayList<>(classInfos.values());
         remaining.removeAll(collected);
         boolean changed = true;
         while (changed) {
@@ -751,8 +751,8 @@ public class AnnotationFinder implements IAnnotationFinder {
     public List<Parameter<Method>> findAnnotatedMethodParameters(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
-        final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<ClassInfo>() : null;
-        final List<Parameter<Method>> result = new LinkedList<Parameter<Method>>();
+        final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<>() : null;
+        final List<Parameter<Method>> result = new LinkedList<>();
         for (Info info : getAnnotationInfos(annotation.getName())) {
             if (!(info instanceof ParameterInfo)) {
                 continue;
@@ -797,9 +797,9 @@ public class AnnotationFinder implements IAnnotationFinder {
     public List<Annotated<Method>> findMetaAnnotatedMethods(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
-        Set<Method> methods = findMetaAnnotatedMethods(annotation, new HashSet<Method>(), new HashSet<String>());
+        Set<Method> methods = findMetaAnnotatedMethods(annotation, new HashSet<>(), new HashSet<>());
 
-        List<Annotated<Method>> targets = new LinkedList<Annotated<Method>>();
+        List<Annotated<Method>> targets = new LinkedList<>();
 
         for (Method method : methods) {
             targets.add(new MetaAnnotatedMethod(method));
@@ -856,9 +856,9 @@ public class AnnotationFinder implements IAnnotationFinder {
     public List<Annotated<Field>> findMetaAnnotatedFields(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
-        Set<Field> fields = findMetaAnnotatedFields(annotation, new HashSet<Field>(), new HashSet<String>());
+        Set<Field> fields = findMetaAnnotatedFields(annotation, new HashSet<>(), new HashSet<>());
 
-        List<Annotated<Field>> targets = new LinkedList<Annotated<Field>>();
+        List<Annotated<Field>> targets = new LinkedList<>();
 
         for (Field field : fields) {
             targets.add(new MetaAnnotatedField(field));
@@ -914,8 +914,8 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Constructor> findAnnotatedConstructors(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
-        Set<ClassInfo> seen = new HashSet<ClassInfo>();
-        List<Constructor> constructors = new LinkedList<Constructor>();
+        Set<ClassInfo> seen = new HashSet<>();
+        List<Constructor> constructors = new LinkedList<>();
         List<Info> infos = getAnnotationInfos(annotation.getName());
         for (Info info : infos) {
             if (info instanceof MethodInfo && info.getName().equals("<init>")) {
@@ -951,8 +951,8 @@ public class AnnotationFinder implements IAnnotationFinder {
     public List<Parameter<Constructor<?>>> findAnnotatedConstructorParameters(Class<? extends Annotation> annotation) {
         classesNotLoaded.clear();
 
-        final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<ClassInfo>() : null;
-        final List<Parameter<Constructor<?>>> result = new LinkedList<Parameter<Constructor<?>>>();
+        final Set<ClassInfo> seen = checkRuntimeAnnotation ? new HashSet<>() : null;
+        final List<Parameter<Constructor<?>>> result = new LinkedList<>();
         for (Info info : getAnnotationInfos(annotation.getName())) {
             if (!(info instanceof ParameterInfo)) {
                 continue;
@@ -1034,7 +1034,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public List<Class<?>> findClassesInPackage(String packageName, boolean recursive) {
         classesNotLoaded.clear();
-        List<Class<?>> classes = new LinkedList<Class<?>>();
+        List<Class<?>> classes = new LinkedList<>();
         for (ClassInfo classInfo : classInfos.values()) {
             try {
                 if (recursive && classInfo.getPackageName().startsWith(packageName)) {
@@ -1056,7 +1056,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
         final ClassInfo classInfo = classInfos.get(clazz.getName());
 
-        List<Class<? extends T>> found = new LinkedList<Class<? extends T>>();
+        List<Class<? extends T>> found = new LinkedList<>();
 
         if (classInfo == null) return found;
 
@@ -1082,7 +1082,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     private <T> List<Class<? extends T>> _findSubclasses(Class<T> clazz) {
         if (clazz == null) throw new NullPointerException("class cannot be null");
 
-        List<Class<? extends T>> classes = new LinkedList<Class<? extends T>>();
+        List<Class<? extends T>> classes = new LinkedList<>();
 
 
         for (ClassInfo classInfo : classInfos.values()) {
@@ -1123,7 +1123,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         final List<ClassInfo> infos = collectImplementations(interfaceName);
 
         // Use LinkedHashSet to preserve insertion order while giving O(1) contains()
-        final Set<Class<? extends T>> classesSet = new LinkedHashSet<Class<? extends T>>();
+        final Set<Class<? extends T>> classesSet = new LinkedHashSet<>();
         for (ClassInfo info : infos) {
             try {
                 final Class<? extends T> impl = (Class<? extends T>) info.get();
@@ -1142,14 +1142,14 @@ public class AnnotationFinder implements IAnnotationFinder {
                 classesNotLoaded.add(info.getName());
             }
         }
-        return new ArrayList<Class<? extends T>>(classesSet);
+        return new ArrayList<>(classesSet);
     }
 
     /**
      * Callers must have invoked {@link #ensureInterfaceIndex()} beforehand.
      */
     private List<ClassInfo> collectImplementations(String interfaceName) {
-        final List<ClassInfo> infos = new LinkedList<ClassInfo>();
+        final List<ClassInfo> infos = new LinkedList<>();
 
         final List<ClassInfo> directImpls = interfaceImplementors.get(interfaceName);
         if (directImpls == null) {
@@ -1186,7 +1186,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     protected List<Info> initAnnotationInfos(String name) {
         List<Info> infos = annotated.get(name);
         if (infos == null) {
-            infos = new SingleLinkedList<Info>();
+            infos = new SingleLinkedList<>();
             annotated.put(name, infos);
         }
         return infos;
@@ -1215,7 +1215,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     protected void readClassDef(Class clazz) {
-        List<Info> infos = new LinkedList<Info>();
+        List<Info> infos = new LinkedList<>();
 
         Package aPackage = clazz.getPackage();
         if (aPackage != null) {
@@ -1295,7 +1295,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     public class SubArchive implements Archive {
-        private List<Entry> classes = new LinkedList<Entry>();
+        private List<Entry> classes = new LinkedList<>();
 
         public SubArchive(String... classes) {
             for (String name : classes) {
@@ -1339,7 +1339,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     public static class Annotatable {
-        private final List<AnnotationInfo> annotations = new ArrayList<AnnotationInfo>();
+        private final List<AnnotationInfo> annotations = new ArrayList<>();
 
         public Annotatable(AnnotatedElement element) {
             for (Annotation annotation : getAnnotations(element)) {
@@ -1389,7 +1389,7 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     }
 
-    public static interface Info {
+    public interface Info {
 
         String getMetaAnnotationName();
 
@@ -1446,13 +1446,13 @@ public class AnnotationFinder implements IAnnotationFinder {
 
     public class ClassInfo extends Annotatable implements Info {
         private String name;
-        private final List<MethodInfo> methods = new SingleLinkedList<MethodInfo>();
-        private final List<MethodInfo> constructors = new SingleLinkedList<MethodInfo>();
+        private final List<MethodInfo> methods = new SingleLinkedList<>();
+        private final List<MethodInfo> constructors = new SingleLinkedList<>();
         private String superType;
         private ClassInfo superclassInfo;
-        private final Set<ClassInfo> subclassInfos = new LinkedHashSet<ClassInfo>();
-        private final List<String> interfaces = new SingleLinkedList<String>();
-        private final List<FieldInfo> fields = new SingleLinkedList<FieldInfo>();
+        private final Set<ClassInfo> subclassInfos = new LinkedHashSet<>();
+        private final List<String> interfaces = new SingleLinkedList<>();
+        private final List<FieldInfo> fields = new SingleLinkedList<>();
         private Class<?> clazz;
 
 
@@ -1543,8 +1543,8 @@ public class AnnotationFinder implements IAnnotationFinder {
         private final ClassInfo declaringClass;
         private final String descriptor;
         private final String name;
-        private final List<List<AnnotationInfo>> parameterAnnotations = new LinkedList<List<AnnotationInfo>>();
-        private final List<ParameterInfo> parameters = new SingleLinkedList<ParameterInfo>();
+        private final List<List<AnnotationInfo>> parameterAnnotations = new LinkedList<>();
+        private final List<ParameterInfo> parameters = new SingleLinkedList<>();
         private Member method;
 
         public MethodInfo(ClassInfo info, Constructor constructor) {
@@ -1598,7 +1598,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         public List<AnnotationInfo> getParameterAnnotations(int index) {
             if (index >= parameterAnnotations.size()) {
                 for (int i = parameterAnnotations.size(); i <= index; i++) {
-                    List<AnnotationInfo> annotationInfos = new LinkedList<AnnotationInfo>();
+                    List<AnnotationInfo> annotationInfos = new LinkedList<>();
                     parameterAnnotations.add(i, annotationInfos);
                 }
             }
@@ -1633,7 +1633,7 @@ public class AnnotationFinder implements IAnnotationFinder {
             org.objectweb.asm.commons.Method method = new org.objectweb.asm.commons.Method(name, descriptor);
 
             Class<?> clazz = this.declaringClass.get();
-            List<Class> parameterTypes = new LinkedList<Class>();
+            List<Class> parameterTypes = new LinkedList<>();
 
             for (Type type : method.getArgumentTypes()) {
                 String paramType = type.getClassName();
@@ -1670,7 +1670,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     public class ParameterInfo extends Annotatable implements Info {
         private final MethodInfo declaringMethod;
         private final int index;
-        private final List<AnnotationInfo> annotations = new LinkedList<AnnotationInfo>();
+        private final List<AnnotationInfo> annotations = new LinkedList<>();
         private Parameter<?> parameter;
 
         public ParameterInfo(MethodInfo parent, int index) {

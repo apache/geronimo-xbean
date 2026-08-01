@@ -335,13 +335,13 @@ public class NamedConstructorArgs {
     static {
         Map temp = new HashMap();
         temp.put(Boolean.TYPE, Boolean.FALSE);
-        temp.put(Byte.TYPE, new Byte((byte) 0));
-        temp.put(Character.TYPE, new Character((char) 0));
-        temp.put(Short.TYPE, new Short((short) 0));
-        temp.put(Integer.TYPE, new Integer(0));
-        temp.put(Long.TYPE, new Long(0));
-        temp.put(Float.TYPE, new Float(0));
-        temp.put(Double.TYPE, new Double(0));
+        temp.put(Byte.TYPE, (byte) 0);
+        temp.put(Character.TYPE, (char) 0);
+        temp.put(Short.TYPE, (short) 0);
+        temp.put(Integer.TYPE, 0);
+        temp.put(Long.TYPE, 0L);
+        temp.put(Float.TYPE, (float) 0);
+        temp.put(Double.TYPE, (double) 0);
 
         DEFAULT_VALUE = Collections.unmodifiableMap(temp);
     }

@@ -34,14 +34,14 @@ public class MilliLittersPropertyEditor extends PropertyEditorSupport {
 		Pattern p = Pattern.compile("^(\\d+)\\s*(l(iter)?)?$", Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(text);
 		if( m.matches() ) {
-			setValue(new Long(Long.parseLong(m.group(1))*1000));
+			setValue(Long.parseLong(m.group(1)) * 1000);
 			return;
 		}
 		
 		p = Pattern.compile("^(\\d+)\\s*(ml)?$", Pattern.CASE_INSENSITIVE);
 		m = p.matcher(text);
 		if( m.matches() ) {
-			setValue(new Long(Long.parseLong(m.group(1))));
+			setValue(Long.parseLong(m.group(1)));
 			return;
 		}
 
@@ -49,7 +49,7 @@ public class MilliLittersPropertyEditor extends PropertyEditorSupport {
 	    m = p.matcher(text);
 		if( m.matches() ) {
 			long pints = Long.parseLong(m.group(1));
-			setValue(new Long( (long)(pints * 1750) ));
+			setValue((long) (pints * 1750));
 			return;
 		}
 		

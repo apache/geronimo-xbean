@@ -97,7 +97,7 @@ public abstract class Parameter<E extends java.lang.reflect.Member> implements A
     protected abstract Annotation[][] getParameterAnnotations();
 
     public static <T> Parameter<Constructor<T>> declaredBy(Constructor<T> ctor, int index) {
-        return new Parameter<Constructor<T>>(ctor, index) {
+        return new Parameter<>(ctor, index) {
 
             @Override
             protected Annotation[][] getParameterAnnotations() {
@@ -107,7 +107,7 @@ public abstract class Parameter<E extends java.lang.reflect.Member> implements A
     }
 
     public static Parameter<Method> declaredBy(Method method, int index) {
-        return new Parameter<Method>(method, index) {
+        return new Parameter<>(method, index) {
 
             @Override
             protected Annotation[][] getParameterAnnotations() {

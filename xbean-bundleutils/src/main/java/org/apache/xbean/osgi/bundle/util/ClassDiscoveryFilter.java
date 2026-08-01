@@ -22,11 +22,11 @@ package org.apache.xbean.osgi.bundle.util;
  */
 public interface ClassDiscoveryFilter {
 
-    public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange);
+    boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange);
 
-    public boolean jarFileDiscoveryRequired(String url);
+    boolean jarFileDiscoveryRequired(String url);
 
-    public boolean directoryDiscoveryRequired(String url);
+    boolean directoryDiscoveryRequired(String url);
 
-    public boolean packageDiscoveryRequired(String packageName);
+    boolean packageDiscoveryRequired(String packageName);
 }

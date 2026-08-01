@@ -24,18 +24,18 @@ import java.lang.reflect.Type;
  */
 public interface AnnotatedMethod<T> extends AnnotatedMember<T> {
 
-    public Annotation[][] getParameterAnnotations();
+    Annotation[][] getParameterAnnotations();
 
-    public Class<?>[] getExceptionTypes();
+    Class<?>[] getExceptionTypes();
 
-    public Class<?>[] getParameterTypes();
+    Class<?>[] getParameterTypes();
 
-    public String toGenericString();
+    String toGenericString();
 
-    public Type[] getGenericExceptionTypes();
+    Type[] getGenericExceptionTypes();
 
-    public Type[] getGenericParameterTypes();
+    Type[] getGenericParameterTypes();
 
-    public boolean isVarArgs();
+    boolean isVarArgs();
 
 }

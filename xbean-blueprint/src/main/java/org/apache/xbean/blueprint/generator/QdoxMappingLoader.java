@@ -101,13 +101,13 @@ public class QdoxMappingLoader implements MappingLoader {
         List<ElementMapping> elements = loadElements(builder);
 
         // index the elements by namespace and find the root element of each namespace
-        Map<String, Set<ElementMapping>> elementsByNamespace = new HashMap<String, Set<ElementMapping>>();
-        Map<String, ElementMapping> namespaceRoots = new HashMap<String, ElementMapping>();
+        Map<String, Set<ElementMapping>> elementsByNamespace = new HashMap<>();
+        Map<String, ElementMapping> namespaceRoots = new HashMap<>();
         for (ElementMapping element : elements) {
             String namespace = element.getNamespace();
             Set<ElementMapping> namespaceElements = elementsByNamespace.get(namespace);
             if (namespaceElements == null) {
-                namespaceElements = new HashSet<ElementMapping>();
+                namespaceElements = new HashSet<>();
                 elementsByNamespace.put(namespace, namespaceElements);
             }
             namespaceElements.add(element);
@@ -120,7 +120,7 @@ public class QdoxMappingLoader implements MappingLoader {
         }
 
         // build the NamespaceMapping objects
-        Set<NamespaceMapping> namespaces = new TreeSet<NamespaceMapping>();
+        Set<NamespaceMapping> namespaces = new TreeSet<>();
         for (Map.Entry<String, Set<ElementMapping>> entry : elementsByNamespace.entrySet()) {
             String namespace = entry.getKey();
             Set namespaceElements = entry.getValue();
@@ -133,7 +133,7 @@ public class QdoxMappingLoader implements MappingLoader {
 
     private List<ElementMapping> loadElements(JavaDocBuilder builder) {
         JavaSource[] javaSources = builder.getSources();
-        List<ElementMapping> elements = new ArrayList<ElementMapping>();
+        List<ElementMapping> elements = new ArrayList<>();
         for (JavaSource javaSource : javaSources) {
             if (javaSource.getClasses().length == 0) {
                 log.info("No Java Classes defined in: " + javaSource.getURL());
@@ -169,11 +169,11 @@ public class QdoxMappingLoader implements MappingLoader {
         String contentProperty = getProperty(xbeanTag, "contentProperty");
         String factoryClass = getProperty(xbeanTag, "factoryClass");
 
-        Map<String, MapMapping> mapsByPropertyName = new HashMap<String, MapMapping>();
-        List<String> flatProperties = new ArrayList<String>();
-        Map<String, String> flatCollections = new HashMap<String, String>();
-        Set<AttributeMapping> attributes = new HashSet<AttributeMapping>();
-        Map<String, AttributeMapping> attributesByPropertyName = new HashMap<String, AttributeMapping>();
+        Map<String, MapMapping> mapsByPropertyName = new HashMap<>();
+        List<String> flatProperties = new ArrayList<>();
+        Map<String, String> flatCollections = new HashMap<>();
+        Set<AttributeMapping> attributes = new HashSet<>();
+        Map<String, AttributeMapping> attributesByPropertyName = new HashMap<>();
 
         for (JavaClass jClass = javaClass; jClass != null; jClass = jClass.getSuperJavaClass()) {
             BeanProperty[] beanProperties = jClass.getBeanProperties();
@@ -236,12 +236,12 @@ public class QdoxMappingLoader implements MappingLoader {
             }
         }
 
-        List<List<ParameterMapping>> constructorArgs = new ArrayList<List<ParameterMapping>>();
+        List<List<ParameterMapping>> constructorArgs = new ArrayList<>();
         JavaMethod[] methods = javaClass.getMethods();
         for (JavaMethod method : methods) {
             JavaParameter[] parameters = method.getParameters();
             if (isValidConstructor(factoryMethod, method, parameters)) {
-                List<ParameterMapping> args = new ArrayList<ParameterMapping>(parameters.length);
+                List<ParameterMapping> args = new ArrayList<>(parameters.length);
                 for (JavaParameter parameter : parameters) {
                     AttributeMapping attributeMapping = attributesByPropertyName.get(parameter.getName());
                     if (attributeMapping == null) {
@@ -256,7 +256,7 @@ public class QdoxMappingLoader implements MappingLoader {
             }
         }
 
-        HashSet<String> interfaces = new HashSet<String>();
+        HashSet<String> interfaces = new HashSet<>();
         interfaces.addAll(getFullyQualifiedNames(javaClass.getImplementedInterfaces()));
 
         JavaClass actualClass = javaClass;
@@ -270,7 +270,7 @@ public class QdoxMappingLoader implements MappingLoader {
             }
         }
 
-        ArrayList<String> superClasses = new ArrayList<String>();
+        ArrayList<String> superClasses = new ArrayList<>();
         JavaClass p = actualClass;
         if (actualClass != javaClass) {
             superClasses.add(actualClass.getFullyQualifiedName());
@@ -304,7 +304,7 @@ public class QdoxMappingLoader implements MappingLoader {
     }
 
     private List<String> getFullyQualifiedNames(JavaClass[] implementedInterfaces) {
-        ArrayList<String> l = new ArrayList<String>();
+        ArrayList<String> l = new ArrayList<>();
         for (JavaClass implementedInterface : implementedInterfaces) {
             l.add(implementedInterface.getFullyQualifiedName());
         }

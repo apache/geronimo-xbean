@@ -40,7 +40,7 @@ public class MetaAnnotatedMethodTest extends TestCase {
     public void test() throws Exception {
         AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class)).link();
 
-        Map<String, Annotated<Method>> map = new HashMap<String, Annotated<Method>>();
+        Map<String, Annotated<Method>> map = new HashMap<>();
 
         List<Annotated<Method>> methods = finder.findMetaAnnotatedMethods(Color.class);
         for (Annotated<Method> method : methods) {
@@ -181,31 +181,31 @@ public class MetaAnnotatedMethodTest extends TestCase {
 
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface Color {
+    public @interface Color {
         String value () default "";
     }
 
     @Metatype
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface Red {
-        public interface $ {
+    public @interface Red {
+        interface $ {
 
             @Red
             @Color("red")  // one level deep
-            public void method();
+            void method();
         }
     }
 
     @Metatype
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface Crimson {
-        public interface $ {
+    public @interface Crimson {
+        interface $ {
 
             @Crimson
             @Red  // two levels deep
-            public void method();
+            void method();
         }
     }
 
@@ -218,24 +218,24 @@ public class MetaAnnotatedMethodTest extends TestCase {
     @Metatype
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface Green {
-        public interface $ {
+    public @interface Green {
+        interface $ {
 
             @Green
             @Color("green")  // two levels deep
-            public void method();
+            void method();
         }
     }
     
     @Metatype
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface DarkGreen {
-        public interface $ {
+    public @interface DarkGreen {
+        interface $ {
 
             @DarkGreen
             @Green
-            public void method();
+            void method();
         }
     }
 
@@ -243,38 +243,38 @@ public class MetaAnnotatedMethodTest extends TestCase {
     @Metatype
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface Forrest {
-        public interface $ {
+    public @interface Forrest {
+        interface $ {
 
             @Forrest
             @DarkGreen
-            public void method();
+            void method();
         }
     }
 
     @Metatype
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface Chicken {
-        public interface $ {
+    public @interface Chicken {
+        interface $ {
 
             @Chicken
             @Color("chicken")
             @Egg
-            public void method();
+            void method();
         }
     }
 
     @Metatype
     @Target({METHOD})
     @Retention(RUNTIME)
-    public static @interface Egg {
-        public interface $ {
+    public @interface Egg {
+        interface $ {
 
             @Egg
             @Color("egg")
             @Chicken
-            public void method();
+            void method();
         }
     }
 

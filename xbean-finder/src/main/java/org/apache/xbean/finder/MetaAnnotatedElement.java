@@ -37,7 +37,7 @@ import static java.util.Arrays.asList;
 * @version $Rev$ $Date$
 */
 public class MetaAnnotatedElement<T extends AnnotatedElement> implements  AnnotatedElement, MetaAnnotated<T> {
-    protected final Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
+    protected final Map<Class<? extends Annotation>, MetaAnnotation<?>> annotations = new HashMap<>();
     protected final T target;
 
     public MetaAnnotatedElement(T element) {
@@ -144,7 +144,7 @@ public class MetaAnnotatedElement<T extends AnnotatedElement> implements  Annota
 
     private static Collection<Annotation> getDeclaredMetaAnnotations(Class<? extends Annotation> clazz) {
 
-        Map<Class, Annotation> map = new HashMap<Class, Annotation>();
+        Map<Class, Annotation> map = new HashMap<>();
 
         // pull in the annotations declared on this annotation
 
@@ -152,14 +152,14 @@ public class MetaAnnotatedElement<T extends AnnotatedElement> implements  Annota
             map.put(annotation.annotationType(), annotation);
         }
 
-        List<Annotation[]> groups = new ArrayList<Annotation[]>();
+        List<Annotation[]> groups = new ArrayList<>();
 
         Class<? extends Annotation> metatype = getMetatype(clazz);
         if (metatype != null) {
             try {
                 Class<?> def = clazz.getClassLoader().loadClass(clazz.getName() + "$$");
 
-                List<AnnotatedElement> elements = new ArrayList<AnnotatedElement>();
+                List<AnnotatedElement> elements = new ArrayList<>();
 
                 elements.addAll(asList(def.getDeclaredFields()));
                 elements.addAll(asList(def.getDeclaredConstructors()));
@@ -258,7 +258,7 @@ public class MetaAnnotatedElement<T extends AnnotatedElement> implements  Annota
     }
 
     protected static Map<Class<? extends Annotation>, MetaAnnotation<?>> unroll(Annotation[] annotations) {
-        final Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<Class<? extends Annotation>, MetaAnnotation<?>>();
+        final Map<Class<? extends Annotation>, MetaAnnotation<?>> map = new HashMap<>();
 
         for (Annotation annotation : annotations) {
 

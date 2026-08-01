@@ -104,7 +104,7 @@ public class FileArchiveTest {
 
     @Test
     public void testIterator() throws Exception {
-        List<String> actual = new ArrayList<String>();
+        List<String> actual = new ArrayList<>();
         for (Archive.Entry entry : archive) {
             actual.add(entry.getName());
         }

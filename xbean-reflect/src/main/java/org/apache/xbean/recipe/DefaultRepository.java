@@ -24,7 +24,7 @@ public class DefaultRepository implements Repository {
     /**
      * The unmarshaled object instances by name.
      */
-    private final SortedMap<String, Object> instances = new TreeMap<String, Object>();
+    private final SortedMap<String, Object> instances = new TreeMap<>();
 
     /**
      * Does this repository contain a object with the specified name.

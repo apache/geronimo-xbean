@@ -22,9 +22,9 @@ package org.apache.xbean.osgi.bundle.util;
  */
 public interface ResourceDiscoveryFilter {
 
-    public boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange);
+    boolean rangeDiscoveryRequired(DiscoveryRange discoveryRange);
 
-    public boolean zipFileDiscoveryRequired(String url);
+    boolean zipFileDiscoveryRequired(String url);
 
-    public boolean directoryDiscoveryRequired(String url);
+    boolean directoryDiscoveryRequired(String url);
 }

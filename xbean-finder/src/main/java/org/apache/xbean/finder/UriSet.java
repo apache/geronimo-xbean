@@ -43,7 +43,7 @@ public class UriSet implements Iterable<URI> {
     }
 
     public UriSet(Collection<URI> URIs) {
-        this.URIs = new HashMap<String, URI>();
+        this.URIs = new HashMap<>();
         for (URI location : URIs) {
             this.URIs.put(location.toASCIIString(), location);
         }
@@ -58,20 +58,20 @@ public class UriSet implements Iterable<URI> {
     }
 
     public UriSet include(UriSet URISet) {
-        Map<String, URI> URIs = new HashMap<String, URI>(this.URIs);
+        Map<String, URI> URIs = new HashMap<>(this.URIs);
         URIs.putAll(URISet.URIs);
         return new UriSet(URIs);
     }
 
 
     public UriSet include(URI URI) {
-        Map<String, URI> URIs = new HashMap<String, URI>(this.URIs);
+        Map<String, URI> URIs = new HashMap<>(this.URIs);
         URIs.put(URI.toASCIIString(), URI);
         return new UriSet(URIs);
     }
 
     public UriSet exclude(UriSet URISet) {
-        Map<String, URI> URIs = new HashMap<String, URI>(this.URIs);
+        Map<String, URI> URIs = new HashMap<>(this.URIs);
         Map<String, URI> parentURIs = URISet.URIs;
         for (String URI : parentURIs.keySet()) {
             URIs.remove(URI);
@@ -80,7 +80,7 @@ public class UriSet implements Iterable<URI> {
     }
 
     public UriSet exclude(URI URI) {
-        Map<String, URI> URIs = new HashMap<String, URI>(this.URIs);
+        Map<String, URI> URIs = new HashMap<>(this.URIs);
         URIs.remove(URI.toASCIIString());
         return new UriSet(URIs);
     }
@@ -104,7 +104,7 @@ public class UriSet implements Iterable<URI> {
     }
 
     public UriSet filter(Filter filter) {
-        Map<String, URI> URIs = new HashMap<String, URI>();
+        Map<String, URI> URIs = new HashMap<>();
         for (Map.Entry<String, URI> entry : this.URIs.entrySet()) {
             String URI = entry.getKey();
             if (filter.accept(URI)) {
@@ -120,7 +120,7 @@ public class UriSet implements Iterable<URI> {
 
     public UriSet relative(File file) {
         String URIPath = file.toURI().toASCIIString();
-        Map<String, URI> URIs = new HashMap<String, URI>();
+        Map<String, URI> URIs = new HashMap<>();
         for (Map.Entry<String, URI> entry : this.URIs.entrySet()) {
             String URI = entry.getKey();
             if (URI.startsWith(URIPath) || URI.startsWith("jar:" + URIPath)) {
@@ -131,7 +131,7 @@ public class UriSet implements Iterable<URI> {
     }
 
     public List<URI> getURIs() {
-        return new ArrayList<URI>(URIs.values());
+        return new ArrayList<>(URIs.values());
     }
 
     public int size() {

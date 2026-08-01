@@ -33,16 +33,16 @@ public class ClassFinderDepthTest extends TestCase {
     public static abstract class TargetImpl implements java.lang.annotation.Target {
     }
 
-    public static interface Hue<T> {
+    public interface Hue<T> {
     }
 
-    public static interface Saturation {
+    public interface Saturation {
     }
 
-    public static interface Brightness {
+    public interface Brightness {
     }
 
-    public static interface HSB<T> extends Hue<T>, Saturation, Brightness {
+    public interface HSB<T> extends Hue<T>, Saturation, Brightness {
     }
 
     public static class Color<T> implements HSB<T> {
@@ -118,7 +118,7 @@ public class ClassFinderDepthTest extends TestCase {
     }
 
     private void assertSubclasses(AnnotationFinder finder, Class<?> clazz, Class... subclasses) {
-        final List<Class<?>> classes = new ArrayList<Class<?>>(finder.findSubclasses(clazz));
+        final List<Class<?>> classes = new ArrayList<>(finder.findSubclasses(clazz));
 
         for (Class subclass : subclasses) {
             assertContains(classes, subclass);

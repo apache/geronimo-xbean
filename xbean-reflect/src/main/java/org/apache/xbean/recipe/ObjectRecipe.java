@@ -46,9 +46,9 @@ public class ObjectRecipe extends AbstractRecipe {
     private List<String> constructorArgNames;
     private List<Class<?>> constructorArgTypes;
     private PropertyEditorRegistry registry;
-    private final LinkedHashMap<Property,Object> properties = new LinkedHashMap<Property,Object>();
+    private final LinkedHashMap<Property,Object> properties = new LinkedHashMap<>();
     private final EnumSet<Option> options = EnumSet.of(Option.FIELD_INJECTION);
-    private final Map<String,Object> unsetProperties = new LinkedHashMap<String,Object>();
+    private final Map<String,Object> unsetProperties = new LinkedHashMap<>();
 
     public ObjectRecipe(Class typeClass) {
         this(typeClass, null, null, null, null);
@@ -159,7 +159,7 @@ public class ObjectRecipe extends AbstractRecipe {
     }
 
     public void setConstructorArgTypes(List<? extends Class<?>> constructorArgTypes) {
-        this.constructorArgTypes = new ArrayList<Class<?>>(constructorArgTypes);
+        this.constructorArgTypes = new ArrayList<>(constructorArgTypes);
     }
 
     public String getFactoryMethod() {
@@ -176,7 +176,7 @@ public class ObjectRecipe extends AbstractRecipe {
     }
 
     public Map<String, Object> getProperties() {
-        LinkedHashMap<String, Object> properties = new LinkedHashMap<String, Object>();
+        LinkedHashMap<String, Object> properties = new LinkedHashMap<>();
         for (Map.Entry<Property, Object> entry : this.properties.entrySet()) {
             properties.put(entry.getKey().name, entry.getValue());
         }
@@ -226,7 +226,7 @@ public class ObjectRecipe extends AbstractRecipe {
     }
 
     public List<Recipe> getNestedRecipes() {
-        List<Recipe> nestedRecipes = new ArrayList<Recipe>(properties.size());
+        List<Recipe> nestedRecipes = new ArrayList<>(properties.size());
         for (Object o : properties.values()) {
             if (o instanceof Recipe) {
                 Recipe recipe = (Recipe) o;
@@ -245,7 +245,7 @@ public class ObjectRecipe extends AbstractRecipe {
         if (factoryMethod != null && !(factory instanceof StaticFactory)) {
             // only include recipes used in the construcor args
             List<String> parameterNames = factory.getParameterNames();
-            List<Recipe> nestedRecipes = new ArrayList<Recipe>(parameterNames.size());
+            List<Recipe> nestedRecipes = new ArrayList<>(parameterNames.size());
             for (Map.Entry<Property, Object> entry : properties.entrySet()) {
                 if (parameterNames.contains(entry.getKey().name) && entry.getValue() instanceof Recipe) {
                     Recipe recipe = (Recipe) entry.getValue();
@@ -379,7 +379,7 @@ public class ObjectRecipe extends AbstractRecipe {
 
     private void setProperty(Object instance, Class clazz, Property propertyName, Object propertyValue) {
 
-        List<Member> members = new ArrayList<Member>();
+        List<Member> members = new ArrayList<>();
         try {
             if (propertyName instanceof SetterProperty){
                 List<Method> setters = ReflectionUtil.findAllSetters(clazz, propertyName.name, propertyValue, options, registry);
@@ -404,7 +404,7 @@ public class ObjectRecipe extends AbstractRecipe {
 
                     // if we got more then one matching field, that is an immidate error
                     if (fieldsByType != null && fieldsByType.size() > 1) {
-                        List<String> matches = new ArrayList<String>();
+                        List<String> matches = new ArrayList<>();
                         for (Field field : fieldsByType) {
                             matches.add(field.getName());
                         }
@@ -425,7 +425,7 @@ public class ObjectRecipe extends AbstractRecipe {
 
                     // if we got more then one matching field, that is an immidate error
                     if (settersByType != null && settersByType.size() > 1) {
-                        List<String> matches = new ArrayList<String>();
+                        List<String> matches = new ArrayList<>();
                         for (Method setter : settersByType) {
                             matches.add(setter.getName());
                         }
@@ -632,7 +632,7 @@ public class ObjectRecipe extends AbstractRecipe {
         return null;
     }
 
-    public static interface Member {
+    public interface Member {
         Type getType();
         void setValue(Object instance, Object value) throws Exception;
     }

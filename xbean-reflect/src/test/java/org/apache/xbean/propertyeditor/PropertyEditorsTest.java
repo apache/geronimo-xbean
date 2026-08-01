@@ -102,7 +102,7 @@ public class PropertyEditorsTest extends Assert {
         return sb.toString();
     }
 
-    private static final List<String> calls = new ArrayList<String>();
+    private static final List<String> calls = new ArrayList<>();
 
     /**
      * The BluePropertyEditor should be found and preferred over

@@ -30,7 +30,7 @@ import junit.framework.TestCase;
 public class BundleDescriptionTest extends TestCase {
     
     public void testSimple() throws Exception {
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put(Constants.IMPORT_PACKAGE,
                     "com.thoughtworks.xstream;version=\"1.3\",com.thoughtworks.xstream.converters,org.apache.geronimo.kernel.proxy");
         headers.put(Constants.EXPORT_PACKAGE, 
@@ -60,7 +60,7 @@ public class BundleDescriptionTest extends TestCase {
     }
     
     public void testSymbolicName() throws Exception {
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         
         BundleDescription desc = new BundleDescription(headers);
                 

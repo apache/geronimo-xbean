@@ -41,10 +41,10 @@ public class ImmutableFederatedContextTest  extends TestCase {
         Context global1 = new ImmutableContext(Collections.<String, Object>singletonMap("global/env/foo1", "foo1"));
         Context global2 = new ImmutableContext(Collections.<String, Object>singletonMap("global/env/foo2", "foo2"));
 
-        Set<Context> globals = new LinkedHashSet<Context>();
+        Set<Context> globals = new LinkedHashSet<>();
         ImmutableFederatedContext global = new ImmutableFederatedContext("", globals);
 
-        Set<Context> locals = new LinkedHashSet<Context>();
+        Set<Context> locals = new LinkedHashSet<>();
         locals.add(comp);
         locals.add(module);
         locals.add(application);

@@ -43,7 +43,7 @@ public abstract class AbstractContext implements Context, NestedContextFactory, 
     private final Name parsedNameInNamespace;
     private final ContextAccess contextAccess;
     private final boolean modifiable;
-    private final ThreadLocal<Name> inCall = new ThreadLocal<Name>();
+    private final ThreadLocal<Name> inCall = new ThreadLocal<>();
 
     protected AbstractContext(String nameInNamespace) {
         this(nameInNamespace, ContextAccess.MODIFIABLE);

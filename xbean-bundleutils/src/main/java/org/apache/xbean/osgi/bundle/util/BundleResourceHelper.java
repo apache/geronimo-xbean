@@ -123,13 +123,13 @@ public class BundleResourceHelper {
       
     private List<URL> getList() {
         if (convertResourceUrls) {
-            return new ArrayList<URL>() {
+            return new ArrayList<>() {
                 public boolean add(URL u) {
                     return super.add(convert(u));
                 }
             };
         } else {
-            return new ArrayList<URL>();
+            return new ArrayList<>();
         }
     }
     
@@ -235,7 +235,7 @@ public class BundleResourceHelper {
                                            String name, 
                                            final boolean continueScanning) throws Exception {
         BundleResourceFinder finder = new BundleResourceFinder(packageAdmin, bundle, "", name);
-        final List<URL> resources = new ArrayList<URL>();
+        final List<URL> resources = new ArrayList<>();
         finder.find(new BundleResourceFinder.ResourceFinderCallback() {
 
             public boolean foundInDirectory(Bundle bundle, String baseDir, URL url) throws Exception {

@@ -86,7 +86,7 @@ public class FilteredArchiveTest extends TestCase {
     }
 
     public static List<String> list(Iterable<Archive.Entry> iterable) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         for (Archive.Entry t : iterable) {
             list.add(t.getName());

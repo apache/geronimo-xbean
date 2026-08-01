@@ -29,7 +29,7 @@ public class CharacterEditor extends AbstractConverter {
             if (text.length() != 1) {
                 throw new IllegalArgumentException("wrong size: " + text);
             }
-            return new Character(text.charAt(0));
+            return text.charAt(0);
         } catch (Exception e) {
             throw new PropertyEditorException(e);
         }

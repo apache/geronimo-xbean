@@ -88,7 +88,7 @@ public abstract class BlueprintTestSupport extends TestCase {
             in.close();
         }
 
-        Set<Class> classes = new HashSet<Class>();
+        Set<Class> classes = new HashSet<>();
         ClassLoader cl = BlueprintTestSupport.class.getClassLoader();
         for (Map.Entry entry : properties.entrySet()) {
             String key = (String) entry.getKey();
@@ -100,7 +100,7 @@ public abstract class BlueprintTestSupport extends TestCase {
         }
         classes.add(QName.class);
 
-        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<String, Class<? extends PropertyEditor>>();
+        Map<String, Class<? extends PropertyEditor>> propertyEditors = new HashMap<>();
         propertyEditors.put(MilliLittersPropertyEditor.class.getName(), MilliLittersPropertyEditor.class);
         final NamespaceHandler xbeanHandler = new XBeanNamespaceHandler(NAMESPACE_URI.toString(), BlueprintTestSupport.class.getClassLoader().getResource("restaurant.xsd"), classes, propertyEditors, properties);
         final NamespaceHandler qnameHandler = new QNameNamespaceHandler();

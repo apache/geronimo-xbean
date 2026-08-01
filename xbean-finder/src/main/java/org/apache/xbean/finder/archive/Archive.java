@@ -28,7 +28,7 @@ public interface Archive extends Iterable<Archive.Entry> {
 
     Class<?> loadClass(String className) throws ClassNotFoundException;
 
-    public interface Entry {
+    interface Entry {
         String getName();
         InputStream getBytecode() throws IOException;
     }

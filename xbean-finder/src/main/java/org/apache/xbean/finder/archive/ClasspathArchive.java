@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class ClasspathArchive extends CompositeArchive {
 
-    private final List<URL> urls = new ArrayList<URL>();
+    private final List<URL> urls = new ArrayList<>();
     private final ClassLoader loader;
 
     public ClasspathArchive(ClassLoader loader, URL... urls) {
@@ -45,7 +45,7 @@ public class ClasspathArchive extends CompositeArchive {
     }
 
     public static List<Archive> archives(ClassLoader loader, Iterable<URL> urls) {
-        List<Archive> archives = new ArrayList<Archive>();
+        List<Archive> archives = new ArrayList<>();
 
         for (URL location : urls) {
             try {

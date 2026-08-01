@@ -96,7 +96,7 @@ public class Reference {
         }
     }
 
-    public static interface Action {
+    public interface Action {
         void onSet(Reference ref);
     }
 }

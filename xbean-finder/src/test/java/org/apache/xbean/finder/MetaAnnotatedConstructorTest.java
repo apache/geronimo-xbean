@@ -40,7 +40,7 @@ public class MetaAnnotatedConstructorTest extends TestCase {
 
         final Class<?>[] classes = new Class[]{Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class};
 
-        final Map<String, Annotated<Constructor>> map = new HashMap<String, Annotated<Constructor>>();
+        final Map<String, Annotated<Constructor>> map = new HashMap<>();
 
         for (Class<?> clazz : classes) {
             final MetaAnnotatedClass<?> annotatedClass = new MetaAnnotatedClass(clazz);
@@ -180,15 +180,15 @@ public class MetaAnnotatedConstructorTest extends TestCase {
 
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface Color {
+    public @interface Color {
         String value() default "";
     }
 
     @Metatype
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface Red {
-        public class $ {
+    public @interface Red {
+        class $ {
 
             @Red
             @Color("red")  // one level deep
@@ -199,8 +199,8 @@ public class MetaAnnotatedConstructorTest extends TestCase {
     @Metatype
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface Crimson {
-        public class $ {
+    public @interface Crimson {
+        class $ {
 
             @Crimson
             @Red  // two levels deep
@@ -217,8 +217,8 @@ public class MetaAnnotatedConstructorTest extends TestCase {
     @Metatype
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface Green {
-        public class $ {
+    public @interface Green {
+        class $ {
 
             @Green
             @Color("green")  // two levels deep
@@ -229,8 +229,8 @@ public class MetaAnnotatedConstructorTest extends TestCase {
     @Metatype
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface DarkGreen {
-        public class $ {
+    public @interface DarkGreen {
+        class $ {
 
             @DarkGreen
             @Green
@@ -242,8 +242,8 @@ public class MetaAnnotatedConstructorTest extends TestCase {
     @Metatype
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface Forrest {
-        public class $ {
+    public @interface Forrest {
+        class $ {
 
             @Forrest
             @DarkGreen
@@ -254,8 +254,8 @@ public class MetaAnnotatedConstructorTest extends TestCase {
     @Metatype
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface Chicken {
-        public class $ {
+    public @interface Chicken {
+        class $ {
 
             @Chicken
             @Color("chicken")
@@ -267,8 +267,8 @@ public class MetaAnnotatedConstructorTest extends TestCase {
     @Metatype
     @Target({CONSTRUCTOR})
     @Retention(RUNTIME)
-    public static @interface Egg {
-        public class $ {
+    public @interface Egg {
+        class $ {
 
             @Egg
             @Color("egg")

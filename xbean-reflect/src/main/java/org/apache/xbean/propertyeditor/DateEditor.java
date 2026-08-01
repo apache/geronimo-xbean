@@ -31,7 +31,7 @@ import java.util.ArrayList;
  */
 public class DateEditor extends AbstractConverter {
 
-    private List<DateFormat> formats = new ArrayList<DateFormat>();
+    private List<DateFormat> formats = new ArrayList<>();
 
     public DateEditor() {
         super(Date.class);

@@ -36,7 +36,7 @@ import javax.naming.OperationNotSupportedException;
  */
 public class ContextFederation {
     private final Context actualContext;
-    private final AtomicReference<Set<Context>> federatedContextRef = new AtomicReference<Set<Context>>(Collections.<Context>emptySet());
+    private final AtomicReference<Set<Context>> federatedContextRef = new AtomicReference<>(Collections.<Context>emptySet());
     public static final int MAX_WRITE_ATTEMPTS = 10;
 
     public ContextFederation(Context actualContext) {
@@ -45,7 +45,7 @@ public class ContextFederation {
 
     public ContextFederation(Context actualContext, Set<Context> federatedContexts) {
         this.actualContext = actualContext;
-        Set<Context> copy = new LinkedHashSet<Context>(federatedContexts);
+        Set<Context> copy = new LinkedHashSet<>(federatedContexts);
         federatedContextRef.set(Collections.unmodifiableSet(copy));
     }
 
@@ -55,7 +55,7 @@ public class ContextFederation {
         for (int i = 0; i < MAX_WRITE_ATTEMPTS; i++) {
             federatedContext = getFederatedContexts();
 
-            newFederatedContext = new LinkedHashSet<Context>(federatedContext);
+            newFederatedContext = new LinkedHashSet<>(federatedContext);
             newFederatedContext.add(context);
             newFederatedContext = Collections.unmodifiableSet(newFederatedContext);
             if (federatedContextRef.compareAndSet(federatedContext, newFederatedContext)) {
@@ -71,7 +71,7 @@ public class ContextFederation {
         for (int i = 0; i < MAX_WRITE_ATTEMPTS; i++) {
             federatedContext = getFederatedContexts();
 
-            newFederatedContext = new LinkedHashSet<Context>(federatedContext);
+            newFederatedContext = new LinkedHashSet<>(federatedContext);
             newFederatedContext.remove(context);
             newFederatedContext = Collections.unmodifiableSet(newFederatedContext);
             if (federatedContextRef.compareAndSet(federatedContext, newFederatedContext)) {
@@ -101,7 +101,7 @@ public class ContextFederation {
     }
 
     public Map<String, Object> getFederatedBindings(String name) throws NamingException {
-        Map<String, Object> bindings = new HashMap<String, Object>();
+        Map<String, Object> bindings = new HashMap<>();
         for (Context context : getFederatedContexts()) {
 
             // list federated context

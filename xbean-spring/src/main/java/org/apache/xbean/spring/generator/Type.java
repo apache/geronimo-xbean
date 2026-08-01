@@ -32,7 +32,7 @@ public class Type {
 
     public static Type newSimpleType(String name) {
         if (name == null) throw new NullPointerException("type");
-        if (name.indexOf("[") >= 0 || name.indexOf("]") >= 0) {
+        if (name.contains("[") || name.contains("]")) {
             throw new IllegalArgumentException("Name can not contain '[' or ']' " + name);
         }
         return new Type(name, null);

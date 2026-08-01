@@ -101,7 +101,7 @@ public final class ReflectionUtil {
             if (!found) throw new MissingAccessorException("Type not assignable to class: " + className, -1);
         }
 
-        List<Field> fields = new ArrayList<Field>(Arrays.asList(typeClass.getDeclaredFields()));
+        List<Field> fields = new ArrayList<>(Arrays.asList(typeClass.getDeclaredFields()));
         Class parent = typeClass.getSuperclass();
         while (parent != null){
             fields.addAll(Arrays.asList(parent.getDeclaredFields()));
@@ -205,7 +205,7 @@ public final class ReflectionUtil {
         boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
         boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_PROPERTIES);
 
-        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        List<Method> methods = new ArrayList<>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
             if (method.getName().equals(getterName) || (caseInsesnitive && method.getName().equalsIgnoreCase(getterName))) {
@@ -293,9 +293,9 @@ public final class ReflectionUtil {
         boolean caseInsesnitive = options.contains(Option.CASE_INSENSITIVE_PROPERTIES);
 
 
-        LinkedList<Method> validSetters = new LinkedList<Method>();
+        LinkedList<Method> validSetters = new LinkedList<>();
 
-        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        List<Method> methods = new ArrayList<>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
             if (method.getName().equals(setterName) || (caseInsesnitive && method.getName().equalsIgnoreCase(setterName))) {
@@ -384,7 +384,7 @@ public final class ReflectionUtil {
 
         if (!validSetters.isEmpty()) {
             // remove duplicate methods (can happen with inheritance)
-            return new ArrayList<Method>(new LinkedHashSet<Method>(validSetters));
+            return new ArrayList<>(new LinkedHashSet<>(validSetters));
         }
         
         if (missException != null) {
@@ -413,7 +413,7 @@ public final class ReflectionUtil {
         int matchLevel = 0;
         MissingAccessorException missException = null;
 
-        List<Field> fields = new ArrayList<Field>(Arrays.asList(typeClass.getDeclaredFields()));
+        List<Field> fields = new ArrayList<>(Arrays.asList(typeClass.getDeclaredFields()));
         Class parent = typeClass.getSuperclass();
         while (parent != null){
             fields.addAll(Arrays.asList(parent.getDeclaredFields()));
@@ -423,7 +423,7 @@ public final class ReflectionUtil {
         boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
         boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
 
-        LinkedList<Field> validFields = new LinkedList<Field>();
+        LinkedList<Field> validFields = new LinkedList<>();
         for (Field field : fields) {
             Class fieldType = field.getType();
             if (RecipeHelper.isInstance(fieldType, propertyValue) || RecipeHelper.isConvertable(fieldType, propertyValue, registry)) {
@@ -469,7 +469,7 @@ public final class ReflectionUtil {
 
         if (!validFields.isEmpty()) {
             // remove duplicate methods (can happen with inheritance)
-            return new ArrayList<Field>(new LinkedHashSet<Field>(validFields));
+            return new ArrayList<>(new LinkedHashSet<>(validFields));
         }
 
         if (missException != null) {
@@ -496,8 +496,8 @@ public final class ReflectionUtil {
         boolean allowPrivate = options.contains(Option.PRIVATE_PROPERTIES);
         boolean allowStatic = options.contains(Option.STATIC_PROPERTIES);
 
-        LinkedList<Method> validSetters = new LinkedList<Method>();
-        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        LinkedList<Method> validSetters = new LinkedList<>();
+        List<Method> methods = new ArrayList<>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
             if (method.getName().startsWith("set") && method.getParameterTypes().length == 1 && (RecipeHelper.isInstance(method.getParameterTypes()[0], propertyValue) || RecipeHelper.isConvertable(method.getParameterTypes()[0], propertyValue, registry))) {
@@ -560,7 +560,7 @@ public final class ReflectionUtil {
 
         if (!validSetters.isEmpty()) {
             // remove duplicate methods (can happen with inheritance)
-            return new ArrayList<Method>(new LinkedHashSet<Method>(validSetters));
+            return new ArrayList<>(new LinkedHashSet<>(validSetters));
         }
 
         if (missException != null) {
@@ -619,8 +619,8 @@ public final class ReflectionUtil {
 
 
         // get all methods sorted so that the methods with the most constructor args are first
-        List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(typeClass.getDeclaredConstructors()));
-        Collections.sort(constructors, new Comparator<Constructor>() {
+        List<Constructor> constructors = new ArrayList<>(Arrays.asList(typeClass.getDeclaredConstructors()));
+        Collections.sort(constructors, new Comparator<>() {
             public int compare(Constructor constructor1, Constructor constructor2) {
                 int diff = constructor2.getParameterTypes().length - constructor1.getParameterTypes().length;
                 if (diff == 0) { // prefer public over private
@@ -753,9 +753,9 @@ public final class ReflectionUtil {
         }
 
         // get all methods sorted so that the methods with the most constructor args are first
-        List<Method> methods = new ArrayList<Method>(Arrays.asList(typeClass.getMethods()));
+        List<Method> methods = new ArrayList<>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
-        Collections.sort(methods, new Comparator<Method>() {
+        Collections.sort(methods, new Comparator<>() {
             public int compare(Method method2, Method method1) {
                 int diff = method1.getParameterTypes().length - method2.getParameterTypes().length;
                 if (diff == 0) { // prefer public over private
@@ -771,7 +771,7 @@ public final class ReflectionUtil {
 
         boolean allowPrivate = options.contains(Option.PRIVATE_FACTORY);
         boolean caseInsensitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
-        for (Method method : new LinkedHashSet<Method>(methods)) {
+        for (Method method : new LinkedHashSet<>(methods)) {
             // Only consider methods where the name matches
             if (!method.getName().equals(factoryMethod) && (!caseInsensitive || !method.getName().equalsIgnoreCase(factoryMethod))) {
                 continue;
@@ -869,7 +869,7 @@ public final class ReflectionUtil {
         boolean allowPrivate = options.contains(Option.PRIVATE_FACTORY);
         boolean caseInsensitive = options.contains(Option.CASE_INSENSITIVE_FACTORY);
 
-        Set<Method> methods = new HashSet<Method>(Arrays.asList(typeClass.getMethods()));
+        Set<Method> methods = new HashSet<>(Arrays.asList(typeClass.getMethods()));
         methods.addAll(Arrays.asList(typeClass.getDeclaredMethods()));
         for (Method method : methods) {
             if (method.getName().equals(factoryMethod) || (caseInsensitive && method.getName().equalsIgnoreCase(factoryMethod))) {
@@ -968,7 +968,7 @@ public final class ReflectionUtil {
         return null;
     }
 
-    public static interface Factory {
+    public interface Factory {
         List<String> getParameterNames();
 
         List<Type> getParameterTypes();
@@ -992,7 +992,7 @@ public final class ReflectionUtil {
         }
 
         public List<Type> getParameterTypes() {
-            return new ArrayList<Type>(Arrays.asList(constructor.getGenericParameterTypes()));
+            return new ArrayList<>(Arrays.asList(constructor.getGenericParameterTypes()));
         }
 
         public Object create(Object... parameters) throws ConstructionException {
@@ -1031,7 +1031,7 @@ public final class ReflectionUtil {
         }
 
         public List<Type> getParameterTypes() {
-            return new ArrayList<Type>(Arrays.asList(staticFactory.getGenericParameterTypes()));
+            return new ArrayList<>(Arrays.asList(staticFactory.getGenericParameterTypes()));
         }
 
         public Object create(Object... parameters) throws ConstructionException {

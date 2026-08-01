@@ -23,6 +23,6 @@ import java.util.Collection;
  */
 public interface MetaAnnotated<T> extends Annotated<T> {
 
-    public Collection<MetaAnnotation<?>> getMetaAnnotations();
+    Collection<MetaAnnotation<?>> getMetaAnnotations();
 
 }

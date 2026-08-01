@@ -74,8 +74,8 @@ public class ObjectGraph {
             LinkedHashMap<String, Recipe> recipes = getSortedRecipes(names);
 
             // Seed the objects linked hash map with the existing objects
-            LinkedHashMap<String, Object> objects = new LinkedHashMap<String, Object>();
-            List<String> existingObjectNames = new ArrayList<String>(names);
+            LinkedHashMap<String, Object> objects = new LinkedHashMap<>();
+            List<String> existingObjectNames = new ArrayList<>(names);
             existingObjectNames.removeAll(recipes.keySet());
             for (String name : existingObjectNames) {
                 Object object = repository.get(name);
@@ -109,7 +109,7 @@ public class ObjectGraph {
 
     private LinkedHashMap<String, Recipe> getSortedRecipes(List<String> names) {
         // construct the graph
-        Map<String, Node> nodes = new LinkedHashMap<String, Node>();
+        Map<String, Node> nodes = new LinkedHashMap<>();
         for (String name : names) {
             Object object = repository.get(name);
             if (object instanceof Recipe) {
@@ -122,8 +122,8 @@ public class ObjectGraph {
         }
 
         // find all initial leaf nodes (and islands)
-        List<Node> sortedNodes = new ArrayList<Node>(nodes.size());
-        LinkedList<Node> leafNodes = new LinkedList<Node>();
+        List<Node> sortedNodes = new ArrayList<>(nodes.size());
+        LinkedList<Node> leafNodes = new LinkedList<>();
         for (Node n : nodes.values()) {
             if (n.referenceCount == 0) {
                 // if the node is totally isolated (no in or out refs),
@@ -151,13 +151,13 @@ public class ObjectGraph {
         // There are no more leaves so if there are there still
         // unprocessed nodes in the graph, we have one or more curcuits
         if (sortedNodes.size() != nodes.size()) {
-            findCircuit(nodes.values().iterator().next(), new ArrayList<Recipe>(nodes.size()));
+            findCircuit(nodes.values().iterator().next(), new ArrayList<>(nodes.size()));
             // find circuit should never fail, if it does there is a programming error
             throw new ConstructionException("Internal Error: expected a CircularDependencyException");
         }
 
         // return the recipes
-        LinkedHashMap<String, Recipe> sortedRecipes = new LinkedHashMap<String, Recipe>();
+        LinkedHashMap<String, Recipe> sortedRecipes = new LinkedHashMap<>();
         for (Node node : sortedNodes) {
             sortedRecipes.put(node.name, node.recipe);
         }
@@ -166,7 +166,7 @@ public class ObjectGraph {
 
     private void findCircuit(Node node, ArrayList<Recipe> stack) {
         if (stack.contains(node.recipe)) {
-            ArrayList<Recipe> circularity = new ArrayList<Recipe>(stack.subList(stack.indexOf(node.recipe), stack.size()));
+            ArrayList<Recipe> circularity = new ArrayList<>(stack.subList(stack.indexOf(node.recipe), stack.size()));
 
             // remove anonymous nodes from circularity list
             for (Iterator<Recipe> iterator = circularity.iterator(); iterator.hasNext();) {
@@ -205,8 +205,8 @@ public class ObjectGraph {
         nodes.put(name, node);
 
         // link in the references
-        LinkedList<Recipe> nestedRecipes = new LinkedList<Recipe>(recipe.getNestedRecipes());
-        LinkedList<Recipe> constructorRecipes = new LinkedList<Recipe>(recipe.getConstructorRecipes());
+        LinkedList<Recipe> nestedRecipes = new LinkedList<>(recipe.getNestedRecipes());
+        LinkedList<Recipe> constructorRecipes = new LinkedList<>(recipe.getConstructorRecipes());
         while (!nestedRecipes.isEmpty()) {
             Recipe nestedRecipe = nestedRecipes.removeFirst();
             String nestedName = nestedRecipe.getName();
@@ -230,13 +230,13 @@ public class ObjectGraph {
     private class Node {
         String name;
         Recipe recipe;
-        final List<Node> references = new ArrayList<Node>();
+        final List<Node> references = new ArrayList<>();
         int referenceCount;
     }
 
     private static class WrapperExecutionContext extends ExecutionContext {
         private final ExecutionContext executionContext;
-        private final Map<String, Object> constructedObject = new LinkedHashMap<String, Object>();
+        private final Map<String, Object> constructedObject = new LinkedHashMap<>();
 
         private WrapperExecutionContext(ExecutionContext executionContext) {
             if (executionContext == null) throw new NullPointerException("executionContext is null");

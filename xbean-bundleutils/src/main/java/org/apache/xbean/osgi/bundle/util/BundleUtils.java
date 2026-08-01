@@ -177,7 +177,7 @@ public class BundleUtils {
         if (entries == null) {
             return null;
         }
-        LinkedHashSet<String> paths = new LinkedHashSet<String>();
+        LinkedHashSet<String> paths = new LinkedHashSet<>();
         while (entries.hasMoreElements()) {
             URL url = entries.nextElement();
             String path = url.getPath();
@@ -321,7 +321,7 @@ public class BundleUtils {
         BundleDescription description = new BundleDescription(bundle.getHeaders());
         // handle static wire via Import-Package
         List<BundleDescription.ImportPackage> imports = description.getExternalImports();
-        LinkedHashSet<Bundle> wiredBundles = new LinkedHashSet<Bundle>();
+        LinkedHashSet<Bundle> wiredBundles = new LinkedHashSet<>();
         for (BundleDescription.ImportPackage packageImport : imports) {
             ExportedPackage[] exports = packageAdmin.getExportedPackages(packageImport.getName());
             Bundle wiredBundle = getWiredBundle(bundle, exports);
@@ -363,7 +363,7 @@ public class BundleUtils {
     // OSGi 4.3 API
     
     private static LinkedHashSet<Bundle> getWiredBundles43(Bundle bundle) {
-        LinkedHashSet<Bundle> wiredBundles = new LinkedHashSet<Bundle>();
+        LinkedHashSet<Bundle> wiredBundles = new LinkedHashSet<>();
         BundleWiring wiring = bundle.adapt(BundleWiring.class);
         if (wiring != null) {
             List<BundleWire> wires;

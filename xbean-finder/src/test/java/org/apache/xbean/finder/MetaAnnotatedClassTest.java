@@ -45,7 +45,7 @@ public class MetaAnnotatedClassTest extends TestCase {
     public void test() throws Exception {
         AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Fake.class, Store.class, Farm.class, None.class)).link();
 
-        Map<Class<?>, Annotated<Class<?>>> map = new HashMap<Class<?>, Annotated<Class<?>>>();
+        Map<Class<?>, Annotated<Class<?>>> map = new HashMap<>();
 
         List<Annotated<Class<?>>> metas = finder.findMetaAnnotatedClasses(Color.class);
         for (Annotated<Class<?>> meta : metas) {
@@ -189,7 +189,7 @@ public class MetaAnnotatedClassTest extends TestCase {
 
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Color {
+    public @interface Color {
         String value() default "";
     }
 
@@ -198,7 +198,7 @@ public class MetaAnnotatedClassTest extends TestCase {
     // one level deep
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Red {
+    public @interface Red {
     }
 
     @Metatype
@@ -206,13 +206,13 @@ public class MetaAnnotatedClassTest extends TestCase {
     // two levels deep
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Crimson {
+    public @interface Crimson {
     }
 
     @Red
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface NotMeta {
+    public @interface NotMeta {
     }
 
     @Metatype
@@ -221,7 +221,7 @@ public class MetaAnnotatedClassTest extends TestCase {
     // Circular
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Egg {
+    public @interface Egg {
     }
 
 
@@ -231,7 +231,7 @@ public class MetaAnnotatedClassTest extends TestCase {
     // Circular
     @Target(value = {TYPE})
     @Retention(value = RUNTIME)
-    public static @interface Chicken {
+    public @interface Chicken {
     }
 
 

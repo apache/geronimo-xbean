@@ -160,8 +160,8 @@ public class JarArchive implements Archive, AutoCloseable {
                 // no-op
             }
             if (mjar.isMjar()) { // sort it to ensure we browse META-INF/versions first
-                final List<JarEntry> list = new ArrayList<JarEntry>(Collections.list(entries));
-                Collections.sort(list, new Comparator<JarEntry>() {
+                final List<JarEntry> list = new ArrayList<>(Collections.list(entries));
+                Collections.sort(list, new Comparator<>() {
                     public int compare(JarEntry o1, JarEntry o2) {
                         final String n2 = o2.getName();
                         final String n1 = o1.getName();
@@ -178,7 +178,8 @@ public class JarArchive implements Archive, AutoCloseable {
                         }
                         try {
                             return Integer.parseInt(n2) - Integer.parseInt(n1);
-                        } catch (final NumberFormatException nfe) {
+                        }
+                        catch (final NumberFormatException nfe) {
                             return n2.compareTo(n1);
                         }
                     }

@@ -528,7 +528,7 @@ public class StaticFactoryConverterTest extends Assert {
     }
 
     public static List<Method> from(final Class clazz, final String... names) throws NoSuchMethodException {
-        final List<Method> methods = new ArrayList<Method>();
+        final List<Method> methods = new ArrayList<>();
         for (final String name : names) {
             methods.add(clazz.getMethod(name, String.class));
         }

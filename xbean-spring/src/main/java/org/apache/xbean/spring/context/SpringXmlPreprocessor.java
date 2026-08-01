@@ -33,5 +33,5 @@ public interface SpringXmlPreprocessor {
      * @param reader the xml reader that read the document
      * @param document the xml document to read
      */
-    public void preprocess(SpringApplicationContext applicationContext, XmlBeanDefinitionReader reader, Document document);
+    void preprocess(SpringApplicationContext applicationContext, XmlBeanDefinitionReader reader, Document document);
 }

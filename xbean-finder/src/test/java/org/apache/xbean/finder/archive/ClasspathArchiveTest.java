@@ -101,7 +101,7 @@ public class ClasspathArchiveTest extends TestCase {
     }
 
     private <T> List<T> sublist(List<Archive> list, Class<? extends T> type) {
-        List<T> ts = new ArrayList<T>();
+        List<T> ts = new ArrayList<>();
         for (Archive archive : list) {
 
             if (type.isAssignableFrom(archive.getClass())) {

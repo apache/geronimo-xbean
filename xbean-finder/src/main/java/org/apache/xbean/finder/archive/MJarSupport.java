@@ -61,7 +61,7 @@ public class MJarSupport {
     }
 
     private boolean mjar;
-    private final Map<String, Clazz> classes = new HashMap<String, Clazz>();
+    private final Map<String, Clazz> classes = new HashMap<>();
 
     public boolean isMjar() {
         return mjar;

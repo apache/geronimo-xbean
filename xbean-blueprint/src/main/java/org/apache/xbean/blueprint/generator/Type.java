@@ -32,7 +32,7 @@ public class Type {
 
     public static Type newSimpleType(String name) {
         if (name == null) throw new NullPointerException("type");
-        if (name.indexOf("[") >= 0 || name.indexOf("]") >= 0) {
+        if (name.contains("[") || name.contains("]")) {
             throw new IllegalArgumentException("Name can not contain '[' or ']' " + name);
         }
         return new Type(name, null);
@@ -88,7 +88,7 @@ public class Type {
     private static final Set<String> primitives;
 
     static {
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
         set.add("boolean");
         set.add("byte");
         set.add("char");

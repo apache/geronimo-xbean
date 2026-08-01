@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.xbean.recipe.RecipeHelper;
 
 public class PropertyEditorRegistry implements Closeable {
-    private final ConcurrentMap<Type, Converter> registry = new ConcurrentHashMap<Type, Converter>();
+    private final ConcurrentMap<Type, Converter> registry = new ConcurrentHashMap<>();
 
     public PropertyEditorRegistry registerDefaults() {
         register(new ArrayListEditor());

@@ -88,7 +88,7 @@ public final class RecipeHelper {
     }
 
     public static <K,V> List<Map.Entry<K,V>> prioritizeProperties(Map<K,V> properties) {
-        ArrayList<Map.Entry<K,V>> entries = new ArrayList<Map.Entry<K,V>>(properties.entrySet());
+        ArrayList<Map.Entry<K,V>> entries = new ArrayList<>(properties.entrySet());
         Collections.sort(entries, new RecipeComparator());
         return entries;
     }

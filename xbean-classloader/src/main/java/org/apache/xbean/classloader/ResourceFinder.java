@@ -33,7 +33,7 @@ public interface ResourceFinder {
      * @param name the resource name
      * @return resource URL or null if resource was not found
      */
-    public URL findResource(String name);
+    URL findResource(String name);
 
     /**
      * Find all resources with given name and return enumeration of their URLs.
@@ -41,7 +41,7 @@ public interface ResourceFinder {
      * @param name the resource name
      * @return enumeration of resource URLs (possibly empty).
      */
-    public Enumeration findResources(String name);
+    Enumeration findResources(String name);
 
     /**
      * Get the resource by name and, if found, open connection to it and return
@@ -50,6 +50,6 @@ public interface ResourceFinder {
      * @param name the resource name
      * @return resource handle or null if resource was not found
      */
-    public ResourceHandle getResource(String name);
+    ResourceHandle getResource(String name);
 
 }

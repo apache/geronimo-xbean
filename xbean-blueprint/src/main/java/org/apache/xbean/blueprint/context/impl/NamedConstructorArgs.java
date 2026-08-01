@@ -48,7 +48,7 @@ import java.util.Set;
  * @since 2.0
  */
 public class NamedConstructorArgs {
-    private Map<PropertyKey, String> defaultValues = new HashMap<PropertyKey, String>();
+    private Map<PropertyKey, String> defaultValues = new HashMap<>();
 
     /**
      * Gets the default values that are assigned to constructor arguments without a defined value.
@@ -56,7 +56,7 @@ public class NamedConstructorArgs {
      * @return the default values that are assigned to constructor arguments without a defined value
      */
     public List<DefaultProperty> getDefaultValues() {
-        List<DefaultProperty> values = new LinkedList<DefaultProperty>();
+        List<DefaultProperty> values = new LinkedList<>();
         for (Map.Entry<PropertyKey, String> entry : defaultValues.entrySet()) {
             PropertyKey key = entry.getKey();
             String value = entry.getValue();
@@ -112,7 +112,7 @@ public class NamedConstructorArgs {
 
         // remove each named property and add an indexed constructor arg
         List<BeanProperty> beanProperties = beanMetadata.getProperties();
-        LinkedHashMap<String, BeanProperty> propMap = new LinkedHashMap<String, BeanProperty>();
+        LinkedHashMap<String, BeanProperty> propMap = new LinkedHashMap<>();
         for (BeanProperty beanProperty : beanProperties) {
             propMap.put(beanProperty.getName(), beanProperty);
         }
@@ -153,7 +153,7 @@ public class NamedConstructorArgs {
         Class beanClass = beanMetadata.getRuntimeClass();
 
         // get a set containing the names of the defined properties
-        Set<String> definedProperties = new HashSet<String>();
+        Set<String> definedProperties = new HashSet<>();
         List<BeanProperty> values = beanMetadata.getProperties();
         for (BeanProperty beanProperty : values) {
             definedProperties.add(beanProperty.getName());
@@ -172,7 +172,7 @@ public class NamedConstructorArgs {
 
         // get the factory methods sorted by longest arg length first
         Method[] methods = beanClass.getMethods();
-        List<Method> factoryMethods = new ArrayList<Method>(methods.length);
+        List<Method> factoryMethods = new ArrayList<>(methods.length);
         for (Method method : methods) {
             if (method.getName().equals(factoryMethodName)) {
                 factoryMethods.add(method);
@@ -200,7 +200,7 @@ public class NamedConstructorArgs {
 
     private ConstructionInfo selectConstructor(Class beanClass, MappingMetaData metadata, Set definedProperties) {
         // get the constructors sorted by longest arg length first
-        List<Constructor> constructors = new ArrayList<Constructor>(Arrays.asList(beanClass.getConstructors()));
+        List<Constructor> constructors = new ArrayList<>(Arrays.asList(beanClass.getConstructors()));
         Collections.sort(constructors, new ConstructorArgLengthComparator());
 
         // if a constructor has been annotated as the default constructor we always use that constructor
@@ -334,7 +334,7 @@ public class NamedConstructorArgs {
     private static final Map<Class, String> DEFAULT_VALUE;
 
     static {
-        Map<Class, String> temp = new HashMap<Class, String>();
+        Map<Class, String> temp = new HashMap<>();
         temp.put(Boolean.TYPE, Boolean.FALSE.toString());
         temp.put(Byte.TYPE, "0B");
         temp.put(Character.TYPE, "\\u000");

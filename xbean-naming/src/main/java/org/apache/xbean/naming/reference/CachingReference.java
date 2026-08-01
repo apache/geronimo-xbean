@@ -38,7 +38,7 @@ public class CachingReference extends SimpleReference {
     }
 
     public static Map<String, Object> wrapReferences(Map<String, Object> bindings, Context context) {
-        LinkedHashMap<String, Object> newBindings = new LinkedHashMap<String, Object>(bindings);
+        LinkedHashMap<String, Object> newBindings = new LinkedHashMap<>(bindings);
         for (Map.Entry<String, Object> entry : bindings.entrySet()) {
             String name = entry.getKey();
             Object value = entry.getValue();

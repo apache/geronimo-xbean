@@ -116,7 +116,7 @@ public class CmNamespaceHandler implements NamespaceHandler {
     }
 
     public Set<Class> getManagedClasses() {
-        return new HashSet<Class>(Arrays.asList(
+        return new HashSet<>(Arrays.asList(
                 JexlPropertyPlaceholder.class
         ));
     }
@@ -189,7 +189,7 @@ public class CmNamespaceHandler implements NamespaceHandler {
         }
         metadata.addProperty("systemProperties", createValue(context, systemProperties));
         // Parse elements
-        List<String> locations = new ArrayList<String>();
+        List<String> locations = new ArrayList<>();
         NodeList nl = element.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
@@ -510,7 +510,7 @@ public class CmNamespaceHandler implements NamespaceHandler {
 //    }
 
     public List<String> parseInterfaceNames(Element element) {
-        List<String> interfaceNames = new ArrayList<String>();
+        List<String> interfaceNames = new ArrayList<>();
         NodeList nl = element.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);

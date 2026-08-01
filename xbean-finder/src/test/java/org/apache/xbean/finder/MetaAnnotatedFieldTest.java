@@ -40,7 +40,7 @@ public class MetaAnnotatedFieldTest extends TestCase {
     public void test() throws Exception {
         AnnotationFinder finder = new AnnotationFinder(new ClassesArchive(Square.class, Circle.class, Triangle.class, Oval.class, Store.class, Farm.class, None.class)).link();
 
-        Map<String, Annotated<Field>> map = new HashMap<String, Annotated<Field>>();
+        Map<String, Annotated<Field>> map = new HashMap<>();
 
         List<Annotated<Field>> fields = finder.findMetaAnnotatedFields(Color.class);
         for (Annotated<Field> field : fields) {
@@ -181,15 +181,15 @@ public class MetaAnnotatedFieldTest extends TestCase {
 
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface Color {
+    public @interface Color {
         String value () default "";
     }
 
     @Metatype
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface Red {
-        public class $ {
+    public @interface Red {
+        class $ {
 
             @Red
             @Color("red")  // one level deep
@@ -200,8 +200,8 @@ public class MetaAnnotatedFieldTest extends TestCase {
     @Metatype
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface Crimson {
-        public class $ {
+    public @interface Crimson {
+        class $ {
 
             @Crimson
             @Red  // two levels deep
@@ -218,8 +218,8 @@ public class MetaAnnotatedFieldTest extends TestCase {
     @Metatype
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface Green {
-        public class $ {
+    public @interface Green {
+        class $ {
 
             @Green
             @Color("green")  // two levels deep
@@ -230,8 +230,8 @@ public class MetaAnnotatedFieldTest extends TestCase {
     @Metatype
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface DarkGreen {
-        public class $ {
+    public @interface DarkGreen {
+        class $ {
 
             @DarkGreen
             @Green
@@ -243,8 +243,8 @@ public class MetaAnnotatedFieldTest extends TestCase {
     @Metatype
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface Forrest {
-        public class $ {
+    public @interface Forrest {
+        class $ {
 
             @Forrest
             @DarkGreen
@@ -255,8 +255,8 @@ public class MetaAnnotatedFieldTest extends TestCase {
     @Metatype
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface Chicken {
-        public class $ {
+    public @interface Chicken {
+        class $ {
 
             @Chicken
             @Color("chicken")
@@ -268,8 +268,8 @@ public class MetaAnnotatedFieldTest extends TestCase {
     @Metatype
     @Target({FIELD})
     @Retention(RUNTIME)
-    public static @interface Egg {
-        public class $ {
+    public @interface Egg {
+        class $ {
 
             @Egg
             @Color("egg")

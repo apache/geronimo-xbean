@@ -27,7 +27,7 @@ public class ImmutableContextTest extends AbstractContextTest {
     private static final String STRING_VAL = "some string";
 
     public void testBasic() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("string", STRING_VAL);
         map.put("nested/context/string", STRING_VAL);
         map.put("a/b/c/d/e/string", STRING_VAL);
@@ -52,7 +52,7 @@ public class ImmutableContextTest extends AbstractContextTest {
     }
 
     public void testNameInNamespace() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("string", STRING_VAL);
         map.put("nested/context/string", STRING_VAL);
         map.put("a/b/c/d/e/string", STRING_VAL);

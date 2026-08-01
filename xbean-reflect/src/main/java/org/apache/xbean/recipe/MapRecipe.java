@@ -44,24 +44,24 @@ public class MapRecipe extends AbstractRecipe {
     private final EnumSet<Option> options = EnumSet.noneOf(Option.class);
 
     public MapRecipe() {
-        entries = new ArrayList<Object[]>();
+        entries = new ArrayList<>();
     }
 
     public MapRecipe(String type) {
         this.typeName = type;
-        entries = new ArrayList<Object[]>();
+        entries = new ArrayList<>();
     }
 
     public MapRecipe(Class type) {
         if (type == null) throw new NullPointerException("type is null");
         this.typeClass = type;
-        entries = new ArrayList<Object[]>();
+        entries = new ArrayList<>();
     }
 
     public MapRecipe(Map<?,?> map) {
         if (map == null) throw new NullPointerException("map is null");
 
-        entries = new ArrayList<Object[]>(map.size());
+        entries = new ArrayList<>(map.size());
 
         // If the specified set has a default constructor we will recreate the set, otherwise we use a LinkedHashMap or TreeMap
         if (RecipeHelper.hasDefaultConstructor(map.getClass())) {
@@ -80,7 +80,7 @@ public class MapRecipe extends AbstractRecipe {
         if (mapRecipe == null) throw new NullPointerException("mapRecipe is null");
         this.typeName = mapRecipe.typeName;
         this.typeClass = mapRecipe.typeClass;
-        entries = new ArrayList<Object[]>(mapRecipe.entries);
+        entries = new ArrayList<>(mapRecipe.entries);
     }
 
     public void setRegistry(final PropertyEditorRegistry registry) {
@@ -96,7 +96,7 @@ public class MapRecipe extends AbstractRecipe {
     }
 
     public List<Recipe> getNestedRecipes() {
-        List<Recipe> nestedRecipes = new ArrayList<Recipe>(entries.size() * 2);
+        List<Recipe> nestedRecipes = new ArrayList<>(entries.size() * 2);
         for (Object[] entry : entries) {
             Object key = entry[0];
             if (key instanceof Recipe) {

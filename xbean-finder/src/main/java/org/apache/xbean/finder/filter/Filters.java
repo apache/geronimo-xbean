@@ -34,7 +34,7 @@ public class Filters {
     };
 
     public static Filter packages(String... packages) {
-        List<Filter> filters = new ArrayList<Filter>();
+        List<Filter> filters = new ArrayList<>();
         for (String s : packages) {
             filters.add(new PackageFilter(s));
         }
@@ -43,7 +43,7 @@ public class Filters {
     }
 
     public static Filter classes(String... classes) {
-        List<Filter> filters = new ArrayList<Filter>();
+        List<Filter> filters = new ArrayList<>();
         for (String s : classes) {
             filters.add(new ClassFilter(s));
         }
@@ -52,7 +52,7 @@ public class Filters {
     }
 
     public static Filter prefixes(String... prefixes) {
-        List<Filter> filters = new ArrayList<Filter>();
+        List<Filter> filters = new ArrayList<>();
         for (String s : prefixes) {
             filters.add(new PrefixFilter(s));
         }
@@ -61,7 +61,7 @@ public class Filters {
     }
 
     public static Filter tokens(String... tokens) {
-        List<Filter> filters = new ArrayList<Filter>();
+        List<Filter> filters = new ArrayList<>();
         for (String s : tokens) {
             filters.add(new ContainsFilter(s));
         }
@@ -70,7 +70,7 @@ public class Filters {
     }
 
     public static Filter suffixes(String... suffixes) {
-        List<Filter> filters = new ArrayList<Filter>();
+        List<Filter> filters = new ArrayList<>();
         for (String s : suffixes) {
             filters.add(new SuffixFilter(s));
         }
@@ -79,7 +79,7 @@ public class Filters {
     }
 
     public static Filter patterns(String... patterns) {
-        List<Filter> filters = new ArrayList<Filter>();
+        List<Filter> filters = new ArrayList<>();
         for (String s : patterns) {
             filters.add(new PatternFilter(s));
         }
@@ -93,7 +93,7 @@ public class Filters {
     }
 
     public static Filter optimize(List<Filter>... filterss) {
-        Set<Filter> unwrapped = new LinkedHashSet<Filter>();
+        Set<Filter> unwrapped = new LinkedHashSet<>();
 
         for (List<Filter> filters : filterss) {
             unwrap(filters, unwrapped);

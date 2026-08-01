@@ -45,47 +45,47 @@ public class GenericCollectionsTest extends TestCase {
         expected.plainMap.put("green","verde");
         expected.plainMap.put("blue","azul");
 
-        expected.listOfClass = new ArrayList<Class>();
+        expected.listOfClass = new ArrayList<>();
         expected.listOfClass.add(Red.class);
         expected.listOfClass.add(Green.class);
         expected.listOfClass.add(Blue.class);
 
-        expected.listOfURI = new ArrayList<URI>();
+        expected.listOfURI = new ArrayList<>();
         expected.listOfURI.add(new URI("red://rojo"));
         expected.listOfURI.add(new URI("green://verde"));
         expected.listOfURI.add(new URI("blue://azul"));
 
-        expected.listOfEnums = new ArrayList<Color>();
+        expected.listOfEnums = new ArrayList<>();
         expected.listOfEnums.add(Color.RED);
         expected.listOfEnums.add(Color.GREEN);
         expected.listOfEnums.add(Color.BLUE);
 
-        expected.mapOfClass = new LinkedHashMap<String, Class>();
+        expected.mapOfClass = new LinkedHashMap<>();
         expected.mapOfClass.put("Rojo", Red.class);
         expected.mapOfClass.put("Verde", Green.class);
         expected.mapOfClass.put("Azul", Blue.class);
 
-        expected.mapOfURI = new LinkedHashMap<URI, String>();
+        expected.mapOfURI = new LinkedHashMap<>();
         expected.mapOfURI.put(new URI("red://rojo"), "Rojo");
         expected.mapOfURI.put(new URI("green://verde"), "Verde");
         expected.mapOfURI.put(new URI("blue://azul"), "Azul");
 
-        expected.mapOfEnums = new LinkedHashMap<String, Color>();
+        expected.mapOfEnums = new LinkedHashMap<>();
         expected.mapOfEnums.put("RED", Color.RED);
         expected.mapOfEnums.put("GREEN", Color.GREEN);
         expected.mapOfEnums.put("BLUE", Color.BLUE);
 
-        expected.setOfClass = new LinkedHashSet<Class>();
+        expected.setOfClass = new LinkedHashSet<>();
         expected.setOfClass.add(Red.class);
         expected.setOfClass.add(Green.class);
         expected.setOfClass.add(Blue.class);
 
-        expected.setOfURI = new LinkedHashSet<URI>();
+        expected.setOfURI = new LinkedHashSet<>();
         expected.setOfURI.add(new URI("red://rojo"));
         expected.setOfURI.add(new URI("green://verde"));
         expected.setOfURI.add(new URI("blue://azul"));
 
-        expected.setOfEnums = new LinkedHashSet<Color>();
+        expected.setOfEnums = new LinkedHashSet<>();
         expected.setOfEnums.add(Color.RED);
         expected.setOfEnums.add(Color.GREEN);
         expected.setOfEnums.add(Color.BLUE);
@@ -118,7 +118,7 @@ public class GenericCollectionsTest extends TestCase {
 
     private String toString(Map m) {
         Map<Object,Object> map   = m;
-        List<String> pairs = new ArrayList<String>();
+        List<String> pairs = new ArrayList<>();
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             String key = toString(entry.getKey());
             key = key.replaceAll(":","\\\\:");
@@ -222,8 +222,8 @@ public class GenericCollectionsTest extends TestCase {
     public static class Blue {}
 
 
-    public static enum Color {
-        RED, GREEN, BLUE;
+    public enum Color {
+        RED, GREEN, BLUE
     }
 
 }

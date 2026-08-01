@@ -28,7 +28,7 @@ import static org.apache.xbean.recipe.Person.ConstructionCalled.*;
  * @version $Rev$ $Date$
  */
 public class Person {
-    public static enum ConstructionCalled {
+    public enum ConstructionCalled {
         CONSTRUCTOR,
         CONSTRUCTOR_4_ARG,
         NEW_INSTANCE,
@@ -131,7 +131,7 @@ public class Person {
     }
 
     public void setUnsetMap(Map<String, Object> unsetMap) {
-        this.unsetMap = new HashMap<String, Object>(unsetMap);
+        this.unsetMap = new HashMap<>(unsetMap);
     }
 
     public Properties getUnsetProperties() {

@@ -27,7 +27,7 @@ public class MetaAnnotation<T extends Annotation> {
     private final T annotation;
     private final int depth;
 
-    private final List<MetaAnnotation<T>> conflicts = new ArrayList<MetaAnnotation<T>>();
+    private final List<MetaAnnotation<T>> conflicts = new ArrayList<>();
 
     MetaAnnotation(T annotation, int depth) {
         this.annotation = annotation;

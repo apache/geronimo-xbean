@@ -130,7 +130,7 @@ public class FileArchive implements Archive {
     }
 
     private List<String> file(File dir) {
-        List<String> classNames = new ArrayList<String>();
+        List<String> classNames = new ArrayList<>();
         if (dir.isDirectory()) {
             scanDir(dir, classNames, (basePackage.length() > 0) ? (basePackage + ".") : basePackage);
         }

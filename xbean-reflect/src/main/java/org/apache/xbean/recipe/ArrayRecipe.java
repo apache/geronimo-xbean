@@ -37,18 +37,18 @@ public class ArrayRecipe extends AbstractRecipe {
     private final EnumSet<Option> options = EnumSet.noneOf(Option.class);
 
     public ArrayRecipe() {
-        list = new ArrayList<Object>();
+        list = new ArrayList<>();
     }
 
     public ArrayRecipe(String type) {
-        list = new ArrayList<Object>();
+        list = new ArrayList<>();
         this.typeName = type;
     }
 
     public ArrayRecipe(Class type) {
         if (type == null) throw new NullPointerException("type is null");
 
-        this.list = new ArrayList<Object>();
+        this.list = new ArrayList<>();
         this.typeClass = type;
     }
 
@@ -56,7 +56,7 @@ public class ArrayRecipe extends AbstractRecipe {
         if (collectionRecipe == null) throw new NullPointerException("setRecipe is null");
         this.typeName = collectionRecipe.typeName;
         this.typeClass = collectionRecipe.typeClass;
-        list = new ArrayList<Object>(collectionRecipe.list);
+        list = new ArrayList<>(collectionRecipe.list);
     }
 
     public void setRegistry(final PropertyEditorRegistry registry) {
@@ -72,7 +72,7 @@ public class ArrayRecipe extends AbstractRecipe {
     }
 
     public List<Recipe> getNestedRecipes() {
-        List<Recipe> nestedRecipes = new ArrayList<Recipe>(list.size());
+        List<Recipe> nestedRecipes = new ArrayList<>(list.size());
         for (Object o : list) {
             if (o instanceof Recipe) {
                 Recipe recipe = (Recipe) o;

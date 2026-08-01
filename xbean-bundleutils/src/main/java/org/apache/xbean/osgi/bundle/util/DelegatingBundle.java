@@ -79,7 +79,7 @@ public class DelegatingBundle implements Bundle {
         if (bundles.isEmpty()) {
             throw new IllegalArgumentException("At least one bundle is required");
         }
-        this.bundles = new CopyOnWriteArrayList<Bundle>(bundles);
+        this.bundles = new CopyOnWriteArrayList<>(bundles);
         Iterator<Bundle> iterator = bundles.iterator();
         // assume first Bundle is the main bundle
         this.bundle = iterator.next();
@@ -97,7 +97,7 @@ public class DelegatingBundle implements Bundle {
         String value = System.getProperty(RESOURCE_CACHE_SIZE, "250");
         int size = Integer.parseInt(value);
         if (size > 0) {
-            return Collections.synchronizedMap(new Cache<String, URL>(size));
+            return Collections.synchronizedMap(new Cache<>(size));
         } else {
             return null;
         }
@@ -135,7 +135,7 @@ public class DelegatingBundle implements Bundle {
     }
 
     private Map<String, Bundle> buildPackageBundleMap() {
-        Map<String, Bundle> map = new HashMap<String, Bundle>();
+        Map<String, Bundle> map = new HashMap<>();
         Iterator<Bundle> iterator = bundles.iterator();
         // skip first bundle
         iterator.next();
@@ -288,7 +288,7 @@ public class DelegatingBundle implements Bundle {
     }
 
     public Enumeration<URL> getResources(String name) throws IOException {
-        ArrayList<URL> allResources = new ArrayList<URL>();
+        ArrayList<URL> allResources = new ArrayList<>();
         for (Bundle bundle : bundles) {
             Enumeration<URL> e = bundle.getResources(name);
             addToList(allResources, e);

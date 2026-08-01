@@ -24,8 +24,8 @@ import java.util.Map;
 
 public class Classes {
 
-    private static final Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<Class<?>, Class<?>>();
-    private static final HashMap<String, Class> primitives = new HashMap<String, Class>();
+    private static final Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<>();
+    private static final HashMap<String, Class> primitives = new HashMap<>();
 
     static {
         primitives.put("boolean", boolean.class);
@@ -82,7 +82,7 @@ public class Classes {
     }
 
     public static List<String> getSimpleNames(Class... classes){
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Class aClass : classes) {
             list.add(aClass.getSimpleName());
         }

@@ -97,7 +97,7 @@ public class StaticFactoryConverter extends AbstractConverter {
     }
 
     static List<Method> getCandidates(final Class type) {
-        final List<Method> candidates = new ArrayList<Method>();
+        final List<Method> candidates = new ArrayList<>();
 
         for (final Method method : type.getMethods()) {
             if (!Modifier.isStatic(method.getModifiers())) continue;
@@ -117,7 +117,7 @@ public class StaticFactoryConverter extends AbstractConverter {
      * VM reflection ordering.
      */
     static void sort(final List<Method> candidates) {
-        Collections.sort(candidates, new Comparator<Method>() {
+        Collections.sort(candidates, new Comparator<>() {
             public int compare(final Method a, final Method b) {
                 int av = grade(a);
                 int bv = grade(b);

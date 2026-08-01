@@ -46,7 +46,7 @@ public class EnumTest extends TestCase {
         }
     }
 
-    public static enum Color {
-        RED, GREEN, BLUE;
+    public enum Color {
+        RED, GREEN, BLUE
     }
 }

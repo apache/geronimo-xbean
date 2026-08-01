@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class ExecutionContext {
-    private static final ThreadLocal<ExecutionContext> context = new ThreadLocal<ExecutionContext>();
+    private static final ThreadLocal<ExecutionContext> context = new ThreadLocal<>();
 
     public static boolean isContextSet() {
         return context.get() != null;

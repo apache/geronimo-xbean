@@ -32,8 +32,8 @@ import java.util.Set;
  */
 public class ClassesArchive implements Archive {
 
-    private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
-    private final Map<String, Class<?>> classes = new LinkedHashMap<String, Class<?>>();
+    private final Set<ClassLoader> loaders = new LinkedHashSet<>();
+    private final Map<String, Class<?>> classes = new LinkedHashMap<>();
 
     public ClassesArchive(Class<?>... classes) {
         this(Arrays.asList(classes));

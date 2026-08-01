@@ -26,7 +26,7 @@ public final class Primitives {
 
     static {
         {
-            final Map<Class, Class> map = new HashMap<Class, Class>();
+            final Map<Class, Class> map = new HashMap<>();
             map.put(boolean.class, Boolean.class);
             map.put(char.class, Character.class);
             map.put(byte.class, Byte.class);
@@ -39,7 +39,7 @@ public final class Primitives {
         }
 
         {
-            final Map<Class, Class> map = new HashMap<Class, Class>();
+            final Map<Class, Class> map = new HashMap<>();
             map.put(Boolean.class, boolean.class);
             map.put(Character.class, char.class);
             map.put(Byte.class, byte.class);

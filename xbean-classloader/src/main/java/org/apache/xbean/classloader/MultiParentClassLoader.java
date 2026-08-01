@@ -47,7 +47,7 @@ public class MultiParentClassLoader extends NamedClassLoader {
     private final String[] nonOverridableClasses;
     private final String[] hiddenResources;
     private final String[] nonOverridableResources;
-    private final Map<String, SoftReference<Class>> cache = new ConcurrentHashMap<String, SoftReference<Class>>();
+    private final Map<String, SoftReference<Class>> cache = new ConcurrentHashMap<>();
 
     /**
      * Creates a named class loader with no parents.
@@ -170,7 +170,7 @@ public class MultiParentClassLoader extends NamedClassLoader {
         }
         if (result == null) {
             result = doLoadClass(name, resolve);
-            cache.put(name, new SoftReference<Class>(result));
+            cache.put(name, new SoftReference<>(result));
         }
 
         return result;

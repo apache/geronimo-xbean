@@ -37,7 +37,7 @@ public class HeaderParser  {
      * @return the list of header elements extracted from this header
      */
     public static List<HeaderElement> parseHeader(String header) {
-        List<HeaderElement> elements = new ArrayList<HeaderElement>();
+        List<HeaderElement> elements = new ArrayList<>();
         if (header == null || header.trim().length() == 0) {
             return elements;
         }
@@ -81,7 +81,7 @@ public class HeaderParser  {
             value = "";
         }
 
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         int CHAR = 1;
         int DELIMITER = 2;
@@ -134,8 +134,8 @@ public class HeaderParser  {
 
         public HeaderElement(String path) {
             this.path = path;
-            this.attributes = new HashMap<String, String>();
-            this.directives = new HashMap<String, String>();
+            this.attributes = new HashMap<>();
+            this.directives = new HashMap<>();
         }
 
         public String getName() {

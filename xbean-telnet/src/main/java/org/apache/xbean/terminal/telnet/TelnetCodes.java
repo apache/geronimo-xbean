@@ -23,14 +23,14 @@ public interface TelnetCodes {
      * Name: SE
      * Code: 240
      */
-    public static final int SE = 240;
+    int SE = 240;
     /**
      * No operation.
      * <p/>
      * Name: NOP
      * Code: 241
      */
-    public static final int NOP = 241;
+    int NOP = 241;
     /**
      * The data stream portion of a Synch.
      * This should always be accompanied
@@ -39,56 +39,56 @@ public interface TelnetCodes {
      * Name: Data Mark
      * Code: 242
      */
-    public static final int Data_Mark = 242;
+    int Data_Mark = 242;
     /**
      * NVT character BRK.
      * <p/>
      * Name: Break
      * Code: 243
      */
-    public static final int Break = 243;
+    int Break = 243;
     /**
      * The function IP.
      * <p/>
      * Name: Interrupt Process
      * Code: 244
      */
-    public static final int Interrupt_Process = 244;
+    int Interrupt_Process = 244;
     /**
      * The function AO.
      * <p/>
      * Name: Abort output
      * Code: 245
      */
-    public static final int Abort_output = 245;
+    int Abort_output = 245;
     /**
      * The function AYT.
      * <p/>
      * Name: Are You There
      * Code: 246
      */
-    public static final int Are_You_There = 246;
+    int Are_You_There = 246;
     /**
      * The function EC.
      * <p/>
      * Name: Erase character
      * Code: 247
      */
-    public static final int Erase_character = 247;
+    int Erase_character = 247;
     /**
      * The function EL.
      * <p/>
      * Name: Erase Line
      * Code: 248
      */
-    public static final int Erase_Line = 248;
+    int Erase_Line = 248;
     /**
      * The GA signal.
      * <p/>
      * Name: Go ahead
      * Code: 249
      */
-    public static final int Go_ahead = 249;
+    int Go_ahead = 249;
     /**
      * Indicates that what follows is
      * subnegotiation of the indicated
@@ -97,7 +97,7 @@ public interface TelnetCodes {
      * Name: SB
      * Code: 250
      */
-    public static final int SB = 250;
+    int SB = 250;
     /**
      * Indicates the desire to begin
      * performing, or confirmation that
@@ -107,7 +107,7 @@ public interface TelnetCodes {
      * Name: WILL (option code)
      * Code: 251
      */
-    public static final int WILL = 251;
+    int WILL = 251;
     /**
      * Indicates the refusal to perform,
      * or continue performing, the
@@ -116,7 +116,7 @@ public interface TelnetCodes {
      * Name: WON'T (option code)
      * Code: 252
      */
-    public static final int WONT = 252;
+    int WONT = 252;
     /**
      * Indicates the request that the
      * other party perform, or
@@ -127,7 +127,7 @@ public interface TelnetCodes {
      * Name: DO (option code)
      * Code: 253
      */
-    public static final int DO = 253;
+    int DO = 253;
     /**
      * Indicates the demand that the
      * other party stop performing,
@@ -138,7 +138,7 @@ public interface TelnetCodes {
      * Name: DON'T (option code)
      * Code: 254
      */
-    public static final int DONT = 254;
+    int DONT = 254;
     /**
      * Interpret as command
      * aka Data Byte
@@ -146,5 +146,5 @@ public interface TelnetCodes {
      * Name: IAC
      * Code: 255
      */
-    public static final int IAC = 255;
+    int IAC = 255;
 }

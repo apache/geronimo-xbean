@@ -32,7 +32,7 @@ import org.apache.xbean.blueprint.cm.JexlExpressionParser;
 public class JexlTest extends TestCase {
     
     public void testJexl() throws Exception {
-        Map<String, Object> vars = new HashMap<String, Object> ();
+        Map<String, Object> vars = new HashMap<>();
         vars.put("foo", 1);
         vars.put("bar", 2);
         JexlExpressionParser parser = new JexlExpressionParser(vars);

@@ -40,7 +40,7 @@ public class ContextAccessControlList implements ContextAccess {
     private List<Name> toACL(List input) {
         if (input == null) return Collections.emptyList();
         
-        ArrayList<Name> list = new ArrayList<Name>(input.size());
+        ArrayList<Name> list = new ArrayList<>(input.size());
         for (Object value : input) {
             if (value instanceof Name) {
                 list.add((Name) value);
