@@ -278,11 +278,7 @@ public class AnnotationFinder implements IAnnotationFinder {
         interfaceImplementors.clear();
         for (ClassInfo classInfo : classInfos.values()) {
             for (String iface : classInfo.interfaces) {
-                List<ClassInfo> impls = interfaceImplementors.get(iface);
-                if (impls == null) {
-                    impls = new ArrayList<>();
-                    interfaceImplementors.put(iface, impls);
-                }
+                List<ClassInfo> impls = interfaceImplementors.computeIfAbsent(iface, k -> new ArrayList<>());
                 impls.add(classInfo);
             }
         }
@@ -1180,11 +1176,7 @@ public class AnnotationFinder implements IAnnotationFinder {
     }
 
     protected List<Info> initAnnotationInfos(String name) {
-        List<Info> infos = annotated.get(name);
-        if (infos == null) {
-            infos = new SingleLinkedList<>();
-            annotated.put(name, infos);
-        }
+        List<Info> infos = annotated.computeIfAbsent(name, k -> new SingleLinkedList<>());
         return infos;
     }
 

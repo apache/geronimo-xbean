@@ -169,12 +169,7 @@ public class ObjectGraph {
             ArrayList<Recipe> circularity = new ArrayList<>(stack.subList(stack.indexOf(node.recipe), stack.size()));
 
             // remove anonymous nodes from circularity list
-            for (Iterator<Recipe> iterator = circularity.iterator(); iterator.hasNext();) {
-                Recipe recipe = iterator.next();
-                if (recipe != node.recipe && recipe.getName() == null) {
-                    iterator.remove();
-                }
-            }
+            circularity.removeIf(recipe -> recipe != node.recipe && recipe.getName() == null);
 
             // add ending node to list so a full circuit is shown
             circularity.add(node.recipe);

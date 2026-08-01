@@ -526,11 +526,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
     }
 
     protected List<Info> getAnnotationInfos(String name) {
-        List<Info> infos = annotated.get(name);
-        if (infos == null) {
-            infos = new SingleLinkedList<>();
-            annotated.put(name, infos);
-        }
+        List<Info> infos = annotated.computeIfAbsent(name, k -> new SingleLinkedList<>());
         return infos;
     }
 

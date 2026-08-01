@@ -96,11 +96,7 @@ public class Filters {
         }
 
         if (unwrapped.size() > 1) {
-            Iterator<Filter> iterator = unwrapped.iterator();
-            while (iterator.hasNext()) {
-                Filter filter = iterator.next();
-                if (filter == NONE) iterator.remove();
-            }
+            unwrapped.removeIf(filter -> filter == NONE);
         }
 
         if (unwrapped.size() == 0) return NONE;

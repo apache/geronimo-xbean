@@ -52,12 +52,7 @@ public class DefaultExecutionContext extends ExecutionContext {
             ArrayList<Recipe> circularity = new ArrayList<>(stack.subList(stack.indexOf(recipe), stack.size()));
 
             // remove anonymous nodes from circularity list
-            for (Iterator<Recipe> iterator = circularity.iterator(); iterator.hasNext();) {
-                Recipe item = iterator.next();
-                if (item != recipe && item.getName() == null) {
-                    iterator.remove();
-                }
-            }
+            circularity.removeIf(item -> item != recipe && item.getName() == null);
 
             // add ending node to list so a full circuit is shown
             circularity.add(recipe);
