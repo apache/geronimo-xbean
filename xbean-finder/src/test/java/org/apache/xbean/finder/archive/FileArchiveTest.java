@@ -66,9 +66,8 @@ public class FileArchiveTest {
         while (resources.hasMoreElements()) {
             URL url = resources.nextElement();
             FileArchive fileArchive = new FileArchive(classLoader, url, "org.acme.foo");
-            Iterator<Archive.Entry> iterator = fileArchive.iterator();
-            while ( iterator.hasNext() ) {
-                assertTrue(iterator.next().getName().startsWith("org.acme.foo"));
+            for (Archive.Entry entry : fileArchive) {
+                assertTrue(entry.getName().startsWith("org.acme.foo"));
             }
         }
     }

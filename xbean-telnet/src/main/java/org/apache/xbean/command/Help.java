@@ -30,9 +30,8 @@ public class Help implements Command {
     public int main(String[] args, InputStream in, PrintStream out) {
         Map hash = CommandRegistry.getCommandMap();
         Set set = hash.keySet();
-        Iterator cmds = set.iterator();
-        while (cmds.hasNext()) {
-            out.print(" " + cmds.next());
+        for (Object o : set) {
+            out.print(" " + o);
             out.println("");
         }
         return 0;

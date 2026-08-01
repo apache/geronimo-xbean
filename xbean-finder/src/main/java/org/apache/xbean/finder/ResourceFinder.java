@@ -1066,8 +1066,7 @@ public class ResourceFinder {
                 }
             } catch (MalformedURLException e) {
                 // Keep iterating through the URL list
-            } catch (IOException e) {
-            } catch (SecurityException e) {
+            } catch (IOException | SecurityException e) {
             }
         }
         return null;

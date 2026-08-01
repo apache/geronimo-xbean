@@ -44,8 +44,6 @@ public class EnumConverter extends AbstractConverter {
                 final Method method = type.getMethod("values");
                 final Object[] values = (Object[]) method.invoke(null);
                 return values[index];
-            } catch (final NumberFormatException e) {
-                // no-op
             } catch (final Exception e) {
                 // no-op
             }

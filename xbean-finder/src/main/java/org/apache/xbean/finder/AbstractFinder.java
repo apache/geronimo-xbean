@@ -279,9 +279,7 @@ public abstract class AbstractFinder implements IAnnotationFinder {
                             }
                         }
                     }
-                } catch (ClassNotFoundException e) {
-                    classesNotLoaded.add(classInfo.getName());
-                } catch (NoClassDefFoundError e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     classesNotLoaded.add(classInfo.getName());
                 }
             }

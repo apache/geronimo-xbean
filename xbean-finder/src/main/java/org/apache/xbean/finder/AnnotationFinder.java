@@ -418,8 +418,6 @@ public class AnnotationFinder implements IAnnotationFinder {
                             readClassDef(((Class<?>) classInfo.clazz).getSuperclass());
                             parentInfo = classInfos.get(classInfo.superType);
                         }
-                    } catch (final ClassNotFoundException e) {
-                        // no-op
                     } catch (final Throwable e) {
                         // no-op
                     }
@@ -730,9 +728,7 @@ public class AnnotationFinder implements IAnnotationFinder {
                                 methods.add(method);
                             }
                         }
-                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                        classesNotLoaded.add(classInfo.getName());
-                    } catch (ClassCircularityError cce) {
+                    } catch (ClassNotFoundException | NoClassDefFoundError | ClassCircularityError e) {
                         classesNotLoaded.add(classInfo.getName());
                     }
                 } else {
