@@ -381,7 +381,7 @@ public class ResourceFinderTest extends TestCase {
         jarfile = conn.getJarFile();
 
         Enumeration<JarEntry> entries = jarfile.entries();
-        while (entries != null && entries.hasMoreElements()) {
+        while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
             String name = entry.getName();
 

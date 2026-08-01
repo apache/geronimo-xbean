@@ -99,10 +99,8 @@ public class JarArchive implements Archive, AutoCloseable {
             jar = new JarFile(jarFile);
 
         }catch(IOException e){
-            throw new IllegalStateException("Cannot open jar(zip) '"
-                    + jarFile != null ? // why can it be null? but since compiler thinks so...
-                            jarFile.getAbsolutePath()
-                            : FileArchive.decode(String.valueOf(url)) + "'", e);
+            // why can it be null? but since compiler thinks so...
+            throw new IllegalStateException(jarFile.getAbsolutePath(), e);
         }
     }
 
